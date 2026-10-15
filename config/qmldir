@@ -1,0 +1,5 @@
+singleton Theme 1.0 Theme.qml
+singleton Fonts 1.0 Fonts.qml
+singleton Config 1.0 Config.qml
+singleton Store 1.0 Store.qml
+singleton SettingsStore 1.0 SettingsStore.qml

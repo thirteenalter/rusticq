@@ -1,0 +1,9 @@
+{
+  "accentName": "orange",
+  "barMode": "compact",
+  "showWeather": true,
+  "showWorkspaces": true,
+  "showIndicators": true,
+  "aiProvider": "openai",
+  "aiModel": "gpt-4.1-mini"
+}

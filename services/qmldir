@@ -1,0 +1,7 @@
+singleton BatteryService 1.0 BatteryService.qml
+singleton BluetoothService 1.0 BluetoothService.qml
+singleton WifiService 1.0 WifiService.qml
+singleton WeatherService 1.0 WeatherService.qml
+singleton SysMonService 1.0 SysMonService.qml
+singleton TooltipService 1.0 TooltipService.qml
+WifiManager 1.0 WifiManager.qml
