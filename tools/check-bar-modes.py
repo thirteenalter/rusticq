@@ -9,7 +9,7 @@ settings = (base / "modules/settings/SettingsWindow.qml").read_text()
 assert 'property string barMode:' in store
 assert 'barMode: barMode' in store
 assert 'data.barMode' in store
-for mode in ('compact', 'separated', 'professional', 'simple'):
+for mode in ('compact', 'clean-compact', 'separated', 'professional', 'simple'):
     assert mode in bar and mode in store and mode in settings, mode
 assert 'Store.toggleQuick(barWindow.screen)' in bar
 assert 'Store.toggleAi(barWindow.screen)' in bar
@@ -19,4 +19,4 @@ for fname in ('BarBattery.qml', 'BarBluetooth.qml', 'BarWifi.qml'):
     assert 'Theme.sectionPadding' in s, fname
     assert 'SectionHeader {' in s, fname
 assert 'UPower' in (base/'services/BatteryService.qml').read_text()
-print('PASS: 4 bar modes, SettingsStore persistence, shared card geometry, single bar component instances')
+print('PASS: 5 bar modes, SettingsStore persistence, shared card geometry, single bar component instances')

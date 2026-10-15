@@ -344,6 +344,7 @@ FloatingWindow {
                                 Repeater {
                                     model: [
                                         { key: "compact", label: "Compact", info: "Dense, low-profile bar", icon: "\ue5d1" },
+                                        { key: "clean-compact", label: "Clean Compact", info: "Bare buttons, Quick Settings pill", icon: "\ue5d1" },
                                         { key: "separated", label: "Separated", info: "Left and right islands", icon: "\ue86c" },
                                         { key: "professional", label: "Professional", info: "Full-width status header", icon: "\ue30b" },
                                         { key: "simple", label: "Simple", info: "Arch, centered clock, control", icon: "\ue5d4" }
@@ -398,14 +399,14 @@ FloatingWindow {
                                                     spacing: 4
                                                     Rectangle {
                                                         Layout.preferredWidth: modeCard.modelData.key === "simple" ? 11 : 36
-                                                        Layout.preferredHeight: 12
+                                                        Layout.preferredHeight: modeCard.modelData.key === "clean-compact" ? 2 : 12
                                                         radius: 4
                                                         color: modeCard.modelData.key === "separated" ? Theme.background : Qt.alpha(Theme.accent, 0.4)
                                                     }
                                                     Item { Layout.fillWidth: true }
                                                     Rectangle {
                                                         Layout.preferredWidth: modeCard.modelData.key === "simple" ? 13 : 21
-                                                        Layout.preferredHeight: modeCard.modelData.key === "compact" ? 5 : 10
+                                                        Layout.preferredHeight: ["compact", "clean-compact"].indexOf(modeCard.modelData.key) !== -1 ? 5 : 10
                                                         radius: 4
                                                         color: modeCard.modelData.key === "simple" ? Theme.accent : Theme.muted
                                                     }
@@ -447,15 +448,21 @@ FloatingWindow {
                             }
                             Repeater {
                                 model: [
-                                    {label: "Workspace switcher", desc: "Hyprland workspaces", key: "workspaces", icon: "\ue30b"},
-                                    {label: "Weather", desc: "Weather indicator", key: "weather", icon: "\ue430"},
-                                    {label: "System indicators", desc: "Wi-Fi, battery, Bluetooth", key: "indicators", icon: "\ue8b8"}
+                                    {label: "Workspace switcher", desc: "Hyprland workspaces", key: "showWorkspaces", icon: "\ue30b"},
+                                    {label: "Weather", desc: "Weather indicator", key: "showWeather", icon: "\ue430"},
+                                    {label: "System indicators", desc: "Wi-Fi, battery, Bluetooth", key: "showIndicators", icon: "\ue8b8"},
+                                    {label: "Quick modes", desc: "One group for desktop mode controls", key: "showQuickModes", icon: "\ue429"},
+                                    {label: "Auto-hide quick modes", desc: "Reveal on hover; hide when the pointer leaves", key: "quickModesAutoHide", icon: "\ue8f4"},
+                                    {label: "Keep Awake", desc: "Show Keep Awake in Quick modes", key: "showKeepAwake", icon: "\ue541"},
+                                    {label: "Silent", desc: "Show notification Do Not Disturb in Quick modes", key: "showSilent", icon: "\ue7f6"},
+                                    {label: "Gaming Mode", desc: "Show Performance power profile in Quick modes", key: "showGamingMode", icon: "\ue30f"},
+                                    {label: "Night Mode", desc: "Show warm screen temperature in Quick modes", key: "showNightMode", icon: "\ue51c"},
+                                    {label: "Mute Microphone", desc: "Show microphone mute in Quick modes", key: "showMicMute", icon: "\ue02b"}
                                 ]
                                 delegate: Rectangle {
                                     id: moduleRow
                                     required property var modelData
-                                    readonly property bool enabledSetting: modelData.key === "weather" ? SettingsStore.showWeather :
-                                        modelData.key === "workspaces" ? SettingsStore.showWorkspaces : SettingsStore.showIndicators
+                                    readonly property bool enabledSetting: SettingsStore[modelData.key]
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 65
                                     radius: 11
@@ -464,22 +471,53 @@ FloatingWindow {
                                         anchors.fill: parent
                                         anchors.margins: 12
                                         spacing: 10
-                                        Icon { icon: moduleRow.modelData.icon; font.pixelSize: 20; color: Theme.accent }
+                                        Icon {
+                                            Layout.minimumWidth: 24
+                                            Layout.preferredWidth: 24
+                                            Layout.maximumWidth: 24
+                                            Layout.alignment: Qt.AlignVCenter
+                                            icon: moduleRow.modelData.icon
+                                            font.pixelSize: 20
+                                            color: Theme.accent
+                                        }
                                         ColumnLayout {
                                             Layout.fillWidth: true
+                                            Layout.alignment: Qt.AlignVCenter
                                             spacing: 1
-                                            Text { text: moduleRow.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 12 }
-                                            Text { text: moduleRow.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                                            Text {
+                                                Layout.fillWidth: true
+                                                horizontalAlignment: Text.AlignLeft
+                                                elide: Text.ElideRight
+                                                text: moduleRow.modelData.label
+                                                color: Theme.foreground
+                                                font.family: Fonts.poppinsSB.name
+                                                font.pixelSize: 12
+                                            }
+                                            Text {
+                                                Layout.fillWidth: true
+                                                horizontalAlignment: Text.AlignLeft
+                                                elide: Text.ElideRight
+                                                text: moduleRow.modelData.desc
+                                                color: Theme.muted
+                                                font.family: Fonts.poppins.name
+                                                font.pixelSize: 10
+                                            }
                                         }
-                                        Icon { icon: moduleRow.enabledSetting ? "\ue5ca" : "\ue5cd"; color: moduleRow.enabledSetting ? Theme.accent : Theme.muted; font.pixelSize: 20 }
+                                        Icon {
+                                            Layout.minimumWidth: 24
+                                            Layout.preferredWidth: 24
+                                            Layout.maximumWidth: 24
+                                            Layout.alignment: Qt.AlignVCenter
+                                            icon: moduleRow.enabledSetting ? "\ue5ca" : "\ue5cd"
+                                            color: moduleRow.enabledSetting ? Theme.accent : Theme.muted
+                                            font.pixelSize: 20
+                                        }
                                     }
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            if (moduleRow.modelData.key === "weather") SettingsStore.showWeather = !SettingsStore.showWeather;
-                                            else if (moduleRow.modelData.key === "workspaces") SettingsStore.showWorkspaces = !SettingsStore.showWorkspaces;
-                                            else SettingsStore.showIndicators = !SettingsStore.showIndicators;
+                                            SettingsStore[moduleRow.modelData.key] = !moduleRow.enabledSetting;
                                             SettingsStore.save();
                                         }
                                     }

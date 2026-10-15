@@ -86,29 +86,10 @@ Rectangle {
                     font.family: Fonts.poppinsSB.name
                     font.pixelSize: 12
                 }
-                Rectangle {
-                    Layout.preferredWidth: 100
-                    Layout.preferredHeight: 32
-                    radius: 10
-                    color: Theme.surface
-                    opacity: root.adapter && root.adapter.enabled ? 1 : 0.45
-                    RowLayout {
-                        anchors.centerIn: parent
-                        spacing: 5
-                        Icon { icon: "\ue1aa"; font.pixelSize: 17; color: Theme.accent }
-                        Text {
-                            text: root.adapter && root.adapter.discovering ? "Stop scan" : "Scan"
-                            color: Theme.foreground
-                            font.family: Fonts.poppins.name
-                            font.pixelSize: 11
-                        }
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        enabled: root.adapter && root.adapter.enabled
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.adapter.discovering = !root.adapter.discovering
-                    }
+                ScanButton {
+                    enabled: root.adapter !== null && root.adapter.enabled
+                    scanning: root.adapter !== null && root.adapter.discovering
+                    onClicked: root.adapter.discovering = !root.adapter.discovering
                 }
             }
 

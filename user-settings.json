@@ -1,9 +1,16 @@
 {
   "accentName": "orange",
-  "barMode": "compact",
+  "barMode": "clean-compact",
   "showWeather": true,
   "showWorkspaces": true,
   "showIndicators": true,
+  "showQuickModes": true,
+  "quickModesAutoHide": true,
+  "showKeepAwake": true,
+  "showSilent": true,
+  "showGamingMode": true,
+  "showNightMode": true,
+  "showMicMute": true,
   "aiProvider": "openai",
   "aiModel": "gpt-4.1-mini"
 }

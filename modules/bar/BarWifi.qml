@@ -25,7 +25,6 @@ Rectangle {
     property string passwordText: ""
     property var errorNetwork: null
     property string errorText: ""
-    property bool refreshing: false
 
     function resetState() {
         activeNetwork = null;
@@ -81,12 +80,6 @@ Rectangle {
         }
     }
 
-    Timer {
-        id: pulseTimer
-        interval: 1200
-        onTriggered: wifiWidget.refreshing = false
-    }
-
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: Theme.sectionPadding
@@ -130,22 +123,21 @@ Rectangle {
                     onClicked: manager.toggleWifi()
                 }
             }
-            Rectangle {
-                Layout.preferredWidth: 30; Layout.preferredHeight: 30
-                color: "transparent"
-                Icon {
-                    anchors.centerIn: parent; icon: "\ue5d5"; font.pixelSize: 20
-                    RotationAnimator on rotation {
-                        from: 0; to: 360; duration: 850
-                        loops: Animation.Infinite; running: wifiWidget.refreshing
-                    }
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    enabled: manager.wifiEnabled && manager.wifiDevice !== null
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: { manager.refresh(); wifiWidget.refreshing = true; pulseTimer.restart(); }
-                }
+        }
+        RowLayout {
+            visible: wifiWidget.expanded
+            Layout.fillWidth: true
+            Text {
+                Layout.fillWidth: true
+                text: "Networks"
+                color: Theme.foreground
+                font.family: Fonts.poppinsSB.name
+                font.pixelSize: Theme.controlTextSize
+            }
+            ScanButton {
+                enabled: manager.wifiEnabled && manager.wifiHardwareEnabled && manager.wifiDevice !== null
+                scanning: manager.scanning
+                onClicked: manager.toggleScan()
             }
         }
 
@@ -437,7 +429,7 @@ Rectangle {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     visible: manager.wifiEnabled && manager.wifiDevice !== null
-                    text: "Use refresh to scan again"
+                    text: manager.scanning ? "Scanning for networks…" : "Select Scan to find networks"
                     color: Theme.muted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Theme.helperTextSize

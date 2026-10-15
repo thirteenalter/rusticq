@@ -1,4 +1,4 @@
-> **Current revision: Hotfix 7 (Quickshell 0.3.1)** — Start with [HOTFIX7-DROPDOWNS-CLOUD-AI.md](HOTFIX7-DROPDOWNS-CLOUD-AI.md). Older HOTFIX notes are historical. Cloud AI replaces the optional Ollama backend.
+> **Current revision: Hotfix 9 (Quickshell 0.3.1)** — Start with [HOTFIX9-COMPACT-SETTINGS.md](HOTFIX9-COMPACT-SETTINGS.md) for aligned Settings rows, Compact information pills, and Clean Compact. Older HOTFIX notes are historical. Cloud AI replaces the optional Ollama backend.
 
 > **Hotfix 3 (Quickshell 0.3.1):** fixes `WifiManager is not a type` by registering the regular `WifiManager` component in `services/qmldir`. See `HOTFIX3-WIFIMANAGER.md`.
 

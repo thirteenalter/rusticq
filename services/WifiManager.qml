@@ -54,6 +54,11 @@ Scope {
         }
     }
 
+    function toggleScan() {
+        if (wifiDevice && wifiEnabled && wifiHardwareEnabled)
+            wifiDevice.scannerEnabled = !wifiDevice.scannerEnabled;
+    }
+
     Component.onDestruction: {
         if (wifiDevice) wifiDevice.scannerEnabled = false;
     }

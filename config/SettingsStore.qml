@@ -11,6 +11,13 @@ Singleton {
     property bool showWeather: true
     property bool showWorkspaces: true
     property bool showIndicators: true
+    property bool showQuickModes: true
+    property bool quickModesAutoHide: true
+    property bool showKeepAwake: true
+    property bool showSilent: true
+    property bool showGamingMode: true
+    property bool showNightMode: true
+    property bool showMicMute: true
     property string aiProvider: "openai"
     property string aiModel: "gpt-4.1-mini"
     readonly property color accentColor: accentName === "green" ? "#b8bb26" :
@@ -27,10 +34,12 @@ Singleton {
             const data = JSON.parse(settingsFile.text());
             if (["orange", "green", "blue", "purple"].indexOf(data.accentName) !== -1)
                 accentName = data.accentName;
-            if (["compact", "separated", "professional", "simple"].indexOf(data.barMode) !== -1) barMode = data.barMode;
+            if (["compact", "clean-compact", "separated", "professional", "simple"].indexOf(data.barMode) !== -1) barMode = data.barMode;
             if (typeof data.showWeather === "boolean") showWeather = data.showWeather;
             if (typeof data.showWorkspaces === "boolean") showWorkspaces = data.showWorkspaces;
             if (typeof data.showIndicators === "boolean") showIndicators = data.showIndicators;
+            for (const key of ["showQuickModes", "quickModesAutoHide", "showKeepAwake", "showSilent", "showGamingMode", "showNightMode", "showMicMute"])
+                if (typeof data[key] === "boolean") root[key] = data[key];
             if (["openai", "anthropic", "gemini"].indexOf(data.aiProvider) !== -1) aiProvider = data.aiProvider;
             if (typeof data.aiModel === "string" && data.aiModel.length > 0 && data.aiModel !== "llama3.2") aiModel = data.aiModel;
         } catch (e) {
@@ -44,6 +53,13 @@ Singleton {
             showWeather: showWeather,
             showWorkspaces: showWorkspaces,
             showIndicators: showIndicators,
+            showQuickModes: showQuickModes,
+            quickModesAutoHide: quickModesAutoHide,
+            showKeepAwake: showKeepAwake,
+            showSilent: showSilent,
+            showGamingMode: showGamingMode,
+            showNightMode: showNightMode,
+            showMicMute: showMicMute,
             aiProvider: aiProvider,
             aiModel: aiModel
         }, null, 2) + "\n");

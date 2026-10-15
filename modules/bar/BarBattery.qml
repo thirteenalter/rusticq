@@ -129,23 +129,33 @@ Rectangle {
                             anchors.fill: parent
                             anchors.leftMargin: 12
                             anchors.rightMargin: 12
-                            spacing: 10
+                            spacing: Theme.sectionGap
                             Icon {
                                 icon: profileItem.modelData.icon
                                 font.pixelSize: 20
                                 color: profileItem.current ? Theme.accent : Theme.muted
+                                Layout.minimumWidth: 22
                                 Layout.preferredWidth: 22
+                                Layout.maximumWidth: 22
+                                Layout.alignment: Qt.AlignVCenter
                             }
                             ColumnLayout {
                                 Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignVCenter
                                 spacing: 1
                                 Text {
+                                    Layout.fillWidth: true
+                                    horizontalAlignment: Text.AlignLeft
+                                    elide: Text.ElideRight
                                     text: profileItem.modelData.title
                                     font.pixelSize: Theme.controlTextSize
                                     font.family: Fonts.poppinsSB.name
                                     color: Theme.foreground
                                 }
                                 Text {
+                                    Layout.fillWidth: true
+                                    horizontalAlignment: Text.AlignLeft
+                                    elide: Text.ElideRight
                                     text: profileItem.modelData.desc
                                     font.pixelSize: Theme.helperTextSize
                                     font.family: Fonts.poppins.name
@@ -154,7 +164,12 @@ Rectangle {
                             }
                             Icon {
                                 icon: "\ue5ca"
-                                visible: profileItem.current
+                                // Reserve the same trailing column for every profile.
+                                opacity: profileItem.current ? 1 : 0
+                                Layout.minimumWidth: 22
+                                Layout.preferredWidth: 22
+                                Layout.maximumWidth: 22
+                                Layout.alignment: Qt.AlignVCenter
                                 font.pixelSize: 19
                                 color: Theme.accent
                             }

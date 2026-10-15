@@ -10,6 +10,18 @@ Target: Quickshell 0.3.1, Arch Linux + Hyprland. Base: Hotfix 7.
 4. **System**: tetap permanen, header dan inset disejajarkan (16px; header 36px). Nilai used/total dan free GiB dipertahankan.
 5. **Desain konsisten**: token di `config/Theme.qml` untuk section padding, radius, font title/body/helper. Semua tetap Gruvbox Dark + Poppins + Google Material Symbols.
 
+### Koreksi lanjutan: alignment profil Battery
+
+- Ketiga pilihan profil memakai kolom ikon dan centang selebar 22px, dengan
+  jarak antar-kolom dari `Theme.sectionGap`. Kolom centang tetap mengambil ruang
+  saat profil tidak dipilih agar posisi teks tidak bergeser ketika pilihan berubah.
+- Judul dan deskripsi mengisi lebar kolom teks dan rata kiri; teks panjang
+  memakai elipsis agar tidak menabrak centang pada panel sempit.
+- Ikon, kelompok teks, dan centang berada di tengah vertikal baris. Inset kartu
+  16px, tinggi baris 50px, dan body scroll dari Hotfix 8 tetap digunakan.
+- Saat memeriksa tampilan, bandingkan awal teks Power Saver, Balanced, dan
+  Performance, lalu ganti profil yang tersedia dan pastikan posisi teks tetap.
+
 ## Bar modes
 
 Masuk ke **Full Settings → Bar & modules → Bar layout mode**, pilih:

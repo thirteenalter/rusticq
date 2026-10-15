@@ -13,6 +13,7 @@ QtObject {
     // Supporting Gruvbox tones (missing from the original palette).
     readonly property color muted: "#a89984"
     readonly property color error: "#fb4934"
+    readonly property color warning: "#fabd2f"
     readonly property color success: "#b8bb26"
 
     // Shared component geometry for Quick Control + Advanced pages.
@@ -24,4 +25,9 @@ QtObject {
     readonly property int sectionTitleSize: 15
     readonly property int controlTextSize: 12
     readonly property int helperTextSize: 10
+
+    // Shared icon/text rhythm for Compact and Clean Compact information.
+    readonly property int barIconSlotSize: 18
+    readonly property int barIconTextGap: 6
+    readonly property int barInfoGap: 12
 }

@@ -1,24 +1,32 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 import "../../components"
 import "../../config"
+import "../../services"
 
-// All four bar modes share ONE set of functional components. Switching modes
+// All bar modes share ONE set of functional components. Switching modes
 // never spawns a second bar, duplicates system watchers, or resets sidebar state.
 PanelWindow {
     id: barWindow
     color: "transparent"
 
-    readonly property bool compactMode: SettingsStore.barMode === "compact"
+    readonly property bool cleanCompactMode: SettingsStore.barMode === "clean-compact"
+    readonly property bool compactMode: SettingsStore.barMode === "compact" || cleanCompactMode
+    readonly property int compactControlHeight: 24
     readonly property bool separatedMode: SettingsStore.barMode === "separated"
     readonly property bool professionalMode: SettingsStore.barMode === "professional"
     readonly property bool simpleMode: SettingsStore.barMode === "simple"
     readonly property int barHeight: professionalMode ? 44 : separatedMode ? 40 : compactMode ? 36 : 38
     readonly property int groupPadding: separatedMode ? 12 : compactMode ? 3 : professionalMode ? 14 : 9
-    readonly property int groupSpacing: compactMode ? 5 : 9
+    readonly property int groupSpacing: cleanCompactMode ? Theme.barInfoGap : compactMode ? 5 : 9
 
     implicitHeight: barHeight
+    IdleInhibitor {
+        window: barWindow
+        enabled: QuickModesService.keepAwake
+    }
     anchors { top: true; left: true; right: true }
     margins {
         top: professionalMode ? 0 : compactMode ? 5 : 10
@@ -60,6 +68,7 @@ PanelWindow {
                 anchors.centerIn: parent
                 spacing: barWindow.groupSpacing
                 Arch {
+                    backgroundEnabled: !barWindow.cleanCompactMode
                     Layout.preferredWidth: implicitWidth
                     Layout.preferredHeight: implicitHeight
                     MouseArea {
@@ -69,6 +78,9 @@ PanelWindow {
                     }
                 }
                 Workspaces {
+                    backgroundEnabled: !barWindow.cleanCompactMode
+                    buttonSize: barWindow.compactMode ? barWindow.compactControlHeight : 23
+                    spacing: barWindow.compactMode ? barWindow.groupSpacing : 6
                     visible: SettingsStore.showWorkspaces && !barWindow.simpleMode
                     Layout.preferredWidth: implicitWidth
                     Layout.preferredHeight: implicitHeight
@@ -99,25 +111,54 @@ PanelWindow {
                 id: rightItems
                 anchors.centerIn: parent
                 spacing: barWindow.groupSpacing
-                Weather {
-                    visible: SettingsStore.showWeather && !barWindow.simpleMode
-                    Layout.preferredWidth: implicitWidth
-                    Layout.preferredHeight: implicitHeight
-                }
-                Clock {
+                Rectangle {
+                    id: infoTray
                     visible: !barWindow.simpleMode
-                    Layout.preferredWidth: implicitWidth
-                    Layout.preferredHeight: implicitHeight
+                    readonly property int trayPadding: barWindow.compactMode && !barWindow.cleanCompactMode ? 8 : 0
+                    Layout.preferredWidth: infoItems.implicitWidth + trayPadding * 2
+                    Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : infoItems.implicitHeight
+                    radius: height / 2
+                    color: barWindow.compactMode && !barWindow.cleanCompactMode ? Theme.borderaccent : "transparent"
+                    RowLayout {
+                        id: infoItems
+                        anchors.centerIn: parent
+                        spacing: barWindow.compactMode ? Theme.barInfoGap : barWindow.groupSpacing
+                        Weather {
+                            visible: SettingsStore.showWeather
+                            showIcon: barWindow.compactMode
+                            horizontalPadding: barWindow.compactMode ? 0 : 7
+                            verticalPadding: barWindow.compactMode ? 0 : 6
+                            Layout.preferredWidth: implicitWidth
+                            Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : implicitHeight
+                        }
+                        Clock {
+                            showIcon: barWindow.compactMode
+                            showDate: barWindow.compactMode
+                            horizontalPadding: barWindow.compactMode ? 0 : 6
+                            verticalPadding: barWindow.compactMode ? 0 : 6
+                            Layout.preferredWidth: implicitWidth
+                            Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : implicitHeight
+                        }
+                    }
                 }
                 Indicators {
+                    compact: barWindow.compactMode
+                    backgroundEnabled: !barWindow.cleanCompactMode
                     visible: SettingsStore.showIndicators && !barWindow.simpleMode
+                    Layout.preferredWidth: implicitWidth
+                    Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : implicitHeight
+                }
+                QuickModes {
+                    visible: SettingsStore.showQuickModes && hasModules
+                    backgroundEnabled: !barWindow.cleanCompactMode
+                    controlHeight: barWindow.compactControlHeight
                     Layout.preferredWidth: implicitWidth
                     Layout.preferredHeight: implicitHeight
                 }
                 Rectangle {
                     id: sidebarToggle
                     Layout.preferredWidth: barWindow.compactMode ? 32 : 40
-                    Layout.preferredHeight: 24
+                    Layout.preferredHeight: barWindow.compactControlHeight
                     radius: height / 2
                     color: Store.sidebarVisible && Store.sidebarScreen === barWindow.screen
                            ? Qt.alpha(Theme.accent, 0.25) : Theme.borderaccent

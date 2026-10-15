@@ -6,6 +6,8 @@ import "../config"
 // Enam workspace mengikuti komposisi bar lama; bukan lagi teks placeholder.
 Row {
     id: root
+    property bool backgroundEnabled: true
+    property int buttonSize: 23
     spacing: 6
 
     Repeater {
@@ -17,11 +19,11 @@ Row {
             readonly property int workspaceId: index + 1
             readonly property bool selected: Hyprland.focusedWorkspace !== null
                                               && Hyprland.focusedWorkspace.id === workspaceId
-            width: 23
-            height: 23
+            width: root.buttonSize
+            height: root.buttonSize
             radius: 8
-            color: selected ? Theme.accent : Theme.surface
-            border.width: 1
+            color: !root.backgroundEnabled ? "transparent" : selected ? Theme.accent : Theme.surface
+            border.width: root.backgroundEnabled ? 1 : 0
             border.color: selected ? Theme.accent : Theme.borderaccent
 
             Text {
@@ -29,7 +31,8 @@ Row {
                 text: workspaceButton.workspaceId
                 font.family: Fonts.poppins.name
                 font.pixelSize: 11
-                color: workspaceButton.selected ? Theme.background : Theme.foreground
+                color: workspaceButton.selected
+                       ? (root.backgroundEnabled ? Theme.background : Theme.accent) : Theme.foreground
             }
 
             MouseArea {
