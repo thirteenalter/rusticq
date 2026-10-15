@@ -1,5 +1,6 @@
 {
   "accentName": "orange",
+  "colorSource": "gruvbox",
   "barMode": "clean-compact",
   "showWeather": true,
   "showWorkspaces": true,

@@ -1,4 +1,5 @@
 import QtQuick
+import "../config"
 
 Text {
     id: root
@@ -13,7 +14,7 @@ Text {
     font.family: material.name
     font.pixelSize: 14
 
-    color: "#ebdbb2"
+    color: Theme.foreground
 
     horizontalAlignment: Text.AlignHCenter
     verticalAlignment: Text.AlignVCenter

@@ -112,7 +112,7 @@ PanelWindow {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 0
-                    Text { text: "Arch AI"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground }
+                    Text { text: "RusticQ AI"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground }
                     Text {
                         text: SettingsStore.aiProvider.toUpperCase() + " / " + SettingsStore.aiModel
                         font.family: Fonts.poppins.name

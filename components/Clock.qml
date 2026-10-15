@@ -5,11 +5,15 @@ import "../config"
 
 Pill {
     id: root
-    property bool showIcon: false
+    // Retained for compatibility with existing bar modes. Material icons are
+    // now always visible so every status item follows the same design system.
+    property bool showIcon: true
     property bool showDate: false
+    signal timeActivated(real localX)
+    signal dateActivated(real localX)
     color: "transparent"
-    horizontalPadding: 6
-    verticalPadding: 6
+    horizontalPadding: 4
+    verticalPadding: 1
 
     SystemClock {
         id: clock
@@ -18,46 +22,23 @@ Pill {
 
     RowLayout {
         spacing: Theme.barInfoGap
-        RowLayout {
-            Layout.alignment: Qt.AlignVCenter
-            spacing: Theme.barIconTextGap
-            Icon {
-                visible: root.showIcon
-                icon: "\ue8b5"
-                font.pixelSize: 14
-                Layout.minimumWidth: Theme.barIconSlotSize
-                Layout.preferredWidth: Theme.barIconSlotSize
-                Layout.maximumWidth: Theme.barIconSlotSize
-                Layout.preferredHeight: Theme.barIconSlotSize
-                Layout.alignment: Qt.AlignVCenter
-            }
-            Text {
-                Layout.alignment: Qt.AlignVCenter
-                text: Qt.formatDateTime(clock.date, "HH:mm")
-                font.pixelSize: root.showIcon ? Theme.controlTextSize : 13
-                font.family: Fonts.poppins.name
-                color: Theme.foreground
+        InfoSegment {
+            id: timePart
+            symbol: "\ue8b5"  // schedule, Material Symbols Rounded
+            caption: Qt.formatDateTime(clock.date, "HH:mm")
+            onActivated: {
+                const point = timePart.mapToItem(root, timePart.width / 2, 0);
+                root.timeActivated(point.x);
             }
         }
-        RowLayout {
+        InfoSegment {
+            id: datePart
             visible: root.showDate
-            Layout.alignment: Qt.AlignVCenter
-            spacing: Theme.barIconTextGap
-            Icon {
-                icon: "\ue916"
-                font.pixelSize: 14
-                Layout.minimumWidth: Theme.barIconSlotSize
-                Layout.preferredWidth: Theme.barIconSlotSize
-                Layout.maximumWidth: Theme.barIconSlotSize
-                Layout.preferredHeight: Theme.barIconSlotSize
-                Layout.alignment: Qt.AlignVCenter
-            }
-            Text {
-                Layout.alignment: Qt.AlignVCenter
-                text: Qt.formatDateTime(clock.date, "dd MMM")
-                font.pixelSize: Theme.controlTextSize
-                font.family: Fonts.poppins.name
-                color: Theme.foreground
+            symbol: "\uebcc"  // calendar_month
+            caption: Qt.formatDateTime(clock.date, root.showIcon ? "ddd, dd MMM" : "dddd, dd MMM")
+            onActivated: {
+                const point = datePart.mapToItem(root, datePart.width / 2, 0);
+                root.dateActivated(point.x);
             }
         }
     }

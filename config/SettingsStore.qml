@@ -7,6 +7,8 @@ import Quickshell.Io
 Singleton {
     id: root
     property string accentName: "orange"
+    // Explicit opt-in: keep original Gruvbox when Aether is unavailable.
+    property string colorSource: "gruvbox"
     property string barMode: "separated"
     property bool showWeather: true
     property bool showWorkspaces: true
@@ -32,6 +34,7 @@ Singleton {
     Component.onCompleted: {
         try {
             const data = JSON.parse(settingsFile.text());
+            if (["aether", "gruvbox"].indexOf(data.colorSource) !== -1) colorSource = data.colorSource;
             if (["orange", "green", "blue", "purple"].indexOf(data.accentName) !== -1)
                 accentName = data.accentName;
             if (["compact", "clean-compact", "separated", "professional", "simple"].indexOf(data.barMode) !== -1) barMode = data.barMode;
@@ -49,6 +52,7 @@ Singleton {
     function save() {
         settingsFile.setText(JSON.stringify({
             accentName: accentName,
+            colorSource: colorSource,
             barMode: barMode,
             showWeather: showWeather,
             showWorkspaces: showWorkspaces,

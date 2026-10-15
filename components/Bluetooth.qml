@@ -5,6 +5,7 @@ import "../services"
 
 Item {
     id: root
+    signal activated()
     property int iconSlotWidth: 14
     property bool cleanStyle: false
     implicitWidth: row.implicitWidth
@@ -17,7 +18,7 @@ Item {
         spacing: root.cleanStyle ? Theme.barIconTextGap : 5
         Icon {
             icon: BluetoothService.icon
-            font.pixelSize: root.cleanStyle ? 16 : 14
+            font.pixelSize: Theme.barSymbolSize
             color: Theme.foreground
             Layout.minimumWidth: root.iconSlotWidth
             Layout.preferredWidth: root.iconSlotWidth
@@ -30,10 +31,16 @@ Item {
             text: !BluetoothService.enabled ? "Bluetooth off" : BluetoothService.connected
                   ? BluetoothService.deviceName : "Disconnected"
             font.family: Fonts.poppins.name
-            font.pixelSize: root.cleanStyle ? Theme.controlTextSize : 11
+            font.weight: Font.Medium
+            font.pixelSize: Theme.barTextSize
             color: Theme.foreground
             elide: Text.ElideRight
             Layout.maximumWidth: 150
         }
+    }
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.activated()
     }
 }

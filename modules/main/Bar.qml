@@ -10,6 +10,15 @@ import "../../services"
 // never spawns a second bar, duplicates system watchers, or resets sidebar state.
 PanelWindow {
     id: barWindow
+    property string miniKind: ""
+    property real miniAnchorX: 0
+    function openMini(kind, xPosition) {
+        Store.sidebarVisible = false;
+        if (miniKind === kind) { miniKind = ""; return; }
+        // Position before changing kind so the new popup opens at the clicked icon.
+        miniAnchorX = xPosition;
+        miniKind = kind;
+    }
     color: "transparent"
 
     readonly property bool cleanCompactMode: SettingsStore.barMode === "clean-compact"
@@ -74,7 +83,10 @@ PanelWindow {
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: Store.toggleAi(barWindow.screen)
+                        onClicked: {
+                            barWindow.miniKind = "";
+                            Store.toggleAi(barWindow.screen);
+                        }
                     }
                 }
                 Workspaces {
@@ -91,7 +103,7 @@ PanelWindow {
         Item { Layout.fillWidth: true }
         Text {
             visible: barWindow.professionalMode && barWindow.width > 900
-            text: "QUICKSHELL  /  GRUVBOX"
+            text: Theme.useAether ? "RUSTICQ  /  AETHER" : "RUSTICQ  /  GRUVBOX"
             font.family: Fonts.poppinsSB.name
             font.pixelSize: 10
             color: Theme.muted
@@ -124,6 +136,11 @@ PanelWindow {
                         anchors.centerIn: parent
                         spacing: barWindow.compactMode ? Theme.barInfoGap : barWindow.groupSpacing
                         Weather {
+                            id: trayWeather
+                            onActivated: localX => {
+                                const point = barWindow.mapFromItem(trayWeather, localX, 0);
+                                barWindow.openMini("weather", point.x);
+                            }
                             visible: SettingsStore.showWeather
                             showIcon: barWindow.compactMode
                             horizontalPadding: barWindow.compactMode ? 0 : 7
@@ -132,8 +149,17 @@ PanelWindow {
                             Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : implicitHeight
                         }
                         Clock {
-                            showIcon: barWindow.compactMode
-                            showDate: barWindow.compactMode
+                            id: trayClock
+                            onTimeActivated: localX => {
+                                const point = barWindow.mapFromItem(trayClock, localX, 0);
+                                barWindow.openMini("time", point.x);
+                            }
+                            onDateActivated: localX => {
+                                const point = barWindow.mapFromItem(trayClock, localX, 0);
+                                barWindow.openMini("date", point.x);
+                            }
+                            showIcon: true
+                            showDate: true
                             horizontalPadding: barWindow.compactMode ? 0 : 6
                             verticalPadding: barWindow.compactMode ? 0 : 6
                             Layout.preferredWidth: implicitWidth
@@ -142,6 +168,13 @@ PanelWindow {
                     }
                 }
                 Indicators {
+                    id: indicators
+                    onIconClicked: (kind, localX) => {
+                        // QsWindow is not a QQuickItem. Let Quickshell map from
+                        // the actual indicators Item into this window's coordinates.
+                        const pos = barWindow.mapFromItem(indicators, localX, 0);
+                        barWindow.openMini(kind, pos.x);
+                    }
                     compact: barWindow.compactMode
                     backgroundEnabled: !barWindow.cleanCompactMode
                     visible: SettingsStore.showIndicators && !barWindow.simpleMode
@@ -162,26 +195,46 @@ PanelWindow {
                     radius: height / 2
                     color: Store.sidebarVisible && Store.sidebarScreen === barWindow.screen
                            ? Qt.alpha(Theme.accent, 0.25) : Theme.borderaccent
-                    Rectangle {
+                    Icon {
                         anchors.centerIn: parent
-                        width: 20; height: 2; radius: 1
+                        icon: "\ue429" // tune — Material Symbols Rounded
+                        font.pixelSize: Theme.barSymbolSize
                         color: Theme.foreground
-                        opacity: 0.75
                     }
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: Store.toggleQuick(barWindow.screen)
+                        onClicked: {
+                            barWindow.miniKind = "";
+                            Store.toggleQuick(barWindow.screen);
+                        }
                     }
                 }
             }
         }
     }
+    IndicatorPopup {
+        id: indicatorPopup
+        hostWindow: barWindow
+        kind: barWindow.miniKind
+        targetX: barWindow.miniAnchorX
+        onDismissed: barWindow.miniKind = ""
+    }
     // The minimal mode uses a truly centered clock, instead of shifting it
     // based on unequal left/right control widths.
     Clock {
+        id: simpleClock
+        showDate: true
         visible: barWindow.simpleMode
         anchors.centerIn: parent
+        onTimeActivated: localX => {
+            const point = barWindow.mapFromItem(simpleClock, localX, 0);
+            barWindow.openMini("time", point.x);
+        }
+        onDateActivated: localX => {
+            const point = barWindow.mapFromItem(simpleClock, localX, 0);
+            barWindow.openMini("date", point.x);
+        }
     }
 }

@@ -5,6 +5,7 @@ import "../services"
 
 Item {
     id: root
+    signal activated()
     property int iconSlotWidth: 14
     property bool cleanStyle: false
     readonly property color statusColor: root.cleanStyle && WifiService.connected && WifiService.strength <= 25
@@ -20,7 +21,7 @@ Item {
 
         Icon {
             icon: WifiService.icon
-            font.pixelSize: root.cleanStyle ? 16 : 14
+            font.pixelSize: Theme.barSymbolSize
             color: root.statusColor
             Layout.minimumWidth: root.iconSlotWidth
             Layout.preferredWidth: root.iconSlotWidth
@@ -33,10 +34,16 @@ Item {
             text: !WifiService.enabled ? "Wi-Fi off" : WifiService.connected
                   ? WifiService.ssid : "Disconnected"
             font.family: Fonts.poppins.name
-            font.pixelSize: root.cleanStyle ? Theme.controlTextSize : 11
+            font.weight: Font.Medium
+            font.pixelSize: Theme.barTextSize
             color: root.statusColor
             elide: Text.ElideRight
             Layout.maximumWidth: 150
         }
+    }
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.activated()
     }
 }

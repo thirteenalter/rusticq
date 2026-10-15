@@ -33,15 +33,19 @@ Singleton {
         battery.state === UPowerDeviceState.PendingDischarge ? "Plugged in" : "Idle"
     readonly property real timeToFull: available ? battery.timeToFull : 0
     readonly property real timeToEmpty: available ? battery.timeToEmpty : 0
+    // Material Symbols Rounded from assets/google.ttf, verified in the
+    // font cmap. Android family is continuous: 0=f30d, 1=f30c, ... 6=f307.
     readonly property string icon: {
-        if (!available) return "\ue1a6"; // battery_unknown
-        if (charging) return "\ue1a3";  // battery_charging_full
-        if (percentage <= 10) return "\ue19c"; // battery_alert
-        if (percentage < 25) return "\uf09c"; // battery_1_bar
-        if (percentage < 40) return "\uf09d"; // battery_2_bar
-        if (percentage < 55) return "\uf09f"; // battery_4_bar
-        if (percentage < 75) return "\uf0a0"; // battery_5_bar
-        if (percentage < 90) return "\uf0a1"; // battery_6_bar
-        return "\ue1a4"; // battery_full
+        if (!available) return "\uf302"; // battery_android_question
+        if (full) return "\uf304";       // battery_android_full
+        if (charging) return "\uf305";   // battery_android_bolt
+        if (percentage <= 3) return "\uf30d";  // battery_android_0
+        if (percentage <= 15) return "\uf30c"; // battery_android_1
+        if (percentage <= 30) return "\uf30b"; // battery_android_2
+        if (percentage <= 45) return "\uf30a"; // battery_android_3
+        if (percentage <= 60) return "\uf309"; // battery_android_4
+        if (percentage <= 75) return "\uf308"; // battery_android_5
+        if (percentage < 97) return "\uf307";  // battery_android_6
+        return "\uf304"; // battery_android_full
     }
 }

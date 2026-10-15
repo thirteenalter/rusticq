@@ -1,5 +1,6 @@
 import QtQuick
 import "../services/"
+import "../config"
 
 Rectangle {
     id: root
@@ -15,7 +16,7 @@ Rectangle {
 
     radius: 8
 
-    color: "#3c3836"
+    color: Theme.surface
 
     opacity: visible ? 1 : 0
 
@@ -27,7 +28,7 @@ Rectangle {
 
         anchors.centerIn: parent
 
-        color: "#ebdbb2"
+        color: Theme.foreground
 
         text: root.text
     }

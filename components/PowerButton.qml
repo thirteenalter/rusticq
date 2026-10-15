@@ -10,13 +10,11 @@ Rectangle {
            ? Qt.alpha(Theme.accent, 0.25) : Theme.borderaccent
     radius: height / 2
 
-    Rectangle {
+    Icon {
         anchors.centerIn: parent
-        width: 20
-        height: 2
-        radius: 1
+        icon: "\ue429" // tune
+        font.pixelSize: 18
         color: Theme.foreground
-        opacity: 0.75
     }
 
     MouseArea {

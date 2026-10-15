@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import Quickshell.Hyprland
 import "../../config"
+import "../../components"
 
 // qmllint disable uncreatable-type
 PanelWindow {
@@ -64,8 +65,8 @@ PanelWindow {
             anchors.centerIn: parent
             spacing: 6
 
-            Text {
-                text: btn.icon
+            Icon {
+                icon: btn.icon
                 color: mouse.containsMouse ? Theme.background : Theme.foreground
                 font.pixelSize: 24
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -181,42 +182,42 @@ PanelWindow {
                 // tidak perlu duplikasi markup lagi.
                 property var actions: [
                     {
-                        icon: "\uf023",
+                        icon: "\ue899",
                         label: "Lock",
                         run: function () {
                             console.log("Eksekusi lockscreen");
                         }
                     },
                     {
-                        icon: "\uf03e",
+                        icon: "\ue1c3",
                         label: "Screensaver",
                         run: function () {
                             console.log("Eksekusi screensaver");
                         }
                     },
                     {
-                        icon: "\uf011",
+                        icon: "\ue8ac",
                         label: "Shutdown",
                         run: function () {
                             console.log("Eksekusi shutdown");
                         }
                     },
                     {
-                        icon: "\uf01e",
+                        icon: "\uf053",
                         label: "Reboot",
                         run: function () {
                             console.log("Eksekusi reboot");
                         }
                     },
                     {
-                        icon: "\uef5e",
+                        icon: "\uef44",
                         label: "Suspend",
                         run: function () {
                             console.log("Eksekusi suspend");
                         }
                     },
                     {
-                        icon: "\uf2f5",
+                        icon: "\ue9ba",
                         label: "Logout",
                         run: function () {
                             console.log("Eksekusi logout");

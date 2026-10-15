@@ -11,7 +11,7 @@ import "../bar"
 FloatingWindow {
     id: settingsWindow
     visible: Store.settingsVisible
-    title: "Quickshell · Gruvbox Settings"
+    title: Theme.useAether ? "RusticQ · Aether Settings" : "RusticQ · Gruvbox Settings"
     implicitWidth: 760
     implicitHeight: 585
     color: Theme.background
@@ -94,7 +94,7 @@ FloatingWindow {
                             Layout.fillWidth: true
                             spacing: 0
                             Text { text: "SETTINGS"; font.family: Fonts.poppinsSB.name; font.pixelSize: 13; color: Theme.foreground }
-                            Text { text: "GRUVBOX SHELL"; font.family: Fonts.poppins.name; font.pixelSize: 9; color: Theme.muted }
+                            Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ ALPHA"; font.family: Fonts.poppins.name; font.pixelSize: 9; color: Theme.muted }
                         }
                     }
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
@@ -145,7 +145,7 @@ FloatingWindow {
                     Item { Layout.fillHeight: true }
                     Text {
                         Layout.fillWidth: true
-                        text: "QUICKSHELL 0.3.1\nGruvbox Dark"
+                        text: "RUSTIQ ALPHA 1\nQuickshell 0.3.1"
                         wrapMode: Text.WordWrap
                         font.family: Fonts.poppins.name
                         font.pixelSize: 10
@@ -174,7 +174,7 @@ FloatingWindow {
                             font.pixelSize: 19
                         }
                         Text {
-                            text: "PERSONALIZE YOUR QUICKSHELL"
+                            text: "PERSONALIZE RUSTICQ"
                             font.family: Fonts.poppins.name
                             font.pixelSize: 10
                             color: Theme.muted
@@ -251,7 +251,7 @@ FloatingWindow {
                                                     Layout.fillWidth: true
                                                     spacing: 2
                                                     Text { text: "Quick Control"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 12 }
-                                                    Text { text: "Gruvbox accents"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                                                    Text { text: Theme.useAether ? "Aether live colors" : "Gruvbox accents"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
                                                 }
                                             }
                                         }
@@ -265,7 +265,52 @@ FloatingWindow {
                                     }
                                 }
                             }
-                            Text { text: "Accent color"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 13 }
+                            Text { text: "Color source"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 13 }
+                            Text {
+                                Layout.fillWidth: true
+                                text: "Choose independent Gruvbox or follow Aether's last applied wallpaper palette."
+                                color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11
+                                wrapMode: Text.WordWrap
+                            }
+                            Repeater {
+                                model: [
+                                    { key: "gruvbox", title: "Independent Gruvbox", info: "Fixed Gruvbox Dark; select an accent below" },
+                                    { key: "aether", title: "Follow Aether", info: "Watch ~/.config/aether/theme/colors.toml" }
+                                ]
+                                delegate: Rectangle {
+                                    id: sourceRow
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 56
+                                    radius: 11
+                                    color: SettingsStore.colorSource === modelData.key ? Qt.alpha(Theme.accent, 0.13) : Theme.surface
+                                    border.width: SettingsStore.colorSource === modelData.key ? 1 : 0
+                                    border.color: Theme.accent
+                                    RowLayout {
+                                        anchors.fill: parent; anchors.margins: 12; spacing: 10
+                                        Icon { icon: sourceRow.modelData.key === "aether" ? "\ue40a" : "\ue8b8"; font.pixelSize: 21; color: Theme.accent }
+                                        ColumnLayout {
+                                            Layout.fillWidth: true; spacing: 2
+                                            Text { text: sourceRow.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 12 }
+                                            Text { text: sourceRow.modelData.info; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                                        }
+                                        Icon { visible: SettingsStore.colorSource === sourceRow.modelData.key; icon: "\ue5ca"; font.pixelSize: 17; color: Theme.accent }
+                                    }
+                                    MouseArea {
+                                        anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                                        onClicked: { SettingsStore.colorSource = sourceRow.modelData.key; SettingsStore.save(); }
+                                    }
+                                }
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                visible: SettingsStore.colorSource === "aether"
+                                text: Theme.aetherAvailable ? "Aether palette detected · Live sync enabled" : "Aether palette not detected · Using Gruvbox fallback until Aether applies a theme"
+                                color: Theme.aetherAvailable ? Theme.success : Theme.warning
+                                font.family: Fonts.poppins.name; font.pixelSize: 10
+                                wrapMode: Text.WordWrap
+                            }
+                            Text { text: "Gruvbox accent color"; visible: SettingsStore.colorSource === "gruvbox"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 13 }
                             Repeater {
                                 model: [
                                     {name: "orange", label: "Gruvbox Orange", hex: "#d65d0e"},
@@ -275,6 +320,7 @@ FloatingWindow {
                                 ]
                                 delegate: Rectangle {
                                     id: accentRow
+                                    visible: SettingsStore.colorSource === "gruvbox"
                                     required property var modelData
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 46
@@ -310,7 +356,7 @@ FloatingWindow {
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: "Base palette #282828 / #3c3836 / #ebdbb2 · Poppins and Material Symbols"
+                                text: SettingsStore.colorSource === "aether" ? "Aether source: " + Theme.aetherPath : "Base palette #282828 / #3c3836 / #ebdbb2 · Poppins and Material Symbols"
                                 wrapMode: Text.WordWrap
                                 color: Theme.muted
                                 font.family: Fonts.poppins.name
@@ -717,7 +763,7 @@ FloatingWindow {
                                     anchors.centerIn: parent
                                     spacing: 6
                                     Icon { icon: "\ue8b8"; font.pixelSize: 28; color: Theme.accent; Layout.alignment: Qt.AlignHCenter }
-                                    Text { text: "Quickshell · Gruvbox"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground; Layout.alignment: Qt.AlignHCenter }
+                                    Text { text: "RusticQ · Alpha 1"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground; Layout.alignment: Qt.AlignHCenter }
                                     Text { text: "Target: Arch Linux / Quickshell 0.3.1"; font.family: Fonts.poppins.name; font.pixelSize: 11; color: Theme.muted; Layout.alignment: Qt.AlignHCenter }
                                 }
                             }

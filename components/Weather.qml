@@ -1,34 +1,23 @@
 import QtQuick
-import QtQuick.Layouts
 import "../config"
 import "../services"
 
 Pill {
     id: root
-    property bool showIcon: false
+    property bool showIcon: true
+    signal activated(real localX)
     color: "transparent"
-    horizontalPadding: 7
-    verticalPadding: 6
+    horizontalPadding: 4
+    verticalPadding: 1
 
-    RowLayout {
-        spacing: Theme.barIconTextGap
-        Icon {
-            visible: root.showIcon
-            icon: "\ue430"
-            font.pixelSize: 14
-            Layout.minimumWidth: Theme.barIconSlotSize
-            Layout.preferredWidth: Theme.barIconSlotSize
-            Layout.maximumWidth: Theme.barIconSlotSize
-            Layout.preferredHeight: Theme.barIconSlotSize
-            Layout.alignment: Qt.AlignVCenter
-        }
-        Text {
-            Layout.alignment: Qt.AlignVCenter
-            // wttr.in %t already includes °C or °F; do not append a second degree.
-            text: WeatherService.temperature !== "" ? WeatherService.temperature : "--°"
-            color: Theme.foreground
-            font.family: Fonts.poppins.name
-            font.pixelSize: Theme.controlTextSize
+    InfoSegment {
+        id: weatherPart
+        symbol: WeatherService.icon
+        caption: WeatherService.temperature !== "" ? WeatherService.temperature : "--°"
+        symbolColor: Theme.foreground
+        onActivated: {
+            const point = weatherPart.mapToItem(root, weatherPart.width / 2, 0);
+            root.activated(point.x);
         }
     }
 }

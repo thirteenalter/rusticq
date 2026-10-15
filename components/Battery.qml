@@ -5,6 +5,7 @@ import "../services"
 
 Item {
     id: root
+    signal activated()
     property int iconSlotWidth: 14
     property bool cleanStyle: false
     readonly property color statusColor: BatteryService.percentage <= 15 && !BatteryService.charging
@@ -26,7 +27,7 @@ Item {
             Layout.maximumWidth: root.iconSlotWidth
             Layout.alignment: Qt.AlignVCenter
             icon: BatteryService.icon
-            font.pixelSize: root.cleanStyle ? 16 : 14
+            font.pixelSize: Theme.barSymbolSize
             color: root.statusColor
         }
 
@@ -36,7 +37,13 @@ Item {
             visible: true
             color: root.statusColor
             font.family: Fonts.poppins.name
-            font.pixelSize: root.cleanStyle ? Theme.controlTextSize : 11
+            font.weight: Font.Medium
+            font.pixelSize: Theme.barTextSize
         }
+    }
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.activated()
     }
 }
