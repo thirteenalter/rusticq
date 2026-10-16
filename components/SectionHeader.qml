@@ -11,6 +11,8 @@ Item {
     property string iconName: "\ue8b8"
     property string title: "Section"
     property bool expanded: false
+    // In single-widget popups this becomes a static section title.
+    property bool collapsible: true
     signal toggleRequested()
 
     RowLayout {
@@ -31,6 +33,7 @@ Item {
             elide: Text.ElideRight
         }
         Icon {
+            visible: root.collapsible
             icon: "\ue5cf"
             font.pixelSize: 21
             Layout.preferredWidth: 23
@@ -40,6 +43,7 @@ Item {
     }
     MouseArea {
         anchors.fill: parent
+        enabled: root.collapsible
         cursorShape: Qt.PointingHandCursor
         onClicked: root.toggleRequested()
     }

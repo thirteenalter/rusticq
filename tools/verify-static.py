@@ -69,8 +69,10 @@ if 'height: 36' not in header or 'onClicked: root.toggleRequested()' not in head
     problems.append('SectionHeader missing real clickable height')
 for widget, target in [('BarWifi', 'wifiWidget'), ('BarBluetooth', 'root'), ('BarBattery', 'root')]:
     source = (root / 'modules' / 'bar' / f'{widget}.qml').read_text(encoding='utf-8')
-    if f'onToggleRequested: {target}.expanded = !{target}.expanded' not in source:
-        problems.append(f'{widget}: dropdown toggle not bound to local state')
+    if f'onToggleRequested: if (!{target}.standalone) {target}.expanded = !{target}.expanded' not in source:
+        problems.append(f'{widget}: accordion must toggle locally except in mini mode')
+    if 'readonly property bool contentOpen: standalone || expanded' not in source:
+        problems.append(f'{widget}: standalone must force the content open')
 source = (root / 'modules' / 'bar' / 'BarSystem.qml').read_text(encoding='utf-8')
 if 'visible: root.expanded' in source or 'Store.toggleQuickSection' in source:
     problems.append('System panel should be permanently expanded')

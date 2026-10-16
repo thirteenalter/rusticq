@@ -197,7 +197,7 @@ PanelWindow {
                            ? Qt.alpha(Theme.accent, 0.25) : Theme.borderaccent
                     Icon {
                         anchors.centerIn: parent
-                        icon: "\ue429" // tune — Material Symbols Rounded
+                        icon: "\ue69b" // stat_minus_1 — Google Material Symbols Rounded
                         font.pixelSize: Theme.barSymbolSize
                         color: Theme.foreground
                     }

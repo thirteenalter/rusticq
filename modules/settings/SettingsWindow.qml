@@ -145,7 +145,7 @@ FloatingWindow {
                     Item { Layout.fillHeight: true }
                     Text {
                         Layout.fillWidth: true
-                        text: "RUSTIQ ALPHA 1\nQuickshell 0.3.1"
+                        text: "RUSTIQ ALPHA 2\nQuickshell 0.3.1"
                         wrapMode: Text.WordWrap
                         font.family: Fonts.poppins.name
                         font.pixelSize: 10
@@ -763,7 +763,7 @@ FloatingWindow {
                                     anchors.centerIn: parent
                                     spacing: 6
                                     Icon { icon: "\ue8b8"; font.pixelSize: 28; color: Theme.accent; Layout.alignment: Qt.AlignHCenter }
-                                    Text { text: "RusticQ · Alpha 1"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground; Layout.alignment: Qt.AlignHCenter }
+                                    Text { text: "RusticQ · Alpha 2"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground; Layout.alignment: Qt.AlignHCenter }
                                     Text { text: "Target: Arch Linux / Quickshell 0.3.1"; font.family: Fonts.poppins.name; font.pixelSize: 11; color: Theme.muted; Layout.alignment: Qt.AlignHCenter }
                                 }
                             }

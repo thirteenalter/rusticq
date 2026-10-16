@@ -37,27 +37,25 @@ PopupWindow {
         color: Theme.background
         border.width: 1
         border.color: Theme.borderaccent
-        ColumnLayout {
+        // One card fills one popup. The Loader owns explicit geometry so the
+        // card never inherits the Quick Control accordion's collapsed height.
+        Loader {
+            id: widgetLoader
             anchors.fill: parent
             anchors.margins: 8
-            spacing: 0
-            Loader {
-                id: widgetLoader
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                sourceComponent: popup.kind === "wifi" ? wifiComponent :
+            sourceComponent: popup.kind === "wifi" ? wifiComponent :
                                  popup.kind === "bluetooth" ? bluetoothComponent :
                                  popup.kind === "battery" ? batteryComponent :
                                  popup.kind === "audio" ? audioComponent :
                                  popup.kind === "weather" ? weatherComponent :
                                  popup.kind === "time" ? timeComponent :
                                  popup.kind === "date" ? dateComponent : null
-            }
         }
     }
-    Component { id: wifiComponent; BarWifi { expanded: true } }
-    Component { id: bluetoothComponent; BarBluetooth { expanded: true } }
-    Component { id: batteryComponent; BarBattery { expanded: true } }
+    // Non-collapsible: the mini popup contains only one feature, not an accordion.
+    Component { id: wifiComponent; BarWifi { standalone: true } }
+    Component { id: bluetoothComponent; BarBluetooth { standalone: true } }
+    Component { id: batteryComponent; BarBattery { standalone: true } }
     Component { id: audioComponent; MiniAudio {} }
     Component { id: weatherComponent; MiniWeather {} }
     Component { id: timeComponent; MiniTime {} }

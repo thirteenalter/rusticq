@@ -21,7 +21,7 @@ Rectangle {
             color: Theme.surface
             Icon {
                 anchors.centerIn: parent
-                icon: Store.advancedVisible ? "\ue5c4" : "\ue8b8"
+                icon: Store.advancedVisible ? "\ue5c4" : "\ue69b" // stat_minus_1
                 font.pixelSize: 20
                 color: Theme.accent
             }

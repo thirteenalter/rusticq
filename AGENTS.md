@@ -2,7 +2,7 @@
 
 ## Latar belakang proyek
 
-**RusticQ (rustiq-alpha-1)** adalah aplikasi shell desktop berbasis **Quickshell**, QML, dan Qt 6
+**RusticQ (rustiq-alpha-2)** adalah aplikasi shell desktop berbasis **Quickshell**, QML, dan Qt 6
 untuk Linux dengan compositor Wayland **Hyprland**. Baseline kompatibilitas
 repositori adalah Quickshell **0.3.1**. Aplikasi menyediakan bar per monitor,
 workspace, Quick Control, pengaturan tampilan, serta panel Cloud AI.

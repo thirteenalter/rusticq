@@ -10,8 +10,10 @@ Rectangle {
     id: root
     Layout.fillWidth: true
     property bool expanded: false
+    property bool standalone: false
+    readonly property bool contentOpen: standalone || expanded
     readonly property var adapter: Native.Bluetooth.defaultAdapter
-    Layout.preferredHeight: expanded ? 336 : 68
+    Layout.preferredHeight: contentOpen ? 336 : 68
     radius: Theme.sectionRadius
     color: Qt.alpha(Theme.foreground, 0.02)
     border.width: 1
@@ -26,15 +28,16 @@ Rectangle {
             Layout.fillWidth: true
             title: "Bluetooth"
             iconName: "\ue1a7"
-            expanded: root.expanded
-            onToggleRequested: root.expanded = !root.expanded
+            expanded: root.contentOpen
+            collapsible: !root.standalone
+            onToggleRequested: if (!root.standalone) root.expanded = !root.expanded
         }
 
         Flickable {
         id: bluetoothScroll
         Layout.fillWidth: true
         Layout.fillHeight: true
-        visible: root.expanded
+        visible: root.contentOpen
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         contentHeight: bluetoothContent.implicitHeight + 10

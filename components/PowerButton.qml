@@ -12,7 +12,7 @@ Rectangle {
 
     Icon {
         anchors.centerIn: parent
-        icon: "\ue429" // tune
+        icon: "\ue69b" // stat_minus_1
         font.pixelSize: 18
         color: Theme.foreground
     }

@@ -17,6 +17,8 @@ Rectangle {
     color: Qt.alpha(Theme.foreground, 0.02)
 
     property bool expanded: true
+    property bool standalone: false
+    readonly property bool contentOpen: standalone || expanded
 
     WifiManager { id: manager }
 
@@ -89,11 +91,12 @@ Rectangle {
             Layout.fillWidth: true
             title: "Wi-Fi"
             iconName: "\ue63e"
-            expanded: wifiWidget.expanded
-            onToggleRequested: wifiWidget.expanded = !wifiWidget.expanded
+            expanded: wifiWidget.contentOpen
+            collapsible: !wifiWidget.standalone
+            onToggleRequested: if (!wifiWidget.standalone) wifiWidget.expanded = !wifiWidget.expanded
         }
         RowLayout {
-            visible: wifiWidget.expanded
+            visible: wifiWidget.contentOpen
             Layout.fillWidth: true
             Layout.preferredHeight: 32
             spacing: 8
@@ -125,7 +128,7 @@ Rectangle {
             }
         }
         RowLayout {
-            visible: wifiWidget.expanded
+            visible: wifiWidget.contentOpen
             Layout.fillWidth: true
             Text {
                 Layout.fillWidth: true
@@ -143,7 +146,7 @@ Rectangle {
 
         ListView {
             id: wifiList
-            visible: wifiWidget.expanded
+            visible: wifiWidget.contentOpen
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true

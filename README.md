@@ -1,8 +1,8 @@
-> **Current release: rustiq-alpha-1**, developed from Hotfix 10. Start with [RUSTIQ-ALPHA-1.md](RUSTIQ-ALPHA-1.md). Older HOTFIX documentation is historical.
+> **Current release: rustiq-alpha-2**, built on RusticQ Alpha 1. Start with [RUSTIQ-ALPHA-2.md](RUSTIQ-ALPHA-2.md). Older release notes are preserved for reference.
 
 > **Hotfix 3 (Quickshell 0.3.1):** fixes `WifiManager is not a type` by registering the regular `WifiManager` component in `services/qmldir`. See `HOTFIX3-WIFIMANAGER.md`.
 
-# RusticQ — rustiq-alpha-1 (Quickshell 0.3.1)
+# RusticQ — rustiq-alpha-2 (Quickshell 0.3.1)
 
 Baseline: **Quickshell v0.3.1**, Qt 6, Wayland/Hyprland.
 
@@ -80,3 +80,7 @@ The date now includes the weekday. Target runtime: Quickshell 0.3.1.
 ## Hotfix 10 — indicator popup & battery icons
 
 Lihat `HOTFIX10-POPUP-BATTERY.md` untuk perbaikan mapping klik popup Quickshell 0.3.1, ukuran window tanpa deprecated warning, ikon baterai Android Material Symbols, dan smoke test.
+
+## RusticQ Alpha 2 — single-feature popup mode
+
+See [`RUSTIQ-ALPHA-2.md`](RUSTIQ-ALPHA-2.md): Wi-Fi, Bluetooth and Battery mini widgets no longer include collapsible dropdown controls. In the full Quick Control the dropdowns continue to work. Both the bar Quick Control toggle and its panel-header icon use Google Material Symbols Rounded `stat_minus_1` (U+E69B).

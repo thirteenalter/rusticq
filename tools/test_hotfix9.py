@@ -20,8 +20,8 @@ class Hotfix9(unittest.TestCase):
         self.assertNotIn('eval(',s)
     def test_mini_controls_are_shared(self):
         source=get('modules/main/IndicatorPopup.qml')
-        for word in ['PopupWindow {','anchor.window: hostWindow','grabFocus: true','BarWifi { expanded: true }',
-                     'BarBluetooth { expanded: true }','BarBattery { expanded: true }','MiniAudio {}']:
+        for word in ['PopupWindow {','anchor.window: hostWindow','grabFocus: true','BarWifi { standalone: true }',
+                     'BarBluetooth { standalone: true }','BarBattery { standalone: true }','MiniAudio {}']:
             self.assertIn(word,source)
         icons=get('components/Indicators.qml')
         for kind in ['wifi','bluetooth','battery','audio']:

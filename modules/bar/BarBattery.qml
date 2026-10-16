@@ -10,7 +10,9 @@ Rectangle {
     id: root
     Layout.fillWidth: true
     property bool expanded: false
-    Layout.preferredHeight: expanded ? 366 : 68
+    property bool standalone: false
+    readonly property bool contentOpen: standalone || expanded
+    Layout.preferredHeight: contentOpen ? 366 : 68
     radius: Theme.sectionRadius
     clip: true
     color: Qt.alpha(Theme.foreground, 0.02)
@@ -26,13 +28,14 @@ Rectangle {
             Layout.fillWidth: true
             title: "Battery"
             iconName: BatteryService.icon
-            expanded: root.expanded
-            onToggleRequested: root.expanded = !root.expanded
+            expanded: root.contentOpen
+            collapsible: !root.standalone
+            onToggleRequested: if (!root.standalone) root.expanded = !root.expanded
         }
 
         Flickable {
             id: batteryScroll
-            visible: root.expanded
+            visible: root.contentOpen
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
