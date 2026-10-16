@@ -11,15 +11,17 @@ PopupWindow {
     id: popup
     required property var hostWindow
     property string kind: ""
+    property string menuSection: "view"
+    readonly property bool singleSystem: kind === "wifi" || kind === "bluetooth" || kind === "battery"
     property real targetX: 0
     property real targetY: 0
     property string barPosition: "top"
     signal dismissed()
     // QsWindow.width/height are actual dimensions; Quickshell 0.3.1 requires
     // implicitWidth/implicitHeight for requested window sizes.
-    implicitWidth: 368
+    implicitWidth: kind === "menu" ? 294 : 368
     implicitHeight: kind === "wifi" ? 465 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
-                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : 190
+                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? 345 : 190
     anchor.window: hostWindow
     // Anchor is in panel-window coordinates, never a QQuickItem or screen pixel.
     // Edge-aware positioning: on Bottom open upward; on Left/Right open
@@ -46,22 +48,23 @@ PopupWindow {
     Rectangle {
         anchors.fill: parent
         radius: Theme.sectionRadius
-        color: Theme.background
-        border.width: 1
+        color: popup.singleSystem ? "transparent" : Theme.background
+        border.width: popup.singleSystem ? 0 : 1
         border.color: Theme.borderaccent
         // One card fills one popup. The Loader owns explicit geometry so the
         // card never inherits the Quick Control accordion's collapsed height.
         Loader {
             id: widgetLoader
             anchors.fill: parent
-            anchors.margins: 8
+            anchors.margins: popup.singleSystem ? 0 : 8
             sourceComponent: popup.kind === "wifi" ? wifiComponent :
                                  popup.kind === "bluetooth" ? bluetoothComponent :
                                  popup.kind === "battery" ? batteryComponent :
                                  popup.kind === "audio" ? audioComponent :
                                  popup.kind === "weather" ? weatherComponent :
                                  popup.kind === "time" ? timeComponent :
-                                 popup.kind === "date" ? dateComponent : null
+                                 popup.kind === "date" ? dateComponent :
+                                 popup.kind === "menu" ? menuComponent : null
         }
     }
     // Non-collapsible: the mini popup contains only one feature, not an accordion.
@@ -72,4 +75,5 @@ PopupWindow {
     Component { id: weatherComponent; MiniWeather {} }
     Component { id: timeComponent; MiniTime {} }
     Component { id: dateComponent; MiniDate {} }
+    Component { id: menuComponent; ContextMenu { section: popup.menuSection; onActionFinished: popup.dismissed() } }
 }

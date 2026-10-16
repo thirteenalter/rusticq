@@ -32,7 +32,7 @@ class IndicatorPopupFix(unittest.TestCase):
 
     def test_popup_window_sizes_not_deprecated(self):
         p=self.read('modules/main/IndicatorPopup.qml')
-        self.assertIn('implicitWidth: 368', p)
+        self.assertIn('implicitWidth: kind === "menu" ? 294 : 368', p)
         self.assertIn('implicitHeight: kind === "wifi"', p)
         self.assertNotRegex(p, r'(?m)^\s*(width|height):\s*')
         for key in ['anchor.window: hostWindow','anchor.rect.x:', 'anchor.rect.y:',

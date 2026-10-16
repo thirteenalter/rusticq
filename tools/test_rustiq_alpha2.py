@@ -22,7 +22,7 @@ class Alpha2MiniWidgetTests(unittest.TestCase):
             self.assertIn('visible: ',src)
             self.assertIn('contentOpen',src)
         self.assertIn('anchors.fill: parent',popup)
-        self.assertIn('anchors.margins: 8',popup)
+        self.assertIn('anchors.margins: popup.singleSystem ? 0 : 8',popup)
 
     def test_full_quick_control_still_has_collapse_state(self):
         parent=read('modules/bar/BarMain.qml')

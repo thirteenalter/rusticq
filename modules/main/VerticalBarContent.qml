@@ -7,187 +7,244 @@ import "../../components"
 import "../../config"
 import "../../services"
 
-// A real vertical layout (not a rotated horizontal bar). The side rail
-// uses icon-only controls and opens the same mini widgets as the top bar.
+// All five bar modes work on either vertical edge. Every mode shares the
+// same sources and popup actions; only geometry, hierarchy and density vary.
 Item {
     id: root
     required property var hostWindow
     signal requestPopup(string kind, real localX, real localY)
+    signal requestMenu(string section, var sourceItem)
+    readonly property string mode: SettingsStore.barMode
+    readonly property bool simple: mode === "simple"
+    readonly property bool clean: mode === "clean-compact"
+    readonly property bool compact: clean || mode === "compact"
+    readonly property bool separated: mode === "separated"
+    readonly property bool professional: mode === "professional"
+    readonly property int controlSize: clean ? 30 : compact ? 34 : professional ? 44 : simple ? 34 : 40
+    readonly property int controlGap: clean ? 3 : compact ? 5 : professional ? 10 : simple ? 6 : 8
+    readonly property int workspaceCount: 6
+    readonly property var sink: Pipewire.defaultAudioSink
+    readonly property bool soundAvailable: sink !== null && sink.audio !== null
+    PwObjectTracker { objects: [root.sink] }
+    SystemClock { id: clock; precision: SystemClock.Minutes }
+
     function popup(kind, item) {
-        const point = hostWindow.mapFromItem(item, item.width / 2, item.height / 2);
-        requestPopup(kind, point.x, point.y);
+        const p = hostWindow.mapFromItem(item, item.width / 2, item.height / 2);
+        requestPopup(kind, p.x, p.y);
     }
 
-    SystemClock { id: clock; precision: SystemClock.Minutes }
-    readonly property var sink: Pipewire.defaultAudioSink
-    PwObjectTracker { objects: [root.sink] }
-    readonly property bool soundAvailable: sink !== null && sink.audio !== null
-
+    // Each side maintains a valid, scrollable vertical rail, even on short screens.
     ColumnLayout {
         anchors.fill: parent
-        anchors.leftMargin: 8
-        anchors.rightMargin: 8
-        anchors.topMargin: 14
-        anchors.bottomMargin: 14
-        spacing: 12
+        anchors.leftMargin: root.clean ? 4 : 6
+        anchors.rightMargin: root.clean ? 4 : 6
+        anchors.topMargin: root.clean ? 5 : 7
+        anchors.bottomMargin: root.clean ? 5 : 7
+        spacing: root.controlGap
 
         Rectangle {
-            id: launch
+            id: launcher
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 38
-            Layout.preferredHeight: 38
-            color: Theme.surface
-            radius: 12
+            Layout.preferredWidth: root.controlSize
+            Layout.preferredHeight: root.controlSize
+            color: root.clean ? "transparent" : root.separated ? Theme.surface : Qt.alpha(Theme.accent, root.professional ? 0.19 : 0.09)
+            radius: root.professional ? 7 : 11
             Icon { anchors.centerIn: parent; icon: "\ueb8e"; font.pixelSize: 19; color: Theme.accent }
             MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: { root.hostWindow.closeMini(); Store.toggleAi(root.hostWindow.screen); }
+                anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                onClicked: { root.hostWindow.closeMini(); Store.toggleAi(root.hostWindow.screen) }
             }
         }
 
+        ContextMenuBar {
+            id: railMenu
+            visible: SettingsStore.showMenuBar
+            vertical: true
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: visible ? root.controlSize : 0
+            Layout.preferredHeight: visible ? root.controlSize : 0
+            onMenuRequested: (section, item) => root.requestMenu(section, item)
+        }
+
+        // The separating line is only present in Professional mode, as in
+        // the solid desktop bar. Separated mode instead uses rounded islands.
+        Rectangle {
+            visible: root.professional
+            Layout.fillWidth: true
+            Layout.preferredHeight: visible ? 1 : 0
+            color: Qt.alpha(Theme.accent, 0.38)
+        }
+
         Flickable {
-            id: railScroll
+            id: scroll
             Layout.fillWidth: true
             Layout.fillHeight: true
-            clip: true
             contentWidth: width
             contentHeight: railContent.implicitHeight
             boundsBehavior: Flickable.StopAtBounds
-
+            clip: true
             ColumnLayout {
                 id: railContent
-                width: railScroll.width
-                spacing: 12
+                width: scroll.width
+                spacing: root.separated ? 14 : root.controlGap + 3
 
-        ColumnLayout {
-            visible: SettingsStore.showWorkspaces
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 5
-            Repeater {
-                model: 6
-                delegate: Rectangle {
-                    id: workspaceButton
-                    required property int index
-                    readonly property int workspaceId: index + 1
-                    readonly property bool selected: Hyprland.focusedWorkspace !== null && Hyprland.focusedWorkspace.id === workspaceId
+                Rectangle {
+                    id: workspaceIsland
+                    visible: SettingsStore.showWorkspaces && !root.simple
                     Layout.alignment: Qt.AlignHCenter
-                    Layout.preferredWidth: 34
-                    Layout.preferredHeight: 30
-                    radius: 9
-                    color: selected ? Theme.accent : Theme.surface
-                    Text {
+                    Layout.preferredWidth: root.separated ? root.controlSize + 5 : scroll.width
+                    Layout.preferredHeight: visible ? workspaceColumn.implicitHeight + (root.separated ? 12 : 0) : 0
+                    color: root.separated ? Theme.surface : "transparent"
+                    radius: 12
+                    ColumnLayout {
+                        id: workspaceColumn
                         anchors.centerIn: parent
-                        text: workspaceButton.workspaceId
-                        font.family: Fonts.poppins.name
-                        font.pixelSize: 11
-                        color: workspaceButton.selected ? Theme.background : Theme.foreground
+                        spacing: root.compact ? 2 : 5
+                        Repeater {
+                            model: root.workspaceCount
+                            delegate: Rectangle {
+                                id: workspaceButton
+                                required property int index
+                                readonly property int workspaceId: index + 1
+                                readonly property bool selected: Hyprland.focusedWorkspace !== null && Hyprland.focusedWorkspace.id === workspaceId
+                                Layout.alignment: Qt.AlignHCenter
+                                Layout.preferredWidth: root.controlSize - (root.clean ? 4 : 6)
+                                Layout.preferredHeight: root.compact ? 25 : 29
+                                radius: root.clean ? 6 : 8
+                                color: selected ? Theme.accent : root.clean ? "transparent" : root.separated ? Theme.background : Theme.surface
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: workspaceButton.workspaceId
+                                    font.family: Fonts.poppins.name
+                                    font.pixelSize: 11
+                                    color: workspaceButton.selected ? Theme.background : Theme.foreground
+                                }
+                                MouseArea {
+                                    anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        const target = String(workspaceButton.workspaceId);
+                                        Hyprland.dispatch(Hyprland.usingLua
+                                            ? 'hl.dsp.focus({ workspace = "' + target + '" })'
+                                            : 'workspace ' + target);
+                                    }
+                                }
+                            }
+                        }
                     }
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            const target = String(workspaceButton.workspaceId);
-                            Hyprland.dispatch(Hyprland.usingLua
-                                ? 'hl.dsp.focus({ workspace = "' + target + '" })'
-                                : 'workspace ' + target);
+                }
+
+                Rectangle {
+                    visible: root.professional || root.separated
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: visible ? 1 : 0
+                    color: root.professional ? Qt.alpha(Theme.accent, .35) : "transparent"
+                }
+                Rectangle {
+                    id: infoIsland
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: root.separated ? root.controlSize + 5 : scroll.width
+                    Layout.preferredHeight: infoColumn.implicitHeight + (root.separated ? 12 : 0)
+                    color: root.separated ? Theme.surface : "transparent"
+                    radius: 12
+                    ColumnLayout {
+                        id: infoColumn
+                        anchors.centerIn: parent
+                        spacing: root.controlGap
+                        Rectangle {
+                            id: weatherButton
+                            visible: !root.simple && SettingsStore.showWeather
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.preferredWidth: root.controlSize
+                            Layout.preferredHeight: visible ? root.controlSize : 0
+                            radius: root.professional ? 7 : 10
+                            color: root.clean ? "transparent" : root.separated ? Theme.background : Theme.surface
+                            Icon { anchors.centerIn: parent; icon: WeatherService.icon; font.pixelSize: 19; color: Theme.foreground }
+                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup("weather", weatherButton) }
+                        }
+                        Rectangle {
+                            id: timeButton
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.preferredWidth: root.controlSize
+                            Layout.preferredHeight: root.controlSize + (root.compact ? 6 : 9)
+                            radius: root.professional ? 7 : 10
+                            color: root.clean ? "transparent" : root.separated ? Theme.background : Theme.surface
+                            Column {
+                                anchors.centerIn: parent; spacing: 1
+                                Icon { anchors.horizontalCenter: parent.horizontalCenter; icon: "\ue8b5"; font.pixelSize: 17 }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: Qt.formatDateTime(clock.date, "HH:mm"); font.family: Fonts.poppins.name; font.pixelSize: 9; color: Theme.foreground }
+                            }
+                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup("time", timeButton) }
+                        }
+                        Rectangle {
+                            id: dateButton
+                            visible: !root.simple
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.preferredWidth: root.controlSize
+                            Layout.preferredHeight: visible ? root.controlSize + 4 : 0
+                            radius: root.professional ? 7 : 10
+                            color: root.clean ? "transparent" : root.separated ? Theme.background : Theme.surface
+                            Column {
+                                anchors.centerIn: parent; spacing: 0
+                                Icon { anchors.horizontalCenter: parent.horizontalCenter; icon: "\uebcc"; font.pixelSize: 16 }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: Qt.formatDateTime(clock.date, "dd/MM"); font.family: Fonts.poppins.name; font.pixelSize: 9; color: Theme.foreground }
+                            }
+                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup("date", dateButton) }
+                        }
+                    }
+                }
+                Rectangle {
+                    visible: root.professional || root.separated
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: visible ? 1 : 0
+                    color: root.professional ? Qt.alpha(Theme.accent, .35) : "transparent"
+                }
+                Rectangle {
+                    id: systemIsland
+                    visible: !root.simple && SettingsStore.showIndicators
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: root.separated ? root.controlSize + 5 : scroll.width
+                    Layout.preferredHeight: visible ? systemColumn.implicitHeight + (root.separated ? 12 : 0) : 0
+                    color: root.separated ? Theme.surface : "transparent"
+                    radius: 12
+                    ColumnLayout {
+                        id: systemColumn
+                        anchors.centerIn: parent; spacing: root.controlGap
+                        Repeater {
+                            model: [
+                                { kind: "bluetooth", glyph: BluetoothService.icon, available: true },
+                                { kind: "wifi", glyph: WifiService.icon, available: true },
+                                { kind: "battery", glyph: BatteryService.icon, available: BatteryService.available },
+                                { kind: "audio", glyph: !root.soundAvailable || root.sink.audio.muted ? "\ue04f" : "\ue050", available: true }
+                            ]
+                            delegate: Rectangle {
+                                id: statusButton
+                                required property var modelData
+                                visible: modelData.available
+                                Layout.alignment: Qt.AlignHCenter
+                                Layout.preferredWidth: root.controlSize
+                                Layout.preferredHeight: visible ? root.controlSize : 0
+                                radius: root.professional ? 7 : 10
+                                color: root.clean ? "transparent" : root.separated ? Theme.background : Theme.surface
+                                Icon { anchors.centerIn: parent; icon: statusButton.modelData.glyph; font.pixelSize: 19; color: Theme.foreground }
+                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup(statusButton.modelData.kind, statusButton) }
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Maintain a large middle gap on tall screens, but allow scrolling
-        // on short displays instead of clipping workspaces or indicators.
-        Item { Layout.preferredHeight: Math.max(12, railScroll.height - 590) }
-
-        ColumnLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 9
-            Rectangle {
-                id: weatherButton
-                visible: SettingsStore.showWeather
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 42
-                Layout.preferredHeight: 38
-                radius: 10
-                color: Theme.surface
-                Icon { anchors.centerIn: parent; icon: WeatherService.icon; font.pixelSize: 20; color: Theme.foreground }
-                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup("weather", weatherButton) }
-            }
-            Rectangle {
-                id: timeButton
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 46
-                Layout.preferredHeight: 43
-                radius: 10
-                color: Theme.surface
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 1
-                    Icon { anchors.horizontalCenter: parent.horizontalCenter; icon: "\ue8b5"; font.pixelSize: 17 }
-                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: Qt.formatDateTime(clock.date, "HH:mm"); font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.foreground }
-                }
-                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup("time", timeButton) }
-            }
-            Rectangle {
-                id: dateButton
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 46
-                Layout.preferredHeight: 39
-                radius: 10
-                color: Theme.surface
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 0
-                    Icon { anchors.horizontalCenter: parent.horizontalCenter; icon: "\uebcc"; font.pixelSize: 17 }
-                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: Qt.formatDateTime(clock.date, "dd/MM"); font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.foreground }
-                }
-                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup("date", dateButton) }
-            }
-        }
-
-        ColumnLayout {
-            visible: SettingsStore.showIndicators
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 7
-            Repeater {
-                model: [
-                    { kind: "bluetooth", glyph: BluetoothService.icon, available: true },
-                    { kind: "wifi", glyph: WifiService.icon, available: true },
-                    { kind: "battery", glyph: BatteryService.icon, available: BatteryService.available },
-                    { kind: "audio", glyph: !root.soundAvailable || root.sink.audio.muted ? "\ue04f" : "\ue050", available: true }
-                ]
-                delegate: Rectangle {
-                    id: statusButton
-                    required property var modelData
-                    visible: modelData.available
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.preferredWidth: 38
-                    Layout.preferredHeight: visible ? 36 : 0
-                    radius: 10
-                    color: Theme.surface
-                    Icon { anchors.centerIn: parent; icon: statusButton.modelData.glyph; font.pixelSize: 19; color: Theme.foreground }
-                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup(statusButton.modelData.kind, statusButton) }
-                }
-            }
-        }
-
-            }
-        }
-
         Rectangle {
-            id: settingsButton
+            id: quickButton
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 42
-            Layout.preferredHeight: 40
-            radius: 12
-            color: Theme.surface
+            Layout.preferredWidth: root.controlSize
+            Layout.preferredHeight: root.controlSize
+            radius: root.professional ? 7 : 11
+            color: root.clean ? "transparent" : Theme.surface
             Icon { anchors.centerIn: parent; icon: "\ue69b"; font.pixelSize: 20; color: Theme.accent }
             MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: { root.hostWindow.closeMini(); Store.toggleQuick(root.hostWindow.screen); }
+                anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                onClicked: { root.hostWindow.closeMini(); Store.toggleQuick(root.hostWindow.screen) }
             }
         }
     }

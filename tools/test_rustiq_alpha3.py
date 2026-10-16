@@ -17,7 +17,7 @@ for side in ['top', 'bottom', 'left', 'right']:
     assert f'key: "{side}"' in settings
 assert 'SettingsStore.save()' in settings
 assert 'VerticalBarContent {' in bar and 'visible: barWindow.verticalMode' in bar
-assert 'implicitWidth: verticalMode ? Theme.verticalBarWidth : 0' in bar
+assert 'implicitWidth: verticalMode ?' in bar and 'Theme.verticalBarWidth' in bar
 assert 'implicitHeight: verticalMode ? 0 : barHeight' in bar
 assert 'anchors {' in bar and 'top: barWindow.barPosition !== "bottom"' in bar
 assert 'anchor.edges:' in popup and 'anchor.gravity:' in popup

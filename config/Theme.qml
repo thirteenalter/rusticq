@@ -71,8 +71,8 @@ Singleton {
     readonly property int barIconTextGap: 6
     readonly property int barInfoGap: 12
     // Alpha 3: shared spacing rhythm, including edge-positioned bars.
-    readonly property int barEdgeGap: 9
-    readonly property int barGroupGap: 12
+    readonly property int barEdgeGap: 4
+    readonly property int barGroupGap: 9
     readonly property int barControlGap: 8
-    readonly property int verticalBarWidth: 64
+    readonly property int verticalBarWidth: 60
 }

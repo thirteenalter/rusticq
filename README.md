@@ -1,3 +1,5 @@
+**Current release: RusticQ Alpha 3 RC1** — see [`RUSTIQ-ALPHA-3-RC-1.md`](RUSTIQ-ALPHA-3-RC-1.md) for release notes and installation.
+
 > **Current release: rustiq-alpha-2**, built on RusticQ Alpha 1. Start with [RUSTIQ-ALPHA-2.md](RUSTIQ-ALPHA-2.md). Older release notes are preserved for reference.
 
 > **Hotfix 3 (Quickshell 0.3.1):** fixes `WifiManager is not a type` by registering the regular `WifiManager` component in `services/qmldir`. See `HOTFIX3-WIFIMANAGER.md`.

@@ -430,9 +430,7 @@ FloatingWindow {
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: SettingsStore.barPosition === "left" || SettingsStore.barPosition === "right"
-                                    ? "Layout modes apply to Top/Bottom. Side bars use a space-efficient vertical layout, with your settings preserved."
-                                    : "Select a layout. The bar updates live on every monitor; your module toggles remain saved."
+                                text: "Each mode applies to all four screen edges. Side bars reorganize controls vertically; preferences stay saved."
                                 wrapMode: Text.WordWrap
                                 font.family: Fonts.poppins.name
                                 font.pixelSize: 11
@@ -550,6 +548,7 @@ FloatingWindow {
                             }
                             Repeater {
                                 model: [
+                                    {label: "Tahoe-inspired menu bar", desc: "RusticQ Edit, View and Share actions (off by default)", key: "showMenuBar", icon: "\ue5d2"},
                                     {label: "Workspace switcher", desc: "Hyprland workspaces", key: "showWorkspaces", icon: "\ue30b"},
                                     {label: "Weather", desc: "Weather indicator", key: "showWeather", icon: "\ue430"},
                                     {label: "System indicators", desc: "Wi-Fi, battery, Bluetooth", key: "showIndicators", icon: "\ue8b8"},

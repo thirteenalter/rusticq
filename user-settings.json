@@ -1,8 +1,9 @@
 {
   "accentName": "orange",
-  "colorSource": "aether",
+  "colorSource": "gruvbox",
   "barMode": "clean-compact",
   "barPosition": "top",
+  "showMenuBar": true,
   "showWeather": true,
   "showWorkspaces": true,
   "showIndicators": true,

@@ -11,6 +11,7 @@ Singleton {
     property string colorSource: "gruvbox"
     property string barMode: "separated"
     property string barPosition: "top"
+    property bool showMenuBar: false // Optional RusticQ contextual menu; off by default
     property bool showWeather: true
     property bool showWorkspaces: true
     property bool showIndicators: true
@@ -40,6 +41,7 @@ Singleton {
                 accentName = data.accentName;
             if (["compact", "clean-compact", "separated", "professional", "simple"].indexOf(data.barMode) !== -1) barMode = data.barMode;
             if (["top", "bottom", "left", "right"].indexOf(data.barPosition) !== -1) barPosition = data.barPosition;
+            if (typeof data.showMenuBar === "boolean") showMenuBar = data.showMenuBar;
             if (typeof data.showWeather === "boolean") showWeather = data.showWeather;
             if (typeof data.showWorkspaces === "boolean") showWorkspaces = data.showWorkspaces;
             if (typeof data.showIndicators === "boolean") showIndicators = data.showIndicators;
@@ -57,6 +59,7 @@ Singleton {
             colorSource: colorSource,
             barMode: barMode,
             barPosition: barPosition,
+            showMenuBar: showMenuBar,
             showWeather: showWeather,
             showWorkspaces: showWorkspaces,
             showIndicators: showIndicators,

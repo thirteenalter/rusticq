@@ -13,6 +13,15 @@ PanelWindow {
     property string miniKind: ""
     property real miniAnchorX: 0
     property real miniAnchorY: 0
+    property string menuSection: "view"
+    function openMenu(section, item) {
+        const same = miniKind === "menu" && menuSection === section && indicatorPopup.visible;
+        if (same) { closeMini(); return; }
+        const point = barWindow.mapFromItem(item, item.width / 2, item.height / 2);
+        menuSection = section;
+        miniAnchorX = point.x; miniAnchorY = point.y;
+        miniKind = "menu";
+    }
     function closeMini() { miniKind = ""; }
     function openMini(kind, xPosition, yPosition) {
         Store.sidebarVisible = false;
@@ -27,17 +36,19 @@ PanelWindow {
     readonly property string barPosition: SettingsStore.barPosition
     readonly property bool verticalMode: barPosition === "left" || barPosition === "right"
     onBarPositionChanged: closeMini()
+    readonly property string activeLayout: SettingsStore.barMode
+    onActiveLayoutChanged: closeMini()
     readonly property bool cleanCompactMode: SettingsStore.barMode === "clean-compact"
     readonly property bool compactMode: SettingsStore.barMode === "compact" || cleanCompactMode
     readonly property int compactControlHeight: 24
     readonly property bool separatedMode: SettingsStore.barMode === "separated"
     readonly property bool professionalMode: SettingsStore.barMode === "professional"
     readonly property bool simpleMode: SettingsStore.barMode === "simple"
-    readonly property int barHeight: professionalMode ? 46 : separatedMode ? 44 : compactMode ? 42 : 44
-    readonly property int groupPadding: separatedMode ? 13 : compactMode ? 10 : professionalMode ? 14 : 12
-    readonly property int groupSpacing: cleanCompactMode ? 11 : compactMode ? 8 : 11
+    readonly property int barHeight: professionalMode ? 44 : separatedMode ? 40 : compactMode ? 36 : 38
+    readonly property int groupPadding: separatedMode ? 12 : compactMode ? 3 : professionalMode ? 14 : 9
+    readonly property int groupSpacing: cleanCompactMode ? Theme.barInfoGap : compactMode ? 5 : 9
 
-    implicitWidth: verticalMode ? Theme.verticalBarWidth : 0
+    implicitWidth: verticalMode ? (simpleMode ? 48 : cleanCompactMode ? 44 : compactMode ? 52 : professionalMode ? 74 : Theme.verticalBarWidth) : 0
     implicitHeight: verticalMode ? 0 : barHeight
     IdleInhibitor {
         window: barWindow
@@ -50,18 +61,18 @@ PanelWindow {
         right: barWindow.barPosition !== "left"
     }
     margins {
-        top: verticalMode ? Theme.barEdgeGap : professionalMode ? 0 : Theme.barEdgeGap
-        bottom: verticalMode ? Theme.barEdgeGap : barPosition === "bottom" && !professionalMode ? Theme.barEdgeGap : 0
-        left: verticalMode ? (barPosition === "left" ? Theme.barEdgeGap : 0) : professionalMode ? 0 : 14
-        right: verticalMode ? (barPosition === "right" ? Theme.barEdgeGap : 0) : professionalMode ? 0 : 14
+        top: verticalMode ? Theme.barEdgeGap : professionalMode ? 0 : compactMode ? 4 : 6
+        bottom: verticalMode ? Theme.barEdgeGap : barPosition === "bottom" && !professionalMode ? (compactMode ? 4 : 6) : 0
+        left: verticalMode ? (barPosition === "left" ? Theme.barEdgeGap : 0) : professionalMode ? 0 : 6
+        right: verticalMode ? (barPosition === "right" ? Theme.barEdgeGap : 0) : professionalMode ? 0 : 6
     }
 
     Rectangle {
         anchors.fill: parent
-        color: barWindow.verticalMode ? Theme.background : barWindow.professionalMode ? Theme.background : "transparent"
-        border.width: barWindow.verticalMode || barWindow.professionalMode ? 1 : 0
+        color: barWindow.verticalMode ? (barWindow.separatedMode || barWindow.cleanCompactMode ? "transparent" : Theme.background) : barWindow.professionalMode ? Theme.background : "transparent"
+        border.width: (barWindow.verticalMode && !barWindow.separatedMode && !barWindow.cleanCompactMode) || (!barWindow.verticalMode && barWindow.professionalMode) ? 1 : 0
         border.color: Theme.borderaccent
-        radius: barWindow.verticalMode ? 14 : 0
+        radius: barWindow.verticalMode && !barWindow.professionalMode ? 12 : 0
     }
     Rectangle {
         visible: barWindow.professionalMode && !barWindow.verticalMode
@@ -75,9 +86,9 @@ PanelWindow {
     RowLayout {
         visible: !barWindow.verticalMode
         anchors.fill: parent
-        anchors.leftMargin: barWindow.professionalMode ? 20 : 4
-        anchors.rightMargin: barWindow.professionalMode ? 20 : 4
-        spacing: Theme.barGroupGap
+        anchors.leftMargin: barWindow.professionalMode ? 17 : 0
+        anchors.rightMargin: barWindow.professionalMode ? 17 : 0
+        spacing: barWindow.compactMode ? 5 : 10
 
         Rectangle {
             Layout.alignment: Qt.AlignVCenter
@@ -104,6 +115,14 @@ PanelWindow {
                         }
                     }
                 }
+                ContextMenuBar {
+                    id: contextMenuBar
+                    visible: SettingsStore.showMenuBar && barWindow.width > 980
+                    vertical: false
+                    onMenuRequested: (section, item) => barWindow.openMenu(section, item)
+                    Layout.preferredWidth: visible ? implicitWidth : 0
+                    Layout.preferredHeight: visible ? implicitHeight : 0
+                }
                 Workspaces {
                     backgroundEnabled: !barWindow.cleanCompactMode
                     buttonSize: barWindow.compactMode ? barWindow.compactControlHeight : 23
@@ -115,6 +134,15 @@ PanelWindow {
             }
         }
 
+        Item { Layout.fillWidth: true }
+        Text {
+            visible: barWindow.professionalMode && barWindow.width > leftItems.implicitWidth + rightItems.implicitWidth + 340
+            text: Theme.useAether ? "RUSTICQ  /  AETHER" : "RUSTICQ  /  GRUVBOX"
+            font.family: Fonts.poppinsSB.name
+            font.pixelSize: 10
+            color: Theme.muted
+            Layout.alignment: Qt.AlignVCenter
+        }
         Item { Layout.fillWidth: true }
 
         Rectangle {
@@ -220,22 +248,12 @@ PanelWindow {
             }
         }
     }
-    // Center the professional title relative to the *screen*, not the gap
-    // between asymmetric left/right groups. Hide it when space is insufficient.
-    Text {
-        anchors.centerIn: parent
-        visible: barWindow.professionalMode && !barWindow.verticalMode
-              && barWindow.width > 2 * Math.max(leftItems.implicitWidth, rightItems.implicitWidth) + 260
-        text: Theme.useAether ? "RUSTICQ  /  AETHER" : "RUSTICQ  /  GRUVBOX"
-        font.family: Fonts.poppinsSB.name
-        font.pixelSize: 10
-        color: Theme.muted
-    }
     VerticalBarContent {
         anchors.fill: parent
         hostWindow: barWindow
         visible: barWindow.verticalMode
         onRequestPopup: (kind, x, y) => barWindow.openMini(kind, x, y)
+        onRequestMenu: (section, item) => barWindow.openMenu(section, item)
     }
     IndicatorPopup {
         id: indicatorPopup
@@ -244,6 +262,7 @@ PanelWindow {
         targetX: barWindow.miniAnchorX
         targetY: barWindow.miniAnchorY
         barPosition: barWindow.barPosition
+        menuSection: barWindow.menuSection
         onDismissed: barWindow.miniKind = ""
     }
     // The minimal mode uses a truly centered clock, instead of shifting it
