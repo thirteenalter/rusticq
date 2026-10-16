@@ -12,6 +12,48 @@ Singleton {
     property string barMode: "separated"
     property string barPosition: "top"
     property bool showMenuBar: false // Optional RusticQ contextual menu; off by default
+    // Edit, View and Share remain the default menu sections when enabled.
+    property bool showMenuEdit: true
+    property bool showMenuView: true
+    property bool showMenuShare: true
+    property bool showMenuFile: false
+    property bool showMenuShell: false
+    property bool showMenuTools: false
+    // Clean Compact: optional detail labels only for the right-hand group.
+    // Battery and volume values are always retained.
+    property bool cleanRightDetails: true // RC2 migration compatibility
+    // clean-compact labels: icons, details, or reveal all on group hover
+    property string cleanRightMode: "details"
+    // Per-mode edge margins. Empty means keep the original mode defaults.
+    property var marginOverrides: ({})
+    function marginFor(edge, fallback) {
+        const mode = marginOverrides[barMode] || {};
+        return typeof mode[edge] === "number" ? mode[edge] : fallback;
+    }
+    function setBarMargin(edge, value, persist) {
+        if (["top", "bottom", "left", "right"].indexOf(edge) === -1) return;
+        const all = Object.assign({}, marginOverrides);
+        const current = Object.assign({}, all[barMode] || {});
+        current[edge] = Math.max(0, Math.min(32, Math.round(value)));
+        all[barMode] = current;
+        marginOverrides = all; // replace object to notify QML bindings
+        if (persist !== false) save();
+    }
+    function resetBarMargins() {
+        const all = Object.assign({}, marginOverrides);
+        delete all[barMode];
+        marginOverrides = all;
+        save();
+    }
+    // Individual bar modules/icons (all enabled initially, safely migrates RC1).
+    property bool showArch: true
+    property bool showTime: true
+    property bool showDate: true
+    property bool showWifi: true
+    property bool showBluetooth: true
+    property bool showBattery: true
+    property bool showAudio: true
+    property bool showQuickControl: true
     property bool showWeather: true
     property bool showWorkspaces: true
     property bool showIndicators: true
@@ -41,7 +83,25 @@ Singleton {
                 accentName = data.accentName;
             if (["compact", "clean-compact", "separated", "professional", "simple"].indexOf(data.barMode) !== -1) barMode = data.barMode;
             if (["top", "bottom", "left", "right"].indexOf(data.barPosition) !== -1) barPosition = data.barPosition;
+            if (["icons", "details", "hover"].indexOf(data.cleanRightMode) !== -1)
+                cleanRightMode = data.cleanRightMode;
+            else if (typeof data.cleanRightDetails === "boolean")
+                cleanRightMode = data.cleanRightDetails ? "details" : "icons";
+            if (data.marginOverrides && typeof data.marginOverrides === "object" && !Array.isArray(data.marginOverrides)) {
+                const validated = {};
+                for (const mode of ["compact", "clean-compact", "separated", "professional", "simple"]) {
+                    const m = data.marginOverrides[mode];
+                    if (!m || typeof m !== "object" || Array.isArray(m)) continue;
+                    const values = {};
+                    for (const edge of ["top", "bottom", "left", "right"])
+                        if (Number.isInteger(m[edge]) && m[edge] >= 0 && m[edge] <= 32) values[edge] = m[edge];
+                    validated[mode] = values;
+                }
+                marginOverrides = validated;
+            }
             if (typeof data.showMenuBar === "boolean") showMenuBar = data.showMenuBar;
+            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
+                if (typeof data[key] === "boolean") root[key] = data[key];
             if (typeof data.showWeather === "boolean") showWeather = data.showWeather;
             if (typeof data.showWorkspaces === "boolean") showWorkspaces = data.showWorkspaces;
             if (typeof data.showIndicators === "boolean") showIndicators = data.showIndicators;
@@ -60,6 +120,23 @@ Singleton {
             barMode: barMode,
             barPosition: barPosition,
             showMenuBar: showMenuBar,
+            showMenuEdit: showMenuEdit,
+            showMenuView: showMenuView,
+            showMenuShare: showMenuShare,
+            showMenuFile: showMenuFile,
+            showMenuShell: showMenuShell,
+            showMenuTools: showMenuTools,
+            cleanRightDetails: cleanRightMode === "details", // older clients
+            cleanRightMode: cleanRightMode,
+            marginOverrides: marginOverrides,
+            showArch: showArch,
+            showTime: showTime,
+            showDate: showDate,
+            showWifi: showWifi,
+            showBluetooth: showBluetooth,
+            showBattery: showBattery,
+            showAudio: showAudio,
+            showQuickControl: showQuickControl,
             showWeather: showWeather,
             showWorkspaces: showWorkspaces,
             showIndicators: showIndicators,

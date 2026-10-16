@@ -8,6 +8,7 @@ Item {
     signal activated()
     property int iconSlotWidth: 14
     property bool cleanStyle: false
+    property bool forceDetails: false
     readonly property color statusColor: root.cleanStyle && WifiService.connected && WifiService.strength <= 25
         ? Theme.warning : Theme.foreground
     implicitWidth: row.implicitWidth
@@ -30,7 +31,7 @@ Item {
         }
         Text {
             Layout.alignment: Qt.AlignVCenter
-            visible: hover.hovered
+            visible: root.forceDetails || (!root.cleanStyle && hover.hovered)
             text: !WifiService.enabled ? "Wi-Fi off" : WifiService.connected
                   ? WifiService.ssid : "Disconnected"
             font.family: Fonts.poppins.name

@@ -5,6 +5,7 @@ import "../services"
 Pill {
     id: root
     property bool showIcon: true
+    property bool showDetails: true
     signal activated(real localX)
     color: "transparent"
     horizontalPadding: 4
@@ -13,6 +14,7 @@ Pill {
     InfoSegment {
         id: weatherPart
         symbol: WeatherService.icon
+        showCaption: root.showDetails
         caption: WeatherService.temperature !== "" ? WeatherService.temperature : "--°"
         symbolColor: Theme.foreground
         onActivated: {

@@ -19,7 +19,7 @@ PopupWindow {
     signal dismissed()
     // QsWindow.width/height are actual dimensions; Quickshell 0.3.1 requires
     // implicitWidth/implicitHeight for requested window sizes.
-    implicitWidth: kind === "menu" ? 294 : 368
+    implicitWidth: kind === "menu" ? 358 : 368
     implicitHeight: kind === "wifi" ? 465 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
                     kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? 345 : 190
     anchor.window: hostWindow
@@ -43,12 +43,13 @@ PopupWindow {
     visible: false
     onKindChanged: visible = kind !== ""
     onVisibleChanged: if (!visible && kind !== "") dismissed()
+    // Window remains transparent at rounded corners; the internal frame is opaque.
     color: "transparent"
 
     Rectangle {
         anchors.fill: parent
         radius: Theme.sectionRadius
-        color: popup.singleSystem ? "transparent" : Theme.background
+        color: Theme.background
         border.width: popup.singleSystem ? 0 : 1
         border.color: Theme.borderaccent
         // One card fills one popup. The Loader owns explicit geometry so the

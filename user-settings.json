@@ -4,6 +4,39 @@
   "barMode": "clean-compact",
   "barPosition": "top",
   "showMenuBar": true,
+  "showMenuEdit": true,
+  "showMenuView": true,
+  "showMenuShare": true,
+  "showMenuFile": false,
+  "showMenuShell": false,
+  "showMenuTools": false,
+  "cleanRightDetails": false,
+  "cleanRightMode": "icons",
+  "marginOverrides": {
+    "clean-compact": {
+      "top": 7,
+      "left": 12,
+      "right": 14,
+      "bottom": 0
+    },
+    "separated": {
+      "left": 17,
+      "right": 11,
+      "top": 7
+    },
+    "simple": {
+      "left": 8,
+      "right": 8
+    }
+  },
+  "showArch": true,
+  "showTime": true,
+  "showDate": true,
+  "showWifi": true,
+  "showBluetooth": true,
+  "showBattery": true,
+  "showAudio": true,
+  "showQuickControl": true,
   "showWeather": true,
   "showWorkspaces": true,
   "showIndicators": true,

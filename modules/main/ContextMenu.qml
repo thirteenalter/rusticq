@@ -13,12 +13,25 @@ Item {
     onSectionChanged: currentSection = section
     signal actionFinished()
     anchors.fill: parent
-    property var sections: [
-        {key: "edit", title: "Edit"},
-        {key: "view", title: "View"},
-        {key: "share", title: "Share"}
-    ]
-    readonly property var entries: currentSection === "edit" ? [
+    readonly property var sections: [
+        {key: "file", title: "File", enabled: SettingsStore.showMenuFile},
+        {key: "edit", title: "Edit", enabled: SettingsStore.showMenuEdit},
+        {key: "view", title: "View", enabled: SettingsStore.showMenuView},
+        {key: "share", title: "Share", enabled: SettingsStore.showMenuShare},
+        {key: "shell", title: "Shell", enabled: SettingsStore.showMenuShell},
+        {key: "tools", title: "Tools", enabled: SettingsStore.showMenuTools}
+    ].filter(item => item.enabled)
+    readonly property var entries: currentSection === "file" ? [
+        {title: "Home folder", desc: "Open your home directory", icon: "\ue2c7", action: "file-home"},
+        {title: "Downloads", desc: "Browse downloads", icon: "\ue2c4", action: "file-downloads"},
+        {title: "RusticQ config", desc: "Open current shell directory", icon: "\ue8b8", action: "file-config"}
+    ] : currentSection === "shell" ? [
+        {title: "Open terminal", desc: "Use an installed terminal emulator", icon: "\ueb8e", action: "shell-terminal"},
+        {title: "System monitor", desc: "Launch btop or htop in a terminal", icon: "\uef43", action: "shell-monitor"}
+    ] : currentSection === "tools" ? [
+        {title: "Settings", desc: "Personalize RusticQ", icon: "\ue8b8", action: "tools-settings"},
+        {title: "Screenshot region", desc: "Capture a selected area", icon: "\ue3c2", action: "tools-region"}
+    ] : currentSection === "edit" ? [
         { title: "Appearance settings", desc: "Themes and Aether source", icon: "\ue40a", action: "appearance" },
         { title: "Bar settings", desc: "Position, modules and menus", icon: "\ue8b8", action: "bar" },
         { title: "AI settings", desc: "Choose cloud provider", icon: "\uea4a", action: "ai" }
@@ -39,6 +52,10 @@ Item {
             SettingsStore.save();
         } else if (currentSection === "edit") {
             Store.showSettings(action);
+        } else if (currentSection === "file" || currentSection === "shell" || currentSection === "tools") {
+            if (action === "tools-settings") Store.showSettings("bar");
+            else if (action === "tools-region") Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-capture.sh"), "region"]);
+            else Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-menu-action.sh"), action]);
         } else {
             // Only trusted constant action names are passed to the helper.
             // The helper checks grim/slurp and never uploads screenshots.

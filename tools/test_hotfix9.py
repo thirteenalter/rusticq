@@ -30,7 +30,7 @@ class Hotfix9(unittest.TestCase):
         self.assertIn('onIconClicked:',get('modules/main/Bar.qml'))
     def test_weekday_dates_all_modes(self):
         self.assertIn('"ddd, dd MMM" : "dddd, dd MMM"',get('components/Clock.qml'))
-        self.assertGreaterEqual(get('modules/main/Bar.qml').count('showDate: true'),2)
+        self.assertIn('showDate: SettingsStore.showDate',get('modules/main/Bar.qml'))
     def test_settings_source_selector(self):
         s=get('modules/settings/SettingsWindow.qml')
         self.assertIn('Follow Aether',s)

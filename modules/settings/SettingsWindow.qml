@@ -12,8 +12,8 @@ FloatingWindow {
     id: settingsWindow
     visible: Store.settingsVisible
     title: Theme.useAether ? "RusticQ · Aether Settings" : "RusticQ · Gruvbox Settings"
-    implicitWidth: 760
-    implicitHeight: 585
+    implicitWidth: 1090
+    implicitHeight: 760
     color: Theme.background
 
     function saveModel() {
@@ -66,36 +66,46 @@ FloatingWindow {
 
         RowLayout {
             anchors.fill: parent
-            anchors.margins: 16
-            spacing: 16
+            anchors.margins: 19
+            spacing: 20
 
             Rectangle {
-                Layout.preferredWidth: 180
+                Layout.preferredWidth: 250
                 Layout.fillHeight: true
                 color: Qt.alpha(Theme.foreground, 0.04)
                 border.color: Theme.borderaccent
                 radius: 12
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 13
-                    spacing: 9
-                    RowLayout {
+                    anchors.margins: 15
+                    spacing: 12
+                    Rectangle {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 51
-                        spacing: 9
-                        Rectangle {
-                            Layout.preferredWidth: 33
-                            Layout.preferredHeight: 33
-                            radius: 10
-                            color: Qt.alpha(Theme.accent, 0.15)
-                            Icon { anchors.centerIn: parent; icon: "\ue8b8"; font.pixelSize: 20; color: Theme.accent }
-                        }
+                        Layout.preferredHeight: 137
+                        radius: 15
+                        color: Qt.alpha(Theme.accent, 0.085)
+                        border.color: Theme.borderaccent
+                        clip: true
                         ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 0
-                            Text { text: "SETTINGS"; font.family: Fonts.poppinsSB.name; font.pixelSize: 13; color: Theme.foreground }
-                            Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ ALPHA"; font.family: Fonts.poppins.name; font.pixelSize: 9; color: Theme.muted }
+                            anchors.fill: parent
+                            anchors.margins: 16
+                            spacing: 4
+                            Rectangle {
+                                Layout.preferredWidth: 47
+                                Layout.preferredHeight: 47
+                                radius: 13
+                                color: Qt.alpha(Theme.accent, .19)
+                                Icon { anchors.centerIn: parent; icon: "\ue8b8"; font.pixelSize: 27; color: Theme.accent }
+                            }
+                            Item { Layout.fillHeight: true }
+                            Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ SETTINGS"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground }
+                            Text { text: "RUSTIQ DESKTOP · ALPHA 3 RC3"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
                         }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true; Layout.preferredHeight: 28
+                        Text { text: "S E T T I N G S"; font.family: Fonts.poppinsSB.name; font.pixelSize: 10; color: Theme.muted }
+                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     }
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     Repeater {
@@ -110,9 +120,9 @@ FloatingWindow {
                             id: tab
                             required property var modelData
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 44
-                            radius: 9
-                            color: Store.settingsTab === tab.modelData.key ? Qt.alpha(Theme.accent, 0.19) : "transparent"
+                            Layout.preferredHeight: 52
+                            radius: 13
+                            color: Store.settingsTab === tab.modelData.key ? Qt.alpha(Theme.accent, 0.16) : Theme.surface
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.leftMargin: 12
@@ -124,7 +134,7 @@ FloatingWindow {
                                     Layout.fillWidth: true
                                     color: Theme.foreground
                                     font.family: Fonts.poppins.name
-                                    font.pixelSize: 12
+                                    font.pixelSize: 13
                                     elide: Text.ElideRight
                                 }
                                 Rectangle {
@@ -145,7 +155,7 @@ FloatingWindow {
                     Item { Layout.fillHeight: true }
                     Text {
                         Layout.fillWidth: true
-                        text: "RUSTIQ ALPHA 3\nQuickshell 0.3.1"
+                        text: "RUSTIQ · ALPHA 3 RC3\nQuickshell 0.3.1"
                         wrapMode: Text.WordWrap
                         font.family: Fonts.poppins.name
                         font.pixelSize: 10
@@ -160,9 +170,9 @@ FloatingWindow {
                 spacing: 13
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 46
-                    Layout.minimumHeight: 46
-                    Layout.maximumHeight: 46
+                    Layout.preferredHeight: 66
+                    Layout.minimumHeight: 66
+                    Layout.maximumHeight: 66
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 1
@@ -171,10 +181,10 @@ FloatingWindow {
                                   Store.settingsTab === "display" ? "Display configuration" : Store.settingsTab === "ai" ? "AI Providers" : "About this shell"
                             color: Theme.foreground
                             font.family: Fonts.poppinsSB.name
-                            font.pixelSize: 19
+                            font.pixelSize: 23
                         }
                         Text {
-                            text: "PERSONALIZE RUSTICQ"
+                            text: "RUSTIQ / ALPHA 3 RC3"
                             font.family: Fonts.poppins.name
                             font.pixelSize: 10
                             color: Theme.muted
@@ -197,11 +207,11 @@ FloatingWindow {
                     Layout.fillHeight: true
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
-                    contentHeight: settingContent.implicitHeight + 18
+                    contentHeight: settingContent.implicitHeight + 30
                     ColumnLayout {
                         id: settingContent
                         width: settingsScroll.width
-                        spacing: 12
+                        spacing: 16
 
                         // Appearance: preview before customization, not an empty form.
                         ColumnLayout {
@@ -532,15 +542,121 @@ FloatingWindow {
                                 }
                             }
                             Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                            // Clean Compact label policy: icon-only, always detailed, or reveal on hover.
+                            Rectangle {
+                                visible: SettingsStore.barMode === "clean-compact"
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: visible ? 160 : 0
+                                radius: 13
+                                color: Theme.surface
+                                border.width: 1
+                                border.color: Theme.borderaccent
+                                ColumnLayout {
+                                    anchors.fill: parent; anchors.margins: 14; spacing: 10
+                                    Text { text: "Clean Compact · Right-side labels"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
+                                    Text { Layout.fillWidth: true; text: "Choose how labels appear. Battery and volume percentages stay visible."; wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                                    RowLayout {
+                                        Layout.fillWidth: true; spacing: 8
+                                        Repeater {
+                                            model: [
+                                                {label: "Icons only", key: "icons", icon: "\ue5ca"},
+                                                {label: "With details", key: "details", icon: "\ue8b8"},
+                                                {label: "On hover", key: "hover", icon: "\ue8f4"}
+                                            ]
+                                            delegate: Rectangle {
+                                                id: detailOption
+                                                required property var modelData
+                                                readonly property bool chosen: SettingsStore.cleanRightMode === modelData.key
+                                                Layout.fillWidth: true; Layout.preferredHeight: 61; radius: 10
+                                                color: chosen ? Qt.alpha(Theme.accent, .16) : Theme.background
+                                                border.width: chosen ? 1 : 0; border.color: Theme.accent
+                                                RowLayout {
+                                                    anchors.centerIn: parent; spacing: 6
+                                                    Icon { icon: detailOption.chosen ? "\ue5ca" : detailOption.modelData.icon; font.pixelSize: 17; color: Theme.accent }
+                                                    Text { text: detailOption.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                                                }
+                                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.cleanRightMode = detailOption.modelData.key; SettingsStore.save(); } }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                ColumnLayout {
+                                    Layout.fillWidth: true; spacing: 2
+                                    Text { text: "Realtime margin editor"; font.family: Fonts.poppinsSB.name; font.pixelSize: 14; color: Theme.foreground }
+                                    Text { text: "Independent margins for each bar mode · 0–32 px · updates immediately"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
+                                }
+                                Rectangle {
+                                    Layout.preferredWidth: 100; Layout.preferredHeight: 30; radius: 8; color: Theme.surface
+                                    Text { anchors.centerIn: parent; text: "Reset mode"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.foreground }
+                                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetBarMargins() }
+                                }
+                            }
+                            GridLayout {
+                                Layout.fillWidth: true
+                                columns: 2; columnSpacing: 9; rowSpacing: 9
+                                Repeater {
+                                    model: [
+                                        {edge: "top", name: "Top"}, {edge: "bottom", name: "Bottom"},
+                                        {edge: "left", name: "Left"}, {edge: "right", name: "Right"}
+                                    ]
+                                    delegate: Rectangle {
+                                        id: marginCard
+                                        required property var modelData
+                                        readonly property int fallback: SettingsStore.barMode === "professional" ? 0 :
+                                            (SettingsStore.barPosition === "left" || SettingsStore.barPosition === "right") ? 4 :
+                                            (modelData.edge === "left" || modelData.edge === "right") ? 6 :
+                                            (SettingsStore.barMode === "compact" || SettingsStore.barMode === "clean-compact") ? 4 : 6
+                                        readonly property int value: SettingsStore.marginFor(modelData.edge, fallback)
+                                        Layout.fillWidth: true; Layout.preferredHeight: 93; radius: 11
+                                        color: Theme.surface
+                                        ColumnLayout {
+                                            anchors.fill: parent; anchors.margins: 12; spacing: 6
+                                            RowLayout {
+                                                Layout.fillWidth: true
+                                                Text { text: marginCard.modelData.name; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                                                Item { Layout.fillWidth: true }
+                                                Text { text: marginCard.value + " px"; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.accent }
+                                            }
+                                            Rectangle {
+                                                id: marginTrack
+                                                Layout.fillWidth: true; Layout.preferredHeight: 19
+                                                radius: 9; color: Theme.background
+                                                Rectangle {
+                                                    width: Math.max(7, parent.width * marginCard.value / 32)
+                                                    height: 6; anchors.verticalCenter: parent.verticalCenter; radius: 3; color: Theme.accent
+                                                }
+                                                Rectangle {
+                                                    width: 13; height: 13; radius: 7
+                                                    x: Math.max(0, Math.min(parent.width - width, (parent.width-width) * marginCard.value/32))
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    color: Theme.foreground
+                                                }
+                                                MouseArea {
+                                                    anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                                                    function valueAt(x) { return Math.round(Math.max(0, Math.min(32, x / Math.max(1, width) * 32))); }
+                                                    onPressed: mouse => SettingsStore.setBarMargin(marginCard.modelData.edge, valueAt(mouse.x), false)
+                                                    onPositionChanged: mouse => { if (pressed) SettingsStore.setBarMargin(marginCard.modelData.edge, valueAt(mouse.x), false); }
+                                                    onReleased: mouse => SettingsStore.setBarMargin(marginCard.modelData.edge, valueAt(mouse.x), true)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Text { Layout.fillWidth: true; text: "Tip: switch to another bar mode to set its own margins. Reset restores that mode's original spacing."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10; wrapMode: Text.WordWrap }
                             Text {
-                                text: "Visible modules"
+                                text: "Modules & individual icons"
                                 font.family: Fonts.poppinsSB.name
                                 font.pixelSize: 14
                                 color: Theme.foreground
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: "Choose which components appear on your desktop bar. Changes are saved immediately."
+                                text: "Enable individual icons on every bar position. Quick Control remains available separately; each choice is saved."
                                 wrapMode: Text.WordWrap
                                 color: Theme.muted
                                 font.family: Fonts.poppins.name
@@ -548,81 +664,52 @@ FloatingWindow {
                             }
                             Repeater {
                                 model: [
-                                    {label: "Tahoe-inspired menu bar", desc: "RusticQ Edit, View and Share actions (off by default)", key: "showMenuBar", icon: "\ue5d2"},
+                                    {label: "Arch / AI launcher", desc: "Left launcher button", key: "showArch", icon: "\ueb8e"},
                                     {label: "Workspace switcher", desc: "Hyprland workspaces", key: "showWorkspaces", icon: "\ue30b"},
-                                    {label: "Weather", desc: "Weather indicator", key: "showWeather", icon: "\ue430"},
-                                    {label: "System indicators", desc: "Wi-Fi, battery, Bluetooth", key: "showIndicators", icon: "\ue8b8"},
-                                    {label: "Quick modes", desc: "One group for desktop mode controls", key: "showQuickModes", icon: "\ue429"},
-                                    {label: "Auto-hide quick modes", desc: "Reveal on hover; hide when the pointer leaves", key: "quickModesAutoHide", icon: "\ue8f4"},
-                                    {label: "Keep Awake", desc: "Show Keep Awake in Quick modes", key: "showKeepAwake", icon: "\ue541"},
-                                    {label: "Silent", desc: "Show notification Do Not Disturb in Quick modes", key: "showSilent", icon: "\ue7f6"},
-                                    {label: "Gaming Mode", desc: "Show Performance power profile in Quick modes", key: "showGamingMode", icon: "\ue30f"},
-                                    {label: "Night Mode", desc: "Show warm screen temperature in Quick modes", key: "showNightMode", icon: "\ue51c"},
-                                    {label: "Mute Microphone", desc: "Show microphone mute in Quick modes", key: "showMicMute", icon: "\ue02b"}
+                                    {label: "Weather", desc: "Weather icon and temperature", key: "showWeather", icon: "\ue430"},
+                                    {label: "Clock", desc: "Time icon and time label", key: "showTime", icon: "\ue8b5"},
+                                    {label: "Calendar", desc: "Date icon and date label", key: "showDate", icon: "\uebcc"},
+                                    {label: "Bluetooth", desc: "Independent Bluetooth indicator", key: "showBluetooth", icon: "\ue1a7"},
+                                    {label: "Wi-Fi", desc: "Independent Wi-Fi indicator", key: "showWifi", icon: "\ue63e"},
+                                    {label: "Battery", desc: "Battery status and charging percentage", key: "showBattery", icon: "\uf304"},
+                                    {label: "Audio", desc: "Volume indicator and percentage", key: "showAudio", icon: "\ue050"},
+                                    {label: "Quick Control button", desc: "Open the full control panel", key: "showQuickControl", icon: "\ue69b"},
+                                    {label: "System indicators (group)", desc: "Master toggle for status icons", key: "showIndicators", icon: "\ue8b8"},
+                                    {label: "Quick modes", desc: "Compact system mode controls", key: "showQuickModes", icon: "\ue429"}
                                 ]
-                                delegate: Rectangle {
-                                    id: moduleRow
-                                    required property var modelData
-                                    readonly property bool enabledSetting: SettingsStore[modelData.key]
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: 65
-                                    radius: 11
-                                    color: Theme.surface
-                                    RowLayout {
-                                        anchors.fill: parent
-                                        anchors.margins: 12
-                                        spacing: 10
-                                        Icon {
-                                            Layout.minimumWidth: 24
-                                            Layout.preferredWidth: 24
-                                            Layout.maximumWidth: 24
-                                            Layout.alignment: Qt.AlignVCenter
-                                            icon: moduleRow.modelData.icon
-                                            font.pixelSize: 20
-                                            color: Theme.accent
-                                        }
-                                        ColumnLayout {
-                                            Layout.fillWidth: true
-                                            Layout.alignment: Qt.AlignVCenter
-                                            spacing: 1
-                                            Text {
-                                                Layout.fillWidth: true
-                                                horizontalAlignment: Text.AlignLeft
-                                                elide: Text.ElideRight
-                                                text: moduleRow.modelData.label
-                                                color: Theme.foreground
-                                                font.family: Fonts.poppinsSB.name
-                                                font.pixelSize: 12
-                                            }
-                                            Text {
-                                                Layout.fillWidth: true
-                                                horizontalAlignment: Text.AlignLeft
-                                                elide: Text.ElideRight
-                                                text: moduleRow.modelData.desc
-                                                color: Theme.muted
-                                                font.family: Fonts.poppins.name
-                                                font.pixelSize: 10
-                                            }
-                                        }
-                                        Icon {
-                                            Layout.minimumWidth: 24
-                                            Layout.preferredWidth: 24
-                                            Layout.maximumWidth: 24
-                                            Layout.alignment: Qt.AlignVCenter
-                                            icon: moduleRow.enabledSetting ? "\ue5ca" : "\ue5cd"
-                                            color: moduleRow.enabledSetting ? Theme.accent : Theme.muted
-                                            font.pixelSize: 20
-                                        }
-                                    }
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            SettingsStore[moduleRow.modelData.key] = !moduleRow.enabledSetting;
-                                            SettingsStore.save();
-                                        }
-                                    }
-                                }
+                                delegate: SettingsToggle {}
+                            }
+                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                            Text { text: "Menu bar"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
+                            Text {
+                                Layout.fillWidth: true
+                                text: "Inspired by desktop menu bars. File, Shell and Tools are optional; Edit, View and Share are enabled by default when the menu bar is shown."
+                                wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11
+                            }
+                            Repeater {
+                                model: [
+                                    {label: "Show menu bar", desc: "Show enabled sections at the left", key: "showMenuBar", icon: "\ue5d2"},
+                                    {label: "File", desc: "Open Home, Downloads or configuration", key: "showMenuFile", icon: "\ue2c7"},
+                                    {label: "Edit", desc: "Appearance, Bar and AI settings", key: "showMenuEdit", icon: "\ue3c9"},
+                                    {label: "View", desc: "Switch bar layout modes", key: "showMenuView", icon: "\ue8f4"},
+                                    {label: "Share", desc: "Local screenshots", key: "showMenuShare", icon: "\ue3c2"},
+                                    {label: "Shell", desc: "Launch a terminal or system monitor", key: "showMenuShell", icon: "\ueb8e"},
+                                    {label: "Tools", desc: "Quick access to Settings and screenshots", key: "showMenuTools", icon: "\ue8b8"}
+                                ]
+                                delegate: SettingsToggle {}
+                            }
+                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                            Text { text: "Quick modes"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
+                            Repeater {
+                                model: [
+                                    {label: "Auto-hide quick modes", desc: "Reveal options on hover", key: "quickModesAutoHide", icon: "\ue8f4"},
+                                    {label: "Keep Awake", desc: "Prevent sleep temporarily", key: "showKeepAwake", icon: "\ue541"},
+                                    {label: "Silent", desc: "Do Not Disturb", key: "showSilent", icon: "\ue7f6"},
+                                    {label: "Gaming Mode", desc: "Performance power profile", key: "showGamingMode", icon: "\ue30f"},
+                                    {label: "Night Mode", desc: "Warm screen temperature", key: "showNightMode", icon: "\ue51c"},
+                                    {label: "Mute Microphone", desc: "Microphone mute", key: "showMicMute", icon: "\ue02b"}
+                                ]
+                                delegate: SettingsToggle {}
                             }
                         }
 
@@ -632,7 +719,7 @@ FloatingWindow {
                             spacing: 12
                             Text {
                                 Layout.fillWidth: true
-                                text: "Connected displays and their current settings. Launch nwg-displays to change placement, scale, resolution or refresh rate."
+                                text: "Arrange screens by dragging the monitor previews. Expand each display for available resolutions, Hz and scale, then Apply when ready."
                                 color: Theme.muted
                                 wrapMode: Text.WordWrap
                                 font.family: Fonts.poppins.name
@@ -818,7 +905,7 @@ FloatingWindow {
                                     anchors.centerIn: parent
                                     spacing: 6
                                     Icon { icon: "\ue8b8"; font.pixelSize: 28; color: Theme.accent; Layout.alignment: Qt.AlignHCenter }
-                                    Text { text: "RusticQ · Alpha 2"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground; Layout.alignment: Qt.AlignHCenter }
+                                    Text { text: "RusticQ · Alpha 3 RC3"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground; Layout.alignment: Qt.AlignHCenter }
                                     Text { text: "Target: Arch Linux / Quickshell 0.3.1"; font.family: Fonts.poppins.name; font.pixelSize: 11; color: Theme.muted; Layout.alignment: Qt.AlignHCenter }
                                 }
                             }

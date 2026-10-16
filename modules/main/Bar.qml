@@ -61,10 +61,10 @@ PanelWindow {
         right: barWindow.barPosition !== "left"
     }
     margins {
-        top: verticalMode ? Theme.barEdgeGap : professionalMode ? 0 : compactMode ? 4 : 6
-        bottom: verticalMode ? Theme.barEdgeGap : barPosition === "bottom" && !professionalMode ? (compactMode ? 4 : 6) : 0
-        left: verticalMode ? (barPosition === "left" ? Theme.barEdgeGap : 0) : professionalMode ? 0 : 6
-        right: verticalMode ? (barPosition === "right" ? Theme.barEdgeGap : 0) : professionalMode ? 0 : 6
+        top: SettingsStore.marginFor("top", verticalMode ? Theme.barEdgeGap : professionalMode ? 0 : compactMode ? 4 : 6)
+        bottom: SettingsStore.marginFor("bottom", verticalMode ? Theme.barEdgeGap : barPosition === "bottom" && !professionalMode ? (compactMode ? 4 : 6) : 0)
+        left: SettingsStore.marginFor("left", verticalMode ? (barPosition === "left" ? Theme.barEdgeGap : 0) : professionalMode ? 0 : 6)
+        right: SettingsStore.marginFor("right", verticalMode ? (barPosition === "right" ? Theme.barEdgeGap : 0) : professionalMode ? 0 : 6)
     }
 
     Rectangle {
@@ -103,6 +103,7 @@ PanelWindow {
                 anchors.centerIn: parent
                 spacing: barWindow.groupSpacing
                 Arch {
+                    visible: SettingsStore.showArch
                     backgroundEnabled: !barWindow.cleanCompactMode
                     Layout.preferredWidth: implicitWidth
                     Layout.preferredHeight: implicitHeight
@@ -155,6 +156,7 @@ PanelWindow {
             radius: 12
             RowLayout {
                 id: rightItems
+                HoverHandler { id: rightGroupHover }
                 anchors.centerIn: parent
                 spacing: barWindow.groupSpacing
                 Rectangle {
@@ -176,6 +178,7 @@ PanelWindow {
                                 barWindow.openMini("weather", point.x);
                             }
                             visible: SettingsStore.showWeather
+                            showDetails: !barWindow.cleanCompactMode || SettingsStore.cleanRightMode === "details" || (SettingsStore.cleanRightMode === "hover" && rightGroupHover.hovered)
                             showIcon: barWindow.compactMode
                             horizontalPadding: barWindow.compactMode ? 0 : 7
                             verticalPadding: barWindow.compactMode ? 0 : 6
@@ -193,7 +196,10 @@ PanelWindow {
                                 barWindow.openMini("date", point.x);
                             }
                             showIcon: true
-                            showDate: true
+                            showDate: SettingsStore.showDate
+                            showTime: SettingsStore.showTime
+                            showDetails: !barWindow.cleanCompactMode || SettingsStore.cleanRightMode === "details" || (SettingsStore.cleanRightMode === "hover" && rightGroupHover.hovered)
+                            visible: SettingsStore.showTime || SettingsStore.showDate
                             horizontalPadding: barWindow.compactMode ? 0 : 6
                             verticalPadding: barWindow.compactMode ? 0 : 6
                             Layout.preferredWidth: implicitWidth
@@ -210,8 +216,9 @@ PanelWindow {
                         barWindow.openMini(kind, pos.x);
                     }
                     compact: barWindow.compactMode
+                    showDetails: !barWindow.cleanCompactMode || SettingsStore.cleanRightMode === "details" || (SettingsStore.cleanRightMode === "hover" && rightGroupHover.hovered)
                     backgroundEnabled: !barWindow.cleanCompactMode
-                    visible: SettingsStore.showIndicators && !barWindow.simpleMode
+                    visible: SettingsStore.showIndicators && !barWindow.simpleMode && (SettingsStore.showWifi || SettingsStore.showBluetooth || SettingsStore.showBattery || SettingsStore.showAudio)
                     Layout.preferredWidth: implicitWidth
                     Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : implicitHeight
                 }
@@ -224,6 +231,7 @@ PanelWindow {
                 }
                 Rectangle {
                     id: sidebarToggle
+                    visible: SettingsStore.showQuickControl
                     Layout.preferredWidth: barWindow.compactMode ? 32 : 40
                     Layout.preferredHeight: barWindow.compactControlHeight
                     radius: height / 2
@@ -269,8 +277,9 @@ PanelWindow {
     // based on unequal left/right control widths.
     Clock {
         id: simpleClock
-        showDate: true
-        visible: barWindow.simpleMode && !barWindow.verticalMode
+        showDate: SettingsStore.showDate
+        showTime: SettingsStore.showTime
+        visible: barWindow.simpleMode && !barWindow.verticalMode && (SettingsStore.showDate || SettingsStore.showTime)
         anchors.centerIn: parent
         onTimeActivated: localX => {
             const point = barWindow.mapFromItem(simpleClock, localX, 0);

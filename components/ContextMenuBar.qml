@@ -16,10 +16,17 @@ Item {
         anchors.centerIn: parent
         spacing: 2
         Repeater {
-            model: ["Edit", "View", "Share"]
+            model: [
+                {label: "File", key: "file", enabled: SettingsStore.showMenuFile},
+                {label: "Edit", key: "edit", enabled: SettingsStore.showMenuEdit},
+                {label: "View", key: "view", enabled: SettingsStore.showMenuView},
+                {label: "Share", key: "share", enabled: SettingsStore.showMenuShare},
+                {label: "Shell", key: "shell", enabled: SettingsStore.showMenuShell},
+                {label: "Tools", key: "tools", enabled: SettingsStore.showMenuTools}
+            ].filter(item => item.enabled)
             delegate: Rectangle {
                 id: menuButton
-                required property string modelData
+                required property var modelData
                 Layout.preferredWidth: label.implicitWidth + 14
                 Layout.preferredHeight: 26
                 radius: 7
@@ -27,7 +34,7 @@ Item {
                 Text {
                     id: label
                     anchors.centerIn: parent
-                    text: menuButton.modelData
+                    text: menuButton.modelData.label
                     color: Theme.foreground
                     font.family: Fonts.poppins.name
                     font.pixelSize: 11
@@ -37,7 +44,7 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.menuRequested(menuButton.modelData.toLowerCase(), menuButton)
+                    onClicked: root.menuRequested(menuButton.modelData.key, menuButton)
                 }
             }
         }
@@ -54,7 +61,7 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: root.menuRequested("view", verticalTrigger)
+            onClicked: root.menuRequested(SettingsStore.showMenuView ? "view" : SettingsStore.showMenuEdit ? "edit" : SettingsStore.showMenuShare ? "share" : SettingsStore.showMenuFile ? "file" : SettingsStore.showMenuShell ? "shell" : "tools", verticalTrigger)
         }
     }
 }

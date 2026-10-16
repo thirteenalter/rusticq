@@ -8,6 +8,7 @@ Item {
     id: root
     property string symbol: "\ue8b5"
     property string caption: ""
+    property bool showCaption: true
     property color symbolColor: Theme.foreground
     property int horizontalPadding: 3
     property int verticalPadding: 5
@@ -31,6 +32,7 @@ Item {
         }
         Text {
             text: root.caption
+            visible: root.showCaption
             font.family: Fonts.poppins.name
             font.pixelSize: Theme.barTextSize
             font.weight: Font.Medium

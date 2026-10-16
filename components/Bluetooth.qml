@@ -8,6 +8,7 @@ Item {
     signal activated()
     property int iconSlotWidth: 14
     property bool cleanStyle: false
+    property bool forceDetails: false
     implicitWidth: row.implicitWidth
     implicitHeight: row.implicitHeight
     HoverHandler { id: hover }
@@ -27,7 +28,7 @@ Item {
         }
         Text {
             Layout.alignment: Qt.AlignVCenter
-            visible: hover.hovered
+            visible: root.forceDetails || (!root.cleanStyle && hover.hovered)
             text: !BluetoothService.enabled ? "Bluetooth off" : BluetoothService.connected
                   ? BluetoothService.deviceName : "Disconnected"
             font.family: Fonts.poppins.name

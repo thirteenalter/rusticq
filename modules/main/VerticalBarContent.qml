@@ -44,6 +44,7 @@ Item {
 
         Rectangle {
             id: launcher
+            visible: SettingsStore.showArch
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: root.controlSize
             Layout.preferredHeight: root.controlSize
@@ -163,6 +164,7 @@ Item {
                         }
                         Rectangle {
                             id: timeButton
+                            visible: SettingsStore.showTime
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: root.controlSize
                             Layout.preferredHeight: root.controlSize + (root.compact ? 6 : 9)
@@ -177,7 +179,7 @@ Item {
                         }
                         Rectangle {
                             id: dateButton
-                            visible: !root.simple
+                            visible: !root.simple && SettingsStore.showDate
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: root.controlSize
                             Layout.preferredHeight: visible ? root.controlSize + 4 : 0
@@ -200,7 +202,7 @@ Item {
                 }
                 Rectangle {
                     id: systemIsland
-                    visible: !root.simple && SettingsStore.showIndicators
+                    visible: !root.simple && SettingsStore.showIndicators && (SettingsStore.showWifi || SettingsStore.showBluetooth || SettingsStore.showBattery || SettingsStore.showAudio)
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: root.separated ? root.controlSize + 5 : scroll.width
                     Layout.preferredHeight: visible ? systemColumn.implicitHeight + (root.separated ? 12 : 0) : 0
@@ -211,10 +213,10 @@ Item {
                         anchors.centerIn: parent; spacing: root.controlGap
                         Repeater {
                             model: [
-                                { kind: "bluetooth", glyph: BluetoothService.icon, available: true },
-                                { kind: "wifi", glyph: WifiService.icon, available: true },
-                                { kind: "battery", glyph: BatteryService.icon, available: BatteryService.available },
-                                { kind: "audio", glyph: !root.soundAvailable || root.sink.audio.muted ? "\ue04f" : "\ue050", available: true }
+                                { kind: "bluetooth", glyph: BluetoothService.icon, available: SettingsStore.showBluetooth },
+                                { kind: "wifi", glyph: WifiService.icon, available: SettingsStore.showWifi },
+                                { kind: "battery", glyph: BatteryService.icon, available: SettingsStore.showBattery && BatteryService.available },
+                                { kind: "audio", glyph: !root.soundAvailable || root.sink.audio.muted ? "\ue04f" : "\ue050", available: SettingsStore.showAudio }
                             ]
                             delegate: Rectangle {
                                 id: statusButton
@@ -236,6 +238,7 @@ Item {
 
         Rectangle {
             id: quickButton
+            visible: SettingsStore.showQuickControl
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: root.controlSize
             Layout.preferredHeight: root.controlSize
