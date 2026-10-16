@@ -11,6 +11,24 @@ Rectangle {
     color: Qt.alpha(Theme.foreground, 0.03)
     border.color: Theme.borderaccent
     property string query: ""
+    property var results: []
+    function rebuild() {
+        const entries = DesktopEntries.applications.values;
+        const found = [];
+        for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            if (entry && matches(entry)) found.push(entry);
+        }
+        found.sort((a, b) => textOf(a.name).localeCompare(textOf(b.name)));
+        results = found;
+    }
+    onQueryChanged: rebuild()
+    Component.onCompleted: rebuild()
+    onVisibleChanged: if (visible) Qt.callLater(function() { rebuild(); searchField.forceActiveFocus(); })
+    Connections {
+        target: DesktopEntries
+        function onApplicationsChanged() { root.rebuild(); }
+    }
 
     function textOf(value) {
         return value === undefined || value === null ? "" : String(value);
@@ -50,7 +68,7 @@ Rectangle {
                 Text { text: "Search installed applications"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
             }
             Text {
-                text: DesktopEntries.applications.count + " apps"
+                text: DesktopEntries.applications.values.length + " apps"
                 color: Theme.muted
                 font.family: Fonts.poppins.name
                 font.pixelSize: 10
@@ -81,15 +99,16 @@ Rectangle {
                     font.pixelSize: 12
                     text: root.query
                     onTextEdited: root.query = text
-                    Component.onCompleted: forceActiveFocus()
-                }
-                Text {
-                    visible: searchField.text.length === 0
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Type to search apps"
-                    color: Theme.muted
-                    font.family: Fonts.poppins.name
-                    font.pixelSize: 11
+                    Component.onCompleted: Qt.callLater(function() { forceActiveFocus(); })
+                    Keys.onEscapePressed: Store.launcherVisible = false
+                    Text {
+                        visible: searchField.text.length === 0
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Type to search apps"
+                        color: Theme.muted
+                        font.family: Fonts.poppins.name
+                        font.pixelSize: 11
+                    }
                 }
                 Rectangle {
                     visible: root.query.length > 0
@@ -119,21 +138,17 @@ Rectangle {
             Layout.fillHeight: true
             clip: true
             spacing: 6
-            model: DesktopEntries.applications
+            model: root.results
             boundsBehavior: Flickable.StopAtBounds
             delegate: Rectangle {
                 id: appRow
                 required property var modelData
-                readonly property bool matched: root.matches(modelData)
                 width: ListView.view.width
-                height: matched ? 56 : 0
-                visible: height > 0
+                height: 56
                 radius: 12
                 color: appMouse.containsMouse ? Qt.alpha(Theme.accent, 0.12) : Theme.surface
                 border.width: appMouse.containsMouse ? 1 : 0
                 border.color: Qt.alpha(Theme.accent, 0.35)
-
-                Behavior on height { NumberAnimation { duration: 90 } }
 
                 RowLayout {
                     anchors.fill: parent
@@ -190,7 +205,7 @@ Rectangle {
 
         Text {
             Layout.fillWidth: true
-            text: root.query.trim().length > 0 ? "Press a result to launch it." : "Quick search over desktop entries available on this system."
+            text: root.results.length === 0 ? "No matching applications" : root.query.trim().length > 0 ? root.results.length + " matching apps · choose to launch" : "Installed applications · choose to launch"
             wrapMode: Text.WordWrap
             color: Theme.muted
             font.family: Fonts.poppins.name

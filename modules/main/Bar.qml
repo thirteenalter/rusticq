@@ -118,7 +118,7 @@ PanelWindow {
                 }
                 Rectangle {
                     id: launcherButton
-                    visible: SettingsStore.showLauncher && !barWindow.simpleMode
+                    visible: SettingsStore.showLauncher
                     Layout.preferredWidth: barWindow.compactMode ? 29 : 34
                     Layout.preferredHeight: barWindow.compactControlHeight
                     radius: height / 2
@@ -128,8 +128,8 @@ PanelWindow {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            const point = barWindow.mapFromItem(launcherButton, launcherButton.width / 2, 0);
-                            barWindow.openMini("launcher", point.x);
+                            barWindow.closeMini();
+                            Store.toggleLauncher(barWindow.screen);
                         }
                     }
                 }

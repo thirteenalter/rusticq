@@ -16,9 +16,9 @@ PopupWindow {
     property real targetY: 0
     property string barPosition: "top"
     signal dismissed()
-    implicitWidth: kind === "task" ? 480 : kind === "menu" ? 358 : kind === "launcher" ? 396 : 368
+    implicitWidth: kind === "task" ? 480 : kind === "menu" ? 358 : 368
     implicitHeight: kind === "task" ? 585 : kind === "wifi" ? 465 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
-                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? 345 : kind === "launcher" ? 468 : kind === "audio" ? 286 : 190
+                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? 345 : kind === "audio" ? 286 : 190
     anchor.window: hostWindow
     anchor.edges: barPosition === "bottom" ? (Edges.Bottom | Edges.Left) : (Edges.Top | Edges.Left)
     anchor.gravity: barPosition === "bottom" ? (Edges.Top | Edges.Right)
@@ -51,7 +51,6 @@ PopupWindow {
                                  popup.kind === "bluetooth" ? bluetoothComponent :
                                  popup.kind === "battery" ? batteryComponent :
                                  popup.kind === "audio" ? audioComponent :
-                                 popup.kind === "launcher" ? launcherComponent :
                                  popup.kind === "weather" ? weatherComponent :
                                  popup.kind === "time" ? timeComponent :
                                  popup.kind === "date" ? dateComponent :
@@ -64,7 +63,6 @@ PopupWindow {
     Component { id: bluetoothComponent; BarBluetooth { standalone: true } }
     Component { id: batteryComponent; BarBattery { standalone: true } }
     Component { id: audioComponent; MiniAudio {} }
-    Component { id: launcherComponent; MiniLauncher { onLaunched: popup.dismissed() } }
     Component { id: weatherComponent; MiniWeather {} }
     Component { id: timeComponent; MiniTime {} }
     Component { id: dateComponent; MiniDate {} }

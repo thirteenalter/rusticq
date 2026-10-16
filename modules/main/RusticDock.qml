@@ -11,9 +11,10 @@ PanelWindow {
     anchors { bottom: true; left: true }
     margins.left: dock.screen ? Math.max(0, Math.round((dock.screen.width - implicitWidth) / 2)) : 0
     exclusionMode: ExclusionMode.Ignore
-    margins.bottom: SettingsStore.barPosition === "bottom" ? 54 : 10
-    implicitWidth: expanded ? 392 : 78
-    implicitHeight: expanded ? 76 : 16
+    margins.bottom: SettingsStore.barPosition === "bottom" ? 54 : 8
+    // Six 48px icons + 5 gaps + horizontal insets must fit entirely.
+    implicitWidth: expanded ? 430 : 82
+    implicitHeight: expanded ? 98 : 18
     color: "transparent"
     property bool expanded: !SettingsStore.dockAutoHide
     onVisibleChanged: if (visible) expanded = !SettingsStore.dockAutoHide
@@ -40,7 +41,7 @@ PanelWindow {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: expanded ? 9 : 0
+            anchors.margins: expanded ? 10 : 0
             spacing: 6
 
             Rectangle {
@@ -55,6 +56,7 @@ PanelWindow {
             RowLayout {
                 visible: dock.expanded
                 Layout.alignment: Qt.AlignHCenter
+                Layout.preferredHeight: 65
                 spacing: 10
                 Repeater {
                     model: [
@@ -69,6 +71,7 @@ PanelWindow {
                         id: app
                         required property var modelData
                         visible: modelData.enabled
+                        Layout.preferredWidth: visible ? 54 : 0
                         spacing: 3
                         Rectangle {
                             Layout.alignment: Qt.AlignHCenter
@@ -86,7 +89,7 @@ PanelWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     if (app.modelData.label === "Launcher") {
-                                        Quickshell.execDetached(["sh", "-lc", "(command -v rofi >/dev/null && rofi -show drun) || (command -v wofi >/dev/null && wofi --show drun) || (command -v fuzzel >/dev/null && fuzzel) || (command -v bemenu-run >/dev/null && bemenu-run)"]);
+                                        Store.toggleLauncher(dock.screen);
                                     } else if (app.modelData.label === "Settings") Store.showSettings("bar");
                                     else if (app.modelData.label === "Task View") Store.taskViewVisible = !Store.taskViewVisible;
                                     else if (app.modelData.label === "AI") Store.toggleAi(dock.screen);

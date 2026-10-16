@@ -17,6 +17,9 @@ Singleton {
     property bool desktopCalendar: false
     property bool desktopSystem: false
     property bool desktopClock: false
+    property bool desktopMedia: false
+    property bool desktopWeather: false
+    property bool desktopConnectivity: false
     property bool showDock: false
     property bool dockFiles: true
     property bool dockBrowser: true
@@ -113,7 +116,7 @@ Singleton {
                 marginOverrides = validated;
             }
             if (typeof data.showMenuBar === "boolean") showMenuBar = data.showMenuBar;
-            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "showNotifications", "showLauncher", "showTaskView", "desktopCalendar", "desktopSystem", "desktopClock", "showDock", "dockAutoHide", "dockFiles", "dockBrowser", "dockSettings", "dockTaskView", "dockAI", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
+            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "showNotifications", "showLauncher", "showTaskView", "desktopCalendar", "desktopSystem", "desktopClock", "desktopMedia", "desktopWeather", "desktopConnectivity", "showDock", "dockAutoHide", "dockFiles", "dockBrowser", "dockSettings", "dockTaskView", "dockAI", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
                 if (typeof data[key] === "boolean") root[key] = data[key];
             if (typeof data.showWeather === "boolean") showWeather = data.showWeather;
             if (typeof data.showWorkspaces === "boolean") showWorkspaces = data.showWorkspaces;
@@ -138,6 +141,9 @@ Singleton {
             desktopCalendar: desktopCalendar,
             desktopSystem: desktopSystem,
             desktopClock: desktopClock,
+            desktopMedia: desktopMedia,
+            desktopWeather: desktopWeather,
+            desktopConnectivity: desktopConnectivity,
             showDock: showDock,
             dockFiles: dockFiles,
             dockBrowser: dockBrowser,

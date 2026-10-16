@@ -9,6 +9,8 @@ Singleton {
     property bool aiVisible: false
     property var aiScreen: null
     property bool settingsVisible: false
+    property bool launcherVisible: false
+    property var launcherScreen: null
     property bool taskViewVisible: false
     property string settingsTab: "appearance"
 
@@ -25,9 +27,17 @@ Singleton {
         aiScreen = screen;
         aiVisible = true;
     }
+    function toggleLauncher(screen) {
+        if (launcherVisible && launcherScreen === screen) { launcherVisible = false; return; }
+        launcherScreen = screen;
+        sidebarVisible = false;
+        aiVisible = false;
+        launcherVisible = true;
+    }
     function showSettings(tab) {
         if (tab) settingsTab = tab;
         settingsVisible = true;
+        launcherVisible = false;
         sidebarVisible = false;
         aiVisible = false;
     }

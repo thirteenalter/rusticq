@@ -30,6 +30,10 @@ ShellRoot {
         RusticDock { required property var modelData; screen: modelData }
     }
     LazyLoader {
+        active: Store.launcherVisible
+        LauncherOverlay { screen: Store.launcherScreen }
+    }
+    LazyLoader {
         active: Store.taskViewVisible
         TaskViewWindow {}
     }

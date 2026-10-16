@@ -59,7 +59,7 @@ Item {
 
         Rectangle {
             id: launcherSearch
-            visible: SettingsStore.showLauncher && !root.simple
+            visible: SettingsStore.showLauncher
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: root.controlSize
             Layout.preferredHeight: root.controlSize
@@ -68,7 +68,7 @@ Item {
             Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: 19; color: Theme.accent }
             MouseArea {
                 anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                onClicked: root.popup("launcher", launcherSearch)
+                onClicked: { root.hostWindow.closeMini(); Store.toggleLauncher(root.hostWindow.screen); }
             }
         }
 

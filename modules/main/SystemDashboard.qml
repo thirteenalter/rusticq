@@ -11,6 +11,19 @@ Rectangle {
     radius: 15; color: Theme.background
     property var processData: ({processes: [], total: 0, load: [0,0,0], uptime: 0, cores: 1})
     property string error: ""
+    property bool showTrends: false
+    property var cpuHistory: []
+    property var memHistory: []
+    Timer {
+        interval: 2000
+        repeat: true
+        triggeredOnStart: true
+        running: root.visible
+        onTriggered: {
+            root.cpuHistory = root.cpuHistory.concat([Math.max(0, Math.min(1, SysMonService.cpuUsage / 100))]).slice(-48);
+            root.memHistory = root.memHistory.concat([Math.max(0, Math.min(1, SysMonService.memUsedPercent))]).slice(-48);
+        }
+    }
     Process {
         id: proc
         command: ["python3", Quickshell.shellPath("scripts/rustiq-processes.py")]
@@ -33,6 +46,29 @@ Rectangle {
             Text { text: "System · Task View"; Layout.fillWidth: true; font.pixelSize: 15; font.family: Fonts.poppinsSB.name; color: Theme.foreground }
             Text { text: "LIVE"; font.pixelSize: 10; color: Theme.muted }
         }
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 7
+            Repeater {
+                model: [{key:"overview",title:"Processes",icon:"\ue8b8"}, {key:"trends",title:"Live graphs",icon:"\uef43"}]
+                delegate: Rectangle {
+                    id: viewTab
+                    required property var modelData
+                    readonly property bool active: (modelData.key === "trends") === root.showTrends
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 31
+                    radius: 9
+                    color: active ? Qt.alpha(Theme.accent, 0.18) : Theme.surface
+                    border.width: active ? 1 : 0
+                    border.color: Theme.accent
+                    RowLayout { anchors.centerIn: parent; spacing: 5
+                        Icon { icon: viewTab.modelData.icon; font.pixelSize: 15; color: active ? Theme.accent : Theme.foreground }
+                        Text { text: viewTab.modelData.title; font.pixelSize: 11; color: Theme.foreground; font.family: Fonts.poppinsSB.name }
+                    }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.showTrends = viewTab.modelData.key === "trends" }
+                }
+            }
+        }
         Repeater {
             model: [
                 { label: "CPU", value: SysMonService.cpuUsage.toFixed(0) + "%", pct: SysMonService.cpuUsage / 100, icon: "\ue322" },
@@ -54,14 +90,41 @@ Rectangle {
                 }
             }
         }
+        ColumnLayout {
+            visible: root.showTrends
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 10
+            Repeater {
+                model: [
+                    {label:"CPU usage · last ~96 seconds", value:SysMonService.cpuUsage.toFixed(0)+"%", series:root.cpuHistory},
+                    {label:"Memory usage · last ~96 seconds", value:(SysMonService.memUsedPercent*100).toFixed(0)+"%", series:root.memHistory}
+                ]
+                delegate: Rectangle {
+                    id: trendCard; required property var modelData
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    color: Theme.surface; radius: 12
+                    ColumnLayout { anchors.fill: parent; anchors.margins: 12; spacing: 9
+                        RowLayout { Layout.fillWidth: true
+                            Text { text: trendCard.modelData.label; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11 }
+                            Text { text: trendCard.modelData.value; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: 12 }
+                        }
+                        MetricWave { Layout.fillWidth: true; Layout.fillHeight: true; samples: trendCard.modelData.series }
+                    }
+                }
+            }
+            Text { text: "Live samples every 2 seconds · no historical files saved"; color: Theme.muted; font.pixelSize: 10; Layout.fillWidth: true }
+        }
         Text { text: "Load " + root.processData.load.join(" / ") + "  ·  " + root.processData.cores + " CPUs  ·  " + root.processData.total + " processes"; Layout.fillWidth: true; font.pixelSize: 10; color: Theme.muted }
         RowLayout {
+            visible: !root.showTrends
             Layout.fillWidth: true
             Text { text: "TOP CPU PROCESSES"; Layout.fillWidth: true; font.pixelSize: 10; font.family: Fonts.poppinsSB.name; color: Theme.muted }
             Text { text: "CPU"; font.pixelSize: 10; color: Theme.muted }
             Text { text: "RAM"; font.pixelSize: 10; color: Theme.muted }
         }
         ListView {
+            visible: !root.showTrends
             Layout.fillWidth: true; Layout.fillHeight: true; clip: true
             model: root.processData.processes
             spacing: 3
