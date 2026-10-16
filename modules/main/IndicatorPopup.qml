@@ -12,6 +12,8 @@ PopupWindow {
     required property var hostWindow
     property string kind: ""
     property real targetX: 0
+    property real targetY: 0
+    property string barPosition: "top"
     signal dismissed()
     // QsWindow.width/height are actual dimensions; Quickshell 0.3.1 requires
     // implicitWidth/implicitHeight for requested window sizes.
@@ -20,9 +22,19 @@ PopupWindow {
                     kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : 190
     anchor.window: hostWindow
     // Anchor is in panel-window coordinates, never a QQuickItem or screen pixel.
-    anchor.rect.x: Math.max(8, Math.min(hostWindow.width - implicitWidth - 8,
-                                         targetX - implicitWidth / 2))
-    anchor.rect.y: hostWindow.barHeight + 10
+    // Edge-aware positioning: on Bottom open upward; on Left/Right open
+    // inward to the desktop. Clamp popup to the visible axis of the bar.
+    anchor.edges: barPosition === "bottom" ? (Edges.Bottom | Edges.Left) : (Edges.Top | Edges.Left)
+    anchor.gravity: barPosition === "bottom" ? (Edges.Top | Edges.Right)
+        : barPosition === "right" ? (Edges.Bottom | Edges.Left) : (Edges.Bottom | Edges.Right)
+    anchor.rect.x: barPosition === "left" ? hostWindow.width + 8 : barPosition === "right" ? -8
+        : Math.max(8, Math.min(Math.max(8, hostWindow.width - implicitWidth - 8), targetX - implicitWidth / 2))
+    anchor.rect.y: barPosition === "top" ? hostWindow.barHeight + 8
+        : barPosition === "bottom" ? -1
+        : Math.max(8, Math.min(Math.max(8, hostWindow.height - implicitHeight - 8), targetY - implicitHeight / 2))
+    onTargetXChanged: if (visible) anchor.updateAnchor()
+    onTargetYChanged: if (visible) anchor.updateAnchor()
+    onBarPositionChanged: if (visible) anchor.updateAnchor()
     grabFocus: true
     // Keep visibility imperative. When Quickshell dismisses a grabFocus popup,
     // C++ may set visible=false, which would sever a declarative binding.

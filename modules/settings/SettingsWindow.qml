@@ -145,7 +145,7 @@ FloatingWindow {
                     Item { Layout.fillHeight: true }
                     Text {
                         Layout.fillWidth: true
-                        text: "RUSTIQ ALPHA 2\nQuickshell 0.3.1"
+                        text: "RUSTIQ ALPHA 3\nQuickshell 0.3.1"
                         wrapMode: Text.WordWrap
                         font.family: Fonts.poppins.name
                         font.pixelSize: 10
@@ -369,6 +369,60 @@ FloatingWindow {
                             Layout.fillWidth: true
                             spacing: 11
                             Text {
+                                text: "Bar position"
+                                font.family: Fonts.poppinsSB.name
+                                font.pixelSize: 14
+                                color: Theme.foreground
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                text: "Choose the screen edge. Left and Right use a dedicated vertical layout; popups open toward the desktop."
+                                font.family: Fonts.poppins.name
+                                font.pixelSize: 11
+                                wrapMode: Text.WordWrap
+                                color: Theme.muted
+                            }
+                            GridLayout {
+                                Layout.fillWidth: true
+                                columns: 4
+                                columnSpacing: 9
+                                rowSpacing: 9
+                                Repeater {
+                                    model: [
+                                        { key: "top", label: "Top", icon: "\ue5d8" },
+                                        { key: "bottom", label: "Bottom", icon: "\ue5db" },
+                                        { key: "left", label: "Left", icon: "\ue5de" },
+                                        { key: "right", label: "Right", icon: "\ue5df" }
+                                    ]
+                                    delegate: Rectangle {
+                                        id: positionCard
+                                        required property var modelData
+                                        readonly property bool selected: SettingsStore.barPosition === modelData.key
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 72
+                                        radius: 12
+                                        color: selected ? Qt.alpha(Theme.accent, 0.13) : Theme.surface
+                                        border.width: selected ? 1 : 0
+                                        border.color: Theme.accent
+                                        ColumnLayout {
+                                            anchors.centerIn: parent
+                                            spacing: 4
+                                            Icon { Layout.alignment: Qt.AlignHCenter; icon: positionCard.modelData.icon; font.pixelSize: 22; color: positionCard.selected ? Theme.accent : Theme.foreground }
+                                            Text { Layout.alignment: Qt.AlignHCenter; text: positionCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                                        }
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                SettingsStore.barPosition = positionCard.modelData.key;
+                                                SettingsStore.save();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                            Text {
                                 text: "Bar layout mode"
                                 font.family: Fonts.poppinsSB.name
                                 font.pixelSize: 14
@@ -376,7 +430,9 @@ FloatingWindow {
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: "Select a layout. The bar updates live on every monitor; your module toggles remain saved."
+                                text: SettingsStore.barPosition === "left" || SettingsStore.barPosition === "right"
+                                    ? "Layout modes apply to Top/Bottom. Side bars use a space-efficient vertical layout, with your settings preserved."
+                                    : "Select a layout. The bar updates live on every monitor; your module toggles remain saved."
                                 wrapMode: Text.WordWrap
                                 font.family: Fonts.poppins.name
                                 font.pixelSize: 11

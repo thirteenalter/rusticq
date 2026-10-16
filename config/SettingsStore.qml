@@ -10,6 +10,7 @@ Singleton {
     // Explicit opt-in: keep original Gruvbox when Aether is unavailable.
     property string colorSource: "gruvbox"
     property string barMode: "separated"
+    property string barPosition: "top"
     property bool showWeather: true
     property bool showWorkspaces: true
     property bool showIndicators: true
@@ -38,6 +39,7 @@ Singleton {
             if (["orange", "green", "blue", "purple"].indexOf(data.accentName) !== -1)
                 accentName = data.accentName;
             if (["compact", "clean-compact", "separated", "professional", "simple"].indexOf(data.barMode) !== -1) barMode = data.barMode;
+            if (["top", "bottom", "left", "right"].indexOf(data.barPosition) !== -1) barPosition = data.barPosition;
             if (typeof data.showWeather === "boolean") showWeather = data.showWeather;
             if (typeof data.showWorkspaces === "boolean") showWorkspaces = data.showWorkspaces;
             if (typeof data.showIndicators === "boolean") showIndicators = data.showIndicators;
@@ -54,6 +56,7 @@ Singleton {
             accentName: accentName,
             colorSource: colorSource,
             barMode: barMode,
+            barPosition: barPosition,
             showWeather: showWeather,
             showWorkspaces: showWorkspaces,
             showIndicators: showIndicators,
