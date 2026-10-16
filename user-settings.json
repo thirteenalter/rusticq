@@ -7,12 +7,26 @@
   "showLauncher": true,
   "showTaskView": true,
   "desktopCalendar": true,
-  "desktopSystem": false,
+  "desktopSystem": true,
   "desktopClock": true,
-  "desktopMedia": false,
-  "desktopWeather": true,
-  "desktopConnectivity": false,
-  "showDock": false,
+  "desktopMedia": true,
+  "desktopWeather": false,
+  "desktopConnectivity": true,
+  "widgetPositions": {
+    "HDMI-A-1:system": {
+      "x": 0.011815799689440994,
+      "y": 0.5455005787037037
+    },
+    "HDMI-A-1:media": {
+      "x": 0.9945846273291925,
+      "y": 0.07669013843201754
+    },
+    "HDMI-A-1:connectivity": {
+      "x": 0.011454289596273292,
+      "y": 0.7395305836886994
+    }
+  },
+  "showDock": true,
   "dockFiles": true,
   "dockBrowser": true,
   "dockSettings": true,

@@ -24,6 +24,15 @@ Singleton {
 
     // ---- CPU ----
     property real cpuUsage: 0        // 0 - 100
+    property var cpuHistory: []
+    property var memHistory: []
+    property int historyLimit: 72
+    // Creates a new array so QML charts receive a samplesChanged signal.
+    function pushSample() {
+        if (_prevTotal < 0 || memTotalGB <= 0) return;
+        cpuHistory = cpuHistory.concat([Math.max(0, Math.min(1, cpuUsage / 100))]).slice(-historyLimit);
+        memHistory = memHistory.concat([Math.max(0, Math.min(1, memUsedPercent))]).slice(-historyLimit);
+    }
     property var _prevIdle: -1
     property var _prevTotal: -1
 
@@ -80,6 +89,7 @@ Singleton {
         _parseMemory(parts[1])
         _parseDisk(parts[2])
         _parseTemperature(parts[3])
+        pushSample()
     }
 
     function _parseCpu(text) {

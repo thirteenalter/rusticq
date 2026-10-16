@@ -18,7 +18,7 @@ PopupWindow {
     signal dismissed()
     implicitWidth: kind === "task" ? 480 : kind === "menu" ? 358 : 368
     implicitHeight: kind === "task" ? 585 : kind === "wifi" ? 465 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
-                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? 345 : kind === "audio" ? 286 : 190
+                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? 345 : kind === "audio" ? ((widgetLoader.item && widgetLoader.item.advancedOpen) ? 407 : 286) : 190
     anchor.window: hostWindow
     anchor.edges: barPosition === "bottom" ? (Edges.Bottom | Edges.Left) : (Edges.Top | Edges.Left)
     anchor.gravity: barPosition === "bottom" ? (Edges.Top | Edges.Right)

@@ -7,8 +7,8 @@ import "../../components"
 Rectangle {
     id: root
     radius: Theme.sectionRadius
-    color: Qt.alpha(Theme.foreground, 0.02)
-    border.color: Theme.borderaccent
+    color: "transparent"
+    border.width: 0
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property bool available: sink !== null && sink.audio !== null
     property bool advancedOpen: false
@@ -78,8 +78,7 @@ Rectangle {
                 Layout.preferredHeight: 40
                 radius: 10
                 color: root.advancedOpen ? Qt.alpha(Theme.accent, 0.16) : Theme.surface
-                border.width: root.advancedOpen ? 1 : 0
-                border.color: Theme.accent
+                border.width: 0
                 RowLayout {
                     anchors.centerIn: parent
                     spacing: 6
@@ -100,7 +99,7 @@ Rectangle {
             Layout.preferredHeight: visible ? advancedContent.implicitHeight + 20 : 0
             radius: 13
             color: Theme.surface
-            border.color: Qt.alpha(Theme.foreground, 0.05)
+            border.width: 0
             clip: true
             ColumnLayout {
                 id: advancedContent
@@ -125,8 +124,7 @@ Rectangle {
                             Layout.preferredHeight: 30
                             radius: 9
                             color: root.available && Math.round(root.sink.audio.volume * 100) === modelData ? Qt.alpha(Theme.accent, 0.16) : Theme.background
-                            border.width: root.available && Math.round(root.sink.audio.volume * 100) === modelData ? 1 : 0
-                            border.color: Theme.accent
+                            border.width: 0
                             Text { anchors.centerIn: parent; text: preset.modelData + "%"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 10 }
                             MouseArea {
                                 anchors.fill: parent

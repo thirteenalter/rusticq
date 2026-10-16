@@ -40,6 +40,22 @@ ColumnLayout {
                 }
             }
         }
+        Text {
+            Layout.fillWidth: true
+            text: "Drag any widget by its top header to move it. Positions stay anchored to the current monitor and are saved."
+            font.family: Fonts.poppins.name
+            font.pixelSize: 11
+            color: Theme.muted
+            wrapMode: Text.WordWrap
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 36
+            radius: 10
+            color: Theme.background
+            Text { anchors.centerIn: parent; text: "Reset desktop widget positions"; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetWidgetPositions() }
+        }
         Repeater {
             model: [
                 {label:"Calendar widget",desc:"Monthly calendar behind application windows",key:"desktopCalendar",icon:"\ue916"},

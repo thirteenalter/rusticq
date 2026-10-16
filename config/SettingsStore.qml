@@ -20,6 +20,19 @@ Singleton {
     property bool desktopMedia: false
     property bool desktopWeather: false
     property bool desktopConnectivity: false
+    // Per-monitor widget positions in normalized available screen space (0..1).
+    property var widgetPositions: ({})
+    function widgetKey(kind, monitor) { return String(monitor || "default") + ":" + kind; }
+    function widgetPosition(kind, monitor) { return widgetPositions[widgetKey(kind, monitor)] || null; }
+    function setWidgetPosition(kind, monitor, x, y) {
+        if (["clock", "calendar", "system", "media", "weather", "connectivity"].indexOf(kind) < 0) return;
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+        const copy = Object.assign({}, widgetPositions);
+        copy[widgetKey(kind, monitor)] = {x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y))};
+        widgetPositions = copy;
+        save();
+    }
+    function resetWidgetPositions() { widgetPositions = ({}); save(); }
     property bool showDock: false
     property bool dockFiles: true
     property bool dockBrowser: true
@@ -115,6 +128,16 @@ Singleton {
                 }
                 marginOverrides = validated;
             }
+            if (data.widgetPositions && typeof data.widgetPositions === "object" && !Array.isArray(data.widgetPositions)) {
+                const validPositions = {};
+                for (const key in data.widgetPositions) {
+                    const v = data.widgetPositions[key];
+                    if (/^[a-zA-Z0-9_.:-]{1,120}$/.test(key) && v && typeof v === "object" &&
+                        Number.isFinite(v.x) && Number.isFinite(v.y) && v.x >= 0 && v.x <= 1 && v.y >= 0 && v.y <= 1)
+                        validPositions[key] = { x:v.x, y:v.y };
+                }
+                widgetPositions = validPositions;
+            }
             if (typeof data.showMenuBar === "boolean") showMenuBar = data.showMenuBar;
             for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "showNotifications", "showLauncher", "showTaskView", "desktopCalendar", "desktopSystem", "desktopClock", "desktopMedia", "desktopWeather", "desktopConnectivity", "showDock", "dockAutoHide", "dockFiles", "dockBrowser", "dockSettings", "dockTaskView", "dockAI", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
                 if (typeof data[key] === "boolean") root[key] = data[key];
@@ -144,6 +167,7 @@ Singleton {
             desktopMedia: desktopMedia,
             desktopWeather: desktopWeather,
             desktopConnectivity: desktopConnectivity,
+            widgetPositions: widgetPositions,
             showDock: showDock,
             dockFiles: dockFiles,
             dockBrowser: dockBrowser,

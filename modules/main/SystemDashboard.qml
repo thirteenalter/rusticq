@@ -12,18 +12,8 @@ Rectangle {
     property var processData: ({processes: [], total: 0, load: [0,0,0], uptime: 0, cores: 1})
     property string error: ""
     property bool showTrends: false
-    property var cpuHistory: []
-    property var memHistory: []
-    Timer {
-        interval: 2000
-        repeat: true
-        triggeredOnStart: true
-        running: root.visible
-        onTriggered: {
-            root.cpuHistory = root.cpuHistory.concat([Math.max(0, Math.min(1, SysMonService.cpuUsage / 100))]).slice(-48);
-            root.memHistory = root.memHistory.concat([Math.max(0, Math.min(1, SysMonService.memUsedPercent))]).slice(-48);
-        }
-    }
+    readonly property var cpuHistory: SysMonService.cpuHistory
+    readonly property var memHistory: SysMonService.memHistory
     Process {
         id: proc
         command: ["python3", Quickshell.shellPath("scripts/rustiq-processes.py")]

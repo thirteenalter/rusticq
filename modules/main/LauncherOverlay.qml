@@ -33,7 +33,7 @@ PanelWindow {
         clip: true
         MiniLauncher {
             anchors.fill: parent
-            anchors.margins: 10
+            anchors.margins: 8
             onLaunched: Store.launcherVisible = false
         }
     }
