@@ -1,48 +1,112 @@
 {
-  "accentName": "orange",
-  "colorSource": "aether",
+  "accentName": "blue",
+  "colorSource": "gruvbox",
   "barMode": "clean-compact",
   "barPosition": "top",
   "showNotifications": true,
   "showLauncher": true,
+  "launcherLayoutMode": "clean-hover",
+  "launcherWidth": 802,
+  "launcherHeight": 605,
+  "launcherIconSize": 30,
+  "launcherRowHeight": 56,
+  "launcherFavoriteColumns": 3,
   "showTaskView": true,
   "desktopCalendar": true,
   "desktopSystem": true,
   "desktopClock": true,
   "desktopMedia": true,
   "desktopWeather": false,
-  "desktopConnectivity": true,
+  "desktopConnectivity": false,
   "widgetPositions": {
-    "HDMI-A-1:system": {
-      "x": 0.011815799689440994,
-      "y": 0.5455005787037037
-    },
     "HDMI-A-1:media": {
-      "x": 0.9945846273291925,
-      "y": 0.07669013843201754
+      "x": 0.013310364906832298,
+      "y": 0.7632649739583334
     },
-    "HDMI-A-1:connectivity": {
-      "x": 0.011454289596273292,
-      "y": 0.7395305836886994
+    "HDMI-A-1:system": {
+      "x": 0.0132909549689441,
+      "y": 0.5467619719328703
     }
   },
   "showDock": true,
-  "dockFiles": true,
+  "dockFiles": false,
   "dockBrowser": true,
   "dockSettings": true,
   "dockTaskView": true,
   "dockAI": true,
+  "dockRunningApps": true,
+  "quickControlOrder": [
+    "notifications",
+    "wifi",
+    "bluetooth",
+    "battery",
+    "system"
+  ],
   "dockAutoHide": true,
-  "showMenuBar": false,
+  "showMenuBar": true,
   "showMenuEdit": true,
   "showMenuView": true,
   "showMenuShare": true,
   "showMenuFile": false,
-  "showMenuShell": false,
+  "showMenuShell": true,
   "showMenuTools": false,
   "cleanRightDetails": false,
   "cleanRightMode": "icons",
-  "marginOverrides": {},
+  "marginOverrides": {
+    "simple": {
+      "top": 1,
+      "bottom": 2
+    }
+  },
+  "barSpacingOverrides": {
+    "clean-compact": {
+      "left": {
+        "items": {
+          "arch": {
+            "before": 7,
+            "after": 0
+          }
+        }
+      },
+      "right": {
+        "items": {
+          "wifi": {
+            "before": 4
+          },
+          "battery": {
+            "before": 4,
+            "after": 0
+          }
+        },
+        "gap": 13
+      }
+    },
+    "professional": {
+      "left": {
+        "items": {},
+        "gap": 10
+      },
+      "right": {
+        "items": {
+          "bluetooth": {
+            "before": 8
+          },
+          "wifi": {
+            "before": 9,
+            "after": 13
+          },
+          "battery": {
+            "before": 0,
+            "after": 9
+          },
+          "audio": {
+            "after": 7
+          }
+        },
+        "gap": 5
+      }
+    }
+  },
   "showArch": true,
   "showTime": true,
   "showDate": true,

@@ -27,7 +27,7 @@ Item {
         {title: "RusticQ config", desc: "Open current shell directory", icon: "\ue8b8", action: "file-config"}
     ] : currentSection === "shell" ? [
         {title: "Open terminal", desc: "Use an installed terminal emulator", icon: "\ueb8e", action: "shell-terminal"},
-        {title: "System monitor", desc: "Launch btop or htop in a terminal", icon: "\uef43", action: "shell-monitor"}
+        {title: "System monitor", desc: "Live CPU, GPU, RAM, disk and network", icon: "\uef43", action: "shell-monitor"}
     ] : currentSection === "tools" ? [
         {title: "Settings", desc: "Personalize RusticQ", icon: "\ue8b8", action: "tools-settings"},
         {title: "Screenshot region", desc: "Capture a selected area", icon: "\ue3c2", action: "tools-region"}
@@ -53,7 +53,8 @@ Item {
         } else if (currentSection === "edit") {
             Store.showSettings(action);
         } else if (currentSection === "file" || currentSection === "shell" || currentSection === "tools") {
-            if (action === "tools-settings") Store.showSettings("bar");
+            if (action === "shell-monitor") Store.systemMonitorVisible = true;
+            else if (action === "tools-settings") Store.showSettings("bar");
             else if (action === "tools-region") Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-capture.sh"), "region"]);
             else Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-menu-action.sh"), action]);
         } else {
@@ -127,25 +128,25 @@ Item {
                         border.color: Qt.alpha(Theme.accent, 0.32)
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: 11
-                            anchors.rightMargin: 10
+                            anchors.leftMargin: 12
+                            anchors.rightMargin: 12
                             spacing: 10
                             Rectangle {
-                                Layout.preferredWidth: 32
-                                Layout.preferredHeight: 32
+                                Layout.preferredWidth: 34
+                                Layout.preferredHeight: 34
                                 radius: 10
                                 color: Qt.alpha(Theme.accent, 0.12)
                                 Icon { anchors.centerIn: parent; icon: choice.modelData.icon; color: Theme.accent; font.pixelSize: 18 }
                             }
                             ColumnLayout {
                                 Layout.fillWidth: true
-                                spacing: 0
-                                Text { text: choice.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
-                                Text { text: choice.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 9 }
+                                spacing: 1
+                                Text { Layout.fillWidth: true; text: choice.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; elide: Text.ElideRight }
+                                Text { Layout.fillWidth: true; text: choice.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 9; elide: Text.ElideRight }
                             }
                             Rectangle {
-                                Layout.preferredWidth: 22
-                                Layout.preferredHeight: 22
+                                Layout.preferredWidth: 24
+                                Layout.preferredHeight: 24
                                 radius: 7
                                 color: root.currentSection === "view" && SettingsStore.barMode === choice.modelData.action ? Qt.alpha(Theme.accent, 0.14) : "transparent"
                                 Icon {

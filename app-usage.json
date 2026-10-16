@@ -1,10 +1,25 @@
 {
-  "com.usebottles.bottles.App_0b0468f656f42b5e1baae4630d86174636827e41": {
+  "aether": {
     "count": 0,
     "last": 0,
-    "pinned": false
+    "pinned": true
   },
-  "SKlauncher": {
+  "Alacritty": {
+    "count": 1,
+    "last": 1792131709375,
+    "pinned": true
+  },
+  "android-studio": {
+    "count": 0,
+    "last": 0,
+    "pinned": true
+  },
+  "io.github.antimicrox.antimicrox": {
+    "count": 0,
+    "last": 0,
+    "pinned": true
+  },
+  "net.lutris.arrival-of-the-goddess-4": {
     "count": 0,
     "last": 0,
     "pinned": true

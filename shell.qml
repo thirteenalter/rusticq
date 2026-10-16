@@ -37,6 +37,10 @@ ShellRoot {
         active: Store.taskViewVisible
         TaskViewWindow {}
     }
+    LazyLoader {
+        active: Store.systemMonitorVisible
+        SystemMonitorWindow {}
+    }
 
     LazyLoader {
         active: Store.aiVisible

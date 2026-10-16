@@ -10,7 +10,7 @@ Pill {
     property bool showDetails: true
     readonly property bool cleanStyle: compact && !backgroundEnabled
     color: backgroundEnabled ? Theme.borderaccent : "transparent"
-    horizontalPadding: !backgroundEnabled ? 0 : compact ? 8 : 14
+    horizontalPadding: !backgroundEnabled ? 0 : compact ? 5 : 6
     verticalPadding: compact ? 3 : 7
 
     function notify(kind, item) {
@@ -18,9 +18,11 @@ Pill {
         iconClicked(kind, center.x);
     }
     RowLayout {
-        spacing: root.cleanStyle ? Theme.barInfoGap : root.compact ? 8 : 12
+        spacing: SettingsStore.spacingGroup("right", root.compact ? 3 : 4)
         Bluetooth {
             id: btIndicator
+            Layout.leftMargin: SettingsStore.spacingIcon("right", "bluetooth", "before")
+            Layout.rightMargin: SettingsStore.spacingIcon("right", "bluetooth", "after")
             visible: SettingsStore.showBluetooth
             forceDetails: root.cleanStyle && root.showDetails
             iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
@@ -29,6 +31,8 @@ Pill {
         }
         Wifi {
             id: wifiIndicator
+            Layout.leftMargin: SettingsStore.spacingIcon("right", "wifi", "before")
+            Layout.rightMargin: SettingsStore.spacingIcon("right", "wifi", "after")
             visible: SettingsStore.showWifi
             forceDetails: root.cleanStyle && root.showDetails
             iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
@@ -37,6 +41,8 @@ Pill {
         }
         Battery {
             id: batteryIndicator
+            Layout.leftMargin: SettingsStore.spacingIcon("right", "battery", "before")
+            Layout.rightMargin: SettingsStore.spacingIcon("right", "battery", "after")
             visible: SettingsStore.showBattery
             iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
             cleanStyle: root.cleanStyle
@@ -44,6 +50,8 @@ Pill {
         }
         Audio {
             id: audioIndicator
+            Layout.leftMargin: SettingsStore.spacingIcon("right", "audio", "before")
+            Layout.rightMargin: SettingsStore.spacingIcon("right", "audio", "after")
             visible: SettingsStore.showAudio
             iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
             cleanStyle: root.cleanStyle

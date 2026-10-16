@@ -31,7 +31,7 @@ modules=source('modules/settings/pages/SettingsModulesPage.qml')
 assert all(key in modules for key in ('showWifi','showBluetooth','showBattery','showAudio','showQuickModes','showLauncher'))
 overlay=source('modules/main/LauncherOverlay.qml')
 assert 'anchors.centerIn: parent' in overlay
-assert 'Math.min(650,' in overlay
+assert 'Math.min(SettingsStore.launcherWidth,' in overlay  # configurable launcher width
 assert 'Store.launcherVisible' in overlay
 assert 'WlrLayer.Overlay' in overlay
 launcher=source('modules/main/MiniLauncher.qml')
@@ -43,5 +43,5 @@ assert 'LauncherOverlay { screen: Store.launcherScreen }' in shell
 store=source('config/Store.qml')
 assert 'function toggleLauncher(screen)' in store
 assert 'Store.launcherVisible' not in source('modules/main/IndicatorPopup.qml')
-assert 'width: ListView.view.width\n                height: 56' in launcher
+assert 'width: ListView.view.width\n                height: Math.max(SettingsStore.launcherRowHeight, SettingsStore.launcherIconSize + 20)' in launcher
 print('RC5 Settings refactor: page split, intrinsic sizing, launcher centering and persistence checks passed')

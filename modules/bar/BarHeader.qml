@@ -40,6 +40,20 @@ Rectangle {
             color: Theme.foreground
         }
         Rectangle {
+            visible: !Store.advancedVisible
+            Layout.preferredWidth: 32
+            Layout.preferredHeight: 32
+            radius: 10
+            color: Store.quickReorderMode ? Qt.alpha(Theme.accent, 0.18) : Theme.surface
+            Icon { anchors.centerIn: parent; icon: "\ue8d5"; font.pixelSize: 19; color: Store.quickReorderMode ? Theme.accent : Theme.muted }
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: Store.quickReorderMode = !Store.quickReorderMode
+            }
+        }
+        Rectangle {
             Layout.preferredWidth: 32
             Layout.preferredHeight: 32
             radius: 10

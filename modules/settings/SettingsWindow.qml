@@ -1,18 +1,22 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import "../../config"
 import "../../components"
 import "pages"
 
-// RC5 settings repair: each independent page has a real implicitHeight.
-// No overlapping/zero-height cards, and no single overloaded Bar page.
+// Floating settings: the compositor owns window rounding and decorations.
+// Internal cards retain the RusticQ design system, while the outer canvas is square.
 FloatingWindow {
     id: root
     visible: Store.settingsVisible
     title: "RusticQ · Settings"
-    implicitWidth: 1130
-    implicitHeight: 750
+    implicitWidth: 940
+    implicitHeight: 600
+    minimumSize: Qt.size(760, 500)
+    maximized: false
+    fullscreen: false
     color: Theme.background
     property string query: ""
     readonly property var pages: [
@@ -21,7 +25,13 @@ FloatingWindow {
         {key:"modules", label:"Modules", symbol:"\ue429", detail:"Indicators & menus"},
         {key:"widgets", label:"Widgets", symbol:"\ue916", detail:"Desktop cards"},
         {key:"dock", label:"Dock", symbol:"\ue8b8", detail:"Apps & auto-hide"},
+        {key:"launcher", label:"App Launcher", symbol:"\ue8b6", detail:"Window & icon size"},
         {key:"display", label:"Displays", symbol:"\ue30b", detail:"Monitor arrangement"},
+        {key:"os", label:"OS information", symbol:"\ue88e", detail:"Linux & session"},
+        {key:"hardware", label:"Hardware", symbol:"\ue322", detail:"CPU, GPU & RAM"},
+        {key:"apps", label:"Installed apps", symbol:"\ue5c3", detail:"Package inventory"},
+        {key:"storage", label:"Storage", symbol:"\ue1db", detail:"Disks & maintenance"},
+        {key:"updates", label:"Arch Updater", symbol:"\ue5d5", detail:"Packages & terminal"},
         {key:"ai", label:"AI Providers", symbol:"\ue8f4", detail:"Cloud assistant"},
         {key:"about", label:"About", symbol:"\ue88e", detail:"Project information"}
     ]
@@ -31,11 +41,18 @@ FloatingWindow {
         {tab:"bar", title:"Bar position", hint:"Top Bottom Left Right"},
         {tab:"bar", title:"Bar layout and Clean Compact", hint:"Professional Compact Separated Simple Hover"},
         {tab:"bar", title:"Realtime margin editor", hint:"Spacing Edge Margin Slider"},
+        {tab:"bar", title:"Icon spacing: Left and Right groups", hint:"Per-icon gap before after wifi battery menu launcher weather date audio"},
         {tab:"modules", title:"App launcher and status modules", hint:"Icons Wifi Bluetooth Battery Audio Weather Clock"},
         {tab:"modules", title:"Menu bar and quick modes", hint:"Edit View Share File Shell Tools Night Silent"},
         {tab:"widgets", title:"Desktop widgets", hint:"Calendar Clock CPU RAM Music Media Now Playing Weather Connectivity Battery"},
         {tab:"dock", title:"Custom dock", hint:"Apps Auto-hide Files Browser"},
+        {tab:"launcher", title:"App launcher dimensions", hint:"Window width height icon size favorites columns row height"},
         {tab:"display", title:"Monitor configuration", hint:"Resolution Refresh rate Scale Position"},
+        {tab:"os", title:"Operating system information", hint:"Linux kernel distro hostname uptime session"},
+        {tab:"hardware", title:"Hardware details", hint:"CPU GPU PCI motherboard RAM BIOS sensors"},
+        {tab:"apps", title:"Installed applications", hint:"Pacman package list foreign explicit AUR"},
+        {tab:"storage", title:"Storage maintenance", hint:"Disk capacity filesystem mount cache journal"},
+        {tab:"updates", title:"Arch Updater", hint:"Check updates upgrade downloads pacman progress logs terminal"},
         {tab:"ai", title:"AI provider setup", hint:"OpenAI Anthropic Claude Gemini API key"},
         {tab:"about", title:"About RusticQ", hint:"Version Quickshell"}
     ]
@@ -46,22 +63,36 @@ FloatingWindow {
         searchField.text = "";
         contentView.contentY = 0;
     }
-    onVisibleChanged: if (!visible) Store.settingsVisible = false
+    onVisibleChanged: {
+        if (visible) floatingCheckTimer.restart()
+        else Store.settingsVisible = false
+    }
+    Component.onCompleted: if (visible) floatingCheckTimer.restart()
 
-    Rectangle {
+    // Hyprland normally tiles regular toplevels, even FloatingWindow.
+    // Resolve this window by exact title and float only that window, once on open.
+    // Never edit the user's compositor configuration.
+    Timer {
+        id: floatingCheckTimer
+        interval: 320
+        repeat: false
+        onTriggered: if (!floatHelper.running && root.visible) floatHelper.running = true
+    }
+    Process {
+        id: floatHelper
+        command: ["python3", Quickshell.shellPath("scripts/rustiq-settings-float.py")]
+    }
+
+    Item {
         anchors.fill: parent
-        radius: 18
-        color: Theme.background
-        border.width: 1
-        border.color: Theme.borderaccent
-        clip: true
+        // No extra outside border or radius; Hyprland handles the window shape.
         RowLayout {
             anchors.fill: parent
-            anchors.margins: 18
-            spacing: 18
+            anchors.margins: 14
+            spacing: 14
 
             Rectangle {
-                Layout.preferredWidth: 258
+                Layout.preferredWidth: 224
                 Layout.fillHeight: true
                 radius: 15
                 color: Qt.alpha(Theme.foreground, 0.035)
@@ -88,7 +119,7 @@ FloatingWindow {
                             }
                             Item { Layout.fillHeight: true }
                             Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
-                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 3 RC5"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 9 }
+                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 4 RC1"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 9 }
                         }
                     }
                     RowLayout {
@@ -96,6 +127,18 @@ FloatingWindow {
                         Text { text: "S E T T I N G S"; font.family: Fonts.poppinsSB.name; color: Theme.muted; font.pixelSize: 9 }
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     }
+                    Flickable {
+                        id: navigationScroll
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        contentWidth: width
+                        contentHeight: navigationColumn.implicitHeight
+                        boundsBehavior: Flickable.StopAtBounds
+                        ColumnLayout {
+                            id: navigationColumn
+                            width: navigationScroll.width
+                            spacing: 5
                     Repeater {
                         model: root.pages
                         delegate: Rectangle {
@@ -125,10 +168,11 @@ FloatingWindow {
                             }
                         }
                     }
-                    Item { Layout.fillHeight: true }
+                        }
+                    }
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     Text {
-                        text: "RUSTIQ · ALPHA 3 RC5\nQuickshell 0.3.1"
+                        text: "RUSTIQ · ALPHA 4 RC1\nQuickshell 0.3.1"
                         Layout.fillWidth: true
                         color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10
                     }
@@ -139,20 +183,19 @@ FloatingWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 12
-                RowLayout {
+                Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 56
                     ColumnLayout {
-                        Layout.fillWidth: true
+                        anchors.fill: parent
                         spacing: 3
                         Text { text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 22 }
-                        Text { text: "RUSTIQ / ALPHA 3 RC5 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                        Text { text: "RUSTIQ / ALPHA 4 RC1 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
                     }
-                    Rectangle {
-                        Layout.preferredWidth: 36; Layout.preferredHeight: 36
-                        radius: 11; color: Theme.surface
-                        Icon { anchors.centerIn: parent; icon: "\ue5cd"; color: Theme.foreground; font.pixelSize: 20 }
-                        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Store.settingsVisible = false }
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.SizeAllCursor
+                        onPressed: root.startSystemMove()
                     }
                 }
                 Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
@@ -202,7 +245,13 @@ FloatingWindow {
                             Store.settingsTab === "modules" ? modulesPage :
                             Store.settingsTab === "widgets" ? widgetsPage :
                             Store.settingsTab === "dock" ? dockPage :
+                            Store.settingsTab === "launcher" ? launcherPage :
                             Store.settingsTab === "display" ? displayPage :
+                            Store.settingsTab === "os" ? osPage :
+                            Store.settingsTab === "hardware" ? hardwarePage :
+                            Store.settingsTab === "apps" ? appsPage :
+                            Store.settingsTab === "storage" ? storagePage :
+                            Store.settingsTab === "updates" ? updatesPage :
                             Store.settingsTab === "ai" ? aiPage : aboutPage
                     }
                 }
@@ -242,7 +291,13 @@ FloatingWindow {
     Component { id: modulesPage; SettingsModulesPage {} }
     Component { id: widgetsPage; SettingsWidgetsPage {} }
     Component { id: dockPage; SettingsDockPage {} }
+    Component { id: launcherPage; SettingsLauncherPage {} }
     Component { id: displayPage; SettingsDisplaysPage {} }
+    Component { id: osPage; SettingsOSPage {} }
+    Component { id: hardwarePage; SettingsHardwarePage {} }
+    Component { id: appsPage; SettingsAppsPage {} }
+    Component { id: storagePage; SettingsStoragePage {} }
+    Component { id: updatesPage; SettingsUpdaterPage {} }
     Component { id: aiPage; SettingsAIPage {} }
     Component { id: aboutPage; SettingsAboutPage {} }
 }

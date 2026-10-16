@@ -21,20 +21,13 @@ PanelWindow {
             onClicked: Store.launcherVisible = false
         }
     }
-    Rectangle {
-        id: launcherCard
+    // One visual surface only: MiniLauncher owns the sole frame, not a nested card.
+    MiniLauncher {
+        id: launcherSurface
         anchors.centerIn: parent
-        width: Math.min(650, Math.max(320, parent.width - 48))
-        height: Math.min(590, Math.max(320, parent.height - 80))
-        radius: 20
-        color: Theme.background
-        border.width: 1
-        border.color: Theme.borderaccent
-        clip: true
-        MiniLauncher {
-            anchors.fill: parent
-            anchors.margins: 8
-            onLaunched: Store.launcherVisible = false
-        }
+        width: Math.min(SettingsStore.launcherWidth, Math.max(320, parent.width - 48))
+        height: SettingsStore.launcherLayoutMode === "clean-hover" && !launcherSurface.showResults
+            ? 124 : Math.min(SettingsStore.launcherHeight, Math.max(340, parent.height - 80))
+        onLaunched: Store.launcherVisible = false
     }
 }

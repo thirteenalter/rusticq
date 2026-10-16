@@ -5,6 +5,7 @@ import Quickshell
 Singleton {
     property bool sidebarVisible: false
     property bool advancedVisible: false
+    property bool quickReorderMode: false
     property var sidebarScreen: null
     property bool aiVisible: false
     property var aiScreen: null
@@ -12,6 +13,7 @@ Singleton {
     property bool launcherVisible: false
     property var launcherScreen: null
     property bool taskViewVisible: false
+    property bool systemMonitorVisible: false
     property string settingsTab: "appearance"
 
     function toggleQuick(screen) {
@@ -41,5 +43,5 @@ Singleton {
         sidebarVisible = false;
         aiVisible = false;
     }
-    onSidebarVisibleChanged: { if (!sidebarVisible) advancedVisible = false; }
+    onSidebarVisibleChanged: { if (!sidebarVisible) { advancedVisible = false; quickReorderMode = false; } }
 }

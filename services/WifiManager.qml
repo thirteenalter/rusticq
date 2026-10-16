@@ -34,33 +34,21 @@ Scope {
         onTriggered: root.processingNetwork = null
     }
 
-    onWifiDeviceChanged: {
-        if (wifiDevice) {
-            console.log("[WifiManager] Device found:", wifiDevice.name);
-            wifiDevice.scannerEnabled = true;
-        } else {
-            console.log("[WifiManager] No WiFi device found");
-        }
-    }
+    // No scanner side effects on construction. Several bar/popup instances
+    // may observe the same NetworkManager adapter.
 
     // ===== Public Functions =====
 
     function scan() {
         if (wifiDevice) {
-            console.log("[WifiManager] Scanning...");
-            // Restart a scan if it is already active.
-            wifiDevice.scannerEnabled = false;
-            wifiDevice.scannerEnabled = true;
+            // Do not stop another widget's ongoing scan.
+            if (!wifiDevice.scannerEnabled) wifiDevice.scannerEnabled = true;
         }
     }
 
     function toggleScan() {
         if (wifiDevice && wifiEnabled && wifiHardwareEnabled)
             wifiDevice.scannerEnabled = !wifiDevice.scannerEnabled;
-    }
-
-    Component.onDestruction: {
-        if (wifiDevice) wifiDevice.scannerEnabled = false;
     }
 
     function connectNetwork(network) {

@@ -26,14 +26,15 @@ assert 'anchors.centerIn: parent' in overlay
 assert 'Store.launcherVisible' in overlay
 
 widgets = read('modules/main/DesktopWidgets.qml')
+widget_window = read('modules/main/DesktopWidgetWindow.qml')
+for kind in ('clock', 'calendar', 'system', 'media', 'weather', 'connectivity'):
+    assert f'kind: "{kind}"' in widgets
 for flag in ('desktopClock', 'desktopCalendar', 'desktopSystem', 'desktopMedia', 'desktopWeather', 'desktopConnectivity'):
-    assert flag in widgets, flag
-assert 'contentHeight: cards.implicitHeight' in widgets
-assert 'Math.min(cards.implicitHeight' in widgets
-assert 'Layout.preferredHeight: visible ?' in widgets
-assert 'Quickshell.Services.Mpris' in widgets
-assert 'Mpris.players.values' in widgets
-assert 'MetricWave' in widgets
+    assert flag in widget_window, flag
+assert 'cards.implicitHeight' in widget_window
+assert 'Quickshell.Services.Mpris' in widget_window
+assert 'Mpris.players.values' in widget_window
+assert 'MetricWave' in widget_window
 
 settings = read('config/SettingsStore.qml')
 page = read('modules/settings/pages/SettingsWidgetsPage.qml')
@@ -44,10 +45,10 @@ for flag in ('desktopMedia', 'desktopWeather', 'desktopConnectivity'):
     assert f'"{flag}"' in settings
 
 dock = read('modules/main/RusticDock.qml')
-assert 'expanded ? 98 : 18' in dock
-assert 'expanded ? 430 : 82' in dock
+assert 'expanded ? 94 : 18' in dock
+assert 'desiredDockWidth' in dock
 assert 'Store.toggleLauncher(dock.screen)' in dock
-assert 'Layout.preferredHeight: 65' in dock
+assert 'Layout.preferredWidth: 46' in dock
 
 dashboard = read('modules/main/SystemDashboard.qml')
 assert 'showTrends' in dashboard and 'root.cpuHistory' in dashboard and 'root.memHistory' in dashboard
@@ -57,7 +58,7 @@ wave = read('components/MetricWave.qml')
 assert 'Canvas' in wave and 'ctx.stroke()' in wave
 font = TTFont(root/'assets/google.ttf', lazy=True)
 cmap = font.getBestCmap()
-new_files = ('modules/main/DesktopWidgets.qml', 'modules/main/SystemDashboard.qml', 'modules/settings/pages/SettingsWidgetsPage.qml')
+new_files = ('modules/main/DesktopWidgetWindow.qml', 'modules/main/SystemDashboard.qml', 'modules/settings/pages/SettingsWidgetsPage.qml')
 missing = []
 for file in new_files:
     for codepoint in re.findall(r'\\u([0-9a-fA-F]{4})', read(file)):

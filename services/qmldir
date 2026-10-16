@@ -9,3 +9,5 @@ WifiManager 1.0 WifiManager.qml
 singleton NotificationCenter 1.0 NotificationCenter.qml
 
 singleton AppUsage 1.0 AppUsage.qml
+
+singleton SystemMetrics 1.0 SystemMetrics.qml

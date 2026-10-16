@@ -19,6 +19,8 @@ Flickable {
     readonly property var player: Mpris.players.values.length ? Mpris.players.values[0] : null
     readonly property var outputDevices: Pipewire.nodes.values.filter(
         (node) => node.audio !== null && node.isSink && !node.isStream)
+    readonly property var inputDevices: Pipewire.nodes.values.filter(
+        (node) => node.audio !== null && !node.isSink && !node.isStream)
     property bool audioExpanded: true
     property bool screenExpanded: false
     property bool mediaExpanded: true
@@ -27,7 +29,7 @@ Flickable {
     property bool brightnessAvailable: false
     property string brightnessError: ""
 
-    PwObjectTracker { objects: [root.sink, root.source] }
+    PwObjectTracker { objects: [root.sink, root.source].concat(root.outputDevices, root.inputDevices).filter(node => node !== null) }
     Process {
         id: brightnessRead
         command: ["brightnessctl", "-c", "backlight", "-m"]
@@ -110,11 +112,12 @@ Flickable {
         Rectangle {
             id: audioCard
             Layout.fillWidth: true
-            Layout.preferredHeight: root.audioExpanded ? 256 + root.outputDevices.length * 33 : 64
+            Layout.preferredHeight: root.audioExpanded ? audioInner.implicitHeight + 28 : 64
             radius: 18; clip: true
             color: Qt.alpha(Theme.foreground, 0.025)
             border.color: Theme.borderaccent
             ColumnLayout {
+                id: audioInner
                 anchors.fill: parent; anchors.margins: 14
                 spacing: 9
                 SectionHeader {
@@ -201,6 +204,47 @@ Flickable {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: Pipewire.preferredDefaultAudioSink = outputDevice.modelData
+                            }
+                        }
+                    }
+                    Text {
+                        text: "Input device · microphone"
+                        color: Theme.muted; font.pixelSize: 11; font.family: Fonts.poppinsSB.name
+                    }
+                    Text {
+                        visible: root.inputDevices.length === 0
+                        text: "No microphone capture source found"
+                        font.pixelSize: 10; color: Theme.muted; font.family: Fonts.poppins.name
+                    }
+                    Repeater {
+                        model: root.inputDevices
+                        delegate: Rectangle {
+                            id: inputDevice
+                            required property var modelData
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 34
+                            radius: 8
+                            color: Pipewire.defaultAudioSource === modelData ? Qt.alpha(Theme.accent, 0.15) : Theme.surface
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 10; anchors.rightMargin: 10; spacing: 8
+                                Icon { icon: "\ue029"; font.pixelSize: 16; color: Theme.accent; Layout.preferredWidth: 20 }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: inputDevice.modelData.description || inputDevice.modelData.nickname || inputDevice.modelData.name
+                                    elide: Text.ElideRight
+                                    font.pixelSize: 10; font.family: Fonts.poppins.name; color: Theme.foreground
+                                }
+                                Icon {
+                                    icon: "\ue5ca"; font.pixelSize: 16; color: Theme.accent
+                                    Layout.preferredWidth: 20
+                                    visible: Pipewire.defaultAudioSource === inputDevice.modelData
+                                }
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: Pipewire.preferredDefaultAudioSource = inputDevice.modelData
                             }
                         }
                     }

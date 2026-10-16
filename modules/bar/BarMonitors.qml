@@ -179,7 +179,7 @@ ColumnLayout {
             readonly property bool opened: root.detailsOpen === modelData.name
             readonly property var current: root.drafts.find(m => m.name === modelData.name) || modelData
             Layout.fillWidth: true
-            Layout.preferredHeight: opened ? detailColumn.implicitHeight + 24 : 62
+            Layout.preferredHeight: opened ? detailColumn.implicitHeight + 24 : 66
             radius: 11; color: Theme.surface; border.color: opened ? Qt.alpha(Theme.accent, .65) : Theme.borderaccent
             ColumnLayout {
                 id: detailColumn
@@ -202,7 +202,7 @@ ColumnLayout {
                             Text { text: detailCard.current.width + "×" + detailCard.current.height + " · " + detailCard.current.mode.split("@").slice(-1)[0] + " Hz · " + detailCard.current.scale + "x"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
                         }
                         Rectangle {
-                            Layout.preferredWidth: 26; Layout.preferredHeight: 26; radius: 8
+                            Layout.preferredWidth: 28; Layout.preferredHeight: 28; radius: 8
                             color: Theme.background
                             Icon { anchors.centerIn: parent; icon: detailCard.opened ? "\ue5ce" : "\ue5cf"; font.pixelSize: 18; color: Theme.foreground }
                         }
@@ -212,6 +212,8 @@ ColumnLayout {
                 ColumnLayout {
                     visible: detailCard.opened
                     Layout.fillWidth: true
+                    Layout.leftMargin: 42
+                    Layout.rightMargin: 1
                     spacing: 10
                     Text { Layout.fillWidth: true; text: detailCard.modelData.description || "Connected monitor"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted; wrapMode: Text.WordWrap }
                     Text { text: "Position relative to another monitor"; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }

@@ -10,13 +10,30 @@ Rectangle {
     id: root
     signal launched()
     radius: Theme.sectionRadius
-    color: Qt.alpha(Theme.foreground, 0.03)
-    border.width: 0
-    border.color: "transparent"
+    color: Theme.background
+    border.width: 1
+    border.color: Theme.borderaccent
     property string query: ""
     property var results: []
     property var frequent: []
     property bool showAll: false
+    readonly property bool cleanHover: SettingsStore.launcherLayoutMode === "clean-hover"
+    property bool revealPreview: false
+    readonly property bool showResults: !cleanHover || query.trim().length > 0 || revealPreview
+    readonly property var displayedResults: cleanHover && query.trim().length === 0 ? results.slice(0, 8) : results
+    Timer {
+        id: collapsePreview
+        interval: 650
+        onTriggered: if (root.cleanHover && root.query.trim().length === 0 && !launcherHovered.hovered)
+            root.revealPreview = false
+    }
+    HoverHandler {
+        id: launcherHovered
+        onHoveredChanged: {
+            if (hovered) collapsePreview.stop();
+            else if (root.query.trim().length === 0) collapsePreview.restart();
+        }
+    }
     function launch(entry) {
         try {
             entry.execute();
@@ -51,7 +68,11 @@ Rectangle {
         function onUsageChanged() { root.rebuild(); }
     }
     Component.onCompleted: rebuild()
-    onVisibleChanged: if (visible) Qt.callLater(function() { rebuild(); searchField.forceActiveFocus(); })
+    onVisibleChanged: if (visible) {
+        root.revealPreview = false;
+        root.query = "";
+        Qt.callLater(function() { rebuild(); searchField.forceActiveFocus(); });
+    }
     Connections {
         target: DesktopEntries
         function onApplicationsChanged() { root.rebuild(); }
@@ -96,9 +117,10 @@ Rectangle {
                 Layout.fillWidth: true
                 spacing: 1
                 Text { text: "App Launcher"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
-                Text { text: "Search installed applications"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                Text { visible: !root.cleanHover; text: "Search installed applications"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
             }
             Text {
+                visible: !root.cleanHover
                 text: DesktopEntries.applications.values.length + " apps"
                 color: Theme.muted
                 font.family: Fonts.poppins.name
@@ -111,7 +133,10 @@ Rectangle {
             Layout.preferredHeight: 40
             radius: 11
             color: Theme.surface
-            border.color: Qt.alpha(Theme.foreground, 0.05)
+            border.width: 0
+            HoverHandler {
+                onHoveredChanged: if (hovered && root.cleanHover) root.revealPreview = true
+            }
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 12
@@ -159,12 +184,13 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 1
+            visible: root.showResults
+            Layout.preferredHeight: visible ? 1 : 0
             color: Theme.borderaccent
         }
 
         ColumnLayout {
-            visible: root.query.trim() === "" && root.frequent.length > 0
+            visible: !root.cleanHover && root.query.trim() === "" && root.frequent.length > 0 && SettingsStore.launcherHeight >= 470
             Layout.fillWidth: true
             spacing: 8
             RowLayout {
@@ -175,7 +201,7 @@ Rectangle {
             }
             GridLayout {
                 Layout.fillWidth: true
-                columns: 3
+                columns: SettingsStore.launcherFavoriteColumns
                 columnSpacing: 8
                 rowSpacing: 8
                 Repeater {
@@ -184,7 +210,7 @@ Rectangle {
                         id: frequentApp
                         required property var modelData
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 42
+                        Layout.preferredHeight: Math.max(42, SettingsStore.launcherIconSize + 16)
                         radius: 11
                         color: favMouse.containsMouse ? Qt.alpha(Theme.accent, 0.13) : Theme.surface
                         RowLayout {
@@ -192,7 +218,7 @@ Rectangle {
                             anchors.leftMargin: 8; anchors.rightMargin: 8
                             spacing: 7
                             IconImage {
-                                Layout.preferredWidth: 25; Layout.preferredHeight: 25
+                                Layout.preferredWidth: SettingsStore.launcherIconSize; Layout.preferredHeight: SettingsStore.launcherIconSize
                                 source: root.iconSource(frequentApp.modelData)
                                 visible: String(source).length > 0
                             }
@@ -205,6 +231,7 @@ Rectangle {
         }
 
         RowLayout {
+            visible: !root.cleanHover
             Layout.fillWidth: true
             Text { text: root.query.trim() === "" ? "All applications" : "Search results"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; Layout.fillWidth: true }
             Text { text: root.results.length + " found"; color: Theme.muted; font.pixelSize: 10 }
@@ -212,17 +239,19 @@ Rectangle {
 
         ListView {
             id: appList
+            visible: root.showResults
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.fillHeight: root.showResults
+            Layout.preferredHeight: root.showResults ? -1 : 0
             clip: true
             spacing: 6
-            model: root.results
+            model: root.displayedResults
             boundsBehavior: Flickable.StopAtBounds
             delegate: Rectangle {
                 id: appRow
                 required property var modelData
                 width: ListView.view.width
-                height: 56
+                height: Math.max(SettingsStore.launcherRowHeight, SettingsStore.launcherIconSize + 20)
                 radius: 12
                 color: appMouse.containsMouse ? Qt.alpha(Theme.accent, 0.12) : Theme.surface
                 border.width: 0
@@ -232,14 +261,14 @@ Rectangle {
                     anchors.margins: 10
                     spacing: 10
                     Rectangle {
-                        Layout.preferredWidth: 36
-                        Layout.preferredHeight: 36
+                        Layout.preferredWidth: SettingsStore.launcherIconSize + 10
+                        Layout.preferredHeight: SettingsStore.launcherIconSize + 10
                         radius: 11
                         color: Qt.alpha(Theme.accent, 0.11)
                         IconImage {
                             id: appIcon
                             anchors.centerIn: parent
-                            width: 30; height: 30
+                            width: SettingsStore.launcherIconSize; height: SettingsStore.launcherIconSize
                             source: root.iconSource(appRow.modelData)
                             visible: String(source).length > 0
                         }
@@ -249,7 +278,7 @@ Rectangle {
                             text: root.textOf(appRow.modelData.name).length ? root.textOf(appRow.modelData.name).charAt(0).toUpperCase() : "•"
                             color: Theme.accent
                             font.family: Fonts.poppinsSB.name
-                            font.pixelSize: 15
+                            font.pixelSize: Math.max(13, Math.round(SettingsStore.launcherIconSize * 0.5))
                         }
                     }
                     ColumnLayout {
@@ -301,6 +330,7 @@ Rectangle {
         }
 
         Text {
+            visible: !root.cleanHover || (root.query.trim().length > 0 && root.results.length === 0)
             Layout.fillWidth: true
             text: root.results.length === 0 ? "No matching applications" : root.query.trim().length > 0 ? root.results.length + " matching apps · choose to launch" : "Installed applications · choose to launch"
             wrapMode: Text.WordWrap

@@ -1,88 +1,53 @@
-**Current release: RusticQ Alpha 3 RC1** — see [`RUSTIQ-ALPHA-3-RC-1.md`](RUSTIQ-ALPHA-3-RC-1.md) for release notes and installation.
+# RusticQ · Alpha 4 RC1
 
-> **Current release: rustiq-alpha-2**, built on RusticQ Alpha 1. Start with [RUSTIQ-ALPHA-2.md](RUSTIQ-ALPHA-2.md). Older release notes are preserved for reference.
+A modular desktop shell for **Quickshell 0.3.1**, Hyprland, Arch Linux, and Wayland. Supports the original **Gruvbox** palette or **Follow Aether** applied colors, Poppins, and Google Material Symbols.
 
-> **Hotfix 3 (Quickshell 0.3.1):** fixes `WifiManager is not a type` by registering the regular `WifiManager` component in `services/qmldir`. See `HOTFIX3-WIFIMANAGER.md`.
+## Install / test
 
-# RusticQ — rustiq-alpha-2 (Quickshell 0.3.1)
-
-Baseline: **Quickshell v0.3.1**, Qt 6, Wayland/Hyprland.
-
-## Version notes: Arch Linux Quickshell 0.3.1
-
-- This ZIP targets the Quickshell version confirmed by the user: `Quickshell 0.3.1 (distributed by Arch Linux)`.
-- Quickshell 0.3.2 is mostly a maintenance release; this configuration uses APIs documented in 0.3.1.
-- Upstream 0.3.1 can report some *open* Wi-Fi networks as `WifiSecurityType.Unknown`. The Wi-Fi card now tries the native `connect()` method for these rather than incorrectly blocking the network as "unsupported security". Actual encrypted/enterprise networks may still require NetworkManager's own setup tools.
-- The earlier `targetScreen` error was a QML component/property mismatch, not proof of an API removal from 0.3.1.
-
-## Installation
+Back up your active configuration. Extract this complete archive and launch from the directory containing `shell.qml`:
 
 ```bash
-mkdir -p ~/.config/quickshell
-cp -a ./quickshell/. ~/.config/quickshell/
-qs -p ~/.config/quickshell
+qs -p .
 ```
 
-If the folder is located at `~/.config/quickshell`, the default `qs` command should work too. Back up an existing Quickshell setup before copying.
+Test with a separate directory before replacing your existing shell. Quickshell 0.3.1 and a working Hyprland session are required. System features optionally use NetworkManager, BlueZ, UPower, PipeWire, and other existing desktop services.
 
-Requirements: Quickshell with Hyprland and Networking support; Hyprland compositor; NetworkManager for the native Wi-Fi card; BlueZ for Bluetooth; UPower for battery detection; `curl` and internet access for the optional wttr.in weather; `ip` for the optional USB tether detection. Bundled **Poppins** and **Material Symbols Rounded** fonts are loaded from `assets/`.
+## Alpha 4 RC1 corrective fix — Omarchy update + dock windows
 
-## Hotfix 1 — startup error in modules/main/Bar.qml
+RusticQ detects Omarchy's guarded update flow and launches `omarchy update` interactively in a terminal after user confirmation rather than calling `pacman -Syu` directly. The Dock → Show running apps switch now observes Hyprland's live toplevel model. See [`changelog/ALPHA-4-RC-1-OMARCHY-DOCK-FIX.md`](changelog/ALPHA-4-RC-1-OMARCHY-DOCK-FIX.md). No version bump.
 
-- Removed `PowerButton { targetScreen: barWindow.screen }` (previously line 36).
-- The sidebar toggle is now defined directly in `modules/main/Bar.qml`, and uses the current bar window screen and the existing `Store` singleton. This avoids a hard runtime dependency on an extra custom `targetScreen` property in the PowerButton component, while keeping Gruvbox colors/sizing.
-- `components/PowerButton.qml` remains in the archive for reference/backward compatibility but is no longer instantiated by the top bar.
-- If you are merging manually, **replace the entire `modules/main/Bar.qml` file**. If the error is still reported on line 36, Quickshell is loading an older copy: check `qs -p /home/ryznxx/dev/quickshell` and compare the file on disk.
-- Quickshell runtime remains untested here (requires your Hyprland session).
+## Alpha 4 RC1 correction — Settings window & dock alignment
 
-## What works / changes made
+Settings starts as a smaller floating top-level window (940 × 660 px), without an internal outer rounded border or header close button. Hyprland controls the outside corners. A targeted, best-effort Hyprland Lua dispatcher helper floats and centers only the RusticQ Settings window without editing your compositor configuration. Dock width follows its actual visible row contents, keeping both margins balanced. See [`changelog/ALPHA-4-RC-1-FLOATING-SETTINGS-DOCK-ALIGNMENT-FIX.md`](changelog/ALPHA-4-RC-1-FLOATING-SETTINGS-DOCK-ALIGNMENT-FIX.md). No version bump.
 
-- One responsive top bar per screen (Quickshell `Variants`).
-- Gruvbox palette is centralized in `config/Theme.qml`; Poppins font loaders in `config/Fonts.qml`.
-- Clickable Hyprland workspace buttons (1–6); focused workspace highlighting.
-- Current system clock and weather with graceful no-data placeholder. The weather endpoint requires network connectivity.
-- Native NetworkManager Wi-Fi indication, native BlueZ Bluetooth status, and UPower battery indication (hidden if no system battery).
-- Rightmost toggle opens the **Quick Control** sidebar on that screen. Outside-click closes it through HyprlandFocusGrab; the close button also works.
-- Wi-Fi panel: list, scan, radio toggle, connect/disconnect, forget, password prompt for WPA-PSK/WPA2-PSK/SAE, and connection failure messages.
-- System monitoring panel retained with the original card style, now using palette tokens for warning/danger/healthy colors.
-- Added missing `services/qmldir` registrations; removed references to undefined style tokens / font aliases.
-- No recurring Wi-Fi/Bluetooth/battery shell commands; these use Quickshell services. USB tether detection is still a low-frequency fallback; system metrics and optional weather use external commands.
+## Alpha 4 RC1 additions
 
-## Scope & known limitations
+- Settings now includes OS information, Hardware, Installed Apps, Storage, and Arch Updater as independently scrollable sidebar destinations.
+- OS and hardware diagnostics are read-only. Installed Apps includes graphical desktop entries and the searchable pacman inventory.
+- Arch Updater supports safe `checkupdates` checks, shows pending package versions, and displays persistent live pacman output. Upgrades require separate manual confirmation and PolicyKit authorization; no upgrade runs automatically.
+- The sidebar scrolls when categories exceed the screen height, and Settings search covers new pages.
+- See **[`changelog/ALPHA-4-RC-1.md`](changelog/ALPHA-4-RC-1.md)** for full details and safety notes.
 
-- **Hyprland-specific** workspace switching and focus grab. This is not a generic X11/Sway configuration.
-- Networks requiring EAP/enterprise, OWE, WEP, or captive-portal login are intentionally not given a misleading simple-password flow. Configure them in NetworkManager settings.
-- `modules/power/PowerMenu.qml` is an inactive prototype (its actions remain placeholders). `modules/process/ProcessManager.qml` is also an inactive placeholder; neither is instantiated by `shell.qml`.
-- Thermal measurements depend on `/sys/class/thermal/thermal_zone*` and may be inaccurate for your CPU; update the sensor if needed.
-- The original backup `modules/main/Bar.qml.bak` is included as reference only; it isn't loaded.
-- **No Linux/Hyprland runtime is available in this build environment.** Static verification was performed; integration checks (actual desktop session, Wi-Fi credentials, and hotplug screens) must be run locally.
+## Alpha 4 changes
 
-## Local smoke tests
+- Moved prior release notes and hotfix summaries into **[`changelog/`](changelog/)**. Root `README.md` now describes the current project instead of concatenating obsolete version notes.
+- Replaced the fixed **Wi-Fi/Battery** spacer with adjustable per-icon spacing; default distances are compact again. Use **Settings → Bar → Icon spacing** to select Left/Right, edit the baseline group gap and the Before/After margins of any icon. Values persist separately for each bar mode.
+- Added **Dock → Show running apps** (off by default): list of real graphical windows advertised through Hyprland, icon via the desktop icon theme, click to activate; horizontal scrolling when the row outgrows the display. Not a list of background processes.
+- App Launcher is now a **single card**, with the only border on its outer surface.
+- **Quick Control drag arrangement**: click the handle/reorder icon in the header, drag a section by its grip and release to move it. Order is saved as `quickControlOrder` in `user-settings.json`. Reset button restores the original order. Notifications adopts the same section-header design.
 
-```bash
-qs --version
-qs -p ~/.config/quickshell
-# in another terminal, inspect output / live errors:
-qs log
-```
+## Manual spacing (Alpha 4 correction)
 
-Suggested checks: workspace click and highlight; open/close sidebar; Wi-Fi scan/toggle/connect/password/forget; Bluetooth connected-device status; battery present/charging status; clock; no-data weather fallback; system metrics; 2-monitor hotplug. For defects, capture `qs log` and your installed Quickshell/Hyprland versions.
+The left and right bar groups now have separate baseline spacing controls, plus individual Before/After spacing for Arch/AI, App Search, Menu, Workspaces, Weather, Clock, Date, Bluetooth, Wi-Fi, Battery, Audio, Task View, Quick Modes, and Quick Control. Spacing is based on layout margins rather than absolute positions; it adapts when icons are hidden. The Left/Right vertical bar uses the same controls as top/bottom margins. **Reset icon** clears the selected icon overrides; **Reset this side** clears the active side for the current layout mode. No previous `user-settings.json` values are overwritten.
 
-Documentation reference: https://quickshell.org/docs/v0.3.1/
+## Quick Control default order
 
-## Hotfix 9 — Aether & indicator popups
+Wi-Fi → Bluetooth → Battery → System → Notifications. System remains permanently expanded, independently of its position.
 
-See [`HOTFIX9-AETHER-MINI-WIDGETS.md`](HOTFIX9-AETHER-MINI-WIDGETS.md).
-Settings → Appearance → Color source supports **Independent Gruvbox** and
-**Follow Aether** (reads `~/.config/aether/theme/colors.toml`, fallback Gruvbox).
-The system pill contains clickable Bluetooth, Wi-Fi, Battery, and Audio controls;
-each opens its own popup while retaining the full Quick Control sidebar.
-The date now includes the weekday. Target runtime: Quickshell 0.3.1.
+## Settings
 
-## Hotfix 10 — indicator popup & battery icons
+Use the Settings sidebar for Appearance, Bar, Modules, Widgets, Dock, Displays, OS Information, Hardware, Installed Apps, Storage, Arch Updater, AI Providers, and About. The new **Show running apps** option is under **Dock**. User preferences are stored in `user-settings.json`; API credentials remain in the Linux keyring.
 
-Lihat `HOTFIX10-POPUP-BATTERY.md` untuk perbaikan mapping klik popup Quickshell 0.3.1, ukuran window tanpa deprecated warning, ikon baterai Android Material Symbols, dan smoke test.
+## Release notes
 
-## RusticQ Alpha 2 — single-feature popup mode
-
-See [`RUSTIQ-ALPHA-2.md`](RUSTIQ-ALPHA-2.md): Wi-Fi, Bluetooth and Battery mini widgets no longer include collapsible dropdown controls. In the full Quick Control the dropdowns continue to work. Both the bar Quick Control toggle and its panel-header icon use Google Material Symbols Rounded `stat_minus_1` (U+E69B).
+See **[`changelog/ALPHA-4.md`](changelog/ALPHA-4.md)** and older records in `changelog/`. Source changes do not guarantee that every interaction works on a real Hyprland installation. Verify using `qs -p .` and `qs log -f`.

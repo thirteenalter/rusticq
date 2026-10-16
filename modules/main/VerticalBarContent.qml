@@ -44,6 +44,8 @@ Item {
 
         Rectangle {
             id: launcher
+            Layout.topMargin: SettingsStore.spacingIcon("left", "arch", "before")
+            Layout.bottomMargin: SettingsStore.spacingIcon("left", "arch", "after")
             visible: SettingsStore.showArch
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: root.controlSize
@@ -59,6 +61,8 @@ Item {
 
         Rectangle {
             id: launcherSearch
+            Layout.topMargin: SettingsStore.spacingIcon("left", "launcher", "before")
+            Layout.bottomMargin: SettingsStore.spacingIcon("left", "launcher", "after")
             visible: SettingsStore.showLauncher
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: root.controlSize
@@ -74,6 +78,8 @@ Item {
 
         ContextMenuBar {
             id: railMenu
+            Layout.topMargin: SettingsStore.spacingIcon("left", "menu", "before")
+            Layout.bottomMargin: SettingsStore.spacingIcon("left", "menu", "after")
             visible: SettingsStore.showMenuBar
             vertical: true
             Layout.alignment: Qt.AlignHCenter
@@ -106,6 +112,8 @@ Item {
 
                 Rectangle {
                     id: workspaceIsland
+                    Layout.topMargin: SettingsStore.spacingIcon("left", "workspaces", "before")
+                    Layout.bottomMargin: SettingsStore.spacingIcon("left", "workspaces", "after")
                     visible: SettingsStore.showWorkspaces && !root.simple
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: root.separated ? root.controlSize + 5 : scroll.width
@@ -165,9 +173,11 @@ Item {
                     ColumnLayout {
                         id: infoColumn
                         anchors.centerIn: parent
-                        spacing: root.controlGap
+                        spacing: SettingsStore.spacingGroup("right", root.controlGap)
                         Rectangle {
                             id: weatherButton
+                            Layout.topMargin: SettingsStore.spacingIcon("right", "weather", "before")
+                            Layout.bottomMargin: SettingsStore.spacingIcon("right", "weather", "after")
                             visible: !root.simple && SettingsStore.showWeather
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: root.controlSize
@@ -179,6 +189,8 @@ Item {
                         }
                         Rectangle {
                             id: timeButton
+                            Layout.topMargin: SettingsStore.spacingIcon("right", "time", "before")
+                            Layout.bottomMargin: SettingsStore.spacingIcon("right", "time", "after")
                             visible: SettingsStore.showTime
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: root.controlSize
@@ -194,6 +206,8 @@ Item {
                         }
                         Rectangle {
                             id: dateButton
+                            Layout.topMargin: SettingsStore.spacingIcon("right", "date", "before")
+                            Layout.bottomMargin: SettingsStore.spacingIcon("right", "date", "after")
                             visible: !root.simple && SettingsStore.showDate
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: root.controlSize
@@ -235,6 +249,8 @@ Item {
                             ]
                             delegate: Rectangle {
                                 id: statusButton
+                                Layout.topMargin: SettingsStore.spacingIcon("right", statusButton.modelData.kind, "before")
+                                Layout.bottomMargin: SettingsStore.spacingIcon("right", statusButton.modelData.kind, "after")
                                 required property var modelData
                                 visible: modelData.available
                                 Layout.alignment: Qt.AlignHCenter
@@ -253,6 +269,8 @@ Item {
 
         Rectangle {
             id: taskButtonVertical
+            Layout.topMargin: SettingsStore.spacingIcon("right", "task", "before")
+            Layout.bottomMargin: SettingsStore.spacingIcon("right", "task", "after")
             visible: SettingsStore.showTaskView && !root.simple
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: root.controlSize
@@ -264,6 +282,8 @@ Item {
 
         Rectangle {
             id: quickButton
+            Layout.topMargin: SettingsStore.spacingIcon("right", "quickControl", "before")
+            Layout.bottomMargin: SettingsStore.spacingIcon("right", "quickControl", "after")
             visible: SettingsStore.showQuickControl
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: root.controlSize

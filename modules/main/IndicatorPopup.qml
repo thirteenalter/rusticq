@@ -23,7 +23,9 @@ PopupWindow {
     anchor.edges: barPosition === "bottom" ? (Edges.Bottom | Edges.Left) : (Edges.Top | Edges.Left)
     anchor.gravity: barPosition === "bottom" ? (Edges.Top | Edges.Right)
         : barPosition === "right" ? (Edges.Bottom | Edges.Left) : (Edges.Bottom | Edges.Right)
+    // All Edit / View / Share / Shell menus share one aligned left-edge anchor.
     anchor.rect.x: barPosition === "left" ? hostWindow.width + 8 : barPosition === "right" ? -8
+        : kind === "menu" ? 14
         : Math.max(8, Math.min(Math.max(8, hostWindow.width - implicitWidth - 8), targetX - implicitWidth / 2))
     anchor.rect.y: barPosition === "top" ? hostWindow.barHeight + 8
         : barPosition === "bottom" ? -1

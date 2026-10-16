@@ -8,12 +8,12 @@ ColumnLayout {
     width: parent ? parent.width : 680
     spacing: 14
     SettingsSection {
-        heading: "RusticQ · Alpha 3 RC5"
+        heading: "RusticQ · Alpha 4 RC1"
         description: "Arch Linux desktop shell · Quickshell 0.3.1"
         symbol: "\ue8b8"
         Text {
             Layout.fillWidth: true
-            text: "This build separates Settings into independent QML pages to prevent section height and clipping regressions. The Gruvbox and Aether palette options remain available."
+            text: "Settings now includes OS information, hardware, pacman packages, storage diagnostics and an opt-in Arch Updater. Gruvbox and Follow Aether remain available."
             wrapMode: Text.WordWrap; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 12
         }
         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }

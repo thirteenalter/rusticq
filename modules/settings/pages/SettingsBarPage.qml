@@ -127,6 +127,14 @@ ColumnLayout {
         }
     }
 
+
+    SettingsSection {
+        heading: "Icon spacing · Left / Right"
+        description: "Select a side, click any icon, and adjust its Before / After margin. Independent per bar mode."
+        symbol: "\ue8b8"
+        BarSpacingEditor { Layout.fillWidth: true }
+    }
+
     SettingsSection {
         heading: "Realtime margin editor"
         description: "Independent margins per mode · 0–32px · changes apply instantly."

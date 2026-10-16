@@ -11,6 +11,7 @@ Pill {
     property bool showDate: false
     property bool showTime: true
     property bool showDetails: true
+    property bool useBarSpacing: false
     signal timeActivated(real localX)
     signal dateActivated(real localX)
     color: "transparent"
@@ -23,9 +24,11 @@ Pill {
     }
 
     RowLayout {
-        spacing: Theme.barInfoGap
+        spacing: root.useBarSpacing ? SettingsStore.spacingGroup("right", 4) : Theme.barInfoGap
         InfoSegment {
             id: timePart
+            Layout.leftMargin: root.useBarSpacing ? SettingsStore.spacingIcon("right", "time", "before") : 0
+            Layout.rightMargin: root.useBarSpacing ? SettingsStore.spacingIcon("right", "time", "after") : 0
             visible: root.showTime
             showCaption: root.showDetails
             symbol: "\ue8b5"  // schedule, Material Symbols Rounded
@@ -37,6 +40,8 @@ Pill {
         }
         InfoSegment {
             id: datePart
+            Layout.leftMargin: root.useBarSpacing ? SettingsStore.spacingIcon("right", "date", "before") : 0
+            Layout.rightMargin: root.useBarSpacing ? SettingsStore.spacingIcon("right", "date", "after") : 0
             showCaption: root.showDetails
             visible: root.showDate
             symbol: "\uebcc"  // calendar_month

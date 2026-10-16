@@ -46,7 +46,9 @@ PanelWindow {
     readonly property bool simpleMode: SettingsStore.barMode === "simple"
     readonly property int barHeight: professionalMode ? 44 : separatedMode ? 40 : compactMode ? 36 : 38
     readonly property int groupPadding: separatedMode ? 12 : compactMode ? 3 : professionalMode ? 14 : 9
-    readonly property int groupSpacing: cleanCompactMode ? Theme.barInfoGap : compactMode ? 5 : 9
+    readonly property int groupSpacing: compactMode ? 4 : 5
+    readonly property int leftGroupSpacing: SettingsStore.spacingGroup("left", compactMode ? 4 : 5)
+    readonly property int rightGroupSpacing: SettingsStore.spacingGroup("right", compactMode ? 3 : 4)
 
     implicitWidth: verticalMode ? (simpleMode ? 48 : cleanCompactMode ? 44 : compactMode ? 52 : professionalMode ? 74 : Theme.verticalBarWidth) : 0
     implicitHeight: verticalMode ? 0 : barHeight
@@ -101,8 +103,10 @@ PanelWindow {
             RowLayout {
                 id: leftItems
                 anchors.centerIn: parent
-                spacing: barWindow.groupSpacing
+                spacing: barWindow.leftGroupSpacing
                 Arch {
+                    Layout.leftMargin: SettingsStore.spacingIcon("left", "arch", "before")
+                    Layout.rightMargin: SettingsStore.spacingIcon("left", "arch", "after")
                     visible: SettingsStore.showArch
                     backgroundEnabled: !barWindow.cleanCompactMode
                     Layout.preferredWidth: implicitWidth
@@ -118,6 +122,8 @@ PanelWindow {
                 }
                 Rectangle {
                     id: launcherButton
+                    Layout.leftMargin: SettingsStore.spacingIcon("left", "launcher", "before")
+                    Layout.rightMargin: SettingsStore.spacingIcon("left", "launcher", "after")
                     visible: SettingsStore.showLauncher
                     Layout.preferredWidth: barWindow.compactMode ? 29 : 34
                     Layout.preferredHeight: barWindow.compactControlHeight
@@ -135,6 +141,8 @@ PanelWindow {
                 }
                 ContextMenuBar {
                     id: contextMenuBar
+                    Layout.leftMargin: SettingsStore.spacingIcon("left", "menu", "before")
+                    Layout.rightMargin: SettingsStore.spacingIcon("left", "menu", "after")
                     visible: SettingsStore.showMenuBar && barWindow.width > 980
                     vertical: false
                     onMenuRequested: (section, item) => barWindow.openMenu(section, item)
@@ -142,6 +150,8 @@ PanelWindow {
                     Layout.preferredHeight: visible ? implicitHeight : 0
                 }
                 Workspaces {
+                    Layout.leftMargin: SettingsStore.spacingIcon("left", "workspaces", "before")
+                    Layout.rightMargin: SettingsStore.spacingIcon("left", "workspaces", "after")
                     backgroundEnabled: !barWindow.cleanCompactMode
                     buttonSize: barWindow.compactMode ? barWindow.compactControlHeight : 23
                     spacing: barWindow.compactMode ? barWindow.groupSpacing : 6
@@ -175,7 +185,7 @@ PanelWindow {
                 id: rightItems
                 HoverHandler { id: rightGroupHover }
                 anchors.centerIn: parent
-                spacing: barWindow.groupSpacing
+                spacing: barWindow.rightGroupSpacing
                 Rectangle {
                     id: infoTray
                     visible: !barWindow.simpleMode
@@ -187,9 +197,11 @@ PanelWindow {
                     RowLayout {
                         id: infoItems
                         anchors.centerIn: parent
-                        spacing: Theme.barInfoGap
+                        spacing: barWindow.rightGroupSpacing
                         Weather {
                             id: trayWeather
+                            Layout.leftMargin: SettingsStore.spacingIcon("right", "weather", "before")
+                            Layout.rightMargin: SettingsStore.spacingIcon("right", "weather", "after")
                             onActivated: localX => {
                                 const point = barWindow.mapFromItem(trayWeather, localX, 0);
                                 barWindow.openMini("weather", point.x);
@@ -204,6 +216,7 @@ PanelWindow {
                         }
                         Clock {
                             id: trayClock
+                            useBarSpacing: true
                             onTimeActivated: localX => {
                                 const point = barWindow.mapFromItem(trayClock, localX, 0);
                                 barWindow.openMini("time", point.x);
@@ -241,6 +254,8 @@ PanelWindow {
                 }
                 Rectangle {
                     id: taskButton
+                    Layout.leftMargin: SettingsStore.spacingIcon("right", "task", "before")
+                    Layout.rightMargin: SettingsStore.spacingIcon("right", "task", "after")
                     visible: SettingsStore.showTaskView && !barWindow.simpleMode
                     Layout.preferredWidth: barWindow.compactMode ? 29 : 34
                     Layout.preferredHeight: barWindow.compactControlHeight
@@ -256,6 +271,8 @@ PanelWindow {
                     }
                 }
                 QuickModes {
+                    Layout.leftMargin: SettingsStore.spacingIcon("right", "quickModes", "before")
+                    Layout.rightMargin: SettingsStore.spacingIcon("right", "quickModes", "after")
                     visible: SettingsStore.showQuickModes && hasModules
                     backgroundEnabled: !barWindow.cleanCompactMode
                     controlHeight: barWindow.compactControlHeight
@@ -264,6 +281,8 @@ PanelWindow {
                 }
                 Rectangle {
                     id: sidebarToggle
+                    Layout.leftMargin: SettingsStore.spacingIcon("right", "quickControl", "before")
+                    Layout.rightMargin: SettingsStore.spacingIcon("right", "quickControl", "after")
                     visible: SettingsStore.showQuickControl
                     Layout.preferredWidth: barWindow.compactMode ? 32 : 40
                     Layout.preferredHeight: barWindow.compactControlHeight
