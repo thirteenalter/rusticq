@@ -9,6 +9,7 @@ Singleton {
     property bool aiVisible: false
     property var aiScreen: null
     property bool settingsVisible: false
+    property bool taskViewVisible: false
     property string settingsTab: "appearance"
 
     function toggleQuick(screen) {

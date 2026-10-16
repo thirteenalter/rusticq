@@ -51,6 +51,6 @@ assert 'eval ' not in get('scripts/rustiq-menu-action.sh')
 settings=get('modules/settings/SettingsWindow.qml')
 assert 'Clean Compact · Right-side labels' in settings
 assert 'delegate: SettingsToggle {}' in settings
-assert 'RUSTIQ / ALPHA 3 RC3' in settings
+assert 'RUSTIQ / ALPHA 3 RC4' in settings
 
 print('PASS: RC2 opaque widget backgrounds, right-only detail selector, 14 persistent flags, per-icon visibility, six menu categories, menu action allowlist, settings UI')

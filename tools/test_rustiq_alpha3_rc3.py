@@ -50,7 +50,12 @@ for invalid in ([dict(base[0], name='eDP-1;os.execute("evil")')],
 with tempfile.TemporaryDirectory() as d:
     home = pathlib.Path(d)
     fake = home/'hyprctl'
-    fake.write_text('#!/bin/sh\nprintf "ok\\n"\n')
+    fake.write_text('#!/usr/bin/env python3\n'
+                    'import json,sys\n'
+                    'if sys.argv[1:] == ["-j", "monitors"]:\n'
+                    ' print(json.dumps([{"name":"eDP-1","x":0,"y":0,"width":1920,"height":1080,"scale":1},'
+                    '{"name":"DP-1","x":1920,"y":0,"width":2560,"height":1440,"scale":1.25}]))\n'
+                    'else: print("ok")\n')
     fake.chmod(0o755)
     import os
     env = dict(os.environ, HOME=d, PATH=f'{d}:{os.environ["PATH"]}')

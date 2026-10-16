@@ -11,6 +11,18 @@ Singleton {
     property string colorSource: "gruvbox"
     property string barMode: "separated"
     property string barPosition: "top"
+    property bool showNotifications: true
+    property bool showTaskView: true
+    property bool desktopCalendar: false
+    property bool desktopSystem: false
+    property bool desktopClock: false
+    property bool showDock: false
+    property bool dockFiles: true
+    property bool dockBrowser: true
+    property bool dockSettings: true
+    property bool dockTaskView: true
+    property bool dockAI: true
+    property bool dockAutoHide: true
     property bool showMenuBar: false // Optional RusticQ contextual menu; off by default
     // Edit, View and Share remain the default menu sections when enabled.
     property bool showMenuEdit: true
@@ -100,7 +112,7 @@ Singleton {
                 marginOverrides = validated;
             }
             if (typeof data.showMenuBar === "boolean") showMenuBar = data.showMenuBar;
-            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
+            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "showNotifications", "showTaskView", "desktopCalendar", "desktopSystem", "desktopClock", "showDock", "dockAutoHide", "dockFiles", "dockBrowser", "dockSettings", "dockTaskView", "dockAI", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
                 if (typeof data[key] === "boolean") root[key] = data[key];
             if (typeof data.showWeather === "boolean") showWeather = data.showWeather;
             if (typeof data.showWorkspaces === "boolean") showWorkspaces = data.showWorkspaces;
@@ -119,6 +131,18 @@ Singleton {
             colorSource: colorSource,
             barMode: barMode,
             barPosition: barPosition,
+            showNotifications: showNotifications,
+            showTaskView: showTaskView,
+            desktopCalendar: desktopCalendar,
+            desktopSystem: desktopSystem,
+            desktopClock: desktopClock,
+            showDock: showDock,
+            dockFiles: dockFiles,
+            dockBrowser: dockBrowser,
+            dockSettings: dockSettings,
+            dockTaskView: dockTaskView,
+            dockAI: dockAI,
+            dockAutoHide: dockAutoHide,
             showMenuBar: showMenuBar,
             showMenuEdit: showMenuEdit,
             showMenuView: showMenuView,

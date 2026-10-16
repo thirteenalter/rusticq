@@ -98,12 +98,13 @@ ColumnLayout {
                 try {
                     const data = JSON.parse(this.text.trim());
                     root.status = data.message || (data.ok ? "Saved" : "Failed");
+                    if (data.ok && currentAction.action === "apply") readMonitors.running = true;
                 } catch (e) { root.status = "Display helper returned an unreadable response"; }
             }
         }
         onExited: (code, status) => {
-            if (code !== 0 && root.status.indexOf("Failed") !== 0 && root.status.indexOf("overlap") === -1)
-                root.status = "Display update failed. Check monitor coordinates and Hyprland version.";
+            if (code !== 0 && (root.status === "Applying monitor layout…" || root.status === "Checking preview…"))
+                root.status = "Display update failed. Check Hyprland's Lua API and monitor modes.";
         }
     }
     Timer {

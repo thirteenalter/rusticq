@@ -237,6 +237,17 @@ Item {
         }
 
         Rectangle {
+            id: taskButtonVertical
+            visible: SettingsStore.showTaskView && !root.simple
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: root.controlSize
+            Layout.preferredHeight: visible ? root.controlSize : 0
+            radius: 10; color: root.clean ? "transparent" : Theme.surface
+            Icon { anchors.centerIn: parent; icon: "\uf190"; color: Theme.accent; font.pixelSize: 19 }
+            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup("task", taskButtonVertical) }
+        }
+
+        Rectangle {
             id: quickButton
             visible: SettingsStore.showQuickControl
             Layout.alignment: Qt.AlignHCenter

@@ -31,6 +31,7 @@ Item {
             BarBluetooth { Layout.fillWidth: true }
             BarBattery { Layout.fillWidth: true }
             BarSystem { Layout.fillWidth: true }
+            BarNotifications { Layout.fillWidth: true; visible: SettingsStore.showNotifications }
         }
     }
     BarAdvanced {

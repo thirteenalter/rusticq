@@ -19,8 +19,8 @@ PopupWindow {
     signal dismissed()
     // QsWindow.width/height are actual dimensions; Quickshell 0.3.1 requires
     // implicitWidth/implicitHeight for requested window sizes.
-    implicitWidth: kind === "menu" ? 358 : 368
-    implicitHeight: kind === "wifi" ? 465 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
+    implicitWidth: kind === "task" ? 480 : kind === "menu" ? 358 : 368
+    implicitHeight: kind === "task" ? 585 : kind === "wifi" ? 465 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
                     kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? 345 : 190
     anchor.window: hostWindow
     // Anchor is in panel-window coordinates, never a QQuickItem or screen pixel.
@@ -58,7 +58,7 @@ PopupWindow {
             id: widgetLoader
             anchors.fill: parent
             anchors.margins: popup.singleSystem ? 0 : 8
-            sourceComponent: popup.kind === "wifi" ? wifiComponent :
+            sourceComponent: popup.kind === "task" ? taskComponent : popup.kind === "wifi" ? wifiComponent :
                                  popup.kind === "bluetooth" ? bluetoothComponent :
                                  popup.kind === "battery" ? batteryComponent :
                                  popup.kind === "audio" ? audioComponent :
@@ -69,6 +69,7 @@ PopupWindow {
         }
     }
     // Non-collapsible: the mini popup contains only one feature, not an accordion.
+    Component { id: taskComponent; SystemDashboard {} }
     Component { id: wifiComponent; BarWifi { standalone: true } }
     Component { id: bluetoothComponent; BarBluetooth { standalone: true } }
     Component { id: batteryComponent; BarBattery { standalone: true } }

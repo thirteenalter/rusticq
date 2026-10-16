@@ -15,6 +15,36 @@ FloatingWindow {
     implicitWidth: 1090
     implicitHeight: 760
     color: Theme.background
+    property string query: ""
+    readonly property var searchIndex: [
+        {tab:"appearance",title:"Color source · Gruvbox / Aether",words:"theme wallpaper palette accent color"},
+        {tab:"bar",title:"Bar position",words:"top bottom left right"},
+        {tab:"bar",title:"Bar layout modes",words:"compact separated professional simple"},
+        {tab:"bar",title:"Clean Compact details",words:"hover icons right labels"},
+        {tab:"bar",title:"Realtime margin editor",words:"slider gap padding edge spacing"},
+        {tab:"bar",title:"Modules and individual icons",words:"wifi bluetooth battery volume notification task view"},
+        {tab:"bar",title:"Desktop widgets",words:"calendar system monitor clock background wallpaper plugin"},
+        {tab:"bar",title:"Custom dock",words:"auto hide app launcher shortcuts hover"},
+        {tab:"display",title:"Monitor arrangement",words:"display resolution hertz refresh rate scaling position apply"},
+        {tab:"ai",title:"AI Providers",words:"api key cloud claude gemini openai"},
+        {tab:"about",title:"About RusticQ",words:"quickshell version license"}
+    ]
+    function openSearchResult(entry) {
+        Store.settingsTab = entry.tab;
+        settingsWindow.query = "";
+        Qt.callLater(function() {
+            let target = null;
+            if (entry.title.indexOf("margin") !== -1) target = marginSearchAnchor;
+            else if (entry.title.indexOf("individual") !== -1) target = modulesSearchAnchor;
+            else if (entry.title.indexOf("Desktop widgets") !== -1) target = widgetsSearchAnchor;
+            else if (entry.title.indexOf("Custom dock") !== -1) target = dockSearchAnchor;
+            else if (entry.title.indexOf("Clean Compact") !== -1) target = cleanSearchAnchor;
+            else if (entry.title.indexOf("layout modes") !== -1) target = modeSearchAnchor;
+            const y = target ? target.mapToItem(settingContent, 0, 0).y - 12 : 0;
+            settingsScroll.contentY = Math.max(0, Math.min(Math.max(0, settingsScroll.contentHeight - settingsScroll.height), y));
+        });
+    }
+    readonly property var foundSettings: searchIndex.filter(entry => (entry.title + " " + entry.words + " " + entry.tab).toLowerCase().indexOf(query.toLowerCase().trim()) !== -1)
 
     function saveModel() {
         const model = aiModelInput.text.trim();
@@ -99,7 +129,7 @@ FloatingWindow {
                             }
                             Item { Layout.fillHeight: true }
                             Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ SETTINGS"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground }
-                            Text { text: "RUSTIQ DESKTOP · ALPHA 3 RC3"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
+                            Text { text: "RUSTIQ DESKTOP · ALPHA 3 RC4"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
                         }
                     }
                     RowLayout {
@@ -148,14 +178,14 @@ FloatingWindow {
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: { Store.settingsTab = tab.modelData.key; settingsScroll.contentY = 0; }
+                                onClicked: { Store.settingsTab = tab.modelData.key; settingsWindow.query = ""; settingsScroll.contentY = 0; }
                             }
                         }
                     }
                     Item { Layout.fillHeight: true }
                     Text {
                         Layout.fillWidth: true
-                        text: "RUSTIQ · ALPHA 3 RC3\nQuickshell 0.3.1"
+                        text: "RUSTIQ · ALPHA 3 RC4\nQuickshell 0.3.1"
                         wrapMode: Text.WordWrap
                         font.family: Fonts.poppins.name
                         font.pixelSize: 10
@@ -184,7 +214,7 @@ FloatingWindow {
                             font.pixelSize: 23
                         }
                         Text {
-                            text: "RUSTIQ / ALPHA 3 RC3"
+                            text: "RUSTIQ / ALPHA 3 RC4"
                             font.family: Fonts.poppins.name
                             font.pixelSize: 10
                             color: Theme.muted
@@ -201,8 +231,64 @@ FloatingWindow {
                 }
                 Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
 
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 39
+                    radius: 11
+                    color: Theme.surface
+                    RowLayout {
+                        anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12; spacing: 10
+                        Icon { icon: "\ue8b6"; font.pixelSize: 19; color: Theme.accent }
+                        TextInput {
+                            id: searchInput
+                            Layout.fillWidth: true; Layout.fillHeight: true
+                            verticalAlignment: TextInput.AlignVCenter
+                            text: settingsWindow.query
+                            onTextEdited: settingsWindow.query = text
+                            color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 12
+                            clip: true
+                            Text {
+                                visible: searchInput.text.length === 0
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "Search settings · " + Store.settingsTab
+                                color: Theme.muted; font.pixelSize: 11; font.family: Fonts.poppins.name
+                            }
+                        }
+                        Icon { icon: "\ue5cd"; font.pixelSize: 17; color: Theme.muted; visible: settingsWindow.query.length > 0
+                            MouseArea { anchors.fill: parent; onClicked: settingsWindow.query = "" }
+                        }
+                    }
+                }
+                ListView {
+                    visible: settingsWindow.query.trim().length > 0
+                    Layout.fillWidth: true; Layout.fillHeight: true; clip: true; spacing: 8
+                    model: settingsWindow.foundSettings
+                    delegate: Rectangle {
+                        id: hit
+                        required property var modelData
+                        width: ListView.view.width; height: 62; radius: 11; color: Theme.surface
+                        RowLayout {
+                            anchors.fill: parent; anchors.margins: 12
+                            Icon { icon: "\ue8b6"; font.pixelSize: 18; color: Theme.accent }
+                            ColumnLayout {
+                                Layout.fillWidth: true; spacing: 2
+                                Text { text: hit.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 12 }
+                                Text { text: hit.modelData.tab.toUpperCase() + " · " + hit.modelData.words; color: Theme.muted; font.pixelSize: 10; elide: Text.ElideRight; Layout.fillWidth: true }
+                            }
+                            Icon { icon: "\ue5cc"; color: Theme.accent; font.pixelSize: 18 }
+                        }
+                        MouseArea {
+                            anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                settingsWindow.openSearchResult(hit.modelData);
+                            }
+                        }
+                    }
+                    Text { anchors.centerIn: parent; visible: settingsWindow.foundSettings.length === 0; text: "No matching settings"; color: Theme.muted; font.pixelSize: 12 }
+                }
                 Flickable {
                     id: settingsScroll
+                    visible: settingsWindow.query.trim().length === 0
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
@@ -433,6 +519,7 @@ FloatingWindow {
                             }
                             Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                             Text {
+                                id: modeSearchAnchor
                                 text: "Bar layout mode"
                                 font.family: Fonts.poppinsSB.name
                                 font.pixelSize: 14
@@ -553,7 +640,7 @@ FloatingWindow {
                                 border.color: Theme.borderaccent
                                 ColumnLayout {
                                     anchors.fill: parent; anchors.margins: 14; spacing: 10
-                                    Text { text: "Clean Compact · Right-side labels"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
+                                    Text { id: cleanSearchAnchor; text: "Clean Compact · Right-side labels"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
                                     Text { Layout.fillWidth: true; text: "Choose how labels appear. Battery and volume percentages stay visible."; wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
                                     RowLayout {
                                         Layout.fillWidth: true; spacing: 8
@@ -586,7 +673,7 @@ FloatingWindow {
                                 Layout.fillWidth: true
                                 ColumnLayout {
                                     Layout.fillWidth: true; spacing: 2
-                                    Text { text: "Realtime margin editor"; font.family: Fonts.poppinsSB.name; font.pixelSize: 14; color: Theme.foreground }
+                                    Text { id: marginSearchAnchor; text: "Realtime margin editor"; font.family: Fonts.poppinsSB.name; font.pixelSize: 14; color: Theme.foreground }
                                     Text { text: "Independent margins for each bar mode · 0–32 px · updates immediately"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
                                 }
                                 Rectangle {
@@ -621,27 +708,11 @@ FloatingWindow {
                                                 Item { Layout.fillWidth: true }
                                                 Text { text: marginCard.value + " px"; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.accent }
                                             }
-                                            Rectangle {
-                                                id: marginTrack
-                                                Layout.fillWidth: true; Layout.preferredHeight: 19
-                                                radius: 9; color: Theme.background
-                                                Rectangle {
-                                                    width: Math.max(7, parent.width * marginCard.value / 32)
-                                                    height: 6; anchors.verticalCenter: parent.verticalCenter; radius: 3; color: Theme.accent
-                                                }
-                                                Rectangle {
-                                                    width: 13; height: 13; radius: 7
-                                                    x: Math.max(0, Math.min(parent.width - width, (parent.width-width) * marginCard.value/32))
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    color: Theme.foreground
-                                                }
-                                                MouseArea {
-                                                    anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                                                    function valueAt(x) { return Math.round(Math.max(0, Math.min(32, x / Math.max(1, width) * 32))); }
-                                                    onPressed: mouse => SettingsStore.setBarMargin(marginCard.modelData.edge, valueAt(mouse.x), false)
-                                                    onPositionChanged: mouse => { if (pressed) SettingsStore.setBarMargin(marginCard.modelData.edge, valueAt(mouse.x), false); }
-                                                    onReleased: mouse => SettingsStore.setBarMargin(marginCard.modelData.edge, valueAt(mouse.x), true)
-                                                }
+                                            MarginSlider {
+                                                Layout.fillWidth: true; Layout.preferredHeight: 25
+                                                value: marginCard.value
+                                                onPreview: next => SettingsStore.setBarMargin(marginCard.modelData.edge, next, false)
+                                                onCommit: next => SettingsStore.setBarMargin(marginCard.modelData.edge, next, true)
                                             }
                                         }
                                     }
@@ -649,6 +720,7 @@ FloatingWindow {
                             }
                             Text { Layout.fillWidth: true; text: "Tip: switch to another bar mode to set its own margins. Reset restores that mode's original spacing."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10; wrapMode: Text.WordWrap }
                             Text {
+                                id: modulesSearchAnchor
                                 text: "Modules & individual icons"
                                 font.family: Fonts.poppinsSB.name
                                 font.pixelSize: 14
@@ -708,6 +780,45 @@ FloatingWindow {
                                     {label: "Gaming Mode", desc: "Performance power profile", key: "showGamingMode", icon: "\ue30f"},
                                     {label: "Night Mode", desc: "Warm screen temperature", key: "showNightMode", icon: "\ue51c"},
                                     {label: "Mute Microphone", desc: "Microphone mute", key: "showMicMute", icon: "\ue02b"}
+                                ]
+                                delegate: SettingsToggle {}
+                            }
+                        }
+
+                        ColumnLayout {
+                            visible: Store.settingsTab === "bar"
+                            Layout.fillWidth: true; spacing: 10
+                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                            Text { text: "System & notifications"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
+                            Repeater {
+                                model: [
+                                    {label:"Task View icon",desc:"System metrics and processes popup in bar",key:"showTaskView",icon:"\ue1db"},
+                                    {label:"Notification center",desc:"Automatic toasts and Quick Control history",key:"showNotifications",icon:"\ue7f4"}
+                                ]
+                                delegate: SettingsToggle {}
+                            }
+                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                            Text { id: widgetsSearchAnchor; text: "Desktop widgets · behind windows"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
+                            Text { text: "Widgets live on the Wayland Bottom layer, above wallpaper but behind application windows. Disabled by default."; Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.muted; font.pixelSize: 11 }
+                            Repeater {
+                                model: [
+                                    {label:"Calendar widget",desc:"Persistent monthly calendar",key:"desktopCalendar",icon:"\ue916"},
+                                    {label:"System widget",desc:"Live CPU and memory overview",key:"desktopSystem",icon:"\ue1db"},
+                                    {label:"Clock widget",desc:"Large clock and date",key:"desktopClock",icon:"\ue8b5"}
+                                ]
+                                delegate: SettingsToggle {}
+                            }
+                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                            Text { id: dockSearchAnchor; text: "Custom dock"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
+                            Repeater {
+                                model: [
+                                    {label:"Enable dock",desc:"Application shortcuts on the bottom edge",key:"showDock",icon:"\ue8b8"},
+                                    {label:"Auto-hide dock",desc:"Reveal when hovering the small bottom handle",key:"dockAutoHide",icon:"\ue8f4"},
+                                    {label:"Dock · Files",desc:"Open home folder",key:"dockFiles",icon:"\ue2c7"},
+                                    {label:"Dock · Browser",desc:"Open default browser",key:"dockBrowser",icon:"\ue80b"},
+                                    {label:"Dock · Settings",desc:"Open RusticQ settings",key:"dockSettings",icon:"\ue8b8"},
+                                    {label:"Dock · Task View",desc:"Show detailed process monitor",key:"dockTaskView",icon:"\uf190"},
+                                    {label:"Dock · AI",desc:"Cloud assistant sidebar",key:"dockAI",icon:"\ue8f4"}
                                 ]
                                 delegate: SettingsToggle {}
                             }
@@ -905,7 +1016,7 @@ FloatingWindow {
                                     anchors.centerIn: parent
                                     spacing: 6
                                     Icon { icon: "\ue8b8"; font.pixelSize: 28; color: Theme.accent; Layout.alignment: Qt.AlignHCenter }
-                                    Text { text: "RusticQ · Alpha 3 RC3"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground; Layout.alignment: Qt.AlignHCenter }
+                                    Text { text: "RusticQ · Alpha 3 RC4"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground; Layout.alignment: Qt.AlignHCenter }
                                     Text { text: "Target: Arch Linux / Quickshell 0.3.1"; font.family: Fonts.poppins.name; font.pixelSize: 11; color: Theme.muted; Layout.alignment: Qt.AlignHCenter }
                                 }
                             }

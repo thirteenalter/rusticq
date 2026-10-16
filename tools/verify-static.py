@@ -47,6 +47,49 @@ for path in paths:
             elif ch == state:
                 state = 'code'
         i += 1
+    # QML component declarations are adjacent objects, not JS statements.
+    # `Icon { ... }; Text { ... }` is a syntax error even with balanced braces.
+    # Keep strings/comments blanked to avoid matching incidental source text.
+    masked = []
+    state2 = 'code'
+    cursor = 0
+    while cursor < len(source):
+        ch = source[cursor]
+        nxt = source[cursor+1] if cursor+1 < len(source) else ''
+        if state2 == 'code':
+            if ch == '/' and nxt == '/':
+                state2 = 'line'
+                masked.extend([' ', ' ']); cursor += 2; continue
+            if ch == '/' and nxt == '*':
+                state2 = 'block'
+                masked.extend([' ', ' ']); cursor += 2; continue
+            if ch in ('"', "'", '`'):
+                state2 = ch
+                masked.append(' '); cursor += 1; continue
+            masked.append(ch)
+        elif state2 == 'line':
+            if ch == '\n':
+                state2 = 'code'
+                masked.append('\n')
+            else:
+                masked.append(' ')
+        elif state2 == 'block':
+            if ch == '*' and nxt == '/':
+                masked.extend([' ', ' ']); cursor += 2
+                state2 = 'code'; continue
+            masked.append('\n' if ch == '\n' else ' ')
+        else:
+            if ch == '\\':
+                masked.extend([' ', ' ']); cursor += 2; continue
+            if ch == state2:
+                state2 = 'code'
+            masked.append('\n' if ch == '\n' else ' ')
+        cursor += 1
+    stripped = ''.join(masked)
+    for match in re.finditer(r'\}\s*;\s*(?=[A-Z][A-Za-z0-9_.]*\s*\{)', stripped):
+        lineno = stripped.count('\n', 0, match.start()) + 1
+        problems.append(f'{path.relative_to(root)}:{lineno}: invalid semicolon between QML object declarations')
+
     if stack:
         problems.append(f'{path.relative_to(root)}: unclosed {stack[-3:]}')
     if state in ['"', "'", '`', 'block']:

@@ -6,3 +6,4 @@ singleton SysMonService 1.0 SysMonService.qml
 singleton TooltipService 1.0 TooltipService.qml
 singleton QuickModesService 1.0 QuickModesService.qml
 WifiManager 1.0 WifiManager.qml
+singleton NotificationCenter 1.0 NotificationCenter.qml

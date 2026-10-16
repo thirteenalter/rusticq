@@ -222,6 +222,22 @@ PanelWindow {
                     Layout.preferredWidth: implicitWidth
                     Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : implicitHeight
                 }
+                Rectangle {
+                    id: taskButton
+                    visible: SettingsStore.showTaskView && !barWindow.simpleMode
+                    Layout.preferredWidth: barWindow.compactMode ? 29 : 34
+                    Layout.preferredHeight: barWindow.compactControlHeight
+                    radius: height / 2
+                    color: barWindow.cleanCompactMode ? "transparent" : Theme.borderaccent
+                    Icon { anchors.centerIn: parent; icon: "\uf190"; font.pixelSize: 18; color: Theme.accent }
+                    MouseArea {
+                        anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            const point = barWindow.mapFromItem(taskButton, taskButton.width / 2, 0);
+                            barWindow.openMini("task", point.x);
+                        }
+                    }
+                }
                 QuickModes {
                     visible: SettingsStore.showQuickModes && hasModules
                     backgroundEnabled: !barWindow.cleanCompactMode
