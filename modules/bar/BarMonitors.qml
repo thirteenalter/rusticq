@@ -187,16 +187,25 @@ ColumnLayout {
                 anchors.margins: 12
                 spacing: 10
                 Item {
-                    Layout.fillWidth: true; Layout.preferredHeight: 38
+                    Layout.fillWidth: true; Layout.preferredHeight: 42
                     RowLayout {
                         anchors.fill: parent
-                        Icon { icon: "\ue30b"; font.pixelSize: 20; color: Theme.accent }
+                        spacing: 10
+                        Rectangle {
+                            Layout.preferredWidth: 32; Layout.preferredHeight: 32; radius: 10
+                            color: Qt.alpha(Theme.accent, 0.14)
+                            Icon { anchors.centerIn: parent; icon: "\ue30b"; font.pixelSize: 18; color: Theme.accent }
+                        }
                         ColumnLayout {
                             Layout.fillWidth: true; spacing: 1
                             Text { text: detailCard.modelData.name + (detailCard.modelData.focused ? " · Primary" : ""); font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.foreground }
                             Text { text: detailCard.current.width + "×" + detailCard.current.height + " · " + detailCard.current.mode.split("@").slice(-1)[0] + " Hz · " + detailCard.current.scale + "x"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
                         }
-                        Icon { icon: detailCard.opened ? "\ue5ce" : "\ue5cf"; font.pixelSize: 20; color: Theme.foreground }
+                        Rectangle {
+                            Layout.preferredWidth: 26; Layout.preferredHeight: 26; radius: 8
+                            color: Theme.background
+                            Icon { anchors.centerIn: parent; icon: detailCard.opened ? "\ue5ce" : "\ue5cf"; font.pixelSize: 18; color: Theme.foreground }
+                        }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { root.detailsOpen = detailCard.opened ? "" : detailCard.modelData.name; root.selectedName = detailCard.modelData.name; } }
                 }

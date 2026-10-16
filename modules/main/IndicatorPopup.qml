@@ -5,8 +5,7 @@ import "../../config"
 import "../../modules/bar"
 import "../../components"
 
-// This is a separate lightweight window, reusing the *same* Quick Control
-// widgets instead of reimplementing Wi-Fi / Bluetooth / Battery logic.
+// This is a separate lightweight window, reusing the same quick widgets.
 PopupWindow {
     id: popup
     required property var hostWindow
@@ -17,15 +16,10 @@ PopupWindow {
     property real targetY: 0
     property string barPosition: "top"
     signal dismissed()
-    // QsWindow.width/height are actual dimensions; Quickshell 0.3.1 requires
-    // implicitWidth/implicitHeight for requested window sizes.
-    implicitWidth: kind === "task" ? 480 : kind === "menu" ? 358 : 368
+    implicitWidth: kind === "task" ? 480 : kind === "menu" ? 358 : kind === "launcher" ? 396 : 368
     implicitHeight: kind === "task" ? 585 : kind === "wifi" ? 465 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
-                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? 345 : 190
+                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? 345 : kind === "launcher" ? 468 : kind === "audio" ? 286 : 190
     anchor.window: hostWindow
-    // Anchor is in panel-window coordinates, never a QQuickItem or screen pixel.
-    // Edge-aware positioning: on Bottom open upward; on Left/Right open
-    // inward to the desktop. Clamp popup to the visible axis of the bar.
     anchor.edges: barPosition === "bottom" ? (Edges.Bottom | Edges.Left) : (Edges.Top | Edges.Left)
     anchor.gravity: barPosition === "bottom" ? (Edges.Top | Edges.Right)
         : barPosition === "right" ? (Edges.Bottom | Edges.Left) : (Edges.Bottom | Edges.Right)
@@ -38,12 +32,9 @@ PopupWindow {
     onTargetYChanged: if (visible) anchor.updateAnchor()
     onBarPositionChanged: if (visible) anchor.updateAnchor()
     grabFocus: true
-    // Keep visibility imperative. When Quickshell dismisses a grabFocus popup,
-    // C++ may set visible=false, which would sever a declarative binding.
     visible: false
     onKindChanged: visible = kind !== ""
     onVisibleChanged: if (!visible && kind !== "") dismissed()
-    // Window remains transparent at rounded corners; the internal frame is opaque.
     color: "transparent"
 
     Rectangle {
@@ -52,8 +43,6 @@ PopupWindow {
         color: Theme.background
         border.width: popup.singleSystem ? 0 : 1
         border.color: Theme.borderaccent
-        // One card fills one popup. The Loader owns explicit geometry so the
-        // card never inherits the Quick Control accordion's collapsed height.
         Loader {
             id: widgetLoader
             anchors.fill: parent
@@ -62,18 +51,20 @@ PopupWindow {
                                  popup.kind === "bluetooth" ? bluetoothComponent :
                                  popup.kind === "battery" ? batteryComponent :
                                  popup.kind === "audio" ? audioComponent :
+                                 popup.kind === "launcher" ? launcherComponent :
                                  popup.kind === "weather" ? weatherComponent :
                                  popup.kind === "time" ? timeComponent :
                                  popup.kind === "date" ? dateComponent :
                                  popup.kind === "menu" ? menuComponent : null
         }
     }
-    // Non-collapsible: the mini popup contains only one feature, not an accordion.
+
     Component { id: taskComponent; SystemDashboard {} }
     Component { id: wifiComponent; BarWifi { standalone: true } }
     Component { id: bluetoothComponent; BarBluetooth { standalone: true } }
     Component { id: batteryComponent; BarBattery { standalone: true } }
     Component { id: audioComponent; MiniAudio {} }
+    Component { id: launcherComponent; MiniLauncher { onLaunched: popup.dismissed() } }
     Component { id: weatherComponent; MiniWeather {} }
     Component { id: timeComponent; MiniTime {} }
     Component { id: dateComponent; MiniDate {} }

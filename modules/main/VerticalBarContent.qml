@@ -57,6 +57,21 @@ Item {
             }
         }
 
+        Rectangle {
+            id: launcherSearch
+            visible: SettingsStore.showLauncher && !root.simple
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: root.controlSize
+            Layout.preferredHeight: root.controlSize
+            color: root.clean ? "transparent" : root.separated ? Theme.surface : Qt.alpha(Theme.accent, 0.10)
+            radius: root.professional ? 7 : 11
+            Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: 19; color: Theme.accent }
+            MouseArea {
+                anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                onClicked: root.popup("launcher", launcherSearch)
+            }
+        }
+
         ContextMenuBar {
             id: railMenu
             visible: SettingsStore.showMenuBar

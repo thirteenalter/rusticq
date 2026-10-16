@@ -116,6 +116,23 @@ PanelWindow {
                         }
                     }
                 }
+                Rectangle {
+                    id: launcherButton
+                    visible: SettingsStore.showLauncher && !barWindow.simpleMode
+                    Layout.preferredWidth: barWindow.compactMode ? 29 : 34
+                    Layout.preferredHeight: barWindow.compactControlHeight
+                    radius: height / 2
+                    color: barWindow.cleanCompactMode ? "transparent" : Theme.borderaccent
+                    Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: 18; color: Theme.accent }
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            const point = barWindow.mapFromItem(launcherButton, launcherButton.width / 2, 0);
+                            barWindow.openMini("launcher", point.x);
+                        }
+                    }
+                }
                 ContextMenuBar {
                     id: contextMenuBar
                     visible: SettingsStore.showMenuBar && barWindow.width > 980

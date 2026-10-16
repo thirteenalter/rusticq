@@ -19,7 +19,7 @@ FocusScope {
         { key: "mic", title: "Mute Microphone", icon: "\ue02b", show: SettingsStore.showMicMute }
     ].filter(mode => mode.show)
     readonly property bool hasModules: modes.length > 0
-    implicitWidth: 28 + (expanded && hasModules ? modeButtons.implicitWidth + 6 : 0)
+    implicitWidth: 28 + (expanded && hasModules ? modeButtons.implicitWidth + 8 : 0)
     implicitHeight: controlHeight
 
     function reveal() {
@@ -60,7 +60,7 @@ FocusScope {
     RowLayout {
         id: modeButtons
         anchors.right: trigger.left
-        anchors.rightMargin: 6
+        anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter
         spacing: 4
         visible: root.expanded
@@ -87,12 +87,19 @@ FocusScope {
                 Accessible.onPressAction: if (available && !pending) QuickModesService.toggle(modelData.key)
                 Keys.onSpacePressed: if (available && !pending) QuickModesService.toggle(modelData.key)
                 Keys.onReturnPressed: if (available && !pending) QuickModesService.toggle(modelData.key)
-                Icon {
+                Rectangle {
                     anchors.centerIn: parent
-                    icon: modeButton.modelData.icon
-                    font.pixelSize: 17
-                    color: modeButton.on || modeButton.activeFocus ? Theme.accent : Theme.foreground
-                    opacity: modeButton.available && !modeButton.pending ? 1 : 0.4
+                    width: 20
+                    height: 20
+                    radius: 10
+                    color: modeButton.on ? Qt.alpha(Theme.accent, 0.16) : "transparent"
+                    Icon {
+                        anchors.centerIn: parent
+                        icon: modeButton.modelData.icon
+                        font.pixelSize: 16
+                        color: modeButton.on || modeButton.activeFocus ? Theme.accent : Theme.foreground
+                        opacity: modeButton.available && !modeButton.pending ? 1 : 0.4
+                    }
                 }
                 MouseArea {
                     id: buttonMouse

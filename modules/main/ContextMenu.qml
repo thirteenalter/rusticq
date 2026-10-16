@@ -57,8 +57,6 @@ Item {
             else if (action === "tools-region") Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-capture.sh"), "region"]);
             else Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-menu-action.sh"), action]);
         } else {
-            // Only trusted constant action names are passed to the helper.
-            // The helper checks grim/slurp and never uploads screenshots.
             Quickshell.execDetached(["sh", Qt.resolvedUrl("../../scripts/rustiq-capture.sh").toString().replace("file://", ""), action]);
         }
         root.actionFinished();
@@ -66,24 +64,33 @@ Item {
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 12
-        spacing: 8
+        spacing: 9
         RowLayout {
             Layout.fillWidth: true
+            spacing: 8
             Text { text: "RusticQ / " + root.currentSection.charAt(0).toUpperCase() + root.currentSection.slice(1); font.family: Fonts.poppinsSB.name; font.pixelSize: 13; color: Theme.foreground; Layout.fillWidth: true }
-            Icon { icon: "\ue5d2"; color: Theme.accent; font.pixelSize: 18 }
+            Rectangle {
+                Layout.preferredWidth: 26
+                Layout.preferredHeight: 26
+                radius: 8
+                color: Qt.alpha(Theme.accent, 0.10)
+                Icon { anchors.centerIn: parent; icon: "\ue5d2"; color: Theme.accent; font.pixelSize: 16 }
+            }
         }
         RowLayout {
             Layout.fillWidth: true
-            spacing: 4
+            spacing: 5
             Repeater {
                 model: root.sections
                 delegate: Rectangle {
                     id: tab
                     required property var modelData
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 29
-                    radius: 8
+                    Layout.preferredHeight: 31
+                    radius: 9
                     color: root.currentSection === modelData.key ? Qt.alpha(Theme.accent, .21) : Theme.surface
+                    border.width: root.currentSection === modelData.key ? 1 : 0
+                    border.color: Theme.accent
                     Text {
                         anchors.centerIn: parent
                         text: tab.modelData.title
@@ -106,28 +113,49 @@ Item {
             ColumnLayout {
                 id: entryColumn
                 width: parent.width
-                spacing: 5
+                spacing: 6
                 Repeater {
                     model: root.entries
                     delegate: Rectangle {
                         id: choice
                         required property var modelData
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 49
+                        Layout.preferredHeight: 54
                         color: choiceMouse.containsMouse ? Qt.alpha(Theme.accent, .16) : Theme.surface
-                        radius: 9
+                        radius: 11
+                        border.width: choiceMouse.containsMouse ? 1 : 0
+                        border.color: Qt.alpha(Theme.accent, 0.32)
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: 11; anchors.rightMargin: 10
-                            spacing: 9
-                            Icon { icon: choice.modelData.icon; color: Theme.accent; font.pixelSize: 18 }
+                            anchors.leftMargin: 11
+                            anchors.rightMargin: 10
+                            spacing: 10
+                            Rectangle {
+                                Layout.preferredWidth: 32
+                                Layout.preferredHeight: 32
+                                radius: 10
+                                color: Qt.alpha(Theme.accent, 0.12)
+                                Icon { anchors.centerIn: parent; icon: choice.modelData.icon; color: Theme.accent; font.pixelSize: 18 }
+                            }
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 0
                                 Text { text: choice.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
                                 Text { text: choice.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 9 }
                             }
-                            Icon { visible: root.currentSection === "view" && SettingsStore.barMode === choice.modelData.action; icon: "\ue5ca"; color: Theme.accent }
+                            Rectangle {
+                                Layout.preferredWidth: 22
+                                Layout.preferredHeight: 22
+                                radius: 7
+                                color: root.currentSection === "view" && SettingsStore.barMode === choice.modelData.action ? Qt.alpha(Theme.accent, 0.14) : "transparent"
+                                Icon {
+                                    anchors.centerIn: parent
+                                    visible: root.currentSection === "view" && SettingsStore.barMode === choice.modelData.action
+                                    icon: "\ue5ca"
+                                    color: Theme.accent
+                                    font.pixelSize: 16
+                                }
+                            }
                         }
                         MouseArea {
                             id: choiceMouse

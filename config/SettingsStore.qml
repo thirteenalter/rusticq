@@ -12,6 +12,7 @@ Singleton {
     property string barMode: "separated"
     property string barPosition: "top"
     property bool showNotifications: true
+    property bool showLauncher: true
     property bool showTaskView: true
     property bool desktopCalendar: false
     property bool desktopSystem: false
@@ -112,7 +113,7 @@ Singleton {
                 marginOverrides = validated;
             }
             if (typeof data.showMenuBar === "boolean") showMenuBar = data.showMenuBar;
-            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "showNotifications", "showTaskView", "desktopCalendar", "desktopSystem", "desktopClock", "showDock", "dockAutoHide", "dockFiles", "dockBrowser", "dockSettings", "dockTaskView", "dockAI", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
+            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "showNotifications", "showLauncher", "showTaskView", "desktopCalendar", "desktopSystem", "desktopClock", "showDock", "dockAutoHide", "dockFiles", "dockBrowser", "dockSettings", "dockTaskView", "dockAI", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
                 if (typeof data[key] === "boolean") root[key] = data[key];
             if (typeof data.showWeather === "boolean") showWeather = data.showWeather;
             if (typeof data.showWorkspaces === "boolean") showWorkspaces = data.showWorkspaces;
@@ -132,6 +133,7 @@ Singleton {
             barMode: barMode,
             barPosition: barPosition,
             showNotifications: showNotifications,
+            showLauncher: showLauncher,
             showTaskView: showTaskView,
             desktopCalendar: desktopCalendar,
             desktopSystem: desktopSystem,

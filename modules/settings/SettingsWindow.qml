@@ -22,7 +22,7 @@ FloatingWindow {
         {tab:"bar",title:"Bar layout modes",words:"compact separated professional simple"},
         {tab:"bar",title:"Clean Compact details",words:"hover icons right labels"},
         {tab:"bar",title:"Realtime margin editor",words:"slider gap padding edge spacing"},
-        {tab:"bar",title:"Modules and individual icons",words:"wifi bluetooth battery volume notification task view"},
+        {tab:"bar",title:"Modules and individual icons",words:"wifi bluetooth battery volume notification task view launcher search app"},
         {tab:"bar",title:"Desktop widgets",words:"calendar system monitor clock background wallpaper plugin"},
         {tab:"bar",title:"Custom dock",words:"auto hide app launcher shortcuts hover"},
         {tab:"display",title:"Monitor arrangement",words:"display resolution hertz refresh rate scaling position apply"},
@@ -463,367 +463,444 @@ FloatingWindow {
                         ColumnLayout {
                             visible: Store.settingsTab === "bar"
                             Layout.fillWidth: true
-                            spacing: 11
-                            Text {
-                                text: "Bar position"
-                                font.family: Fonts.poppinsSB.name
-                                font.pixelSize: 14
-                                color: Theme.foreground
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                text: "Choose the screen edge. Left and Right use a dedicated vertical layout; popups open toward the desktop."
-                                font.family: Fonts.poppins.name
-                                font.pixelSize: 11
-                                wrapMode: Text.WordWrap
-                                color: Theme.muted
-                            }
-                            GridLayout {
-                                Layout.fillWidth: true
-                                columns: 4
-                                columnSpacing: 9
-                                rowSpacing: 9
-                                Repeater {
-                                    model: [
-                                        { key: "top", label: "Top", icon: "\ue5d8" },
-                                        { key: "bottom", label: "Bottom", icon: "\ue5db" },
-                                        { key: "left", label: "Left", icon: "\ue5de" },
-                                        { key: "right", label: "Right", icon: "\ue5df" }
-                                    ]
-                                    delegate: Rectangle {
-                                        id: positionCard
-                                        required property var modelData
-                                        readonly property bool selected: SettingsStore.barPosition === modelData.key
-                                        Layout.fillWidth: true
-                                        Layout.preferredHeight: 72
-                                        radius: 12
-                                        color: selected ? Qt.alpha(Theme.accent, 0.13) : Theme.surface
-                                        border.width: selected ? 1 : 0
-                                        border.color: Theme.accent
-                                        ColumnLayout {
-                                            anchors.centerIn: parent
-                                            spacing: 4
-                                            Icon { Layout.alignment: Qt.AlignHCenter; icon: positionCard.modelData.icon; font.pixelSize: 22; color: positionCard.selected ? Theme.accent : Theme.foreground }
-                                            Text { Layout.alignment: Qt.AlignHCenter; text: positionCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
-                                        }
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                SettingsStore.barPosition = positionCard.modelData.key;
-                                                SettingsStore.save();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
-                            Text {
-                                id: modeSearchAnchor
-                                text: "Bar layout mode"
-                                font.family: Fonts.poppinsSB.name
-                                font.pixelSize: 14
-                                color: Theme.foreground
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                text: "Each mode applies to all four screen edges. Side bars reorganize controls vertically; preferences stay saved."
-                                wrapMode: Text.WordWrap
-                                font.family: Fonts.poppins.name
-                                font.pixelSize: 11
-                                color: Theme.muted
-                            }
-                            GridLayout {
-                                Layout.fillWidth: true
-                                columns: 2
-                                columnSpacing: 9
-                                rowSpacing: 9
-                                Repeater {
-                                    model: [
-                                        { key: "compact", label: "Compact", info: "Dense, low-profile bar", icon: "\ue5d1" },
-                                        { key: "clean-compact", label: "Clean Compact", info: "Bare buttons, Quick Settings pill", icon: "\ue5d1" },
-                                        { key: "separated", label: "Separated", info: "Left and right islands", icon: "\ue86c" },
-                                        { key: "professional", label: "Professional", info: "Full-width status header", icon: "\ue30b" },
-                                        { key: "simple", label: "Simple", info: "Arch, centered clock, control", icon: "\ue5d4" }
-                                    ]
-                                    delegate: Rectangle {
-                                        id: modeCard
-                                        required property var modelData
-                                        readonly property bool selected: SettingsStore.barMode === modelData.key
-                                        Layout.fillWidth: true
-                                        Layout.preferredHeight: 115
-                                        radius: 12
-                                        color: selected ? Qt.alpha(Theme.accent, 0.13) : Theme.surface
-                                        border.width: selected ? 1 : 0
-                                        border.color: Theme.accent
+                            spacing: 12
 
-                                        ColumnLayout {
-                                            anchors.fill: parent
-                                            anchors.margins: 11
-                                            spacing: 7
-                                            RowLayout {
-                                                Layout.fillWidth: true
-                                                spacing: 8
-                                                Icon { icon: modeCard.modelData.icon; font.pixelSize: 18; color: Theme.accent }
-                                                Text {
-                                                    Layout.fillWidth: true
-                                                    text: modeCard.modelData.label
-                                                    font.family: Fonts.poppinsSB.name
-                                                    font.pixelSize: 12
-                                                    color: Theme.foreground
-                                                }
-                                                Icon {
-                                                    visible: modeCard.selected
-                                                    icon: "\ue5ca"; font.pixelSize: 18; color: Theme.accent
-                                                }
-                                            }
-                                            Text {
-                                                Layout.fillWidth: true
-                                                text: modeCard.modelData.info
-                                                font.family: Fonts.poppins.name
-                                                font.pixelSize: 10
-                                                color: Theme.muted
-                                                elide: Text.ElideRight
-                                            }
-                                            Rectangle {
-                                                Layout.fillWidth: true
-                                                Layout.preferredHeight: 25
-                                                radius: modeCard.modelData.key === "professional" ? 0 : 7
-                                                color: modeCard.modelData.key === "professional" ? Theme.background : Qt.alpha(Theme.foreground, 0.06)
-                                                RowLayout {
-                                                    anchors.fill: parent
-                                                    anchors.leftMargin: 6; anchors.rightMargin: 6
-                                                    spacing: 4
-                                                    Rectangle {
-                                                        Layout.preferredWidth: modeCard.modelData.key === "simple" ? 11 : 36
-                                                        Layout.preferredHeight: modeCard.modelData.key === "clean-compact" ? 2 : 12
-                                                        radius: 4
-                                                        color: modeCard.modelData.key === "separated" ? Theme.background : Qt.alpha(Theme.accent, 0.4)
-                                                    }
-                                                    Item { Layout.fillWidth: true }
-                                                    Rectangle {
-                                                        Layout.preferredWidth: modeCard.modelData.key === "simple" ? 13 : 21
-                                                        Layout.preferredHeight: ["compact", "clean-compact"].indexOf(modeCard.modelData.key) !== -1 ? 5 : 10
-                                                        radius: 4
-                                                        color: modeCard.modelData.key === "simple" ? Theme.accent : Theme.muted
-                                                    }
-                                                    Item { Layout.fillWidth: true }
-                                                    Rectangle {
-                                                        Layout.preferredWidth: modeCard.modelData.key === "simple" ? 12 : 45
-                                                        Layout.preferredHeight: 12
-                                                        radius: 4
-                                                        color: modeCard.modelData.key === "separated" ? Theme.background : Qt.alpha(Theme.accent, 0.4)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                SettingsStore.barMode = modeCard.modelData.key;
-                                                SettingsStore.save();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
-                            // Clean Compact label policy: icon-only, always detailed, or reveal on hover.
                             Rectangle {
-                                visible: SettingsStore.barMode === "clean-compact"
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: visible ? 160 : 0
-                                radius: 13
+                                radius: 16
                                 color: Theme.surface
-                                border.width: 1
                                 border.color: Theme.borderaccent
                                 ColumnLayout {
-                                    anchors.fill: parent; anchors.margins: 14; spacing: 10
-                                    Text { id: cleanSearchAnchor; text: "Clean Compact · Right-side labels"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
-                                    Text { Layout.fillWidth: true; text: "Choose how labels appear. Battery and volume percentages stay visible."; wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                                    anchors.fill: parent
+                                    anchors.margins: 14
+                                    spacing: 11
                                     RowLayout {
-                                        Layout.fillWidth: true; spacing: 8
+                                        Layout.fillWidth: true
+                                        spacing: 10
+                                        Rectangle {
+                                            Layout.preferredWidth: 38
+                                            Layout.preferredHeight: 38
+                                            radius: 12
+                                            color: Qt.alpha(Theme.accent, 0.14)
+                                            Icon { anchors.centerIn: parent; icon: "\ue8b8"; font.pixelSize: 21; color: Theme.accent }
+                                        }
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 1
+                                            Text { text: "Bar foundation"; font.family: Fonts.poppinsSB.name; font.pixelSize: 15; color: Theme.foreground }
+                                            Text { text: "Placement, layout mode, and the overall structure of the top or side bar."; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
+                                        }
+                                    }
+
+                                    Text {
+                                        text: "Bar position"
+                                        font.family: Fonts.poppinsSB.name
+                                        font.pixelSize: 14
+                                        color: Theme.foreground
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: "Choose the screen edge. Left and Right use a dedicated vertical layout; popups open toward the desktop."
+                                        font.family: Fonts.poppins.name
+                                        font.pixelSize: 11
+                                        wrapMode: Text.WordWrap
+                                        color: Theme.muted
+                                    }
+                                    GridLayout {
+                                        Layout.fillWidth: true
+                                        columns: 4
+                                        columnSpacing: 9
+                                        rowSpacing: 9
                                         Repeater {
                                             model: [
-                                                {label: "Icons only", key: "icons", icon: "\ue5ca"},
-                                                {label: "With details", key: "details", icon: "\ue8b8"},
-                                                {label: "On hover", key: "hover", icon: "\ue8f4"}
+                                                { key: "top", label: "Top", icon: "\ue5d8" },
+                                                { key: "bottom", label: "Bottom", icon: "\ue5db" },
+                                                { key: "left", label: "Left", icon: "\ue5de" },
+                                                { key: "right", label: "Right", icon: "\ue5df" }
                                             ]
                                             delegate: Rectangle {
-                                                id: detailOption
+                                                id: positionCard
                                                 required property var modelData
-                                                readonly property bool chosen: SettingsStore.cleanRightMode === modelData.key
-                                                Layout.fillWidth: true; Layout.preferredHeight: 61; radius: 10
-                                                color: chosen ? Qt.alpha(Theme.accent, .16) : Theme.background
-                                                border.width: chosen ? 1 : 0; border.color: Theme.accent
-                                                RowLayout {
-                                                    anchors.centerIn: parent; spacing: 6
-                                                    Icon { icon: detailOption.chosen ? "\ue5ca" : detailOption.modelData.icon; font.pixelSize: 17; color: Theme.accent }
-                                                    Text { text: detailOption.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
-                                                }
-                                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.cleanRightMode = detailOption.modelData.key; SettingsStore.save(); } }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
-                            RowLayout {
-                                Layout.fillWidth: true
-                                ColumnLayout {
-                                    Layout.fillWidth: true; spacing: 2
-                                    Text { id: marginSearchAnchor; text: "Realtime margin editor"; font.family: Fonts.poppinsSB.name; font.pixelSize: 14; color: Theme.foreground }
-                                    Text { text: "Independent margins for each bar mode · 0–32 px · updates immediately"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
-                                }
-                                Rectangle {
-                                    Layout.preferredWidth: 100; Layout.preferredHeight: 30; radius: 8; color: Theme.surface
-                                    Text { anchors.centerIn: parent; text: "Reset mode"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.foreground }
-                                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetBarMargins() }
-                                }
-                            }
-                            GridLayout {
-                                Layout.fillWidth: true
-                                columns: 2; columnSpacing: 9; rowSpacing: 9
-                                Repeater {
-                                    model: [
-                                        {edge: "top", name: "Top"}, {edge: "bottom", name: "Bottom"},
-                                        {edge: "left", name: "Left"}, {edge: "right", name: "Right"}
-                                    ]
-                                    delegate: Rectangle {
-                                        id: marginCard
-                                        required property var modelData
-                                        readonly property int fallback: SettingsStore.barMode === "professional" ? 0 :
-                                            (SettingsStore.barPosition === "left" || SettingsStore.barPosition === "right") ? 4 :
-                                            (modelData.edge === "left" || modelData.edge === "right") ? 6 :
-                                            (SettingsStore.barMode === "compact" || SettingsStore.barMode === "clean-compact") ? 4 : 6
-                                        readonly property int value: SettingsStore.marginFor(modelData.edge, fallback)
-                                        Layout.fillWidth: true; Layout.preferredHeight: 93; radius: 11
-                                        color: Theme.surface
-                                        ColumnLayout {
-                                            anchors.fill: parent; anchors.margins: 12; spacing: 6
-                                            RowLayout {
+                                                readonly property bool selected: SettingsStore.barPosition === modelData.key
                                                 Layout.fillWidth: true
-                                                Text { text: marginCard.modelData.name; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
-                                                Item { Layout.fillWidth: true }
-                                                Text { text: marginCard.value + " px"; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.accent }
+                                                Layout.preferredHeight: 72
+                                                radius: 12
+                                                color: selected ? Qt.alpha(Theme.accent, 0.13) : Theme.background
+                                                border.width: selected ? 1 : 0
+                                                border.color: Theme.accent
+                                                ColumnLayout {
+                                                    anchors.centerIn: parent
+                                                    spacing: 4
+                                                    Icon { Layout.alignment: Qt.AlignHCenter; icon: positionCard.modelData.icon; font.pixelSize: 22; color: positionCard.selected ? Theme.accent : Theme.foreground }
+                                                    Text { Layout.alignment: Qt.AlignHCenter; text: positionCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                                                }
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        SettingsStore.barPosition = positionCard.modelData.key;
+                                                        SettingsStore.save();
+                                                    }
+                                                }
                                             }
-                                            MarginSlider {
-                                                Layout.fillWidth: true; Layout.preferredHeight: 25
-                                                value: marginCard.value
-                                                onPreview: next => SettingsStore.setBarMargin(marginCard.modelData.edge, next, false)
-                                                onCommit: next => SettingsStore.setBarMargin(marginCard.modelData.edge, next, true)
+                                        }
+                                    }
+
+                                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                                    Text {
+                                        id: modeSearchAnchor
+                                        text: "Bar layout mode"
+                                        font.family: Fonts.poppinsSB.name
+                                        font.pixelSize: 14
+                                        color: Theme.foreground
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: "Each mode applies to all four screen edges. Side bars reorganize controls vertically; preferences stay saved."
+                                        wrapMode: Text.WordWrap
+                                        font.family: Fonts.poppins.name
+                                        font.pixelSize: 11
+                                        color: Theme.muted
+                                    }
+                                    GridLayout {
+                                        Layout.fillWidth: true
+                                        columns: 2
+                                        columnSpacing: 9
+                                        rowSpacing: 9
+                                        Repeater {
+                                            model: [
+                                                { key: "compact", label: "Compact", info: "Dense, low-profile bar", icon: "\ue5d1" },
+                                                { key: "clean-compact", label: "Clean Compact", info: "Bare buttons, Quick Settings pill", icon: "\ue5d1" },
+                                                { key: "separated", label: "Separated", info: "Left and right islands", icon: "\ue86c" },
+                                                { key: "professional", label: "Professional", info: "Full-width status header", icon: "\ue30b" },
+                                                { key: "simple", label: "Simple", info: "Arch, centered clock, control", icon: "\ue5d4" }
+                                            ]
+                                            delegate: Rectangle {
+                                                id: modeCard
+                                                required property var modelData
+                                                readonly property bool selected: SettingsStore.barMode === modelData.key
+                                                Layout.fillWidth: true
+                                                Layout.preferredHeight: 115
+                                                radius: 12
+                                                color: selected ? Qt.alpha(Theme.accent, 0.13) : Theme.background
+                                                border.width: selected ? 1 : 0
+                                                border.color: Theme.accent
+                                                ColumnLayout {
+                                                    anchors.fill: parent
+                                                    anchors.margins: 11
+                                                    spacing: 7
+                                                    RowLayout {
+                                                        Layout.fillWidth: true
+                                                        spacing: 8
+                                                        Icon { icon: modeCard.modelData.icon; font.pixelSize: 18; color: Theme.accent }
+                                                        Text {
+                                                            Layout.fillWidth: true
+                                                            text: modeCard.modelData.label
+                                                            font.family: Fonts.poppinsSB.name
+                                                            font.pixelSize: 12
+                                                            color: Theme.foreground
+                                                        }
+                                                        Icon { visible: modeCard.selected; icon: "\ue5ca"; font.pixelSize: 18; color: Theme.accent }
+                                                    }
+                                                    Text {
+                                                        Layout.fillWidth: true
+                                                        text: modeCard.modelData.info
+                                                        font.family: Fonts.poppins.name
+                                                        font.pixelSize: 10
+                                                        color: Theme.muted
+                                                        elide: Text.ElideRight
+                                                    }
+                                                    Rectangle {
+                                                        Layout.fillWidth: true
+                                                        Layout.preferredHeight: 25
+                                                        radius: modeCard.modelData.key === "professional" ? 0 : 7
+                                                        color: modeCard.modelData.key === "professional" ? Theme.surface : Qt.alpha(Theme.foreground, 0.06)
+                                                        RowLayout {
+                                                            anchors.fill: parent
+                                                            anchors.leftMargin: 6; anchors.rightMargin: 6
+                                                            spacing: 4
+                                                            Rectangle { Layout.preferredWidth: modeCard.modelData.key === "simple" ? 11 : 36; Layout.preferredHeight: modeCard.modelData.key === "clean-compact" ? 2 : 12; radius: 4; color: modeCard.modelData.key === "separated" ? Theme.surface : Qt.alpha(Theme.accent, 0.4) }
+                                                            Item { Layout.fillWidth: true }
+                                                            Rectangle { Layout.preferredWidth: modeCard.modelData.key === "simple" ? 13 : 21; Layout.preferredHeight: ["compact", "clean-compact"].indexOf(modeCard.modelData.key) !== -1 ? 5 : 10; radius: 4; color: modeCard.modelData.key === "simple" ? Theme.accent : Theme.muted }
+                                                            Item { Layout.fillWidth: true }
+                                                            Rectangle { Layout.preferredWidth: modeCard.modelData.key === "simple" ? 12 : 45; Layout.preferredHeight: 12; radius: 4; color: modeCard.modelData.key === "separated" ? Theme.surface : Qt.alpha(Theme.accent, 0.4) }
+                                                        }
+                                                    }
+                                                }
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        SettingsStore.barMode = modeCard.modelData.key;
+                                                        SettingsStore.save();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        visible: SettingsStore.barMode === "clean-compact"
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: visible ? 160 : 0
+                                        radius: 13
+                                        color: Theme.background
+                                        border.width: 1
+                                        border.color: Theme.borderaccent
+                                        ColumnLayout {
+                                            anchors.fill: parent; anchors.margins: 14; spacing: 10
+                                            Text { id: cleanSearchAnchor; text: "Clean Compact · Right-side labels"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
+                                            Text { Layout.fillWidth: true; text: "Choose how labels appear. Battery and volume percentages stay visible."; wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                                            RowLayout {
+                                                Layout.fillWidth: true; spacing: 8
+                                                Repeater {
+                                                    model: [
+                                                        {label: "Icons only", key: "icons", icon: "\ue5ca"},
+                                                        {label: "With details", key: "details", icon: "\ue8b8"},
+                                                        {label: "On hover", key: "hover", icon: "\ue8f4"}
+                                                    ]
+                                                    delegate: Rectangle {
+                                                        id: detailOption
+                                                        required property var modelData
+                                                        readonly property bool chosen: SettingsStore.cleanRightMode === modelData.key
+                                                        Layout.fillWidth: true; Layout.preferredHeight: 61; radius: 10
+                                                        color: chosen ? Qt.alpha(Theme.accent, .16) : Theme.surface
+                                                        border.width: chosen ? 1 : 0; border.color: Theme.accent
+                                                        RowLayout {
+                                                            anchors.centerIn: parent; spacing: 6
+                                                            Icon { icon: detailOption.chosen ? "\ue5ca" : detailOption.modelData.icon; font.pixelSize: 17; color: Theme.accent }
+                                                            Text { text: detailOption.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                                                        }
+                                                        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.cleanRightMode = detailOption.modelData.key; SettingsStore.save(); } }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                            Text { Layout.fillWidth: true; text: "Tip: switch to another bar mode to set its own margins. Reset restores that mode's original spacing."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10; wrapMode: Text.WordWrap }
-                            Text {
-                                id: modulesSearchAnchor
-                                text: "Modules & individual icons"
-                                font.family: Fonts.poppinsSB.name
-                                font.pixelSize: 14
-                                color: Theme.foreground
-                            }
-                            Text {
+
+                            Rectangle {
                                 Layout.fillWidth: true
-                                text: "Enable individual icons on every bar position. Quick Control remains available separately; each choice is saved."
-                                wrapMode: Text.WordWrap
-                                color: Theme.muted
-                                font.family: Fonts.poppins.name
-                                font.pixelSize: 11
+                                radius: 16
+                                color: Theme.surface
+                                border.color: Theme.borderaccent
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 14
+                                    spacing: 11
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        ColumnLayout {
+                                            Layout.fillWidth: true; spacing: 2
+                                            Text { id: marginSearchAnchor; text: "Realtime margin editor"; font.family: Fonts.poppinsSB.name; font.pixelSize: 14; color: Theme.foreground }
+                                            Text { text: "Independent margins for each bar mode · 0–32 px · updates immediately"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
+                                        }
+                                        Rectangle {
+                                            Layout.preferredWidth: 100; Layout.preferredHeight: 30; radius: 8; color: Theme.background
+                                            Text { anchors.centerIn: parent; text: "Reset mode"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.foreground }
+                                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetBarMargins() }
+                                        }
+                                    }
+                                    GridLayout {
+                                        Layout.fillWidth: true
+                                        columns: 2; columnSpacing: 9; rowSpacing: 9
+                                        Repeater {
+                                            model: [
+                                                {edge: "top", name: "Top"}, {edge: "bottom", name: "Bottom"},
+                                                {edge: "left", name: "Left"}, {edge: "right", name: "Right"}
+                                            ]
+                                            delegate: Rectangle {
+                                                id: marginCard
+                                                required property var modelData
+                                                readonly property int fallback: SettingsStore.barMode === "professional" ? 0 :
+                                                    (SettingsStore.barPosition === "left" || SettingsStore.barPosition === "right") ? 4 :
+                                                    (modelData.edge === "left" || modelData.edge === "right") ? 6 :
+                                                    (SettingsStore.barMode === "compact" || SettingsStore.barMode === "clean-compact") ? 4 : 6
+                                                readonly property int value: SettingsStore.marginFor(modelData.edge, fallback)
+                                                Layout.fillWidth: true; Layout.preferredHeight: 96; radius: 11
+                                                color: Theme.background
+                                                ColumnLayout {
+                                                    anchors.fill: parent; anchors.margins: 12; spacing: 7
+                                                    RowLayout {
+                                                        Layout.fillWidth: true
+                                                        Text { text: marginCard.modelData.name; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                                                        Item { Layout.fillWidth: true }
+                                                        Text { text: marginCard.value + " px"; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.accent }
+                                                    }
+                                                    MarginSlider {
+                                                        Layout.fillWidth: true; Layout.preferredHeight: 25
+                                                        value: marginCard.value
+                                                        onPreview: next => SettingsStore.setBarMargin(marginCard.modelData.edge, next, false)
+                                                        onCommit: next => SettingsStore.setBarMargin(marginCard.modelData.edge, next, true)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Text { Layout.fillWidth: true; text: "Tip: switch to another bar mode to set its own margins. Reset restores that mode's original spacing."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10; wrapMode: Text.WordWrap }
+                                }
                             }
-                            Repeater {
-                                model: [
-                                    {label: "Arch / AI launcher", desc: "Left launcher button", key: "showArch", icon: "\ueb8e"},
-                                    {label: "Workspace switcher", desc: "Hyprland workspaces", key: "showWorkspaces", icon: "\ue30b"},
-                                    {label: "Weather", desc: "Weather icon and temperature", key: "showWeather", icon: "\ue430"},
-                                    {label: "Clock", desc: "Time icon and time label", key: "showTime", icon: "\ue8b5"},
-                                    {label: "Calendar", desc: "Date icon and date label", key: "showDate", icon: "\uebcc"},
-                                    {label: "Bluetooth", desc: "Independent Bluetooth indicator", key: "showBluetooth", icon: "\ue1a7"},
-                                    {label: "Wi-Fi", desc: "Independent Wi-Fi indicator", key: "showWifi", icon: "\ue63e"},
-                                    {label: "Battery", desc: "Battery status and charging percentage", key: "showBattery", icon: "\uf304"},
-                                    {label: "Audio", desc: "Volume indicator and percentage", key: "showAudio", icon: "\ue050"},
-                                    {label: "Quick Control button", desc: "Open the full control panel", key: "showQuickControl", icon: "\ue69b"},
-                                    {label: "System indicators (group)", desc: "Master toggle for status icons", key: "showIndicators", icon: "\ue8b8"},
-                                    {label: "Quick modes", desc: "Compact system mode controls", key: "showQuickModes", icon: "\ue429"}
-                                ]
-                                delegate: SettingsToggle {}
-                            }
-                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
-                            Text { text: "Menu bar"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
-                            Text {
+
+                            Rectangle {
                                 Layout.fillWidth: true
-                                text: "Inspired by desktop menu bars. File, Shell and Tools are optional; Edit, View and Share are enabled by default when the menu bar is shown."
-                                wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11
+                                radius: 16
+                                color: Theme.surface
+                                border.color: Theme.borderaccent
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 14
+                                    spacing: 11
+                                    Text {
+                                        id: modulesSearchAnchor
+                                        text: "Modules & individual icons"
+                                        font.family: Fonts.poppinsSB.name
+                                        font.pixelSize: 14
+                                        color: Theme.foreground
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: "Turn bar modules on or off independently. Launcher, AI, indicators and Quick Control can each be shown only where you want them."
+                                        wrapMode: Text.WordWrap
+                                        color: Theme.muted
+                                        font.family: Fonts.poppins.name
+                                        font.pixelSize: 11
+                                    }
+                                    Repeater {
+                                        model: [
+                                            {label: "App launcher", desc: "Search and launch installed applications", key: "showLauncher", icon: "\ue8b6"},
+                                            {label: "Arch / AI launcher", desc: "Left launcher button", key: "showArch", icon: "\ueb8e"},
+                                            {label: "Workspace switcher", desc: "Hyprland workspaces", key: "showWorkspaces", icon: "\ue30b"},
+                                            {label: "Weather", desc: "Weather icon and temperature", key: "showWeather", icon: "\ue430"},
+                                            {label: "Clock", desc: "Time icon and time label", key: "showTime", icon: "\ue8b5"},
+                                            {label: "Calendar", desc: "Date icon and date label", key: "showDate", icon: "\uebcc"},
+                                            {label: "Bluetooth", desc: "Independent Bluetooth indicator", key: "showBluetooth", icon: "\ue1a7"},
+                                            {label: "Wi-Fi", desc: "Independent Wi-Fi indicator", key: "showWifi", icon: "\ue63e"},
+                                            {label: "Battery", desc: "Battery status and charging percentage", key: "showBattery", icon: "\uf304"},
+                                            {label: "Audio", desc: "Volume indicator and percentage", key: "showAudio", icon: "\ue050"},
+                                            {label: "Task View icon", desc: "System metrics and processes popup in bar", key: "showTaskView", icon: "\uf190"},
+                                            {label: "Notification center", desc: "Automatic toasts and Quick Control history", key: "showNotifications", icon: "\ue7f4"},
+                                            {label: "Quick Control button", desc: "Open the full control panel", key: "showQuickControl", icon: "\ue69b"},
+                                            {label: "System indicators (group)", desc: "Master toggle for status icons", key: "showIndicators", icon: "\ue8b8"},
+                                            {label: "Quick modes", desc: "Compact system mode controls", key: "showQuickModes", icon: "\ue429"}
+                                        ]
+                                        delegate: SettingsToggle {}
+                                    }
+                                }
                             }
-                            Repeater {
-                                model: [
-                                    {label: "Show menu bar", desc: "Show enabled sections at the left", key: "showMenuBar", icon: "\ue5d2"},
-                                    {label: "File", desc: "Open Home, Downloads or configuration", key: "showMenuFile", icon: "\ue2c7"},
-                                    {label: "Edit", desc: "Appearance, Bar and AI settings", key: "showMenuEdit", icon: "\ue3c9"},
-                                    {label: "View", desc: "Switch bar layout modes", key: "showMenuView", icon: "\ue8f4"},
-                                    {label: "Share", desc: "Local screenshots", key: "showMenuShare", icon: "\ue3c2"},
-                                    {label: "Shell", desc: "Launch a terminal or system monitor", key: "showMenuShell", icon: "\ueb8e"},
-                                    {label: "Tools", desc: "Quick access to Settings and screenshots", key: "showMenuTools", icon: "\ue8b8"}
-                                ]
-                                delegate: SettingsToggle {}
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                radius: 16
+                                color: Theme.surface
+                                border.color: Theme.borderaccent
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 14
+                                    spacing: 11
+                                    Text { text: "Menu bar"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: "Inspired by desktop menu bars. File, Shell and Tools are optional; Edit, View and Share are enabled by default when the menu bar is shown."
+                                        wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11
+                                    }
+                                    Repeater {
+                                        model: [
+                                            {label: "Show menu bar", desc: "Show enabled sections at the left", key: "showMenuBar", icon: "\ue5d2"},
+                                            {label: "File", desc: "Open Home, Downloads or configuration", key: "showMenuFile", icon: "\ue2c7"},
+                                            {label: "Edit", desc: "Appearance, Bar and AI settings", key: "showMenuEdit", icon: "\ue3c9"},
+                                            {label: "View", desc: "Switch bar layout modes", key: "showMenuView", icon: "\ue8f4"},
+                                            {label: "Share", desc: "Local screenshots", key: "showMenuShare", icon: "\ue3c2"},
+                                            {label: "Shell", desc: "Launch a terminal or system monitor", key: "showMenuShell", icon: "\ueb8e"},
+                                            {label: "Tools", desc: "Quick access to Settings and screenshots", key: "showMenuTools", icon: "\ue8b8"}
+                                        ]
+                                        delegate: SettingsToggle {}
+                                    }
+                                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                                    Text { text: "Quick modes"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
+                                    Repeater {
+                                        model: [
+                                            {label: "Auto-hide quick modes", desc: "Reveal options on hover", key: "quickModesAutoHide", icon: "\ue8f4"},
+                                            {label: "Keep Awake", desc: "Prevent sleep temporarily", key: "showKeepAwake", icon: "\ue541"},
+                                            {label: "Silent", desc: "Do Not Disturb", key: "showSilent", icon: "\ue7f6"},
+                                            {label: "Gaming Mode", desc: "Performance power profile", key: "showGamingMode", icon: "\ue30f"},
+                                            {label: "Night Mode", desc: "Warm screen temperature", key: "showNightMode", icon: "\ue51c"},
+                                            {label: "Mute Microphone", desc: "Microphone mute", key: "showMicMute", icon: "\ue02b"}
+                                        ]
+                                        delegate: SettingsToggle {}
+                                    }
+                                }
                             }
-                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
-                            Text { text: "Quick modes"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 14 }
-                            Repeater {
-                                model: [
-                                    {label: "Auto-hide quick modes", desc: "Reveal options on hover", key: "quickModesAutoHide", icon: "\ue8f4"},
-                                    {label: "Keep Awake", desc: "Prevent sleep temporarily", key: "showKeepAwake", icon: "\ue541"},
-                                    {label: "Silent", desc: "Do Not Disturb", key: "showSilent", icon: "\ue7f6"},
-                                    {label: "Gaming Mode", desc: "Performance power profile", key: "showGamingMode", icon: "\ue30f"},
-                                    {label: "Night Mode", desc: "Warm screen temperature", key: "showNightMode", icon: "\ue51c"},
-                                    {label: "Mute Microphone", desc: "Microphone mute", key: "showMicMute", icon: "\ue02b"}
-                                ]
-                                delegate: SettingsToggle {}
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                radius: 16
+                                color: Theme.surface
+                                border.color: Theme.borderaccent
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 14
+                                    spacing: 11
+                                    Text { id: widgetsSearchAnchor; text: "Desktop widgets · behind windows"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
+                                    Text { text: "Widgets live on the Wayland Bottom layer, above wallpaper but behind application windows. Disabled by default."; Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.muted; font.pixelSize: 11 }
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 84
+                                        radius: 13
+                                        color: Theme.background
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 12
+                                            spacing: 10
+                                            Repeater {
+                                                model: [
+                                                    {icon:"\ue916", title:"Calendar", desc:"Monthly view"},
+                                                    {icon:"\ue1db", title:"System", desc:"CPU / RAM"},
+                                                    {icon:"\ue8b5", title:"Clock", desc:"Large time"}
+                                                ]
+                                                delegate: Rectangle {
+                                                    required property var modelData
+                                                    Layout.fillWidth: true
+                                                    Layout.fillHeight: true
+                                                    radius: 11
+                                                    color: Theme.surface
+                                                    ColumnLayout {
+                                                        anchors.centerIn: parent
+                                                        spacing: 4
+                                                        Rectangle { Layout.alignment: Qt.AlignHCenter; Layout.preferredWidth: 30; Layout.preferredHeight: 30; radius: 10; color: Qt.alpha(Theme.accent, 0.12); Icon { anchors.centerIn: parent; icon: modelData.icon; font.pixelSize: 16; color: Theme.accent } }
+                                                        Text { Layout.alignment: Qt.AlignHCenter; text: modelData.title; font.family: Fonts.poppinsSB.name; font.pixelSize: 10; color: Theme.foreground }
+                                                        Text { Layout.alignment: Qt.AlignHCenter; text: modelData.desc; font.family: Fonts.poppins.name; font.pixelSize: 9; color: Theme.muted }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Repeater {
+                                        model: [
+                                            {label:"Calendar widget",desc:"Persistent monthly calendar",key:"desktopCalendar",icon:"\ue916"},
+                                            {label:"System widget",desc:"Live CPU and memory overview",key:"desktopSystem",icon:"\ue1db"},
+                                            {label:"Clock widget",desc:"Large clock and date",key:"desktopClock",icon:"\ue8b5"}
+                                        ]
+                                        delegate: SettingsToggle {}
+                                    }
+                                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                                    Text { id: dockSearchAnchor; text: "Custom dock"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
+                                    Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Bottom-edge dock with optional auto-hide and quick app actions. The first item opens an application launcher using an installed drun tool if available."; color: Theme.muted; font.pixelSize: 11; font.family: Fonts.poppins.name }
+                                    Repeater {
+                                        model: [
+                                            {label:"Enable dock",desc:"Application shortcuts on the bottom edge",key:"showDock",icon:"\ue8b8"},
+                                            {label:"Auto-hide dock",desc:"Reveal when hovering the small bottom handle",key:"dockAutoHide",icon:"\ue8f4"},
+                                            {label:"Dock · Files",desc:"Open home folder",key:"dockFiles",icon:"\ue2c7"},
+                                            {label:"Dock · Browser",desc:"Open default browser",key:"dockBrowser",icon:"\ue80b"},
+                                            {label:"Dock · Settings",desc:"Open RusticQ settings",key:"dockSettings",icon:"\ue8b8"},
+                                            {label:"Dock · Task View",desc:"Show detailed process monitor",key:"dockTaskView",icon:"\uf190"},
+                                            {label:"Dock · AI",desc:"Cloud assistant sidebar",key:"dockAI",icon:"\ue8f4"}
+                                        ]
+                                        delegate: SettingsToggle {}
+                                    }
+                                }
                             }
                         }
-
-                        ColumnLayout {
-                            visible: Store.settingsTab === "bar"
-                            Layout.fillWidth: true; spacing: 10
-                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
-                            Text { text: "System & notifications"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
-                            Repeater {
-                                model: [
-                                    {label:"Task View icon",desc:"System metrics and processes popup in bar",key:"showTaskView",icon:"\ue1db"},
-                                    {label:"Notification center",desc:"Automatic toasts and Quick Control history",key:"showNotifications",icon:"\ue7f4"}
-                                ]
-                                delegate: SettingsToggle {}
-                            }
-                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
-                            Text { id: widgetsSearchAnchor; text: "Desktop widgets · behind windows"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
-                            Text { text: "Widgets live on the Wayland Bottom layer, above wallpaper but behind application windows. Disabled by default."; Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.muted; font.pixelSize: 11 }
-                            Repeater {
-                                model: [
-                                    {label:"Calendar widget",desc:"Persistent monthly calendar",key:"desktopCalendar",icon:"\ue916"},
-                                    {label:"System widget",desc:"Live CPU and memory overview",key:"desktopSystem",icon:"\ue1db"},
-                                    {label:"Clock widget",desc:"Large clock and date",key:"desktopClock",icon:"\ue8b5"}
-                                ]
-                                delegate: SettingsToggle {}
-                            }
-                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
-                            Text { id: dockSearchAnchor; text: "Custom dock"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
-                            Repeater {
-                                model: [
-                                    {label:"Enable dock",desc:"Application shortcuts on the bottom edge",key:"showDock",icon:"\ue8b8"},
-                                    {label:"Auto-hide dock",desc:"Reveal when hovering the small bottom handle",key:"dockAutoHide",icon:"\ue8f4"},
-                                    {label:"Dock · Files",desc:"Open home folder",key:"dockFiles",icon:"\ue2c7"},
-                                    {label:"Dock · Browser",desc:"Open default browser",key:"dockBrowser",icon:"\ue80b"},
-                                    {label:"Dock · Settings",desc:"Open RusticQ settings",key:"dockSettings",icon:"\ue8b8"},
-                                    {label:"Dock · Task View",desc:"Show detailed process monitor",key:"dockTaskView",icon:"\uf190"},
-                                    {label:"Dock · AI",desc:"Cloud assistant sidebar",key:"dockAI",icon:"\ue8f4"}
-                                ]
-                                delegate: SettingsToggle {}
-                            }
-                        }
-
                         ColumnLayout {
                             visible: Store.settingsTab === "display"
                             Layout.fillWidth: true
