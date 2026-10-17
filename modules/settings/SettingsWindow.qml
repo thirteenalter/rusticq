@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import "../../config"
@@ -51,7 +52,7 @@ FloatingWindow {
         {tab:"bar", title:"Icon spacing: Left, Center and Right", hint:"Per-icon spacing follows icon alignment; microphone wifi battery download upload all modes"},
         {tab:"bar", title:"Extra status icons", hint:"Microphone network download upload left center right"},
         {tab:"bar", title:"Bar icon alignment", hint:"Relocate every icon left center right clock wifi battery audio task quick control menu"},
-        {tab:"bar", title:"Independent icon profiles per layout", hint:"Simple Compact Clean Compact Separated Professional icon visibility per mode presets minimal"},
+        {tab:"modules", title:"Independent icon profiles per layout", hint:"Simple Compact Clean Compact Separated Professional icon visibility per mode presets minimal"},
         {tab:"modules", title:"App launcher and status modules", hint:"Icons Wifi Bluetooth Battery Audio Weather Clock"},
         {tab:"modules", title:"Menu bar and quick modes", hint:"Edit View Share File Shell Tools Night Silent"},
         {tab:"widgets", title:"Desktop widgets", hint:"Calendar Clock CPU RAM Music Media Now Playing Weather Connectivity Battery"},
@@ -132,7 +133,7 @@ FloatingWindow {
                             }
                             Item { Layout.fillHeight: true }
                             Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(15) }
-                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 4 RC5"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                            Text { text: "RUSTIQ DESKTOP  ·  BETA 1"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
                         }
                     }
                     RowLayout {
@@ -148,6 +149,7 @@ FloatingWindow {
                         contentWidth: width
                         contentHeight: navigationColumn.implicitHeight
                         boundsBehavior: Flickable.StopAtBounds
+                        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded; width: 7 }
                         ColumnLayout {
                             id: navigationColumn
                             width: navigationScroll.width
@@ -185,7 +187,7 @@ FloatingWindow {
                     }
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     Text {
-                        text: "RUSTIQ · ALPHA 4 RC5\nQuickshell 0.3.1"
+                        text: "RUSTIQ · BETA 1\nQuickshell 0.3.1"
                         Layout.fillWidth: true
                         color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                     }
@@ -203,7 +205,7 @@ FloatingWindow {
                         anchors.fill: parent
                         spacing: 3
                         Text { text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(22) }
-                        Text { text: "RUSTIQ / ALPHA 4 RC5 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        Text { text: "RUSTIQ / BETA 1 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -249,6 +251,8 @@ FloatingWindow {
                     contentWidth: width
                     contentHeight: pageLoader.item ? pageLoader.item.implicitHeight + 16 : 0
                     boundsBehavior: Flickable.StopAtBounds
+                    flickableDirection: Flickable.VerticalFlick
+                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn; width: 8 }
                     onVisibleChanged: if (visible) contentY = 0
                     Loader {
                         id: pageLoader
@@ -274,6 +278,7 @@ FloatingWindow {
                     visible: root.query.trim().length > 0
                     Layout.fillWidth: true; Layout.fillHeight: true
                     clip: true; spacing: 8
+                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded; width: 7 }
                     model: root.matched
                     delegate: Rectangle {
                         id: searchRow

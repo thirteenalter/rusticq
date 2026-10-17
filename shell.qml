@@ -155,6 +155,11 @@ ShellRoot {
         active: Store.settingsVisible
         SettingsWindow {}
     }
+    LazyLoader {
+        active: Store.confirmationVisible
+        PackageConfirmationWindow {}
+    }
+
 
     LazyLoader {
         active: Store.sidebarVisible

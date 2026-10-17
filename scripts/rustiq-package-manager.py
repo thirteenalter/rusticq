@@ -43,21 +43,56 @@ def validate_request(action, package):
     return package
 
 
-def resolve_desktop(entry_id):
-    if not isinstance(entry_id, str) or not DESKTOP.fullmatch(entry_id) or '..' in entry_id:
+def resolve_desktop(entry_id, display_name='', search_dirs=None):
+    """Find the owning pacman package for a real desktop file, never guess from an app label.
+
+    Quickshell DesktopEntry.id can contain a basename, an XDG-style id or be
+    empty for some application sources. A unique .desktop Name is a safe fallback
+    only when the actual file is owned by exactly one pacman package.
+    """
+    import configparser
+    if not isinstance(entry_id, str) or len(entry_id) > 260 or any(c in entry_id for c in ('/', '\x00', '\n', '\r')) or '..' in entry_id:
         raise ValueError('Invalid desktop entry ID')
-    filename = entry_id if entry_id.endswith('.desktop') else entry_id + '.desktop'
-    # Only system desktop entries known to pacman; never guess installed package ownership.
-    for directory in ['/usr/share/applications', '/usr/local/share/applications']:
-        path = Path(directory) / filename
-        if not path.is_file():
+    if not isinstance(display_name, str) or len(display_name) > 260:
+        raise ValueError('Invalid application name')
+    candidates = []
+    filenames = [entry_id] if entry_id.endswith('.desktop') else [entry_id + '.desktop']
+    filenames.append(entry_id.replace('/', '-') + '.desktop')
+    if search_dirs is None:
+        search_dirs = (Path('/usr/share/applications'), Path('/usr/local/share/applications'))
+    for directory in search_dirs:
+        directory = Path(directory)
+        if not directory.is_dir():
             continue
+        for path in directory.glob('*.desktop'):
+            if path.is_symlink():
+                continue
+            if path.name in filenames:
+                candidates.insert(0, path)
+                continue
+            if not display_name:
+                continue
+            try:
+                parser = configparser.ConfigParser(interpolation=None, strict=False)
+                parser.optionxform = str
+                parser.read(path, encoding='utf-8')
+                if parser.has_section('Desktop Entry') and parser.get('Desktop Entry', 'Name', fallback='').casefold() == display_name.casefold():
+                    candidates.append(path)
+            except (OSError, UnicodeError, configparser.Error):
+                continue
+    owners = set()
+    for path in candidates:
         result = run(['pacman', '-Qqo', str(path)])
         if result.returncode == 0:
-            name = result.stdout.strip().splitlines()[0]
-            if PACKAGE.fullmatch(name):
-                return name
-    raise RuntimeError('No pacman package owns this desktop entry. It may come from Flatpak, AppImage or a local install.')
+            for owner in result.stdout.splitlines():
+                owner = owner.strip()
+                if PACKAGE.fullmatch(owner):
+                    owners.add(owner)
+    if len(owners) == 1:
+        return next(iter(owners))
+    if len(owners) > 1:
+        raise RuntimeError('Multiple pacman packages match this app. Search the exact package below instead.')
+    raise RuntimeError('This app has no resolvable pacman owner (possibly AUR, Flatpak, AppImage or local). Search its package manually or manage it through its original installer.')
 
 
 def make_commands(action, package, omarchy=None):
@@ -118,8 +153,8 @@ def apply(action, package):
 
 
 def main(argv):
-    if len(argv) == 2 and argv[0] == 'resolve-desktop':
-        return {'ok': True, 'package': resolve_desktop(argv[1])}
+    if len(argv) in (2, 3) and argv[0] == 'resolve-desktop':
+        return {'ok': True, 'package': resolve_desktop(argv[1], argv[2] if len(argv) == 3 else '')}
     if len(argv) != 3:
         raise ValueError('Expected operation and package')
     op, action, package = argv

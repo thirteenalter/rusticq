@@ -11,14 +11,14 @@ PopupWindow {
     required property var hostWindow
     property string kind: ""
     property string menuSection: "view"
-    readonly property bool singleSystem: kind === "wifi" || kind === "ethernet" || kind === "bluetooth" || kind === "battery"
+    readonly property bool singleSystem: kind === "wifi" || kind === "ethernet" || kind === "bluetooth" || kind === "battery" || kind === "audio"
     property real targetX: 0
     property real targetY: 0
     property string barPosition: "top"
     signal dismissed()
     implicitWidth: kind === "task" ? 480 : kind === "menu" ? 358 : 368
     implicitHeight: kind === "task" ? 585 : kind === "wifi" ? 465 : kind === "ethernet" ? 260 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
-                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? (menuSection === "share" ? 530 : 345) : kind === "audio" ? Math.min(650, Math.max(185, (widgetLoader.item ? widgetLoader.item.implicitHeight : 180) + 16)) : 190
+                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? (menuSection === "share" ? 530 : 345) : kind === "audio" ? Math.min(620, Math.max(185, (widgetLoader.item ? widgetLoader.item.implicitHeight : 180))) : 190
     anchor.window: hostWindow
     anchor.edges: barPosition === "bottom" ? (Edges.Bottom | Edges.Left) : (Edges.Top | Edges.Left)
     anchor.gravity: barPosition === "bottom" ? (Edges.Top | Edges.Right)

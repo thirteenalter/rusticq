@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # RusticQ user-local source installation. Does NOT enable permanent Omarchy mode.
 set -Eeuo pipefail
+ORIGINAL_ARGS=("$@")
 
-ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-}")/.." && pwd -P)"
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 DEST="$DATA_HOME/rusticq/source"
@@ -39,6 +40,55 @@ while (( $# > 0 )); do
   esac
 done
 
+# When piped from GitHub raw (`curl .../scripts/install.sh | bash`),
+# Bash has no project tree. Fetch the complete repository over HTTPS then
+# rerun the *same* local installer. Do not replace an Omarchy shell here.
+if [[ ! -f "$ROOT/shell.qml" || ! -f "$ROOT/config/dependencies.json" ]]; then
+  if (( DRY_RUN )); then
+    echo 'REMOTE DRY RUN: would download RusticQ main branch and install user-local source; nothing changed.'
+    exit 0
+  fi
+  [[ "$(id -u)" -ne 0 ]] || { echo 'Do not pipe installer as root' >&2; exit 1; }
+  command -v curl >/dev/null 2>&1 || { echo 'Install curl to bootstrap RusticQ' >&2; exit 1; }
+  if ! command -v python3 >/dev/null 2>&1; then
+    [[ -e /etc/arch-release ]] && command -v sudo >/dev/null 2>&1 || { echo 'Python3 is required for safe archive verification' >&2; exit 1; }
+    echo 'Installing Python to validate the release archive...'
+    sudo pacman -S --needed -- python
+  fi
+  TEMP_SOURCE="$(mktemp -d)"
+  trap 'rm -rf -- "$TEMP_SOURCE"' EXIT
+  # main must contain this Beta 1 installer before using the README curl command.
+  GITHUB_ARCHIVE='https://codeload.github.com/thirteenalter/rusticq/zip/refs/heads/main'
+  echo 'Downloading RusticQ source from thirteenalter/rusticq main (HTTPS)...'
+  curl --fail --location --silent --show-error --retry 2 --max-time 120 \
+       --proto '=https' --proto-redir '=https' "$GITHUB_ARCHIVE" --output "$TEMP_SOURCE/rusticq.zip"
+  if [[ -n "${RUSTICQ_ARCHIVE_SHA256:-}" ]]; then
+    printf '%s  %s\n' "$RUSTICQ_ARCHIVE_SHA256" "$TEMP_SOURCE/rusticq.zip" | sha256sum -c --status || { echo 'SHA-256 mismatch' >&2; exit 1; }
+  else
+    echo 'NOTE: This installs the current main branch. Pin and verify a published release for reproducible installs.'
+  fi
+  python3 - "$TEMP_SOURCE/rusticq.zip" "$TEMP_SOURCE" <<'PY_CHECK'
+from pathlib import Path
+import sys, zipfile
+archive, base = Path(sys.argv[1]), Path(sys.argv[2])
+with zipfile.ZipFile(archive) as z:
+    info = z.infolist()
+    if len(info) > 4000 or sum(f.file_size for f in info) > 200_000_000:
+        raise SystemExit('Source archive too large')
+    for f in info:
+        path = Path(f.filename)
+        if path.is_absolute() or '..' in path.parts or not path.parts or path.parts[0] != 'rusticq-main':
+            raise SystemExit('Unsafe archive path: ' + f.filename)
+        if ((f.external_attr >> 16) & 0o170000) == 0o120000:
+            raise SystemExit('Refusing symlink from archive')
+    for required in ('rusticq-main/shell.qml','rusticq-main/scripts/install.sh','rusticq-main/config/dependencies.json'):
+        if required not in z.namelist():
+            raise SystemExit('Incomplete RusticQ GitHub archive: ' + required)
+    z.extractall(base)
+PY_CHECK
+  bash "$TEMP_SOURCE/rusticq-main/scripts/install.sh" "${ORIGINAL_ARGS[@]}"
+  exit $?
+fi
 [[ -f "$ROOT/shell.qml" && -f "$ROOT/config/dependencies.json" ]] || { echo 'Not a complete RusticQ source tree' >&2; exit 1; }
 [[ "$DEST" = /* ]] || { echo '--prefix must be an absolute path' >&2; exit 2; }
 [[ "$DEST" != / && "$DEST" != "$HOME" ]] || { echo 'Unsafe destination' >&2; exit 2; }

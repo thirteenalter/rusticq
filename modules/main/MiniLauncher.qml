@@ -17,6 +17,16 @@ Rectangle {
     property var results: []
     property var frequent: []
     property bool showAll: false
+    property int selectedIndex: 0
+    onResultsChanged: selectedIndex = 0
+    function moveSelection(delta) {
+        if (!displayedResults.length) return;
+        selectedIndex = Math.max(0, Math.min(displayedResults.length - 1, selectedIndex + delta));
+        appList.positionViewAtIndex(selectedIndex, ListView.Contain);
+    }
+    function launchSelected() {
+        if (displayedResults.length) launch(displayedResults[Math.min(selectedIndex, displayedResults.length - 1)]);
+    }
     readonly property bool cleanHover: SettingsStore.launcherLayoutMode === "clean-hover"
     property bool revealPreview: false
     readonly property bool showResults: !cleanHover || query.trim().length > 0 || revealPreview
@@ -71,6 +81,7 @@ Rectangle {
     onVisibleChanged: if (visible) {
         root.revealPreview = false;
         root.query = "";
+        root.selectedIndex = 0;
         Qt.callLater(function() { rebuild(); searchField.forceActiveFocus(); });
     }
     Connections {
@@ -158,6 +169,10 @@ Rectangle {
                     onTextEdited: root.query = text
                     Component.onCompleted: Qt.callLater(function() { forceActiveFocus(); })
                     Keys.onEscapePressed: Store.launcherVisible = false
+                    Keys.onDownPressed: event => { root.moveSelection(1); event.accepted = true; }
+                    Keys.onUpPressed: event => { root.moveSelection(-1); event.accepted = true; }
+                    Keys.onReturnPressed: event => { root.launchSelected(); event.accepted = true; }
+                    Keys.onEnterPressed: event => { root.launchSelected(); event.accepted = true; }
                     Text {
                         visible: searchField.text.length === 0
                         anchors.verticalCenter: parent.verticalCenter
@@ -247,14 +262,19 @@ Rectangle {
             clip: true
             spacing: 6
             model: root.displayedResults
+            currentIndex: root.selectedIndex
+            onCurrentIndexChanged: if (currentIndex !== root.selectedIndex && currentIndex >= 0) root.selectedIndex = currentIndex
             boundsBehavior: Flickable.StopAtBounds
             delegate: Rectangle {
                 id: appRow
                 required property var modelData
+                required property int index
                 width: ListView.view.width
                 height: Math.max(SettingsStore.launcherRowHeight, SettingsStore.launcherIconSize + 20)
                 radius: 12
-                color: appMouse.containsMouse ? Qt.alpha(Theme.accent, 0.12) : Theme.surface
+                color: appRow.index === root.selectedIndex ? Qt.alpha(Theme.accent, 0.20) : appMouse.containsMouse ? Qt.alpha(Theme.accent, 0.12) : Theme.surface
+                border.width: appRow.index === root.selectedIndex ? 1 : 0
+                border.color: Theme.accent
                 border.width: 0
 
                 RowLayout {
@@ -325,7 +345,8 @@ Rectangle {
                     anchors.rightMargin: 43
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.launch(appRow.modelData)
+                    onEntered: { root.selectedIndex = appRow.index; }
+                    onClicked: { root.selectedIndex = appRow.index; root.launch(appRow.modelData); }
                 }
             }
         }
@@ -333,7 +354,7 @@ Rectangle {
         Text {
             visible: !root.cleanHover || (root.query.trim().length > 0 && root.results.length === 0)
             Layout.fillWidth: true
-            text: root.results.length === 0 ? "No matching applications" : root.query.trim().length > 0 ? root.results.length + " matching apps · choose to launch" : "Installed applications · choose to launch"
+            text: root.results.length === 0 ? "No matching applications" : root.query.trim().length > 0 ? root.results.length + " matching apps · ↑/↓ select · Enter launch" : "Installed applications · choose to launch"
             wrapMode: Text.WordWrap
             color: Theme.muted
             font.family: Fonts.poppins.name

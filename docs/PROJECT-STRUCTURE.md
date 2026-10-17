@@ -55,3 +55,5 @@ quickshell/
 - `~/.local/state/rusticq/integration/` — permanent Omarchy backup and shortcut revert state.
 
 Do not interchange the last two backups: they restore different things.
+
+Beta 1 includes `modules/main/PackageConfirmationWindow.qml` (separate confirmation layer) and `scripts/rustiq-audio-test.sh` (user-triggered quiet speaker test).

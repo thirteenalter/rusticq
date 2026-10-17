@@ -6,7 +6,7 @@ The machine-readable source of truth is [`config/dependencies.json`](../config/d
 
 | Package | Purpose |
 | --- | --- |
-| `quickshell` | Quickshell runtime. RC5 was built against 0.3.1. |
+| `quickshell` | Quickshell runtime. Beta 1 was built against 0.3.1. |
 | `hyprland` | Hyprland window compositor and monitor/workspace APIs. |
 | `python` | Backend scripts and diagnostics. |
 | `ttf-material-symbols-variable` | Missing local font fallback for icon glyphs. |

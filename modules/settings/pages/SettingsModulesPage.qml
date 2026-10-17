@@ -13,6 +13,41 @@ ColumnLayout {
         symbol: "\ue429"
     }
     SettingsSection {
+        heading: "Layout profile tools · " + SettingsStore.barMode
+        description: "Every bar mode stores its own visible icons. Reset, copy or simplify only the active mode."
+        symbol: "\ue429"
+        RowLayout {
+            Layout.fillWidth: true; spacing: 8
+            Repeater {
+                model: [{label:"Minimal", action:"minimal"}, {label:"Reset active mode",action:"reset"}]
+                delegate: Rectangle {
+                    id: presetButton
+                    required property var modelData
+                    Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 9; color: Theme.background
+                    Text { anchors.centerIn: parent; text: presetButton.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: {
+                        if (presetButton.modelData.action === "minimal") SettingsStore.useMinimalModePreset();
+                        else SettingsStore.resetModeVisibility();
+                    } }
+                }
+            }
+        }
+        Text { text: "Copy this mode's icon setup from:"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+        Flow {
+            Layout.fillWidth: true; spacing: 7
+            Repeater {
+                model: SettingsStore.spacingModes.filter(m => m !== SettingsStore.barMode)
+                delegate: Rectangle {
+                    id: profileSource
+                    required property string modelData
+                    width: sourceLabel.implicitWidth + 24; height: 31; radius: 8; color: Theme.background
+                    Text { id: sourceLabel; anchors.centerIn: parent; text: profileSource.modelData === "clean-compact" ? "Clean Compact" : profileSource.modelData[0].toUpperCase() + profileSource.modelData.slice(1); color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.copyVisibilityFromMode(profileSource.modelData) }
+                }
+            }
+        }
+    }
+    SettingsSection {
         heading: "Launchers & bar components"
         description: "Show or hide icons independently for the active layout mode."
         symbol: "\ue8b6"

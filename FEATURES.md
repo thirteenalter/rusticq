@@ -1,4 +1,4 @@
-# RusticQ RC5 — Feature inventory
+# RusticQ Beta 1 — Feature inventory
 
 This is a **functional map of the current source**, not a promise that every module works on every machine. Entries below link to the relevant implementation directories.
 
@@ -46,3 +46,13 @@ The **core shell** needs a running Hyprland Wayland session, Quickshell and Pyth
 - `config/` — theme, persisted layout profiles and dependency allowlist.
 
 A feature is **optional** if its helper can be missing while the shell starts. Installing a package alone does not activate services or enable hardware permissions.
+
+## Beta 1 additions
+
+- App Launcher: arrow keys to select, Enter to launch, mouse hover/click selects the same highlighted entry.
+- Displays: one selected display editor with aligned mode chooser, drag preview, scale/position, validate/apply readback. Omarchy Lua runtime is preferred; output must verify before claiming applied.
+- Installed Apps: Manage resolves owning pacman package conservatively; install/uninstall requires a separate confirmation overlay and interactive terminal.
+- Modules: per-bar-layout visibility presets and copy tools live in Modules; redundant Icon preferences in Bar removed.
+- Settings: persistent scrollbars for sidebar and content; the 1100×760 window size remains unchanged.
+- Audio: compact popup margin, advanced real output and microphone peaks and a user-initiated quiet test tone.
+- Remote installer: GitHub-hosted `scripts/install.sh` now bootstraps full source for `curl | bash` use once pushed to main.

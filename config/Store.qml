@@ -20,6 +20,31 @@ Singleton {
     property var monitorScreen: null
     property bool systemMonitorVisible: false
     property string settingsTab: "appearance"
+    // The confirmation is a separate overlay window, never an inline Settings card.
+    signal packageOperationConfirmed(string action, string packageName)
+    property bool confirmationVisible: false
+    property string confirmationAction: ""
+    property string confirmationPackage: ""
+    property var confirmationScreen: null
+    function requestPackageConfirmation(action, packageName) {
+        if ((action !== "remove" && action !== "install") || !packageName) return;
+        confirmationAction = action;
+        confirmationPackage = packageName;
+        confirmationScreen = settingsScreen;
+        confirmationVisible = true;
+    }
+    function cancelPackageConfirmation() {
+        confirmationVisible = false;
+        confirmationAction = "";
+        confirmationPackage = "";
+    }
+    function acceptPackageConfirmation() {
+        if (!confirmationVisible || !confirmationAction || !confirmationPackage) return;
+        const action = confirmationAction, name = confirmationPackage;
+        cancelPackageConfirmation();
+        packageOperationConfirmed(action, name);
+    }
+
 
     function toggleQuick(screen) {
         if (sidebarVisible && sidebarScreen === screen) { sidebarVisible = false; return; }

@@ -32,11 +32,12 @@ ColumnLayout {
         pendingPackage = String(pkg || "").trim();
         confirmationText = "";
         packageStatus = "";
+        if (pendingPackage.length) Store.requestPackageConfirmation(action, pendingPackage);
     }
-    function resolveGraphicalApp(entryId) {
+    function resolveGraphicalApp(entry) {
         if (packageResolve.running) return;
         packageStatus = "Locating the owning pacman package…";
-        packageResolve.exec(["python3", Quickshell.shellPath("scripts/rustiq-package-manager.py"), "resolve-desktop", String(entryId || "")]);
+        packageResolve.exec(["python3", Quickshell.shellPath("scripts/rustiq-package-manager.py"), "resolve-desktop", String(entry.id || ""), String(entry.name || "")]);
     }
     Process {
         id: packageResolve
@@ -65,9 +66,14 @@ ColumnLayout {
         }
     }
     function confirmPackage() {
-        if (pendingAction === "remove" && confirmationText !== pendingPackage) return;
         if (!pendingPackage || packageLauncher.running) return;
         packageLauncher.exec(["python3", Quickshell.shellPath("scripts/rustiq-package-manager.py"), "launch", pendingAction, pendingPackage]);
+    }
+    Connections {
+        target: Store
+        function onPackageOperationConfirmed(action, packageName) {
+            if (root.category === "apps" && root.pendingAction === action && root.pendingPackage === packageName) root.confirmPackage();
+        }
     }
     function loadDesktopApps() {
         if (category !== "apps") return;
@@ -208,6 +214,7 @@ ColumnLayout {
             text: root.filteredDesktopApps.length + " graphical applications" + (searchInput.text.length ? " matching the package search" : "")
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
         }
+        Text { visible: root.packageStatus.length > 0; text: root.packageStatus; Layout.fillWidth:true; color:Theme.muted; wrapMode:Text.WordWrap; font.pixelSize:Fonts.scale(10) }
         ListView {
             Layout.fillWidth: true
             Layout.preferredHeight: 280
@@ -234,7 +241,7 @@ ColumnLayout {
                         Layout.preferredWidth: 64; Layout.preferredHeight: 28
                         radius: 8; color: Theme.surface
                         Text { anchors.centerIn: parent; text: "Manage"; color: Theme.accent; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
-                        MouseArea { anchors.fill: parent; enabled: !packageResolve.running; cursorShape: Qt.PointingHandCursor; onClicked: root.resolveGraphicalApp(desktopAppRow.modelData.id) }
+                        MouseArea { anchors.fill: parent; enabled: !packageResolve.running; cursorShape: Qt.PointingHandCursor; onClicked: root.resolveGraphicalApp(desktopAppRow.modelData) }
                     }
                 }
             }
@@ -268,54 +275,6 @@ ColumnLayout {
         }
     }
 
-    SettingsSection {
-        visible: root.category === "apps" && root.pendingAction.length > 0
-        heading: root.pendingAction === "remove" ? "Confirm uninstall" : "Confirm installation"
-        description: "Potentially destructive system change. Read the warning before proceeding."
-        symbol: "\ue002"
-        Text {
-            Layout.fillWidth: true
-            text: "Action: " + root.pendingAction.toUpperCase() + " · Package: " + root.pendingPackage
-            font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13); color: Theme.foreground; wrapMode: Text.WordWrap
-        }
-        Text {
-            Layout.fillWidth: true
-            text: root.pendingAction === "remove" ?
-                "WARNING: Removing packages can break applications, dependencies, your desktop or system configuration. Pacman may refuse a removal if required elsewhere. Risks are your responsibility. Existing config files are preserved when possible." :
-                "WARNING: Installation may download packages, change dependencies or upgrade your system. On Arch, pacman performs a full upgrade with installation. On Omarchy, its official update runs first. Risks are your responsibility."
-            color: Theme.error; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
-        }
-        Rectangle {
-            visible: root.pendingAction === "remove"
-            Layout.fillWidth: true; Layout.preferredHeight: visible ? 38 : 0
-            color: Theme.background; radius: 9
-            TextInput {
-                id: confirmField
-                anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
-                verticalAlignment: TextInput.AlignVCenter
-                color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
-                onTextChanged: root.confirmationText = text
-                Text { visible: confirmField.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: "Type the exact package name to authorize removal"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
-            }
-        }
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 8
-            Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Cancel"; color: Theme.foreground; font.pixelSize: Fonts.scale(11) }
-                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.pendingAction = "" }
-            }
-            Rectangle {
-                readonly property bool allowed: root.pendingAction === "install" || root.confirmationText === root.pendingPackage
-                Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
-                color: allowed ? Theme.accent : Theme.borderaccent
-                opacity: allowed ? 1 : .65
-                Text { anchors.centerIn: parent; text: "Open interactive terminal"; color: parent.allowed ? Theme.background : Theme.muted; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
-                MouseArea { anchors.fill: parent; enabled: parent.allowed && !packageLauncher.running; cursorShape: Qt.PointingHandCursor; onClicked: root.confirmPackage() }
-            }
-        }
-    }
     SettingsSection {
         visible: root.category === "apps" && root.packageStatus.length > 0
         heading: "Package operation status"

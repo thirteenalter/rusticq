@@ -3,7 +3,7 @@
 ## Supported setup
 
 - Arch Linux (including compatible Omarchy Quattro), Hyprland, and a Wayland login.
-- Quickshell **0.3.1** is the RC5 development target. The Arch `quickshell` package may be newer; validate shell behavior before installing permanently.
+- Quickshell **0.3.1** is the Beta 1 development target. The Arch `quickshell` package may be newer; validate shell behavior before installing permanently.
 - A network connection and sudo approval if dependencies need installing from pacman repos.
 - `bash` and standard utilities; `python3` is bootstrapped when necessary on Arch.
 
@@ -64,27 +64,37 @@ python3 ~/.local/share/rusticq/shell/scripts/rustiq-desktop-integration.py rever
 ## Full build vs patch
 
 - **Full ZIP** contains the entire `quickshell/` source directory.
-- **Patch ZIP** contains only new/changed paths under `quickshell/` and applies over the *matching RC5* source; it is not independently runnable.
+- **Patch ZIP** contains only new/changed paths under `quickshell/` and applies over the *matching Beta 1* source; it is not independently runnable.
 - No scripts run automatically when a ZIP is extracted.
 
 To overlay a patch on the development folder:
 
 ```bash
-unzip -o rusticq-alpha4-rc5-setup-patch.zip -d ~/dev
+unzip -o rusticq-beta1-patch.zip -d ~/dev
 cd ~/dev/quickshell && qs -p .
 ```
 
 To update an already-installed `~/.local/share/rusticq/source` after changing the development folder, run `bash scripts/install.sh --skip-deps` again from the updated folder. This does not mutate the separate *permanent integration* copy under `~/.local/share/rusticq/shell`.
 
-## Future HTTPS bootstrap
+## Install via curl (GitHub main)
 
-`bash scripts/bootstrap.sh --url FULL_ZIP_HTTPS --sha256 RELEASE_SHA256` accepts a verified release. The real URL and checksum must be published first. An example publishing flow is:
+After publishing the Beta 1 `scripts/install.sh` to `thirteenalter/rusticq` on `main`:
 
-1. Upload the **full** ZIP and `scripts/bootstrap.sh` to an HTTPS release location.
-2. Publish the ZIP's SHA-256 via a trustworthy release channel.
-3. Download/review bootstrap with `curl -fsSLo bootstrap.sh '<ACTUAL_BOOTSTRAP_URL>'` and run with the verified ZIP URL + digest.
+```bash
+curl -fsSL https://raw.githubusercontent.com/thirteenalter/rusticq/refs/heads/main/scripts/install.sh | bash
+```
 
-The bootstrap rejects non-HTTPS URLs, checksum mismatches, ZIP traversal, symlink entries and oversized ZIPs. No URL is hardcoded until hosting is configured. Do **not** copy a placeholder into a real shell expecting it to work.
+A piped installer cannot access the local `shell.qml`, so it downloads `https://codeload.github.com/thirteenalter/rusticq/zip/refs/heads/main` and checks archive size/path/symlinks before running the extracted project's local setup. The remote installer runs user-local setup and prompts before installing core pacman packages. It never enables permanent Omarchy integration.
+
+For review before execution:
+
+```bash
+curl -fsSLo install-rusticq.sh https://raw.githubusercontent.com/thirteenalter/rusticq/refs/heads/main/scripts/install.sh
+less install-rusticq.sh
+bash install-rusticq.sh
+```
+
+This is a mutable branch and is **not pinned or checksum-authenticated** unless you independently provide `RUSTICQ_ARCHIVE_SHA256`. For reproducible signed-off releases, use `scripts/bootstrap.sh --url HTTPS_FULL_ZIP --sha256 RELEASE_SHA256`; it always verifies a published digest. Until this Beta 1 change is merged to GitHub main, the curl URL serves the older script.
 
 ## Roll back a user-local source update
 

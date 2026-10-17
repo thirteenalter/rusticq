@@ -2,7 +2,7 @@
   <img src="assets/rusticq-about-lockup.png" alt="RusticQ logo" width="390" />
 
   # RusticQ
-  **A modular Quickshell desktop for Hyprland · Alpha 4 RC5**
+  **A modular Quickshell desktop for Hyprland · Beta 1**
 
   A configurable Wayland bar, launcher, widgets, dock, shortcuts, and system settings.
 
@@ -11,7 +11,7 @@
 
 ## Overview
 
-RusticQ is a user-space desktop shell configuration built with **Quickshell/QML**, for **Hyprland on Arch Linux**, including compatible **Omarchy Quattro** installations. It does not replace your window manager. RC5 was developed against **Quickshell 0.3.1**; other releases require testing.
+RusticQ is a user-space desktop shell configuration built with **Quickshell/QML**, for **Hyprland on Arch Linux**, including compatible **Omarchy Quattro** installations. It does not replace your window manager. Beta 1 was developed against **Quickshell 0.3.1**; other releases require testing.
 
 - **Bar:** Compact, Clean Compact, Separated, Professional and Simple layouts, Top/Bottom/Left/Right placement, per-layout icon visibility, icon order/placement and spacing.
 - **Launcher & workspaces:** app search, launcher on the focused monitor, workspace navigation and assignable shortcuts.
@@ -23,7 +23,7 @@ Detailed module and feature inventory: **[FEATURES.md](FEATURES.md)**.
 
 ## Quick start
 
-### 1. Try RC5 without installing anything
+### 1. Try Beta 1 without installing anything
 
 A working Hyprland/Wayland session and Quickshell are required:
 
@@ -58,17 +58,25 @@ Open **Settings → Integration → Required & optional dependencies**, select a
 
 **Permanent Omarchy replacement is a different action below this section.** It requires Omarchy Quattro detection, a backup, and the explicit confirmation phrase `ENABLE RUSTICQ`. The default user-local setup leaves it off.
 
-## Planned `curl` setup
+## One-line installation from GitHub
 
-A verified HTTPS release and public hosting **have not been configured**. The repository includes `scripts/bootstrap.sh`, ready to publish with the full build. Once a real release URL and its SHA-256 are available, the supported workflow will be:
+After merging this Beta 1 release into `thirteenalter/rusticq` **main**, the canonical installer URL is:
 
 ```bash
-curl -fsSLo bootstrap.sh "<PUBLISHED_BOOTSTRAP_HTTPS_URL>"
-# Review bootstrap.sh before running it.
-bash bootstrap.sh --url "<PUBLISHED_FULL_ZIP_HTTPS_URL>" --sha256 "<64_HEX_SHA256_FROM_RELEASE>"
+curl -fsSL https://raw.githubusercontent.com/thirteenalter/rusticq/refs/heads/main/scripts/install.sh | bash
 ```
 
-`bootstrap.sh` requires HTTPS, checks the supplied SHA-256, rejects unsafe ZIP entries, and then uses `scripts/install.sh`. The placeholders above are intentionally **not live links**. Never use a random unverified `curl | bash` command.
+The script downloads the full repository from GitHub over HTTPS, validates the ZIP entries, installs missing **core** packages on Arch/Omarchy (with sudo confirmation), backs up an existing user-local RusticQ source install, and creates `~/.local/bin/rusticq`. It **does not** replace Omarchy permanently or alter Hyprland autostart. Optional feature dependencies are managed in Settings → Integration.
+
+For a review-first flow (recommended for a remote script):
+
+```bash
+curl -fsSLo /tmp/rusticq-install.sh https://raw.githubusercontent.com/thirteenalter/rusticq/refs/heads/main/scripts/install.sh
+less /tmp/rusticq-install.sh
+bash /tmp/rusticq-install.sh
+```
+
+The `main` branch can change. For pinned, reproducible installations, use the SHA-256 verified `scripts/bootstrap.sh` with a published full-release ZIP. **The remote curl command runs the code currently on GitHub, not changes that exist only in your local ZIP.**
 
 ## Update from ZIPs
 
@@ -77,12 +85,12 @@ Every release provides two archives:
 | Archive | Use |
 | --- | --- |
 | **Full build** | Entire `quickshell/` source directory, suitable for a fresh extraction. |
-| **Patch** | Only changed/new files, with the same `quickshell/` paths. Extract over the matching RC5 base. |
+| **Patch** | Only changed/new files, with the same `quickshell/` paths. Extract over the matching Beta 1 base. |
 
 Example for a patch downloaded locally:
 
 ```bash
-unzip -o rusticq-alpha4-rc5-setup-patch.zip -d ~/dev
+unzip -o rusticq-beta1-patch.zip -d ~/dev
 cd ~/dev/quickshell
 qs -p .
 ```
