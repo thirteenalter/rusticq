@@ -35,8 +35,8 @@ ColumnLayout {
                     border.color: Theme.accent
                     ColumnLayout {
                         anchors.centerIn: parent; spacing: 5
-                        Icon { Layout.alignment: Qt.AlignHCenter; icon: positionCard.modelData.icon; font.pixelSize: 21; color: positionCard.selected ? Theme.accent : Theme.foreground }
-                        Text { Layout.alignment: Qt.AlignHCenter; text: positionCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                        Icon { Layout.alignment: Qt.AlignHCenter; icon: positionCard.modelData.icon; font.pixelSize: Fonts.scale(21); color: positionCard.selected ? Theme.accent : Theme.foreground }
+                        Text { Layout.alignment: Qt.AlignHCenter; text: positionCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.barPosition = positionCard.modelData.key; SettingsStore.save(); } }
                 }
@@ -73,11 +73,11 @@ ColumnLayout {
                         anchors.fill: parent; anchors.margins: 12; spacing: 6
                         RowLayout {
                             Layout.fillWidth: true; spacing: 8
-                            Icon { icon: modeCard.modelData.icon; font.pixelSize: 18; color: Theme.accent }
-                            Text { text: modeCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.foreground; Layout.fillWidth: true }
-                            Icon { visible: modeCard.selected; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: 18 }
+                            Icon { icon: modeCard.modelData.icon; font.pixelSize: Fonts.scale(18); color: Theme.accent }
+                            Text { text: modeCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.foreground; Layout.fillWidth: true }
+                            Icon { visible: modeCard.selected; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
                         }
-                        Text { text: modeCard.modelData.info; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                        Text { text: modeCard.modelData.info; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                         Rectangle {
                             Layout.fillWidth: true; Layout.preferredHeight: 12; radius: 6; color: Theme.surface
                             RowLayout {
@@ -118,8 +118,8 @@ ColumnLayout {
                     border.width: chosen ? 1 : 0; border.color: Theme.accent
                     RowLayout {
                         anchors.centerIn: parent; spacing: 6
-                        Icon { icon: detailOption.chosen ? "\ue5ca" : "\ue8f4"; font.pixelSize: 16; color: Theme.accent }
-                        Text { text: detailOption.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                        Icon { icon: detailOption.chosen ? "\ue5ca" : "\ue8f4"; font.pixelSize: Fonts.scale(16); color: Theme.accent }
+                        Text { text: detailOption.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.cleanRightMode = detailOption.modelData.key; SettingsStore.save(); } }
                 }
@@ -161,18 +161,50 @@ ColumnLayout {
                             color: qcMode.modelData.key === "filled" ? Theme.borderaccent : "transparent"
                             border.width: qcMode.modelData.key === "plain" ? 1 : 0
                             border.color: qcMode.modelData.key === "plain" ? Theme.borderaccent : "transparent"
-                            Icon { anchors.centerIn: parent; icon: "\ue69b"; font.pixelSize: 16; color: qcMode.modelData.key === "filled" ? Theme.accent : Theme.foreground }
+                            Icon { anchors.centerIn: parent; icon: "\ue69b"; font.pixelSize: Fonts.scale(16); color: qcMode.modelData.key === "filled" ? Theme.accent : Theme.foreground }
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 2
-                            Text { text: qcMode.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; Layout.fillWidth: true }
-                            Text { text: qcMode.modelData.description; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10; Layout.fillWidth: true; wrapMode: Text.WordWrap }
+                            Text { text: qcMode.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); Layout.fillWidth: true }
+                            Text { text: qcMode.modelData.description; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true; wrapMode: Text.WordWrap }
                         }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.quickControlButtonStyle = qcMode.modelData.key; SettingsStore.save(); } }
                 }
             }
+        }
+    }
+
+    SettingsSection {
+        heading: "Absolute center positioning"
+        description: "Center icons are anchored to the actual center of the display, so groups on the left and right do not push them away. Configure a fine offset in pixels."
+        symbol: "\ue86c"
+        SettingsToggle {
+            modelData: ({label:"Lock to absolute screen center", desc:"Keep center icons centered independently of side group widths", key:"absoluteCenter", icon:"\ue86c"})
+        }
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 9
+            Text { text:"Center offset"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); Layout.fillWidth: true }
+            Text { text: SettingsStore.centerOffsetX + " px"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            Rectangle {
+                Layout.preferredWidth: 68; Layout.preferredHeight: 27; radius: 8; color: Theme.background
+                Text { anchors.centerIn: parent; text:"Reset"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.centerOffsetX = 0; SettingsStore.save(); } }
+            }
+        }
+        SettingRangeSlider {
+            Layout.fillWidth: true
+            minimum: -280; maximum: 280; step: 5
+            value: SettingsStore.centerOffsetX
+            onPreview: next => SettingsStore.centerOffsetX = next
+            onCommit: next => { SettingsStore.centerOffsetX = next; SettingsStore.save(); }
+        }
+        Text {
+            Layout.fillWidth: true
+            text: "Left and Right bar positions continue using Top / Middle / Bottom; this control affects horizontal bars only."
+            wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
         }
     }
 
@@ -196,10 +228,10 @@ ColumnLayout {
         symbol: "\ue8b8"
         RowLayout {
             Layout.fillWidth: true
-            Text { text: "Editing: " + SettingsStore.barMode; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11 }
+            Text { text: "Editing: " + SettingsStore.barMode; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
             Rectangle {
                 Layout.preferredWidth: 108; Layout.preferredHeight: 32; radius: 9; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Reset mode"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 10 }
+                Text { anchors.centerIn: parent; text: "Reset mode"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetBarMargins() }
             }
         }
@@ -220,8 +252,8 @@ ColumnLayout {
                         anchors.fill: parent; anchors.margins: 12; spacing: 6
                         RowLayout {
                             Layout.fillWidth: true
-                            Text { text: marginCard.modelData.name; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
-                            Text { text: marginCard.amount + " px"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
+                            Text { text: marginCard.modelData.name; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                            Text { text: marginCard.amount + " px"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
                         }
                         MarginSlider {
                             Layout.fillWidth: true; Layout.preferredHeight: 24

@@ -9,8 +9,8 @@ Item {
     property int iconSlotWidth: 14
     property bool cleanStyle: false
     property bool forceDetails: false
-    readonly property color statusColor: root.cleanStyle && WifiService.connected && WifiService.strength <= 25
-        ? Theme.warning : Theme.foreground
+    readonly property color statusColor: WifiService.ethernetConnected ? Theme.foreground :
+        (root.cleanStyle && WifiService.connected && WifiService.strength <= 25 ? Theme.warning : Theme.foreground)
     implicitWidth: row.implicitWidth
     implicitHeight: row.implicitHeight
     HoverHandler { id: hover }
@@ -21,7 +21,7 @@ Item {
         spacing: root.cleanStyle ? Theme.barIconTextGap : 5
 
         Icon {
-            icon: WifiService.icon
+            icon: WifiService.ethernetConnected ? "\ue1e2" : WifiService.icon
             font.pixelSize: Theme.barSymbolSize
             color: root.statusColor
             Layout.minimumWidth: root.iconSlotWidth
@@ -32,7 +32,7 @@ Item {
         Text {
             Layout.alignment: Qt.AlignVCenter
             visible: root.forceDetails || (!root.cleanStyle && hover.hovered)
-            text: !WifiService.enabled ? "Wi-Fi off" : WifiService.connected
+            text: WifiService.ethernetConnected ? "Ethernet" : !WifiService.enabled ? "Wi-Fi off" : WifiService.connected
                   ? WifiService.ssid : "Disconnected"
             font.family: Fonts.poppins.name
             font.weight: Font.Medium

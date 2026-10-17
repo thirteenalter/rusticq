@@ -20,7 +20,7 @@ Item {
         spacing: Theme.sectionGap
         Icon {
             icon: root.iconName
-            font.pixelSize: 20
+            font.pixelSize: Fonts.scale(20)
             color: Theme.accent
             Layout.preferredWidth: 24
         }
@@ -35,7 +35,7 @@ Item {
         Icon {
             visible: root.collapsible
             icon: "\ue5cf"
-            font.pixelSize: 21
+            font.pixelSize: Fonts.scale(21)
             Layout.preferredWidth: 23
             rotation: root.expanded ? 180 : 0
             Behavior on rotation { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }

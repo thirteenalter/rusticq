@@ -41,7 +41,7 @@ Pill {
                     text: QuickModesService.active("mic") ? "Mic off" : "Mic on"
                     color: Theme.foreground
                     font.family: Fonts.poppinsSB.name
-                    font.pixelSize: 10
+                    font.pixelSize: Fonts.scale(10)
                 }
             }
             MouseArea {
@@ -65,7 +65,7 @@ Pill {
                     text: SystemMetrics.speed(SystemMetrics.rxPerSec)
                     color: Theme.foreground
                     font.family: Fonts.poppinsSB.name
-                    font.pixelSize: 10
+                    font.pixelSize: Fonts.scale(10)
                 }
             }
         }
@@ -83,7 +83,7 @@ Pill {
                     text: SystemMetrics.speed(SystemMetrics.txPerSec)
                     color: Theme.foreground
                     font.family: Fonts.poppinsSB.name
-                    font.pixelSize: 10
+                    font.pixelSize: Fonts.scale(10)
                 }
             }
         }

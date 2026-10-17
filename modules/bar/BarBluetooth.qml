@@ -87,7 +87,7 @@ Rectangle {
                     Layout.fillWidth: true
                     color: Theme.foreground
                     font.family: Fonts.poppinsSB.name
-                    font.pixelSize: 12
+                    font.pixelSize: Fonts.scale(12)
                 }
                 ScanButton {
                     enabled: root.adapter !== null && root.adapter.enabled
@@ -110,7 +110,7 @@ Rectangle {
                         anchors.fill: parent
                         anchors.margins: 9
                         spacing: 7
-                        Icon { icon: "\ue337"; font.pixelSize: 19; color: deviceRow.device.connected ? Theme.accent : Theme.muted }
+                        Icon { icon: "\ue337"; font.pixelSize: Fonts.scale(19); color: deviceRow.device.connected ? Theme.accent : Theme.muted }
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 2
@@ -119,7 +119,7 @@ Rectangle {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 color: Theme.foreground
-                                font.pixelSize: 11
+                                font.pixelSize: Fonts.scale(11)
                                 font.family: Fonts.poppinsSB.name
                             }
                             Text {
@@ -127,7 +127,7 @@ Rectangle {
                                       deviceRow.device.pairing ? "Pairing…" :
                                       deviceRow.device.paired ? "Paired" : "Available"
                                 color: deviceRow.device.connected ? Theme.success : Theme.muted
-                                font.pixelSize: 10
+                                font.pixelSize: Fonts.scale(10)
                                 font.family: Fonts.poppins.name
                             }
                         }
@@ -135,7 +135,7 @@ Rectangle {
                             visible: deviceRow.device.batteryAvailable
                             text: Math.round(deviceRow.device.battery * 100) + "%"
                             color: Theme.muted
-                            font.pixelSize: 10
+                            font.pixelSize: Fonts.scale(10)
                         }
                         Rectangle {
                             Layout.preferredWidth: 76
@@ -147,7 +147,7 @@ Rectangle {
                                 text: deviceRow.device.connected ? "Disconnect" : deviceRow.device.paired ? "Connect" : "Pair"
                                 color: deviceRow.device.connected ? Theme.foreground : Theme.background
                                 font.family: Fonts.poppinsSB.name
-                                font.pixelSize: 10
+                                font.pixelSize: Fonts.scale(10)
                             }
                             MouseArea {
                                 anchors.fill: parent
@@ -173,7 +173,7 @@ Rectangle {
                 color: Theme.muted
                 wrapMode: Text.WordWrap
                 font.family: Fonts.poppins.name
-                font.pixelSize: 11
+                font.pixelSize: Fonts.scale(11)
             }
             Text {
                 Layout.fillWidth: true
@@ -181,7 +181,7 @@ Rectangle {
                 color: Theme.muted
                 wrapMode: Text.WordWrap
                 font.family: Fonts.poppins.name
-                font.pixelSize: 10
+                font.pixelSize: Fonts.scale(10)
             }
         }
     }

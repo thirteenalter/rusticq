@@ -11,3 +11,6 @@ singleton NotificationCenter 1.0 NotificationCenter.qml
 singleton AppUsage 1.0 AppUsage.qml
 
 singleton SystemMetrics 1.0 SystemMetrics.qml
+
+singleton AiChats 1.0 AiChats.qml
+singleton ScreenRecorder 1.0 ScreenRecorder.qml

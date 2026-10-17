@@ -39,13 +39,13 @@ Rectangle {
                 Layout.fillWidth: true
                 color: Theme.muted
                 font.family: Fonts.poppins.name
-                font.pixelSize: 10
+                font.pixelSize: Fonts.scale(10)
             }
             Text {
                 text: NotificationCenter.history.length + " saved"
                 color: Theme.muted
                 font.family: Fonts.poppins.name
-                font.pixelSize: 10
+                font.pixelSize: Fonts.scale(10)
             }
         }
 
@@ -62,14 +62,14 @@ Rectangle {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 7
-                    Icon { icon: "\ue002"; color: Theme.accent; font.pixelSize: 16 }
+                    Icon { icon: "\ue002"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
                     Text {
                         Layout.fillWidth: true
                         text: NotificationCenter.serverState === "conflict" ? "Another notification service is active"
                             : NotificationCenter.serverState === "free" ? "Waiting for notification ownership"
                             : "Checking notification service"
                         font.family: Fonts.poppinsSB.name
-                        font.pixelSize: 10
+                        font.pixelSize: Fonts.scale(10)
                         color: Theme.foreground
                         elide: Text.ElideRight
                     }
@@ -78,7 +78,7 @@ Rectangle {
                     Layout.fillWidth: true
                     text: "Owner: " + NotificationCenter.serverOwner
                     font.family: Fonts.poppins.name
-                    font.pixelSize: 10
+                    font.pixelSize: Fonts.scale(10)
                     color: Theme.muted
                     elide: Text.ElideRight
                 }
@@ -90,7 +90,7 @@ Rectangle {
                     elide: Text.ElideRight
                     color: Theme.muted
                     font.family: Fonts.poppins.name
-                    font.pixelSize: 9
+                    font.pixelSize: Fonts.scale(9)
                 }
                 RowLayout {
                     Layout.fillWidth: true
@@ -100,7 +100,7 @@ Rectangle {
                         Layout.preferredHeight: 29
                         radius: 8
                         color: Theme.surface
-                        Text { anchors.centerIn: parent; text: "Preview toast"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 10 }
+                        Text { anchors.centerIn: parent; text: "Preview toast"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
@@ -112,7 +112,7 @@ Rectangle {
                         Layout.preferredHeight: 29
                         radius: 8
                         color: Theme.surface
-                        Text { anchors.centerIn: parent; text: "Recheck"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 10 }
+                        Text { anchors.centerIn: parent; text: "Recheck"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
@@ -138,8 +138,8 @@ Rectangle {
                     anchors.leftMargin: 10
                     anchors.rightMargin: 10
                     spacing: 7
-                    Icon { icon: NotificationCenter.doNotDisturb ? "\ue7f6" : "\ue7f4"; color: Theme.accent; font.pixelSize: 16 }
-                    Text { text: NotificationCenter.doNotDisturb ? "Do Not Disturb enabled" : "Notifications active"; Layout.fillWidth: true; color: Theme.foreground; font.pixelSize: 10; font.family: Fonts.poppins.name }
+                    Icon { icon: NotificationCenter.doNotDisturb ? "\ue7f6" : "\ue7f4"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
+                    Text { text: NotificationCenter.doNotDisturb ? "Do Not Disturb enabled" : "Notifications active"; Layout.fillWidth: true; color: Theme.foreground; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name }
                 }
             }
             Repeater {
@@ -156,7 +156,7 @@ Rectangle {
                     color: modelData.accent ? Qt.alpha(Theme.accent, 0.18) : Theme.background
                     border.width: modelData.accent ? 1 : 0
                     border.color: Theme.accent
-                    Text { anchors.centerIn: parent; text: actionPill.modelData.label; color: Theme.foreground; font.pixelSize: 10; font.family: Fonts.poppinsSB.name }
+                    Text { anchors.centerIn: parent; text: actionPill.modelData.label; color: Theme.foreground; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
@@ -178,8 +178,8 @@ Rectangle {
             RowLayout {
                 anchors.centerIn: parent
                 spacing: 7
-                Icon { icon: "\ue7f4"; font.pixelSize: 16; color: Theme.accent }
-                Text { text: "Send test notification"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 10 }
+                Icon { icon: "\ue7f4"; font.pixelSize: Fonts.scale(16); color: Theme.accent }
+                Text { text: "Send test notification"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
             }
             MouseArea {
                 anchors.fill: parent
@@ -222,7 +222,7 @@ Rectangle {
                             anchors.centerIn: parent
                             icon: itemRow.modelData.glyph
                             color: Theme.accent
-                            font.pixelSize: 18
+                            font.pixelSize: Fonts.scale(18)
                         }
                     }
 
@@ -237,7 +237,7 @@ Rectangle {
                                 text: itemRow.modelData.app
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
-                                font.pixelSize: 10
+                                font.pixelSize: Fonts.scale(10)
                                 color: Theme.foreground
                                 font.family: Fonts.poppinsSB.name
                                 textFormat: Text.PlainText
@@ -252,13 +252,13 @@ Rectangle {
                                     anchors.centerIn: parent
                                     text: itemRow.modelData.tag
                                     color: Theme.foreground
-                                    font.pixelSize: 8
+                                    font.pixelSize: Fonts.scale(8)
                                     font.family: Fonts.poppins.name
                                 }
                             }
                             Text {
                                 text: itemRow.modelData.when
-                                font.pixelSize: 9
+                                font.pixelSize: Fonts.scale(9)
                                 color: Theme.muted
                                 font.family: Fonts.poppins.name
                                 textFormat: Text.PlainText
@@ -268,7 +268,7 @@ Rectangle {
                         Text {
                             text: itemRow.modelData.title
                             Layout.fillWidth: true
-                            font.pixelSize: 11
+                            font.pixelSize: Fonts.scale(11)
                             font.family: Fonts.poppinsSB.name
                             color: Theme.foreground
                             maximumLineCount: 2
@@ -280,7 +280,7 @@ Rectangle {
                         Text {
                             text: itemRow.modelData.body
                             Layout.fillWidth: true
-                            font.pixelSize: 10
+                            font.pixelSize: Fonts.scale(10)
                             color: Theme.muted
                             maximumLineCount: hasPreview ? 2 : 3
                             wrapMode: Text.WordWrap
@@ -307,7 +307,7 @@ Rectangle {
                                         text: itemRow.modelData.actions[historyAction.index].text
                                         color: index === 0 ? Theme.accent : Theme.foreground
                                         font.family: Fonts.poppinsSB.name
-                                        font.pixelSize: 10
+                                        font.pixelSize: Fonts.scale(10)
                                         elide: Text.ElideRight
                                         textFormat: Text.PlainText
                                     }
@@ -347,7 +347,7 @@ Rectangle {
                             visible: !previewImage.visible
                             icon: itemRow.isScreenshot ? "\ue3b0" : "\ue2c7"
                             color: Theme.accent
-                            font.pixelSize: 18
+                            font.pixelSize: Fonts.scale(18)
                         }
                     }
 
@@ -357,7 +357,7 @@ Rectangle {
                         Layout.preferredHeight: 28
                         radius: 8
                         color: dismissMouse.containsMouse ? Qt.alpha(Theme.accent, 0.10) : "transparent"
-                        Icon { anchors.centerIn: parent; icon: "\ue5cd"; color: Theme.muted; font.pixelSize: 16 }
+                        Icon { anchors.centerIn: parent; icon: "\ue5cd"; color: Theme.muted; font.pixelSize: Fonts.scale(16) }
                         MouseArea {
                             id: dismissMouse
                             anchors.fill: parent
@@ -374,7 +374,7 @@ Rectangle {
                 anchors.centerIn: parent
                 text: "No notifications yet"
                 font.family: Fonts.poppins.name
-                font.pixelSize: 11
+                font.pixelSize: Fonts.scale(11)
                 color: Theme.muted
             }
         }

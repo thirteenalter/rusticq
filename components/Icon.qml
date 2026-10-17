@@ -12,7 +12,7 @@ Text {
     }
 
     font.family: material.name
-    font.pixelSize: 14
+    font.pixelSize: Fonts.scale(14)
 
     color: Theme.foreground
 

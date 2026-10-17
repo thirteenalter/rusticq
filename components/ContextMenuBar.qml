@@ -40,7 +40,7 @@ Item {
                     text: menuButton.modelData.label
                     color: menuButton.hovered ? Theme.accent : Theme.foreground
                     font.family: Fonts.poppins.name
-                    font.pixelSize: 11
+                    font.pixelSize: Fonts.scale(11)
                 }
                 MouseArea {
                     id: mouse
@@ -61,7 +61,7 @@ Item {
         color: verticalMouse.containsMouse ? Theme.surface : "transparent"
         border.width: verticalMouse.containsMouse ? 1 : 0
         border.color: Qt.alpha(Theme.accent, 0.28)
-        Icon { anchors.centerIn: parent; icon: "\ue5d2"; font.pixelSize: 20; color: Theme.accent }
+        Icon { anchors.centerIn: parent; icon: "\ue5d2"; font.pixelSize: Fonts.scale(20); color: Theme.accent }
         MouseArea {
             id: verticalMouse
             anchors.fill: parent

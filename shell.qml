@@ -42,11 +42,11 @@ ShellRoot {
         SystemMonitorWindow {}
     }
 
-    LazyLoader {
-        active: Store.aiVisible
-        AiWrapper {
-            screen: Store.aiScreen
-        }
+    // Keep the AI window instantiated while hidden to preserve active threads
+    // and avoid interrupting its in-flight cloud request on presentation changes.
+    AiWrapper {
+        visible: Store.aiVisible
+        screen: Store.aiScreen
     }
 
     LazyLoader {

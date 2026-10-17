@@ -23,6 +23,20 @@ Singleton {
         return null;
     }
 
+    // Wired links are detected via NetworkManager, not by interface name.
+    readonly property var wiredDevice: {
+        const devices = Networking.devices.values;
+        for (let i = 0; i < devices.length; i++) {
+            const dev = devices[i];
+            if (dev.type === DeviceType.Wired && dev.connected && dev.hasLink)
+                return dev;
+        }
+        return null;
+    }
+    readonly property bool ethernetConnected: wiredDevice !== null
+    readonly property string ethernetName: wiredDevice ? wiredDevice.name : ""
+    readonly property int ethernetMbps: wiredDevice ? wiredDevice.linkSpeed : 0
+
     property var connectedNetwork: {
         if (!wifiDevice)
             return null;

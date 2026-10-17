@@ -4,21 +4,23 @@ import Quickshell
 import Quickshell.Hyprland
 import "../../config"
 import "../../components"
+import "../quickcontrol"
 
 PanelWindow {
     id: sideWindow
     anchors.top: true
     anchors.right: true
-    anchors.bottom: true
+    anchors.bottom: false
     exclusionMode: ExclusionMode.Ignore
     focusable: true
 
     margins.right: 10
     margins.top: 50
-    margins.bottom: 50
 
     color: "transparent"
     implicitWidth: 400
+    implicitHeight: Math.max(340, Math.min(sideWindow.screen ? Math.max(340, sideWindow.screen.height - 85) : 690,
+                                             Math.min(690, quickCards.preferredContentHeight + 119)))
 
     HyprlandFocusGrab {
         active: true
@@ -39,7 +41,7 @@ PanelWindow {
             spacing: 10
 
             BarHeader {}
-            BarMain {}
+            QuickControlCards { id: quickCards }
 
             Rectangle {
                 Layout.fillWidth: true
@@ -52,13 +54,13 @@ PanelWindow {
                     spacing: 8
                     Icon {
                         icon: Store.advancedVisible ? "\ue5c4" : "\ue429"
-                        font.pixelSize: 16
+                        font.pixelSize: Fonts.scale(16)
                         color: Theme.accent
                     }
                     Text {
                         text: Store.advancedVisible ? "BACK TO QUICK CONTROL" : "ADVANCE"
                         font.family: Fonts.poppinsSB.name
-                        font.pixelSize: 11
+                        font.pixelSize: Fonts.scale(11)
                         color: Theme.foreground
                     }
                 }

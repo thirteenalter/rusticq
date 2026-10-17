@@ -72,7 +72,7 @@ PanelWindow {
                         anchors.centerIn: parent
                         visible: !realAppIcon.visible
                         icon: notice ? notice.glyph : "\ue7f4"
-                        font.pixelSize: 19
+                        font.pixelSize: Fonts.scale(19)
                         color: Theme.accent
                     }
                 }
@@ -84,7 +84,7 @@ PanelWindow {
                         Layout.fillWidth: true
                         text: notice ? notice.app : ""
                         font.family: Fonts.poppinsSB.name
-                        font.pixelSize: 11
+                        font.pixelSize: Fonts.scale(11)
                         color: Theme.foreground
                         elide: Text.ElideRight
                         textFormat: Text.PlainText
@@ -93,7 +93,7 @@ PanelWindow {
                         Layout.fillWidth: true
                         text: notice ? notice.tag : ""
                         font.family: Fonts.poppins.name
-                        font.pixelSize: 9
+                        font.pixelSize: Fonts.scale(9)
                         color: Theme.muted
                         elide: Text.ElideRight
                         textFormat: Text.PlainText
@@ -104,7 +104,7 @@ PanelWindow {
                     text: notice ? notice.when : ""
                     color: Theme.muted
                     font.family: Fonts.poppins.name
-                    font.pixelSize: 10
+                    font.pixelSize: Fonts.scale(10)
                     textFormat: Text.PlainText
                 }
 
@@ -116,7 +116,7 @@ PanelWindow {
                     Icon {
                         anchors.centerIn: parent
                         icon: "\ue5cd"
-                        font.pixelSize: 18
+                        font.pixelSize: Fonts.scale(18)
                         color: Theme.foreground
                     }
                     MouseArea {
@@ -141,7 +141,7 @@ PanelWindow {
                         text: notice ? notice.title : ""
                         color: Theme.foreground
                         font.family: Fonts.poppinsSB.name
-                        font.pixelSize: 14
+                        font.pixelSize: Fonts.scale(14)
                         maximumLineCount: 2
                         wrapMode: Text.WordWrap
                         elide: Text.ElideRight
@@ -153,7 +153,7 @@ PanelWindow {
                         text: notice ? notice.body : ""
                         color: Theme.muted
                         font.family: Fonts.poppins.name
-                        font.pixelSize: 11
+                        font.pixelSize: Fonts.scale(11)
                         lineHeight: 1.2
                         maximumLineCount: 3
                         wrapMode: Text.WordWrap
@@ -185,7 +185,7 @@ PanelWindow {
                         anchors.centerIn: parent
                         visible: !screenshotThumbnail.visible
                         icon: "\ue3b0"
-                        font.pixelSize: 22
+                        font.pixelSize: Fonts.scale(22)
                         color: Theme.accent
                     }
                 }
@@ -214,14 +214,14 @@ PanelWindow {
                                 text: nativeAction.action ? nativeAction.action.text : ""
                                 color: index === 0 ? Theme.accent : Theme.foreground
                                 font.family: Fonts.poppinsSB.name
-                                font.pixelSize: 10
+                                font.pixelSize: Fonts.scale(10)
                                 maximumLineCount: 1
                                 elide: Text.ElideRight
                                 textFormat: Text.PlainText
                             }
                             Icon {
                                 icon: "\ue5cc"
-                                font.pixelSize: 15
+                                font.pixelSize: Fonts.scale(15)
                                 color: index === 0 ? Theme.accent : Theme.foreground
                             }
                         }

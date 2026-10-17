@@ -111,28 +111,21 @@ Rectangle {
                 Layout.preferredHeight: 36
                 radius: 12
                 color: Qt.alpha(Theme.accent, 0.12)
-                Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: 20; color: Theme.accent }
+                RusticQIcon { anchors.centerIn: parent; iconSize: 23; visible: SettingsStore.showRusticQIcon }
+                Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: Fonts.scale(20); color: Theme.accent; visible: !SettingsStore.showRusticQIcon }
             }
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 1
-                Text { text: "App Launcher"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
-                Text { visible: !root.cleanHover; text: "Search installed applications"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
-            }
-            Rectangle {
-                visible: SettingsStore.showRusticQIcon
-                Layout.preferredWidth: 28
-                Layout.preferredHeight: 28
-                radius: 9
-                color: Qt.alpha(Theme.accent, 0.10)
-                RusticQIcon { anchors.centerIn: parent; iconSize: 18 }
+                Text { text: "App Launcher"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(15) }
+                Text { visible: !root.cleanHover; text: "Search installed applications"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
             }
             Text {
                 visible: !root.cleanHover
                 text: DesktopEntries.applications.values.length + " apps"
                 color: Theme.muted
                 font.family: Fonts.poppins.name
-                font.pixelSize: 10
+                font.pixelSize: Fonts.scale(10)
             }
         }
 
@@ -150,7 +143,7 @@ Rectangle {
                 anchors.leftMargin: 12
                 anchors.rightMargin: 12
                 spacing: 8
-                Icon { icon: "\ue8b6"; color: Theme.accent; font.pixelSize: 18 }
+                Icon { icon: "\ue8b6"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
                 TextInput {
                     id: searchField
                     Layout.fillWidth: true
@@ -160,7 +153,7 @@ Rectangle {
                     selectionColor: Qt.alpha(Theme.accent, 0.35)
                     selectedTextColor: Theme.foreground
                     font.family: Fonts.poppins.name
-                    font.pixelSize: 12
+                    font.pixelSize: Fonts.scale(12)
                     text: root.query
                     onTextEdited: root.query = text
                     Component.onCompleted: Qt.callLater(function() { forceActiveFocus(); })
@@ -171,7 +164,7 @@ Rectangle {
                         text: "Type to search apps"
                         color: Theme.muted
                         font.family: Fonts.poppins.name
-                        font.pixelSize: 11
+                        font.pixelSize: Fonts.scale(11)
                     }
                 }
                 Rectangle {
@@ -180,7 +173,7 @@ Rectangle {
                     Layout.preferredHeight: 22
                     radius: 7
                     color: Qt.alpha(Theme.accent, 0.12)
-                    Icon { anchors.centerIn: parent; icon: "\ue5cd"; font.pixelSize: 16; color: Theme.foreground }
+                    Icon { anchors.centerIn: parent; icon: "\ue5cd"; font.pixelSize: Fonts.scale(16); color: Theme.foreground }
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
@@ -203,9 +196,9 @@ Rectangle {
             spacing: 8
             RowLayout {
                 Layout.fillWidth: true
-                Icon { icon: "\ue838"; font.pixelSize: 17; color: Theme.accent }
-                Text { text: "Pinned & frequently used"; font.family: Fonts.poppinsSB.name; color: Theme.foreground; font.pixelSize: 11; Layout.fillWidth: true }
-                Text { text: root.frequent.length + " apps"; color: Theme.muted; font.pixelSize: 10 }
+                Icon { icon: "\ue838"; font.pixelSize: Fonts.scale(17); color: Theme.accent }
+                Text { text: "Pinned & frequently used"; font.family: Fonts.poppinsSB.name; color: Theme.foreground; font.pixelSize: Fonts.scale(11); Layout.fillWidth: true }
+                Text { text: root.frequent.length + " apps"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
             }
             GridLayout {
                 Layout.fillWidth: true
@@ -230,7 +223,7 @@ Rectangle {
                                 source: root.iconSource(frequentApp.modelData)
                                 visible: String(source).length > 0
                             }
-                            Text { text: root.textOf(frequentApp.modelData.name); Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                            Text { text: root.textOf(frequentApp.modelData.name); Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                         }
                         MouseArea { id: favMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.launch(frequentApp.modelData) }
                     }
@@ -241,8 +234,8 @@ Rectangle {
         RowLayout {
             visible: !root.cleanHover
             Layout.fillWidth: true
-            Text { text: root.query.trim() === "" ? "All applications" : "Search results"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; Layout.fillWidth: true }
-            Text { text: root.results.length + " found"; color: Theme.muted; font.pixelSize: 10 }
+            Text { text: root.query.trim() === "" ? "All applications" : "Search results"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); Layout.fillWidth: true }
+            Text { text: root.results.length + " found"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
         }
 
         ListView {
@@ -296,7 +289,7 @@ Rectangle {
                             text: root.textOf(appRow.modelData.name)
                             color: Theme.foreground
                             font.family: Fonts.poppinsSB.name
-                            font.pixelSize: 12
+                            font.pixelSize: Fonts.scale(12)
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                         }
@@ -304,7 +297,7 @@ Rectangle {
                             text: root.textOf(appRow.modelData.genericName) || root.textOf(appRow.modelData.comment) || root.textOf(appRow.modelData.id)
                             color: Theme.muted
                             font.family: Fonts.poppins.name
-                            font.pixelSize: 10
+                            font.pixelSize: Fonts.scale(10)
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                         }
@@ -312,7 +305,7 @@ Rectangle {
                     Rectangle {
                         Layout.preferredWidth: 30; Layout.preferredHeight: 30; radius: 9
                         color: pinMouse.containsMouse ? Qt.alpha(Theme.accent, 0.15) : "transparent"
-                        Icon { anchors.centerIn: parent; icon: AppUsage.stats(appRow.modelData).pinned ? "\ue838" : "\ue83a"; font.pixelSize: 18; color: Theme.accent }
+                        Icon { anchors.centerIn: parent; icon: AppUsage.stats(appRow.modelData).pinned ? "\ue838" : "\ue83a"; font.pixelSize: Fonts.scale(18); color: Theme.accent }
                         MouseArea {
                             z: 3
                             id: pinMouse
@@ -344,7 +337,7 @@ Rectangle {
             wrapMode: Text.WordWrap
             color: Theme.muted
             font.family: Fonts.poppins.name
-            font.pixelSize: 10
+            font.pixelSize: Fonts.scale(10)
         }
     }
 }

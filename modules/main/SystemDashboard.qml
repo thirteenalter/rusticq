@@ -32,9 +32,9 @@ Rectangle {
         anchors.fill: parent; anchors.margins: 15; spacing: 10
         RowLayout {
             Layout.fillWidth: true
-            Icon { icon: "\uf190"; font.pixelSize: 21; color: Theme.accent }
-            Text { text: "System · Task View"; Layout.fillWidth: true; font.pixelSize: 15; font.family: Fonts.poppinsSB.name; color: Theme.foreground }
-            Text { text: "LIVE"; font.pixelSize: 10; color: Theme.muted }
+            Icon { icon: "\uf500"; font.pixelSize: Fonts.scale(21); color: Theme.accent }
+            Text { text: "System · Task View"; Layout.fillWidth: true; font.pixelSize: Fonts.scale(15); font.family: Fonts.poppinsSB.name; color: Theme.foreground }
+            Text { text: "LIVE"; font.pixelSize: Fonts.scale(10); color: Theme.muted }
         }
         RowLayout {
             Layout.fillWidth: true
@@ -52,8 +52,8 @@ Rectangle {
                     border.width: active ? 1 : 0
                     border.color: Theme.accent
                     RowLayout { anchors.centerIn: parent; spacing: 5
-                        Icon { icon: viewTab.modelData.icon; font.pixelSize: 15; color: active ? Theme.accent : Theme.foreground }
-                        Text { text: viewTab.modelData.title; font.pixelSize: 11; color: Theme.foreground; font.family: Fonts.poppinsSB.name }
+                        Icon { icon: viewTab.modelData.icon; font.pixelSize: Fonts.scale(15); color: active ? Theme.accent : Theme.foreground }
+                        Text { text: viewTab.modelData.title; font.pixelSize: Fonts.scale(11); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.showTrends = viewTab.modelData.key === "trends" }
                 }
@@ -71,8 +71,8 @@ Rectangle {
                 Layout.fillWidth: true; spacing: 4
                 RowLayout {
                     Layout.fillWidth: true
-                    Text { text: metric.modelData.label; Layout.fillWidth: true; font.pixelSize: 11; color: Theme.foreground; font.family: Fonts.poppinsSB.name }
-                    Text { text: metric.modelData.value; font.pixelSize: 11; color: Theme.foreground }
+                    Text { text: metric.modelData.label; Layout.fillWidth: true; font.pixelSize: Fonts.scale(11); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
+                    Text { text: metric.modelData.value; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
                 }
                 Rectangle {
                     Layout.fillWidth: true; Layout.preferredHeight: 5; radius: 3; color: Theme.surface
@@ -96,22 +96,22 @@ Rectangle {
                     color: Theme.surface; radius: 12
                     ColumnLayout { anchors.fill: parent; anchors.margins: 12; spacing: 9
                         RowLayout { Layout.fillWidth: true
-                            Text { text: trendCard.modelData.label; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11 }
-                            Text { text: trendCard.modelData.value; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: 12 }
+                            Text { text: trendCard.modelData.label; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+                            Text { text: trendCard.modelData.value; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                         }
                         MetricWave { Layout.fillWidth: true; Layout.fillHeight: true; samples: trendCard.modelData.series }
                     }
                 }
             }
-            Text { text: "Live samples every 2 seconds · no historical files saved"; color: Theme.muted; font.pixelSize: 10; Layout.fillWidth: true }
+            Text { text: "Live samples every 2 seconds · no historical files saved"; color: Theme.muted; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true }
         }
-        Text { text: "Load " + root.processData.load.join(" / ") + "  ·  " + root.processData.cores + " CPUs  ·  " + root.processData.total + " processes"; Layout.fillWidth: true; font.pixelSize: 10; color: Theme.muted }
+        Text { text: "Load " + root.processData.load.join(" / ") + "  ·  " + root.processData.cores + " CPUs  ·  " + root.processData.total + " processes"; Layout.fillWidth: true; font.pixelSize: Fonts.scale(10); color: Theme.muted }
         RowLayout {
             visible: !root.showTrends
             Layout.fillWidth: true
-            Text { text: "TOP CPU PROCESSES"; Layout.fillWidth: true; font.pixelSize: 10; font.family: Fonts.poppinsSB.name; color: Theme.muted }
-            Text { text: "CPU"; font.pixelSize: 10; color: Theme.muted }
-            Text { text: "RAM"; font.pixelSize: 10; color: Theme.muted }
+            Text { text: "TOP CPU PROCESSES"; Layout.fillWidth: true; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name; color: Theme.muted }
+            Text { text: "CPU"; font.pixelSize: Fonts.scale(10); color: Theme.muted }
+            Text { text: "RAM"; font.pixelSize: Fonts.scale(10); color: Theme.muted }
         }
         ListView {
             visible: !root.showTrends
@@ -126,12 +126,12 @@ Rectangle {
                 color: index % 2 ? Qt.alpha(Theme.foreground, .035) : Theme.surface
                 RowLayout {
                     anchors.fill: parent; anchors.leftMargin: 8; anchors.rightMargin: 8
-                    Text { text: pRow.modelData.name + "  #" + pRow.modelData.pid; Layout.fillWidth: true; elide: Text.ElideRight; font.pixelSize: 11; color: Theme.foreground }
-                    Text { text: pRow.modelData.cpu.toFixed(1) + "%"; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight; font.pixelSize: 10; color: Theme.foreground }
-                    Text { text: pRow.modelData.memMiB.toFixed(0) + " MiB"; Layout.preferredWidth: 67; horizontalAlignment: Text.AlignRight; font.pixelSize: 10; color: Theme.muted }
+                    Text { text: pRow.modelData.name + "  #" + pRow.modelData.pid; Layout.fillWidth: true; elide: Text.ElideRight; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
+                    Text { text: pRow.modelData.cpu.toFixed(1) + "%"; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight; font.pixelSize: Fonts.scale(10); color: Theme.foreground }
+                    Text { text: pRow.modelData.memMiB.toFixed(0) + " MiB"; Layout.preferredWidth: 67; horizontalAlignment: Text.AlignRight; font.pixelSize: Fonts.scale(10); color: Theme.muted }
                 }
             }
         }
-        Text { text: root.error || "Read-only process view · updates every 3 s"; font.pixelSize: 10; color: Theme.muted }
+        Text { text: root.error || "Read-only process view · updates every 3 s"; font.pixelSize: Fonts.scale(10); color: Theme.muted }
     }
 }

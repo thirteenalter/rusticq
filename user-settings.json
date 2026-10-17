@@ -1,8 +1,16 @@
 {
-  "accentName": "blue",
+  "accentName": "green",
   "colorSource": "gruvbox",
   "barMode": "clean-compact",
   "barPosition": "top",
+  "absoluteCenter": true,
+  "centerOffsetX": 0,
+  "uiFontFamily": "poppins",
+  "uiCustomFont": "Noto Music",
+  "uiFontScale": 1,
+  "uiDensity": "comfortable",
+  "wallpaperPath": "/home/ryznxx/Downloads/Silhouette Amidst the Wildfire Embers.png",
+  "wallpaperBackend": "auto",
   "showNotifications": true,
   "showLauncher": true,
   "showRusticQIcon": true,
@@ -35,7 +43,7 @@
   "dockSettings": false,
   "dockTaskView": true,
   "dockAI": false,
-  "dockRunningApps": true,
+  "dockRunningApps": false,
   "quickControlOrder": [
     "notifications",
     "wifi",
@@ -57,6 +65,11 @@
     "clean-compact": {
       "right": 0
     },
+    "separated": {
+      "top": 10,
+      "bottom": 4,
+      "left": 8
+    },
     "simple": {
       "top": 1,
       "bottom": 2
@@ -77,6 +90,9 @@
       },
       "right": {
         "items": {
+          "bluetooth": {
+            "before": 4
+          },
           "wifi": {
             "before": 9,
             "after": 4
@@ -95,6 +111,43 @@
           }
         },
         "gap": 8
+      }
+    },
+    "separated": {
+      "right": {
+        "items": {
+          "bluetooth": {
+            "before": 7
+          },
+          "wifi": {
+            "before": 13,
+            "after": 11
+          },
+          "battery": {
+            "before": 6,
+            "after": 10
+          },
+          "audio": {
+            "before": 0,
+            "after": 9
+          },
+          "task": {
+            "before": 0,
+            "after": 5
+          },
+          "quickModes": {
+            "after": 5
+          }
+        },
+        "gap": 3
+      },
+      "left": {
+        "items": {
+          "workspaces": {
+            "before": 0,
+            "after": 6
+          }
+        }
       }
     },
     "professional": {
@@ -153,6 +206,6 @@
   "showMicrophoneStatus": false,
   "showDownloadSpeed": false,
   "showUploadSpeed": false,
-  "aiProvider": "openai",
-  "aiModel": "gpt-4.1-mini"
+  "aiProvider": "gemini",
+  "aiModel": "gemini-2.5-flash"
 }

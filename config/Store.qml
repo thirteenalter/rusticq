@@ -8,6 +8,7 @@ Singleton {
     property bool quickReorderMode: false
     property var sidebarScreen: null
     property bool aiVisible: false
+    property bool aiFullMode: false
     property var aiScreen: null
     property bool settingsVisible: false
     property bool launcherVisible: false

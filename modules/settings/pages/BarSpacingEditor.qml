@@ -67,8 +67,8 @@ ColumnLayout {
                 RowLayout {
                     anchors.centerIn: parent
                     spacing: 8
-                    Icon { icon: sideButton.modelData.glyph; font.pixelSize: 18; color: sideButton.selected ? Theme.accent : Theme.muted }
-                    Text { text: sideButton.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.foreground }
+                    Icon { icon: sideButton.modelData.glyph; font.pixelSize: Fonts.scale(18); color: sideButton.selected ? Theme.accent : Theme.muted }
+                    Text { text: sideButton.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.foreground }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: editor.side = sideButton.modelData.key }
             }
@@ -86,8 +86,8 @@ ColumnLayout {
             spacing: 8
             RowLayout {
                 Layout.fillWidth: true
-                Text { text: "Base group gap"; Layout.fillWidth: true; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.foreground }
-                Text { text: SettingsStore.spacingGroup(editor.side, editor.defaultGap) + " px"; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.accent }
+                Text { text: "Base group gap"; Layout.fillWidth: true; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.foreground }
+                Text { text: SettingsStore.spacingGroup(editor.side, editor.defaultGap) + " px"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.accent }
             }
             MarginSlider {
                 Layout.fillWidth: true
@@ -101,12 +101,12 @@ ColumnLayout {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: "Base gap for the " + editor.side + " group. Each icon adds its own Before / After spacing on top."
-                font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted
+                font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted
             }
         }
     }
 
-    Text { text: "Icons assigned to " + editor.side; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.foreground }
+    Text { text: "Icons assigned to " + editor.side; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.foreground }
     Text {
         visible: editor.choices.length === 0
         Layout.fillWidth: true
@@ -114,7 +114,7 @@ ColumnLayout {
         wrapMode: Text.WordWrap
         color: Theme.muted
         font.family: Fonts.poppins.name
-        font.pixelSize: 11
+        font.pixelSize: Fonts.scale(11)
     }
     GridLayout {
         Layout.fillWidth: true
@@ -136,8 +136,8 @@ ColumnLayout {
                 ColumnLayout {
                     anchors.centerIn: parent
                     spacing: 4
-                    Icon { Layout.alignment: Qt.AlignHCenter; icon: iconChoice.modelData.glyph; font.pixelSize: 19; color: iconChoice.selected ? Theme.accent : Theme.foreground }
-                    Text { Layout.alignment: Qt.AlignHCenter; text: iconChoice.modelData.name; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.foreground }
+                    Icon { Layout.alignment: Qt.AlignHCenter; icon: iconChoice.modelData.glyph; font.pixelSize: Fonts.scale(19); color: iconChoice.selected ? Theme.accent : Theme.foreground }
+                    Text { Layout.alignment: Qt.AlignHCenter; text: iconChoice.modelData.name; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.foreground }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: editor.selectedIcon = iconChoice.modelData.key }
             }
@@ -156,12 +156,12 @@ ColumnLayout {
             spacing: 10
             RowLayout {
                 Layout.fillWidth: true
-                Icon { icon: editor.activeChoice ? editor.activeChoice.glyph : "\ue429"; font.pixelSize: 20; color: Theme.accent }
-                Text { text: (editor.activeChoice ? editor.activeChoice.name : "Icon") + " spacing"; font.pixelSize: 12; font.family: Fonts.poppinsSB.name; color: Theme.foreground; Layout.fillWidth: true }
+                Icon { icon: editor.activeChoice ? editor.activeChoice.glyph : "\ue429"; font.pixelSize: Fonts.scale(20); color: Theme.accent }
+                Text { text: (editor.activeChoice ? editor.activeChoice.name : "Icon") + " spacing"; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppinsSB.name; color: Theme.foreground; Layout.fillWidth: true }
                 Rectangle {
                     Layout.preferredWidth: 86; Layout.preferredHeight: 29; radius: 8
                     color: Theme.surface
-                    Text { anchors.centerIn: parent; text: "Reset icon"; font.pixelSize: 10; font.family: Fonts.poppins.name; color: Theme.foreground }
+                    Text { anchors.centerIn: parent; text: "Reset icon"; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name; color: Theme.foreground }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetIconSpacing(editor.side, editor.selectedIcon) }
                 }
             }
@@ -174,8 +174,8 @@ ColumnLayout {
                     spacing: 6
                     RowLayout {
                         Layout.fillWidth: true
-                        Text { text: adjustRow.modelData.label; font.pixelSize: 11; font.family: Fonts.poppins.name; color: Theme.foreground; Layout.fillWidth: true }
-                        Text { text: SettingsStore.spacingIcon(editor.side, editor.selectedIcon, adjustRow.modelData.key) + " px"; font.pixelSize: 11; font.family: Fonts.poppinsSB.name; color: Theme.accent }
+                        Text { text: adjustRow.modelData.label; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppins.name; color: Theme.foreground; Layout.fillWidth: true }
+                        Text { text: SettingsStore.spacingIcon(editor.side, editor.selectedIcon, adjustRow.modelData.key) + " px"; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppinsSB.name; color: Theme.accent }
                     }
                     MarginSlider {
                         Layout.fillWidth: true
@@ -197,12 +197,12 @@ ColumnLayout {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: editor.isVerticalBar ? "On vertical bars, Left / Center / Right become Top / Middle / Bottom; Before / After become upper/lower spacing." : "Spacing applies immediately, with separate saved values for each bar layout mode."
-            font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted
+            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted
         }
         Rectangle {
             Layout.preferredWidth: 112; Layout.preferredHeight: 32
             radius: 9; color: Theme.background
-            Text { anchors.centerIn: parent; text: "Reset zone"; font.pixelSize: 10; font.family: Fonts.poppinsSB.name; color: Theme.foreground }
+            Text { anchors.centerIn: parent; text: "Reset zone"; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name; color: Theme.foreground }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetSideSpacing(editor.side) }
         }
     }

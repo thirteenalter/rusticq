@@ -11,6 +11,14 @@ Singleton {
     property string colorSource: "gruvbox"
     property string barMode: "separated"
     property string barPosition: "top"
+    property bool absoluteCenter: true
+    property int centerOffsetX: 0
+    property string uiFontFamily: "poppins"
+    property string uiCustomFont: ""
+    property real uiFontScale: 1.0
+    property string uiDensity: "comfortable"
+    property string wallpaperPath: ""
+    property string wallpaperBackend: "auto"
     property bool showNotifications: true
     property bool showLauncher: true
     property bool showRusticQIcon: true
@@ -307,6 +315,14 @@ Singleton {
                 accentName = data.accentName;
             if (["compact", "clean-compact", "separated", "professional", "simple"].indexOf(data.barMode) !== -1) barMode = data.barMode;
             if (["top", "bottom", "left", "right"].indexOf(data.barPosition) !== -1) barPosition = data.barPosition;
+            if (typeof data.absoluteCenter === "boolean") absoluteCenter = data.absoluteCenter;
+            if (Number.isInteger(data.centerOffsetX) && data.centerOffsetX >= -400 && data.centerOffsetX <= 400) centerOffsetX = data.centerOffsetX;
+            if (["poppins", "sans", "mono", "custom"].indexOf(data.uiFontFamily) >= 0) uiFontFamily = data.uiFontFamily;
+            if (typeof data.uiCustomFont === "string" && data.uiCustomFont.length < 140) uiCustomFont = data.uiCustomFont;
+            if (typeof data.uiFontScale === "number" && data.uiFontScale >= 0.85 && data.uiFontScale <= 1.2) uiFontScale = data.uiFontScale;
+            if (["compact", "comfortable"].indexOf(data.uiDensity) >= 0) uiDensity = data.uiDensity;
+            if (typeof data.wallpaperPath === "string" && data.wallpaperPath.length < 1024) wallpaperPath = data.wallpaperPath;
+            if (["auto", "swww", "awww", "hyprpaper"].indexOf(data.wallpaperBackend) >= 0) wallpaperBackend = data.wallpaperBackend;
             if (["icons", "details", "hover"].indexOf(data.cleanRightMode) !== -1)
                 cleanRightMode = data.cleanRightMode;
             else if (typeof data.cleanRightDetails === "boolean")
@@ -375,6 +391,14 @@ Singleton {
             colorSource: colorSource,
             barMode: barMode,
             barPosition: barPosition,
+            absoluteCenter: absoluteCenter,
+            centerOffsetX: centerOffsetX,
+            uiFontFamily: uiFontFamily,
+            uiCustomFont: uiCustomFont,
+            uiFontScale: uiFontScale,
+            uiDensity: uiDensity,
+            wallpaperPath: wallpaperPath,
+            wallpaperBackend: wallpaperBackend,
             showNotifications: showNotifications,
             showLauncher: showLauncher,
             showRusticQIcon: showRusticQIcon,

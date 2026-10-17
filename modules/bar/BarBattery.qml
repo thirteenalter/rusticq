@@ -63,14 +63,14 @@ Rectangle {
                         Text {
                             text: BatteryService.available ? BatteryService.percentage + "%" : "Unavailable"
                             font.family: Fonts.poppinsSB.name
-                            font.pixelSize: 18
+                            font.pixelSize: Fonts.scale(18)
                             color: Theme.foreground
                         }
                     }
                     Text {
                         text: BatteryService.status
                         font.family: Fonts.poppins.name
-                        font.pixelSize: 11
+                        font.pixelSize: Fonts.scale(11)
                         color: BatteryService.charging ? Theme.success : Theme.muted
                         horizontalAlignment: Text.AlignRight
                         elide: Text.ElideRight
@@ -107,7 +107,7 @@ Rectangle {
                     Layout.topMargin: 5
                     text: "Power mode"
                     color: Theme.foreground
-                    font.pixelSize: 13
+                    font.pixelSize: Fonts.scale(13)
                     font.family: Fonts.poppinsSB.name
                 }
                 Repeater {
@@ -135,7 +135,7 @@ Rectangle {
                             spacing: Theme.sectionGap
                             Icon {
                                 icon: profileItem.modelData.icon
-                                font.pixelSize: 20
+                                font.pixelSize: Fonts.scale(20)
                                 color: profileItem.current ? Theme.accent : Theme.muted
                                 Layout.minimumWidth: 22
                                 Layout.preferredWidth: 22
@@ -173,7 +173,7 @@ Rectangle {
                                 Layout.preferredWidth: 22
                                 Layout.maximumWidth: 22
                                 Layout.alignment: Qt.AlignVCenter
-                                font.pixelSize: 19
+                                font.pixelSize: Fonts.scale(19)
                                 color: Theme.accent
                             }
                         }

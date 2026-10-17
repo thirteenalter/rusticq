@@ -68,7 +68,7 @@ PanelWindow {
             Icon {
                 icon: btn.icon
                 color: mouse.containsMouse ? Theme.background : Theme.foreground
-                font.pixelSize: 24
+                font.pixelSize: Fonts.scale(24)
                 anchors.horizontalCenter: parent.horizontalCenter
                 scale: mouse.containsMouse ? 1.12 : 1.0
 
@@ -83,7 +83,7 @@ PanelWindow {
             Text {
                 text: btn.label
                 color: mouse.containsMouse ? Theme.background : Theme.foreground
-                font.pixelSize: 12
+                font.pixelSize: Fonts.scale(12)
                 font.weight: Font.Medium
                 anchors.horizontalCenter: parent.horizontalCenter
             }
@@ -160,7 +160,7 @@ PanelWindow {
                 Text {
                     text: "Power Menu"
                     color: Theme.foreground
-                    font.pixelSize: 18
+                    font.pixelSize: Fonts.scale(18)
                     font.bold: true
                     anchors.verticalCenter: parent.verticalCenter
                 }

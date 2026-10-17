@@ -22,14 +22,14 @@ Item {
         anchors.margins: 14
         spacing: 10
         RowLayout {
-            Icon { icon: "\uebcc"; font.pixelSize: 20; color: Theme.accent }
-            Text { text: "Calendar"; font.family: Fonts.poppinsSB.name; font.pixelSize: 16; color: Theme.foreground; Layout.fillWidth: true }
-            Icon { icon: "\ue5cb"; font.pixelSize: 20; MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.moveMonth(-1) } }
-            Icon { icon: "\ue5cc"; font.pixelSize: 20; MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.moveMonth(1) } }
+            Icon { icon: "\uebcc"; font.pixelSize: Fonts.scale(20); color: Theme.accent }
+            Text { text: "Calendar"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(16); color: Theme.foreground; Layout.fillWidth: true }
+            Icon { icon: "\ue5cb"; font.pixelSize: Fonts.scale(20); MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.moveMonth(-1) } }
+            Icon { icon: "\ue5cc"; font.pixelSize: Fonts.scale(20); MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.moveMonth(1) } }
         }
         Text {
             text: Qt.formatDate(root.displayedMonth, "MMMM yyyy")
-            font.family: Fonts.poppinsSB.name; font.pixelSize: 14; color: Theme.foreground
+            font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(14); color: Theme.foreground
             Layout.alignment: Qt.AlignHCenter
         }
         GridLayout {
@@ -44,7 +44,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     text: modelData
                     color: Theme.muted
-                    font.family: Fonts.poppins.name; font.pixelSize: 10
+                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                 }
             }
             Repeater {
@@ -60,7 +60,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: dateCell.cellDate.getDate()
-                        font.family: Fonts.poppins.name; font.pixelSize: 11
+                        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
                         color: dateCell.isToday ? Theme.background : dateCell.currentMonth ? Theme.foreground : Theme.muted
                         opacity: dateCell.currentMonth ? 1 : 0.5
                     }
@@ -69,8 +69,8 @@ Item {
         }
         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
         RowLayout {
-            Icon { icon: "\ue8df"; font.pixelSize: 16; color: Theme.accent }
-            Text { text: Qt.formatDate(dateClock.date, "dddd, dd MMMM yyyy"); font.family: Fonts.poppins.name; font.pixelSize: 11; color: Theme.foreground; Layout.fillWidth: true }
+            Icon { icon: "\ue8df"; font.pixelSize: Fonts.scale(16); color: Theme.accent }
+            Text { text: Qt.formatDate(dateClock.date, "dddd, dd MMMM yyyy"); font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground; Layout.fillWidth: true }
         }
         Item { Layout.fillHeight: true }
     }

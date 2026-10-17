@@ -121,7 +121,7 @@ PanelWindow {
                                 radius: 14
                                 color: mouse.containsMouse ? Qt.alpha(Theme.accent, .18) : Theme.surface
                                 RusticQIcon { anchors.centerIn: parent; iconSize: 23; visible: app.modelData.label === "Settings" }
-                                Icon { anchors.centerIn: parent; visible: app.modelData.label !== "Settings"; icon: app.modelData.icon; color: Theme.accent; font.pixelSize: 23 }
+                                Icon { anchors.centerIn: parent; visible: app.modelData.label !== "Settings"; icon: app.modelData.icon; color: Theme.accent; font.pixelSize: Fonts.scale(23) }
                                 MouseArea {
                                     id: mouse
                                     anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
@@ -134,7 +134,7 @@ PanelWindow {
                                     }
                                 }
                             }
-                            Text { text: app.modelData.label; Layout.alignment: Qt.AlignHCenter; font.pixelSize: 9; color: Theme.muted; font.family: Fonts.poppins.name }
+                            Text { text: app.modelData.label; Layout.alignment: Qt.AlignHCenter; font.pixelSize: Fonts.scale(9); color: Theme.muted; font.family: Fonts.poppins.name }
                         }
                     }
                     Rectangle { visible: SettingsStore.dockRunningApps && dock.runningCount > 0; Layout.preferredWidth: visible ? 1 : 0; Layout.preferredHeight: 36; color: Theme.borderaccent }
@@ -166,7 +166,7 @@ PanelWindow {
                                     visible: activeIcon.status === Image.Error || runningApp.iconName === ""
                                     anchors.centerIn: parent
                                     icon: "\ue80b"
-                                    font.pixelSize: 21
+                                    font.pixelSize: Fonts.scale(21)
                                     color: Theme.accent
                                 }
                                 MouseArea {
@@ -188,7 +188,7 @@ PanelWindow {
                                 text: runningApp.appName
                                 color: runningApp.modelData.active ? Theme.accent : Theme.muted
                                 font.family: Fonts.poppins.name
-                                font.pixelSize: 8
+                                font.pixelSize: Fonts.scale(8)
                             }
                         }
                     }

@@ -100,14 +100,14 @@ ColumnLayout {
             Rectangle {
                 Layout.preferredWidth: 38; Layout.preferredHeight: 38; radius: 12
                 color: Qt.alpha(Theme.accent, 0.13)
-                Icon { anchors.centerIn: parent; icon: root.busy ? "\ue5d5" : "\ue8b8"; color: Theme.accent; font.pixelSize: 21
+                Icon { anchors.centerIn: parent; icon: root.busy ? "\ue5d5" : "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(21)
                     RotationAnimator on rotation { from: 0; to: 360; duration: 1200; loops: Animation.Infinite; running: root.busy } }
             }
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 3
-                Text { text: root.externalSession ? "Omarchy terminal started" : root.status.state === "running" ? "Upgrade running" : root.status.state === "completed" ? "Upgrade completed" : root.status.state === "failed" ? "Update failed" : root.omarchy ? "Omarchy system updates" : "System package updates"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 13 }
-                Text { text: root.status.message || root.checkMessage; Layout.fillWidth: true; wrapMode: Text.WordWrap; maximumLineCount: 3; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                Text { text: root.externalSession ? "Omarchy terminal started" : root.status.state === "running" ? "Upgrade running" : root.status.state === "completed" ? "Upgrade completed" : root.status.state === "failed" ? "Update failed" : root.omarchy ? "Omarchy system updates" : "System package updates"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
+                Text { text: root.status.message || root.checkMessage; Layout.fillWidth: true; wrapMode: Text.WordWrap; maximumLineCount: 3; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
             }
         }
         Rectangle {
@@ -131,7 +131,7 @@ ColumnLayout {
                 visible: root.busy || root.checking
                 icon: "\ue5d5"
                 color: Theme.accent
-                font.pixelSize: 17
+                font.pixelSize: Fonts.scale(17)
                 RotationAnimator on rotation { running: root.busy || root.checking; from: 0; to: 360; duration: 1150; loops: Animation.Infinite }
             }
             Text {
@@ -144,14 +144,14 @@ ColumnLayout {
                     root.busy ? "Waiting for the next pacman progress update…" : "No upgrade running"
                 color: Theme.foreground
                 font.family: Fonts.poppinsSB.name
-                font.pixelSize: 11
+                font.pixelSize: Fonts.scale(11)
             }
             Text {
                 visible: root.status.total > 0
                 text: root.status.completed + " / " + root.status.total + " packages/hooks"
                 color: Theme.muted
                 font.family: Fonts.poppins.name
-                font.pixelSize: 10
+                font.pixelSize: Fonts.scale(10)
             }
         }
         Text {
@@ -162,7 +162,7 @@ ColumnLayout {
             maximumLineCount: 2
             color: Theme.muted
             font.family: Fonts.poppins.name
-            font.pixelSize: 10
+            font.pixelSize: Fonts.scale(10)
         }
         RowLayout {
             Layout.fillWidth: true
@@ -173,8 +173,8 @@ ColumnLayout {
                 color: Theme.background
                 RowLayout {
                     anchors.centerIn: parent; spacing: 8
-                    Icon { icon: "\ue8b6"; color: Theme.accent; font.pixelSize: 18 }
-                    Text { text: root.checking ? "Checking…" : "Check updates"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
+                    Icon { icon: "\ue8b6"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
+                    Text { text: root.checking ? "Checking…" : "Check updates"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
                 }
                 MouseArea { anchors.fill: parent; enabled: !root.busy && !root.checking; cursorShape: Qt.PointingHandCursor; onClicked: root.checkUpdates() }
             }
@@ -185,8 +185,8 @@ ColumnLayout {
                 border.width: 1; border.color: Theme.accent
                 RowLayout {
                     anchors.centerIn: parent; spacing: 8
-                    Icon { icon: "\ue5d5"; color: Theme.accent; font.pixelSize: 18 }
-                    Text { text: root.busy ? "Updating…" : root.omarchy ? "Open Omarchy update" : "Install all updates"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
+                    Icon { icon: "\ue5d5"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
+                    Text { text: root.busy ? "Updating…" : root.omarchy ? "Open Omarchy update" : "Install all updates"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
                 }
                 MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor; onClicked: root.confirmation = true }
             }
@@ -196,13 +196,13 @@ ColumnLayout {
             visible: root.omarchy
             text: root.status.omarchyGuard ? "The previous direct pacman attempt was blocked by Omarchy. Use `omarchy update` instead. RusticQ never bypasses its guard." : "Omarchy detected · recommended command: omarchy update · interactive terminal required."
             wrapMode: Text.WordWrap
-            color: Theme.accent; font.family: Fonts.poppins.name; font.pixelSize: 11
+            color: Theme.accent; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
         }
         Text {
             Layout.fillWidth: true
             text: root.checkMessage
             wrapMode: Text.WordWrap
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11
+            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
         }
     }
     SettingsSection {
@@ -213,7 +213,7 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             text: root.omarchy ? "Launch `omarchy update` in a terminal? Review snapshots, migrations, package changes, and any prompts in that terminal. RusticQ will not bypass the Omarchy pacman guard or auto-confirm the upgrade." : "Run a full pacman -Syu using graphical PolicyKit authorization? Packages and dependencies may change. The updater runs with pacman's default answers (--noconfirm). Back up important data and review Arch news first. AUR packages are not upgraded."
-            wrapMode: Text.WordWrap; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 11
+            wrapMode: Text.WordWrap; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 9
@@ -224,7 +224,7 @@ ColumnLayout {
                     Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 11
                     color: confirmButton.modelData.approve ? Qt.alpha(Theme.accent, 0.20) : Theme.background
                     border.width: confirmButton.modelData.approve ? 1 : 0; border.color: Theme.accent
-                    Text { anchors.centerIn: parent; text: confirmButton.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
+                    Text { anchors.centerIn: parent; text: confirmButton.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { if (confirmButton.modelData.approve) root.startUpgrade(); else root.confirmation = false; } }
                 }
             }
@@ -238,7 +238,7 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             text: root.available.length > 0 ? root.available.length + " packages identified in the latest check" : (root.checking ? "Checking repository…" : "Run Check updates to list repository upgrades")
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11
+            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
         }
         ListView {
             Layout.fillWidth: true
@@ -253,8 +253,8 @@ ColumnLayout {
                 width: ListView.view.width; height: 37; radius: 9; color: Theme.background
                 RowLayout {
                     anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10; spacing: 8
-                    Text { text: pkgRow.modelData.name; Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
-                    Text { text: pkgRow.modelData.installed + "  →  " + pkgRow.modelData.new; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10; elide: Text.ElideLeft; Layout.preferredWidth: 215; horizontalAlignment: Text.AlignRight }
+                    Text { text: pkgRow.modelData.name; Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    Text { text: pkgRow.modelData.installed + "  →  " + pkgRow.modelData.new; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); elide: Text.ElideLeft; Layout.preferredWidth: 215; horizontalAlignment: Text.AlignRight }
                 }
             }
         }
@@ -269,14 +269,14 @@ ColumnLayout {
                 Layout.fillWidth: true; Layout.preferredHeight: 29; radius: 9; color: Theme.background
                 RowLayout {
                     anchors.fill: parent; anchors.leftMargin: 9; anchors.rightMargin: 9; spacing: 8
-                    Icon { icon: "\ueb8e"; color: Theme.accent; font.pixelSize: 15 }
-                    Text { text: root.status.phase || root.status.state || "idle"; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 10 }
-                    Text { text: root.transactionDone ? "DONE" : root.itemProgressAvailable ? "ITEM " + root.status.progress + "%" : root.busy ? "LIVE" : "--"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: 10 }
+                    Icon { icon: "\ueb8e"; color: Theme.accent; font.pixelSize: Fonts.scale(15) }
+                    Text { text: root.status.phase || root.status.state || "idle"; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                    Text { text: root.transactionDone ? "DONE" : root.itemProgressAvailable ? "ITEM " + root.status.progress + "%" : root.busy ? "LIVE" : "--"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
                 }
             }
             Rectangle {
                 Layout.preferredWidth: 90; Layout.preferredHeight: 29; radius: 9; color: Theme.background
-                Text { anchors.centerIn: parent; text: root.followLog ? "Auto-scroll" : "Hold scroll"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                Text { anchors.centerIn: parent; text: root.followLog ? "Auto-scroll" : "Hold scroll"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.followLog = !root.followLog }
             }
         }
@@ -302,15 +302,15 @@ ColumnLayout {
                     wrapMode: Text.WrapAnywhere
                     color: modelData.indexOf('[ERROR]') >= 0 || modelData.indexOf('[FAILED]') >= 0 ? Theme.error : Theme.foreground
                     font.family: "monospace"
-                    font.pixelSize: 10
+                    font.pixelSize: Fonts.scale(10)
                 }
-                Text { anchors.centerIn: parent; visible: terminalList.count === 0; text: "No terminal output yet. Start an update to see the process."; color: Theme.muted; font.pixelSize: 11; font.family: Fonts.poppins.name }
+                Text { anchors.centerIn: parent; visible: terminalList.count === 0; text: "No terminal output yet. Start an update to see the process."; color: Theme.muted; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppins.name }
             }
         }
         Text {
             Layout.fillWidth: true
             text: "Persistent log: " + (root.status.logPath || "~/.local/state/rustiq/updater/pacman.log") + ". Do not close a running upgrade via reboot or system shutdown."
-            color: Theme.muted; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: 10
+            color: Theme.muted; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
         }
     }
     SettingsSection {
@@ -320,7 +320,7 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             text: root.omarchy ? "On Omarchy, use `omarchy update` to retain snapshots, hooks, migrations and interactive review. Never use a direct pacman guard-bypass as an automatic fallback. The checkupdates list covers repository packages, not Omarchy's complete update plan." : "Only full repository updates (-Syu) are supported. Check Updates requires pacman-contrib. Install Updates requires a graphical PolicyKit authentication agent. The updater cannot change AUR-built packages and does not automatically resolve .pacnew files, package conflicts, or breaking changes."
-            color: Theme.muted; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: 11
+            color: Theme.muted; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
         }
     }
 }

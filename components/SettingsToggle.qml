@@ -20,13 +20,13 @@ Rectangle {
         Rectangle {
             Layout.preferredWidth: 34; Layout.preferredHeight: 34; radius: 10
             color: Qt.alpha(Theme.accent, root.checked ? .17 : .075)
-            Icon { anchors.centerIn: parent; icon: root.modelData.icon; font.pixelSize: 19; color: root.checked ? Theme.accent : Theme.muted }
+            Icon { anchors.centerIn: parent; icon: root.modelData.icon; font.pixelSize: Fonts.scale(19); color: root.checked ? Theme.accent : Theme.muted }
         }
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 2
-            Text { text: root.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; Layout.fillWidth: true; elide: Text.ElideRight }
-            Text { text: root.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10; Layout.fillWidth: true; elide: Text.ElideRight }
+            Text { text: root.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true; elide: Text.ElideRight }
+            Text { text: root.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true; elide: Text.ElideRight }
         }
         Rectangle {
             Layout.preferredWidth: 38; Layout.preferredHeight: 21; radius: 11

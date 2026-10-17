@@ -32,9 +32,9 @@ ColumnLayout {
                         color: Theme.surface
                         ColumnLayout {
                             anchors.centerIn: parent; spacing: 5
-                            Icon { Layout.alignment: Qt.AlignHCenter; icon: previewCard.modelData.icon; font.pixelSize: 19; color: Theme.accent }
-                            Text { Layout.alignment: Qt.AlignHCenter; text: previewCard.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
-                            Text { Layout.alignment: Qt.AlignHCenter; text: previewCard.modelData.line; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 9 }
+                            Icon { Layout.alignment: Qt.AlignHCenter; icon: previewCard.modelData.icon; font.pixelSize: Fonts.scale(19); color: Theme.accent }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: previewCard.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: previewCard.modelData.line; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
                         }
                     }
                 }
@@ -44,7 +44,7 @@ ColumnLayout {
             Layout.fillWidth: true
             text: "Drag any widget by its top header to move it. Positions stay anchored to the current monitor and are saved."
             font.family: Fonts.poppins.name
-            font.pixelSize: 11
+            font.pixelSize: Fonts.scale(11)
             color: Theme.muted
             wrapMode: Text.WordWrap
         }
@@ -53,7 +53,7 @@ ColumnLayout {
             Layout.preferredHeight: 36
             radius: 10
             color: Theme.background
-            Text { anchors.centerIn: parent; text: "Reset desktop widget positions"; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+            Text { anchors.centerIn: parent; text: "Reset desktop widget positions"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetWidgetPositions() }
         }
         Repeater {

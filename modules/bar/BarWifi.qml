@@ -216,7 +216,7 @@ Rectangle {
                             Layout.preferredWidth: 24
                             icon: manager.signalIcon(networkItem.network
                                   ? networkItem.network.signalStrength : 0)
-                            font.pixelSize: 20
+                            font.pixelSize: Fonts.scale(20)
                             color: networkItem.network && networkItem.network.connected
                                    ? Theme.accent : Theme.foreground
                         }
@@ -228,7 +228,7 @@ Rectangle {
                                 text: networkItem.network ? networkItem.network.name : ""
                                 color: Theme.foreground
                                 font.family: Fonts.poppinsSB.name
-                                font.pixelSize: 13
+                                font.pixelSize: Fonts.scale(13)
                                 elide: Text.ElideRight
                             }
                             Text {
@@ -250,7 +250,7 @@ Rectangle {
                         Text {
                             visible: networkItem.processing
                             text: "…"
-                            font.pixelSize: 18
+                            font.pixelSize: Fonts.scale(18)
                             color: Theme.accent
                         }
                     }
@@ -273,7 +273,7 @@ Rectangle {
                                       ? "Disconnect" : "Connect"
                                 color: Theme.background
                                 font.family: Fonts.poppins.name
-                                font.pixelSize: 11
+                                font.pixelSize: Fonts.scale(11)
                             }
                             MouseArea {
                                 anchors.fill: parent
@@ -294,7 +294,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 text: "Forget"
                                 font.family: Fonts.poppins.name
-                                font.pixelSize: 11
+                                font.pixelSize: Fonts.scale(11)
                                 color: Theme.error
                             }
                             MouseArea {
@@ -317,7 +317,7 @@ Rectangle {
                         text: wifiWidget.errorText
                         wrapMode: Text.WordWrap
                         font.family: Fonts.poppins.name
-                        font.pixelSize: 11
+                        font.pixelSize: Fonts.scale(11)
                         color: Theme.error
                     }
 
@@ -353,7 +353,7 @@ Rectangle {
                                 focus: networkItem.needsPassword
                                 color: Theme.foreground
                                 font.family: Fonts.poppins.name
-                                font.pixelSize: 12
+                                font.pixelSize: Fonts.scale(12)
                                 onTextEdited: wifiWidget.passwordText = text
                                 Keys.onReturnPressed: wifiWidget.submitPassword(networkItem.network)
                                 Keys.onEnterPressed: wifiWidget.submitPassword(networkItem.network)
@@ -368,7 +368,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 text: "OK"
                                 font.family: Fonts.poppinsSB.name
-                                font.pixelSize: 11
+                                font.pixelSize: Fonts.scale(11)
                                 color: Theme.background
                             }
                             MouseArea {
@@ -418,7 +418,7 @@ Rectangle {
                 Icon {
                     anchors.horizontalCenter: parent.horizontalCenter
                     icon: "\ue1d8"
-                    font.pixelSize: 25
+                    font.pixelSize: Fonts.scale(25)
                     color: Theme.muted
                 }
                 Text {

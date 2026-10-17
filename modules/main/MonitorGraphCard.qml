@@ -30,21 +30,21 @@ Rectangle {
             Rectangle {
                 Layout.preferredWidth: 30; Layout.preferredHeight: 30
                 radius: 9; color: Qt.alpha(Theme.accent, 0.15)
-                Icon { anchors.centerIn: parent; icon: card.glyph; font.pixelSize: 17; color: Theme.accent }
+                Icon { anchors.centerIn: parent; icon: card.glyph; font.pixelSize: Fonts.scale(17); color: Theme.accent }
             }
             Text {
                 Layout.fillWidth: true
                 text: card.heading
                 color: Theme.foreground
                 font.family: Fonts.poppinsSB.name
-                font.pixelSize: 12
+                font.pixelSize: Fonts.scale(12)
                 elide: Text.ElideRight
             }
             Text {
                 text: card.valueLabel
                 color: Theme.accent
                 font.family: Fonts.poppinsSB.name
-                font.pixelSize: 13
+                font.pixelSize: Fonts.scale(13)
             }
         }
         MetricWave {
@@ -56,7 +56,7 @@ Rectangle {
             Layout.fillWidth: true
             text: card.detail
             font.family: Fonts.poppins.name
-            font.pixelSize: 10
+            font.pixelSize: Fonts.scale(10)
             color: Theme.muted
             elide: Text.ElideRight
         }

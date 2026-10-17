@@ -33,12 +33,12 @@ Rectangle {
                 Layout.preferredHeight: 34
                 radius: 11
                 color: Qt.alpha(Theme.accent, 0.14)
-                Icon { anchors.centerIn: parent; icon: section.symbol; color: Theme.accent; font.pixelSize: 19 }
+                Icon { anchors.centerIn: parent; icon: section.symbol; color: Theme.accent; font.pixelSize: Fonts.scale(19) }
             }
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: section.heading; font.family: Fonts.poppinsSB.name; font.pixelSize: 14; color: Theme.foreground }
+                Text { text: section.heading; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(14); color: Theme.foreground }
                 Text {
                     visible: section.description.length > 0
                     Layout.fillWidth: true
@@ -46,7 +46,7 @@ Rectangle {
                     color: Theme.muted
                     wrapMode: Text.WordWrap
                     font.family: Fonts.poppins.name
-                    font.pixelSize: 10
+                    font.pixelSize: Fonts.scale(10)
                 }
             }
         }

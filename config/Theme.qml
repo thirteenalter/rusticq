@@ -56,9 +56,9 @@ Singleton {
     readonly property color success: useAether ? (aetherPalette.color2 || "#b8bb26") : "#b8bb26"
     readonly property color trsp: "transparent"
 
-    readonly property int sectionPadding: 16
+    readonly property int sectionPadding: SettingsStore.uiDensity === "compact" ? 12 : 16
     readonly property int sectionHeaderHeight: 36
-    readonly property int sectionGap: 10
+    readonly property int sectionGap: SettingsStore.uiDensity === "compact" ? 7 : 10
     readonly property int sectionRadius: 20
     readonly property int rowRadius: 11
     readonly property int sectionTitleSize: 15

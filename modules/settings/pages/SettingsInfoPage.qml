@@ -135,7 +135,7 @@ ColumnLayout {
                 text: root.loading ? "Reading system information…" : root.error.length ? root.error : (root.details.subtitle || "Current local system")
                 color: root.error.length ? Theme.error : Theme.muted
                 font.family: Fonts.poppins.name
-                font.pixelSize: 11
+                font.pixelSize: Fonts.scale(11)
                 wrapMode: Text.WordWrap
             }
             Rectangle {
@@ -146,8 +146,8 @@ ColumnLayout {
                 RowLayout {
                     anchors.centerIn: parent
                     spacing: 6
-                    Icon { icon: "\ue5d5"; color: Theme.accent; font.pixelSize: 16 }
-                    Text { text: root.loading ? "Loading" : "Refresh"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 10 }
+                    Icon { icon: "\ue5d5"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
+                    Text { text: root.loading ? "Loading" : "Refresh"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
                 }
                 MouseArea { anchors.fill: parent; enabled: !root.loading; cursorShape: Qt.PointingHandCursor; onClicked: root.refresh() }
             }
@@ -158,7 +158,7 @@ ColumnLayout {
             text: root.details.headline || ""
             color: Theme.foreground
             font.family: Fonts.poppinsSB.name
-            font.pixelSize: 17
+            font.pixelSize: Fonts.scale(17)
             wrapMode: Text.WordWrap
         }
     }
@@ -185,8 +185,8 @@ ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 11
                         spacing: 3
-                        Text { text: fact.modelData[0]; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10; Layout.fillWidth: true; elide: Text.ElideRight }
-                        Text { text: fact.modelData[1]; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; Layout.fillWidth: true; elide: Text.ElideRight }
+                        Text { text: fact.modelData[0]; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true; elide: Text.ElideRight }
+                        Text { text: fact.modelData[1]; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true; elide: Text.ElideRight }
                     }
                 }
             }
@@ -194,7 +194,7 @@ ColumnLayout {
         Text {
             visible: root.loading && root.facts.length === 0
             text: "Collecting hardware, operating system and package information…"
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11
+            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
         }
     }
 
@@ -206,7 +206,7 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             text: root.filteredDesktopApps.length + " graphical applications" + (searchInput.text.length ? " matching the package search" : "")
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10
+            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
         }
         ListView {
             Layout.fillWidth: true
@@ -226,14 +226,14 @@ ColumnLayout {
                         Layout.preferredWidth: 30; Layout.preferredHeight: 30; radius: 9
                         color: Theme.surface
                         Image { id: appIcon; anchors.fill: parent; anchors.margins: 4; fillMode: Image.PreserveAspectFit; source: String(desktopAppRow.modelData.icon || "").charAt(0) === "/" ? "file://" + desktopAppRow.modelData.icon : Quickshell.iconPath(desktopAppRow.modelData.icon || "", true); visible: status === Image.Ready }
-                        Text { anchors.centerIn: parent; visible: !appIcon.visible; text: String(desktopAppRow.modelData.name || "?").charAt(0).toUpperCase(); color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: 13 }
+                        Text { anchors.centerIn: parent; visible: !appIcon.visible; text: String(desktopAppRow.modelData.name || "?").charAt(0).toUpperCase(); color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
                     }
-                    Text { text: desktopAppRow.modelData.name || "Unknown app"; Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
-                    Text { text: desktopAppRow.modelData.genericName || "Desktop app"; Layout.preferredWidth: 95; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                    Text { text: desktopAppRow.modelData.name || "Unknown app"; Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    Text { text: desktopAppRow.modelData.genericName || "Desktop app"; Layout.preferredWidth: 95; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     Rectangle {
                         Layout.preferredWidth: 64; Layout.preferredHeight: 28
                         radius: 8; color: Theme.surface
-                        Text { anchors.centerIn: parent; text: "Manage"; color: Theme.accent; font.pixelSize: 10; font.family: Fonts.poppinsSB.name }
+                        Text { anchors.centerIn: parent; text: "Manage"; color: Theme.accent; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
                         MouseArea { anchors.fill: parent; enabled: !packageResolve.running; cursorShape: Qt.PointingHandCursor; onClicked: root.resolveGraphicalApp(desktopAppRow.modelData.id) }
                     }
                 }
@@ -255,14 +255,14 @@ ColumnLayout {
                     id: packageNameInput
                     anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
                     verticalAlignment: TextInput.AlignVCenter
-                    font.family: Fonts.poppins.name; font.pixelSize: 12; color: Theme.foreground
+                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); color: Theme.foreground
                     onTextChanged: root.newPackageName = text
-                    Text { anchors.verticalCenter: parent.verticalCenter; visible: packageNameInput.text.length === 0; text: "Package name, e.g. gimp"; color: Theme.muted; font.pixelSize: 10 }
+                    Text { anchors.verticalCenter: parent.verticalCenter; visible: packageNameInput.text.length === 0; text: "Package name, e.g. gimp"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
                 }
             }
             Rectangle {
                 Layout.preferredWidth: 88; Layout.preferredHeight: 38; radius: 10; color: Theme.accent
-                Text { anchors.centerIn: parent; text: "Install…"; color: Theme.background; font.pixelSize: 11; font.family: Fonts.poppinsSB.name }
+                Text { anchors.centerIn: parent; text: "Install…"; color: Theme.background; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppinsSB.name }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.requestOperation("install", root.newPackageName) }
             }
         }
@@ -276,14 +276,14 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             text: "Action: " + root.pendingAction.toUpperCase() + " · Package: " + root.pendingPackage
-            font.family: Fonts.poppinsSB.name; font.pixelSize: 13; color: Theme.foreground; wrapMode: Text.WordWrap
+            font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13); color: Theme.foreground; wrapMode: Text.WordWrap
         }
         Text {
             Layout.fillWidth: true
             text: root.pendingAction === "remove" ?
                 "WARNING: Removing packages can break applications, dependencies, your desktop or system configuration. Pacman may refuse a removal if required elsewhere. Risks are your responsibility. Existing config files are preserved when possible." :
                 "WARNING: Installation may download packages, change dependencies or upgrade your system. On Arch, pacman performs a full upgrade with installation. On Omarchy, its official update runs first. Risks are your responsibility."
-            color: Theme.error; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: 11
+            color: Theme.error; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
         }
         Rectangle {
             visible: root.pendingAction === "remove"
@@ -293,9 +293,9 @@ ColumnLayout {
                 id: confirmField
                 anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
                 verticalAlignment: TextInput.AlignVCenter
-                color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 12
+                color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                 onTextChanged: root.confirmationText = text
-                Text { visible: confirmField.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: "Type the exact package name to authorize removal"; color: Theme.muted; font.pixelSize: 10 }
+                Text { visible: confirmField.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: "Type the exact package name to authorize removal"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
             }
         }
         RowLayout {
@@ -303,7 +303,7 @@ ColumnLayout {
             spacing: 8
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Cancel"; color: Theme.foreground; font.pixelSize: 11 }
+                Text { anchors.centerIn: parent; text: "Cancel"; color: Theme.foreground; font.pixelSize: Fonts.scale(11) }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.pendingAction = "" }
             }
             Rectangle {
@@ -311,7 +311,7 @@ ColumnLayout {
                 Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
                 color: allowed ? Theme.accent : Theme.borderaccent
                 opacity: allowed ? 1 : .65
-                Text { anchors.centerIn: parent; text: "Open interactive terminal"; color: parent.allowed ? Theme.background : Theme.muted; font.pixelSize: 10; font.family: Fonts.poppinsSB.name }
+                Text { anchors.centerIn: parent; text: "Open interactive terminal"; color: parent.allowed ? Theme.background : Theme.muted; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
                 MouseArea { anchors.fill: parent; enabled: parent.allowed && !packageLauncher.running; cursorShape: Qt.PointingHandCursor; onClicked: root.confirmPackage() }
             }
         }
@@ -320,7 +320,7 @@ ColumnLayout {
         visible: root.category === "apps" && root.packageStatus.length > 0
         heading: "Package operation status"
         symbol: "\ue88e"
-        Text { Layout.fillWidth: true; text: root.packageStatus; color: Theme.foreground; font.pixelSize: 11; wrapMode: Text.WordWrap }
+        Text { Layout.fillWidth: true; text: root.packageStatus; color: Theme.foreground; font.pixelSize: Fonts.scale(11); wrapMode: Text.WordWrap }
     }
 
     SettingsSection {
@@ -336,20 +336,20 @@ ColumnLayout {
             color: Theme.background
             RowLayout {
                 anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 11; spacing: 8
-                Icon { icon: "\ue8b6"; color: Theme.accent; font.pixelSize: 18 }
+                Icon { icon: "\ue8b6"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
                 TextInput {
                     id: searchInput
                     Layout.fillWidth: true; Layout.fillHeight: true
                     verticalAlignment: TextInput.AlignVCenter
-                    color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 12
-                    Text { anchors.verticalCenter: parent.verticalCenter; visible: searchInput.text.length === 0; text: "Search installed packages…"; color: Theme.muted; font.pixelSize: 10; font.family: Fonts.poppins.name }
+                    color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
+                    Text { anchors.verticalCenter: parent.verticalCenter; visible: searchInput.text.length === 0; text: "Search installed packages…"; color: Theme.muted; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name }
                 }
             }
         }
         Text {
             Layout.fillWidth: true
             text: root.filteredRows.length + " matching entries" + (root.category === "apps" ? " · sorted alphabetically" : "")
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10
+            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
         }
         ListView {
             Layout.fillWidth: true
@@ -367,14 +367,14 @@ ColumnLayout {
                 color: Theme.background
                 RowLayout {
                     anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 11; spacing: 9
-                    Rectangle { Layout.preferredWidth: 27; Layout.preferredHeight: 27; radius: 8; color: Qt.alpha(Theme.accent, 0.12); Icon { anchors.centerIn: parent; icon: root.category === "apps" ? "\ue5c3" : "\ue1db"; color: Theme.accent; font.pixelSize: 16 } }
-                    Text { text: root.category === "apps" ? packageRow.modelData.name : packageRow.modelData.name + (packageRow.modelData.mount ? " · " + packageRow.modelData.mount : ""); Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 11 }
-                    Text { text: root.category === "apps" ? packageRow.modelData.version : packageRow.modelData.size; Layout.preferredWidth: root.category === "apps" ? 90 : 160; horizontalAlignment: Text.AlignRight; elide: Text.ElideLeft; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                    Rectangle { Layout.preferredWidth: 27; Layout.preferredHeight: 27; radius: 8; color: Qt.alpha(Theme.accent, 0.12); Icon { anchors.centerIn: parent; icon: root.category === "apps" ? "\ue5c3" : "\ue1db"; color: Theme.accent; font.pixelSize: Fonts.scale(16) } }
+                    Text { text: root.category === "apps" ? packageRow.modelData.name : packageRow.modelData.name + (packageRow.modelData.mount ? " · " + packageRow.modelData.mount : ""); Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+                    Text { text: root.category === "apps" ? packageRow.modelData.version : packageRow.modelData.size; Layout.preferredWidth: root.category === "apps" ? 90 : 160; horizontalAlignment: Text.AlignRight; elide: Text.ElideLeft; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     Rectangle {
                         visible: root.category === "apps"
                         Layout.preferredWidth: visible ? 76 : 0; Layout.preferredHeight: 28
                         radius: 8; color: Qt.alpha(Theme.error, 0.12)
-                        Text { anchors.centerIn: parent; text: "Uninstall"; color: Theme.error; font.pixelSize: 10; font.family: Fonts.poppinsSB.name }
+                        Text { anchors.centerIn: parent; text: "Uninstall"; color: Theme.error; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.requestOperation("remove", packageRow.modelData.name) }
                     }
                 }
@@ -391,8 +391,8 @@ ColumnLayout {
                 required property string modelData
                 Layout.fillWidth: true
                 spacing: 9
-                Icon { icon: "\ue88e"; font.pixelSize: 15; color: Theme.accent }
-                Text { text: modelData; Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11 }
+                Icon { icon: "\ue88e"; font.pixelSize: Fonts.scale(15); color: Theme.accent }
+                Text { text: modelData; Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
             }
         }
     }

@@ -157,7 +157,7 @@ Item {
             implicitHeight: root.controlHeight
             radius: height / 2
             color: root.clean ? "transparent" : Theme.borderaccent
-            Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: 18; color: Theme.accent }
+            Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: Fonts.scale(18); color: Theme.accent }
             MouseArea {
                 anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                 onClicked: { root.hostWindow.closeMini(); Store.toggleLauncher(root.hostWindow.screen); }
@@ -195,7 +195,7 @@ Item {
                         readonly property bool focused: Hyprland.focusedWorkspace && Hyprland.focusedWorkspace.id === workspaceId
                         Layout.preferredWidth: 30; Layout.preferredHeight: 27
                         radius: 8; color: focused ? Theme.accent : Theme.surface
-                        Text { anchors.centerIn: parent; text: String(cell.workspaceId); color: cell.focused ? Theme.background : Theme.foreground; font.pixelSize: 10 }
+                        Text { anchors.centerIn: parent; text: String(cell.workspaceId); color: cell.focused ? Theme.background : Theme.foreground; font.pixelSize: Fonts.scale(10) }
                         MouseArea {
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                             onClicked: Hyprland.dispatch(Hyprland.usingLua ? 'hl.dsp.focus({ workspace = "' + cell.workspaceId + '" })' : 'workspace ' + cell.workspaceId)
@@ -250,7 +250,7 @@ Item {
             cleanStyle: root.clean || root.vertical
             forceDetails: root.clean && root.showDetails && !root.vertical
             iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
-            onActivated: root.popup("wifi", wifiZoneIcon)
+            onActivated: root.popup(WifiService.ethernetConnected ? "ethernet" : "wifi", wifiZoneIcon)
         }
     }
     Component {
@@ -280,7 +280,7 @@ Item {
             implicitHeight: root.controlHeight
             radius: height / 2
             color: root.clean ? "transparent" : Theme.borderaccent
-            Icon { anchors.centerIn: parent; icon: "\ue322"; font.pixelSize: 18; color: Theme.accent }
+            Icon { anchors.centerIn: parent; icon: "\ue322"; font.pixelSize: Fonts.scale(18); color: Theme.accent }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup("task", parent) }
         }
     }

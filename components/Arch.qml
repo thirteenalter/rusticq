@@ -14,7 +14,7 @@ Rectangle {
     Icon {
         anchors.centerIn: parent
         icon: "\uf371" // terminal
-        font.pixelSize: 17
+        font.pixelSize: Fonts.scale(17)
         color: Theme.accent
     }
 }

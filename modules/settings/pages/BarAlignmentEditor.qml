@@ -31,12 +31,12 @@ ColumnLayout {
         Layout.fillWidth: true
         Text {
             text: "For vertical bars: Left = top, Center = middle, Right = bottom"
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10
+            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
             Layout.fillWidth: true; wrapMode: Text.WordWrap
         }
         Rectangle {
             Layout.preferredHeight: 31; Layout.preferredWidth: 82; radius: 9; color: Theme.background
-            Text { anchors.centerIn: parent; text: "Reset all"; font.pixelSize: 10; color: Theme.foreground; font.family: Fonts.poppinsSB.name }
+            Text { anchors.centerIn: parent; text: "Reset all"; font.pixelSize: Fonts.scale(10); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetIconPlacements() }
         }
     }
@@ -56,7 +56,7 @@ ColumnLayout {
                 Rectangle {
                     Layout.preferredWidth: 30; Layout.preferredHeight: 30
                     radius: 9; color: Qt.alpha(Theme.accent, .10)
-                    Icon { anchors.centerIn: parent; icon: iconEntry.modelData.icon; color: Theme.accent; font.pixelSize: 17 }
+                    Icon { anchors.centerIn: parent; icon: iconEntry.modelData.icon; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
                 }
                 Text {
                     text: iconEntry.modelData.name
@@ -64,7 +64,7 @@ ColumnLayout {
                     color: Theme.foreground
                     elide: Text.ElideRight
                     font.family: Fonts.poppins.name
-                    font.pixelSize: 11
+                    font.pixelSize: Fonts.scale(11)
                 }
                 Repeater {
                     model: [{value:"left", label:"Left"}, {value:"center", label:"Center"}, {value:"right", label:"Right"}]
@@ -77,7 +77,7 @@ ColumnLayout {
                         color: chosen ? Qt.alpha(Theme.accent, .17) : Theme.surface
                         border.width: chosen ? 1 : 0
                         border.color: Theme.accent
-                        Text { anchors.centerIn: parent; text: posOption.modelData.label; font.pixelSize: 10; color: chosen ? Theme.accent : Theme.muted; font.family: Fonts.poppinsSB.name }
+                        Text { anchors.centerIn: parent; text: posOption.modelData.label; font.pixelSize: Fonts.scale(10); color: chosen ? Theme.accent : Theme.muted; font.family: Fonts.poppinsSB.name }
                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.setIconPlacement(iconEntry.modelData.key, posOption.modelData.value) }
                     }
                 }

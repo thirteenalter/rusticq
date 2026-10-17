@@ -33,15 +33,15 @@ FloatingWindow {
             Rectangle {
                 Layout.preferredWidth: 42; Layout.preferredHeight: 42
                 radius: 12; color: Qt.alpha(Theme.accent, 0.13)
-                Icon { anchors.centerIn: parent; icon: "\uef43"; color: Theme.accent; font.pixelSize: 23 }
+                Icon { anchors.centerIn: parent; icon: "\uef43"; color: Theme.accent; font.pixelSize: Fonts.scale(23) }
             }
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 1
-                Text { text: "System Monitor"; font.family: Fonts.poppinsSB.name; font.pixelSize: 19; color: Theme.foreground }
-                Text { text: "Live hardware utilization · measured every 2 seconds"; font.family: Fonts.poppins.name; font.pixelSize: 11; color: Theme.muted }
+                Text { text: "System Monitor"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(19); color: Theme.foreground }
+                Text { text: "Live hardware utilization · measured every 2 seconds"; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); color: Theme.muted }
             }
-            Text { text: SystemMetrics.error ? "SENSOR ERROR" : "● LIVE"; font.family: Fonts.poppinsSB.name; font.pixelSize: 10; color: SystemMetrics.error ? Theme.muted : Theme.accent }
+            Text { text: SystemMetrics.error ? "SENSOR ERROR" : "● LIVE"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10); color: SystemMetrics.error ? Theme.muted : Theme.accent }
         }
 
         RowLayout {
@@ -57,7 +57,7 @@ FloatingWindow {
                     Layout.preferredHeight: 36
                     color: chosen ? Qt.alpha(Theme.accent, 0.17) : Theme.surface
                     radius: 10
-                    Text { anchors.centerIn: parent; text: tab.modelData; color: tab.chosen ? Theme.accent : Theme.foreground; font.pixelSize: 12; font.family: Fonts.poppinsSB.name }
+                    Text { anchors.centerIn: parent; text: tab.modelData; color: tab.chosen ? Theme.accent : Theme.foreground; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppinsSB.name }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: monitorWindow.processTab = tab.modelData === "Processes" }
                 }
             }
@@ -155,13 +155,13 @@ FloatingWindow {
                             anchors.fill: parent
                             anchors.margins: 14
                             spacing: 10
-                            Text { text: "Hardware details"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 13 }
-                            Text { Layout.fillWidth: true; text: "GPU: " + SystemMetrics.gpuName; color: Theme.muted; font.pixelSize: 11; elide: Text.ElideRight }
-                            Text { Layout.fillWidth: true; text: "VRAM: " + (SystemMetrics.vramTotal !== null ? (SystemMetrics.vramUsed / 1048576).toFixed(0) + " / " + (SystemMetrics.vramTotal / 1048576).toFixed(0) + " MiB" : "unavailable"); color: Theme.muted; font.pixelSize: 11 }
-                            Text { Layout.fillWidth: true; text: "Wi-Fi: " + (WifiService.connected ? (WifiService.ssid + " · " + WifiService.strength + "%") : "not connected"); color: Theme.muted; font.pixelSize: 11; elide: Text.ElideRight }
-                            Text { text: "Thermal sensor: " + (SysMonService.temperature >= 0 ? SysMonService.temperature.toFixed(0) + "°C" : "unavailable"); color: Theme.muted; font.pixelSize: 11 }
-                            Text { text: "Disk free: " + SysMonService.diskAvailableGB.toFixed(1) + " GiB"; color: Theme.muted; font.pixelSize: 11 }
-                            Text { text: "Local kernel counters · nothing uploaded"; color: Theme.accent; font.pixelSize: 10 }
+                            Text { text: "Hardware details"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
+                            Text { Layout.fillWidth: true; text: "GPU: " + SystemMetrics.gpuName; color: Theme.muted; font.pixelSize: Fonts.scale(11); elide: Text.ElideRight }
+                            Text { Layout.fillWidth: true; text: "VRAM: " + (SystemMetrics.vramTotal !== null ? (SystemMetrics.vramUsed / 1048576).toFixed(0) + " / " + (SystemMetrics.vramTotal / 1048576).toFixed(0) + " MiB" : "unavailable"); color: Theme.muted; font.pixelSize: Fonts.scale(11) }
+                            Text { Layout.fillWidth: true; text: "Wi-Fi: " + (WifiService.connected ? (WifiService.ssid + " · " + WifiService.strength + "%") : "not connected"); color: Theme.muted; font.pixelSize: Fonts.scale(11); elide: Text.ElideRight }
+                            Text { text: "Thermal sensor: " + (SysMonService.temperature >= 0 ? SysMonService.temperature.toFixed(0) + "°C" : "unavailable"); color: Theme.muted; font.pixelSize: Fonts.scale(11) }
+                            Text { text: "Disk free: " + SysMonService.diskAvailableGB.toFixed(1) + " GiB"; color: Theme.muted; font.pixelSize: Fonts.scale(11) }
+                            Text { text: "Local kernel counters · nothing uploaded"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
                         }
                     }
                 }
@@ -178,7 +178,7 @@ FloatingWindow {
             Layout.fillWidth: true
             text: SystemMetrics.error || "Charts show measured data only. Network and disk charts auto-scale to their largest observed value."
             color: Theme.muted
-            font.pixelSize: 10
+            font.pixelSize: Fonts.scale(10)
             font.family: Fonts.poppins.name
             wrapMode: Text.WordWrap
         }

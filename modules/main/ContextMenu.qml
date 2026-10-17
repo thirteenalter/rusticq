@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import "../../components"
 import "../../config"
+import "../../services"
 
 // A useful RusticQ settings/view/share menu, inspired by the familiar
 // macOS menu bar. No claims of controlling another application's Edit menu.
@@ -38,6 +39,11 @@ Item {
     ] : currentSection === "share" ? [
         { title: "Screenshot screen", desc: "Save PNG in Pictures/Screenshots", icon: "\ue3af", action: "full" },
         { title: "Screenshot region", desc: "Select area using slurp", icon: "\ue3c2", action: "region" },
+        { title: ScreenRecorder.active ? "Stop recording" : "Record screen", desc: ScreenRecorder.active ? "Save current video" : "Select a monitor and record MP4", icon: "\ue04b", action: ScreenRecorder.active ? "stop" : "start-screen" },
+        { title: "Record region", desc: "Choose an area before recording", icon: "\ue3c2", action: "start-region" },
+        { title: "Record with audio", desc: "Monitor video and default audio input", icon: "\ue029", action: "start-audio" },
+        { title: "Screen sharing portal", desc: "Check the automatic live/meeting selector", icon: "\ue30b", action: "portal-check" },
+        { title: "Open recordings", desc: "Videos/RusticQ", icon: "\ue2c7", action: "record-folder" },
         { title: "Open screenshots", desc: "View saved captures", icon: "\ue2c7", action: "folder" }
     ] : [
         {title: "Compact", desc: "Tight controls", icon: "\ue5d1", action: "compact"},
@@ -57,8 +63,10 @@ Item {
             else if (action === "tools-settings") Store.showSettings("bar");
             else if (action === "tools-region") Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-capture.sh"), "region"]);
             else Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-menu-action.sh"), action]);
+        } else if (currentSection === "share" && ["start-screen", "start-region", "start-audio", "stop", "portal-check", "record-folder"].indexOf(action) !== -1) {
+            ScreenRecorder.action(action === "record-folder" ? "folder" : action);
         } else {
-            Quickshell.execDetached(["sh", Qt.resolvedUrl("../../scripts/rustiq-capture.sh").toString().replace("file://", ""), action]);
+            Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-capture.sh"), action]);
         }
         root.actionFinished();
     }
@@ -69,13 +77,13 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
-            Text { text: "RusticQ / " + root.currentSection.charAt(0).toUpperCase() + root.currentSection.slice(1); font.family: Fonts.poppinsSB.name; font.pixelSize: 13; color: Theme.foreground; Layout.fillWidth: true }
+            Text { text: "RusticQ / " + root.currentSection.charAt(0).toUpperCase() + root.currentSection.slice(1); font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13); color: Theme.foreground; Layout.fillWidth: true }
             Rectangle {
                 Layout.preferredWidth: 26
                 Layout.preferredHeight: 26
                 radius: 8
                 color: Qt.alpha(Theme.accent, 0.10)
-                Icon { anchors.centerIn: parent; icon: "\ue5d2"; color: Theme.accent; font.pixelSize: 16 }
+                Icon { anchors.centerIn: parent; icon: "\ue5d2"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
             }
         }
         RowLayout {
@@ -96,7 +104,7 @@ Item {
                         anchors.centerIn: parent
                         text: tab.modelData.title
                         font.family: Fonts.poppins.name
-                        font.pixelSize: 11
+                        font.pixelSize: Fonts.scale(11)
                         color: root.currentSection === tab.modelData.key ? Theme.accent : Theme.foreground
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.currentSection = tab.modelData.key }
@@ -136,13 +144,13 @@ Item {
                                 Layout.preferredHeight: 34
                                 radius: 10
                                 color: Qt.alpha(Theme.accent, 0.12)
-                                Icon { anchors.centerIn: parent; icon: choice.modelData.icon; color: Theme.accent; font.pixelSize: 18 }
+                                Icon { anchors.centerIn: parent; icon: choice.modelData.icon; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
                             }
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 1
-                                Text { Layout.fillWidth: true; text: choice.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; elide: Text.ElideRight }
-                                Text { Layout.fillWidth: true; text: choice.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 9; elide: Text.ElideRight }
+                                Text { Layout.fillWidth: true; text: choice.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); elide: Text.ElideRight }
+                                Text { Layout.fillWidth: true; text: choice.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9); elide: Text.ElideRight }
                             }
                             Rectangle {
                                 Layout.preferredWidth: 24
@@ -154,7 +162,7 @@ Item {
                                     visible: root.currentSection === "view" && SettingsStore.barMode === choice.modelData.action
                                     icon: "\ue5ca"
                                     color: Theme.accent
-                                    font.pixelSize: 16
+                                    font.pixelSize: Fonts.scale(16)
                                 }
                             }
                         }
@@ -171,9 +179,9 @@ Item {
         }
         Text {
             Layout.fillWidth: true
-            text: root.currentSection === "share" ? "Captures stay on this computer · grim / slurp" : "RusticQ shortcuts · not an application global menu"
+            text: root.currentSection === "share" ? (ScreenRecorder.active ? "Recording in progress · stop to finalize MP4" : "Captures saved locally · grim / slurp / wf-recorder") : "RusticQ shortcuts · not an application global menu"
             wrapMode: Text.WordWrap
-            font.pixelSize: 9
+            font.pixelSize: Fonts.scale(9)
             font.family: Fonts.poppins.name
             color: Theme.muted
         }

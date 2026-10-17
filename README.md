@@ -1,4 +1,4 @@
-# RusticQ · Alpha 4 RC2
+# RusticQ · Alpha 4 RC3
 
 A modular desktop shell for **Quickshell 0.3.1**, Hyprland, Arch Linux, and Wayland. Supports the original **Gruvbox** palette or **Follow Aether** applied colors, Poppins, and Google Material Symbols.
 

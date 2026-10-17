@@ -24,12 +24,12 @@ Rectangle {
     RowLayout {
         anchors.centerIn: parent
         spacing: 5
-        Icon { icon: "\ue1aa"; font.pixelSize: 17; color: Theme.accent }
+        Icon { icon: "\ue1aa"; font.pixelSize: Fonts.scale(17); color: Theme.accent }
         Text {
             text: root.label
             color: Theme.foreground
             font.family: Fonts.poppins.name
-            font.pixelSize: 11
+            font.pixelSize: Fonts.scale(11)
         }
     }
     MouseArea {

@@ -108,28 +108,15 @@ PanelWindow {
             Layout.preferredHeight: implicitHeight
         }
         Item { Layout.fillWidth: true }
-        BarZone {
-            id: centerZone
-            hostWindow: barWindow
-            zone: "center"
-            compact: barWindow.compactMode
-            clean: barWindow.cleanCompactMode
-            separated: barWindow.separatedMode
-            professional: barWindow.professionalMode
-            simple: barWindow.simpleMode
-            controlHeight: barWindow.compactControlHeight
+        Loader {
+            id: flowCenter
+            active: !barWindow.verticalMode && !SettingsStore.absoluteCenter
+            sourceComponent: sharedCenterZone
             Layout.alignment: Qt.AlignVCenter
-            Layout.preferredWidth: implicitWidth
-            Layout.preferredHeight: implicitHeight
+            Layout.preferredWidth: item ? item.implicitWidth : 0
+            Layout.preferredHeight: item ? item.implicitHeight : 0
         }
-        Text {
-            visible: barWindow.professionalMode && centerZone.implicitWidth === 0
-            text: Theme.useAether ? "RUSTICQ  /  AETHER" : "RUSTICQ  /  GRUVBOX"
-            font.family: Fonts.poppinsSB.name
-            font.pixelSize: 10
-            color: Theme.muted
-        }
-        Item { Layout.fillWidth: true }
+        Item { Layout.fillWidth: true; visible: !SettingsStore.absoluteCenter }
         BarZone {
             id: rightZone
             hostWindow: barWindow
@@ -143,6 +130,41 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredWidth: implicitWidth
             Layout.preferredHeight: implicitHeight
+        }
+    }
+    Component {
+        id: sharedCenterZone
+        BarZone {
+            hostWindow: barWindow
+            zone: "center"
+            compact: barWindow.compactMode
+            clean: barWindow.cleanCompactMode
+            separated: barWindow.separatedMode
+            professional: barWindow.professionalMode
+            simple: barWindow.simpleMode
+            controlHeight: barWindow.compactControlHeight
+        }
+    }
+    // The centered zone is independent of the left/right row widths.
+    Item {
+        id: absoluteCenterAnchor
+        visible: !barWindow.verticalMode && SettingsStore.absoluteCenter
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.horizontalCenterOffset: SettingsStore.centerOffsetX
+        anchors.verticalCenter: parent.verticalCenter
+        width: fixedCenter.item ? fixedCenter.item.implicitWidth : 0
+        height: barWindow.barHeight
+        Loader {
+            id: fixedCenter
+            active: !barWindow.verticalMode && SettingsStore.absoluteCenter
+            sourceComponent: sharedCenterZone
+            anchors.centerIn: parent
+        }
+        Text {
+            visible: barWindow.professionalMode && fixedCenter.item && fixedCenter.item.implicitWidth === 0
+            anchors.centerIn: parent
+            text: Theme.useAether ? "RUSTICQ / AETHER" : "RUSTICQ / GRUVBOX"
+            font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10); color: Theme.muted
         }
     }
     VerticalBarContent {

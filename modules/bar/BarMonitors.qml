@@ -115,14 +115,14 @@ ColumnLayout {
 
     RowLayout {
         Layout.fillWidth: true
-        Text { Layout.fillWidth: true; text: "Arrange your displays"; font.family: Fonts.poppinsSB.name; font.pixelSize: 14; color: Theme.foreground }
+        Text { Layout.fillWidth: true; text: "Arrange your displays"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(14); color: Theme.foreground }
         Rectangle {
             Layout.preferredWidth: 88; Layout.preferredHeight: 31; radius: 9; color: Theme.surface
-            Text { anchors.centerIn: parent; text: "Refresh"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 11 }
+            Text { anchors.centerIn: parent; text: "Refresh"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { if (!root.busy) readMonitors.running = true; } }
         }
     }
-    Text { Layout.fillWidth: true; text: "Move each screen with drag & drop. Changes stay in preview until you press Apply."; font.family: Fonts.poppins.name; font.pixelSize: 11; color: Theme.muted; wrapMode: Text.WordWrap }
+    Text { Layout.fillWidth: true; text: "Move each screen with drag & drop. Changes stay in preview until you press Apply."; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); color: Theme.muted; wrapMode: Text.WordWrap }
 
     Rectangle {
         id: preview
@@ -146,8 +146,8 @@ ColumnLayout {
                 border.width: root.selectedName === display.name ? 2 : 1
                 Column {
                     anchors.centerIn: parent; spacing: 3
-                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: screenChip.display.name; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
-                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: screenChip.display.width + "×" + screenChip.display.height; font.family: Fonts.poppins.name; font.pixelSize: 9; color: Theme.muted }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: screenChip.display.name; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: screenChip.display.width + "×" + screenChip.display.height; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9); color: Theme.muted }
                 }
                 MouseArea {
                     anchors.fill: parent
@@ -169,7 +169,7 @@ ColumnLayout {
     Text {
         Layout.fillWidth: true
         text: root.drafts.length + " connected · logical coordinates in px · avoid overlapping displays"
-        font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted
+        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted
     }
     Repeater {
         model: root.drafts
@@ -194,17 +194,17 @@ ColumnLayout {
                         Rectangle {
                             Layout.preferredWidth: 32; Layout.preferredHeight: 32; radius: 10
                             color: Qt.alpha(Theme.accent, 0.14)
-                            Icon { anchors.centerIn: parent; icon: "\ue30b"; font.pixelSize: 18; color: Theme.accent }
+                            Icon { anchors.centerIn: parent; icon: "\ue30b"; font.pixelSize: Fonts.scale(18); color: Theme.accent }
                         }
                         ColumnLayout {
                             Layout.fillWidth: true; spacing: 1
-                            Text { text: detailCard.modelData.name + (detailCard.modelData.focused ? " · Primary" : ""); font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.foreground }
-                            Text { text: detailCard.current.width + "×" + detailCard.current.height + " · " + detailCard.current.mode.split("@").slice(-1)[0] + " Hz · " + detailCard.current.scale + "x"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
+                            Text { text: detailCard.modelData.name + (detailCard.modelData.focused ? " · Primary" : ""); font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.foreground }
+                            Text { text: detailCard.current.width + "×" + detailCard.current.height + " · " + detailCard.current.mode.split("@").slice(-1)[0] + " Hz · " + detailCard.current.scale + "x"; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted }
                         }
                         Rectangle {
                             Layout.preferredWidth: 28; Layout.preferredHeight: 28; radius: 8
                             color: Theme.background
-                            Icon { anchors.centerIn: parent; icon: detailCard.opened ? "\ue5ce" : "\ue5cf"; font.pixelSize: 18; color: Theme.foreground }
+                            Icon { anchors.centerIn: parent; icon: detailCard.opened ? "\ue5ce" : "\ue5cf"; font.pixelSize: Fonts.scale(18); color: Theme.foreground }
                         }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { root.detailsOpen = detailCard.opened ? "" : detailCard.modelData.name; root.selectedName = detailCard.modelData.name; } }
@@ -215,8 +215,8 @@ ColumnLayout {
                     Layout.leftMargin: 42
                     Layout.rightMargin: 1
                     spacing: 10
-                    Text { Layout.fillWidth: true; text: detailCard.modelData.description || "Connected monitor"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted; wrapMode: Text.WordWrap }
-                    Text { text: "Position relative to another monitor"; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                    Text { Layout.fillWidth: true; text: detailCard.modelData.description || "Connected monitor"; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted; wrapMode: Text.WordWrap }
+                    Text { text: "Position relative to another monitor"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
                     RowLayout {
                         Layout.fillWidth: true; spacing: 6
                         Repeater {
@@ -225,12 +225,12 @@ ColumnLayout {
                                 id: sideButton; required property var modelData
                                 Layout.fillWidth: true; Layout.preferredHeight: 30; radius: 8
                                 color: Theme.background
-                                Text { anchors.centerIn: parent; text: sideButton.modelData.text; font.pixelSize: 10; font.family: Fonts.poppins.name; color: Theme.foreground }
+                                Text { anchors.centerIn: parent; text: sideButton.modelData.text; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name; color: Theme.foreground }
                                 MouseArea { anchors.fill: parent; enabled: root.drafts.length > 1; cursorShape: Qt.PointingHandCursor; onClicked: root.placeNextTo(detailCard.modelData.name, sideButton.modelData.side) }
                             }
                         }
                     }
-                    Text { text: "Resolution and refresh rate"; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                    Text { text: "Resolution and refresh rate"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
                     Flow {
                         Layout.fillWidth: true; width: parent.width; spacing: 6
                         Repeater {
@@ -241,12 +241,12 @@ ColumnLayout {
                                 width: modeText.implicitWidth + 18; height: 29; radius: 7
                                 color: chosen ? Qt.alpha(Theme.accent, .2) : Theme.background
                                 border.color: chosen ? Theme.accent : "transparent"
-                                Text { id: modeText; anchors.centerIn: parent; text: modeButton.modelData; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.foreground }
+                                Text { id: modeText; anchors.centerIn: parent; text: modeButton.modelData; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.foreground }
                                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.chooseMode(detailCard.modelData.name, modeButton.modelData) }
                             }
                         }
                     }
-                    Text { text: "Scale"; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                    Text { text: "Scale"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
                     RowLayout {
                         Layout.fillWidth: true; spacing: 6
                         Repeater {
@@ -257,7 +257,7 @@ ColumnLayout {
                                 readonly property bool active: (root.drafts.find(m => m.name === detailCard.modelData.name) || {}).scale === modelData
                                 color: active ? Qt.alpha(Theme.accent, .2) : Theme.background
                                 border.width: active ? 1 : 0; border.color: Theme.accent
-                                Text { anchors.centerIn: parent; text: scaleButton.modelData + "x"; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.foreground }
+                                Text { anchors.centerIn: parent; text: scaleButton.modelData + "x"; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.foreground }
                                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.update(detailCard.modelData.name, "scale", scaleButton.modelData) }
                             }
                         }
@@ -266,7 +266,7 @@ ColumnLayout {
                         Layout.fillWidth: true
                         readonly property var display: root.drafts.find(m => m.name === detailCard.modelData.name) || detailCard.modelData
                         text: "Coordinates: " + display.x + ", " + display.y + " px · Transform " + display.transform + " · VRR " + (display.vrr ? "on" : "off")
-                        font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted
+                        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted
                     }
                 }
             }
@@ -282,13 +282,13 @@ ColumnLayout {
                 opacity: root.busy ? .5 : 1
                 color: actionBtn.modelData.action === "apply" ? Qt.alpha(Theme.accent, .23) : Theme.surface
                 border.color: actionBtn.modelData.action === "apply" ? Theme.accent : Theme.borderaccent
-                Text { anchors.centerIn: parent; text: actionBtn.modelData.text; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; color: Theme.foreground }
+                Text { anchors.centerIn: parent; text: actionBtn.modelData.text; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
                 MouseArea { anchors.fill: parent; enabled: !root.busy && root.drafts.length > 0; cursorShape: Qt.PointingHandCursor; onClicked: root.run(actionBtn.modelData.action) }
             }
         }
     }
-    Text { Layout.fillWidth: true; text: root.status; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
-    Text { Layout.fillWidth: true; text: "Apply affects the current session. Export saves ~/.config/rustiq/monitors.lua; your Hyprland config is never rewritten. You can also use nwg-displays."; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
+    Text { Layout.fillWidth: true; text: root.status; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted }
+    Text { Layout.fillWidth: true; text: "Apply affects the current session. Export saves ~/.config/rustiq/monitors.lua; your Hyprland config is never rewritten. You can also use nwg-displays."; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted }
     Rectangle {
         Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9; color: Theme.surface
         RowLayout {
@@ -296,13 +296,13 @@ ColumnLayout {
             spacing: 6
             Icon {
                 icon: "\ue8b8"
-                font.pixelSize: 17
+                font.pixelSize: Fonts.scale(17)
                 color: Theme.accent
             }
             Text {
                 text: "Open nwg-displays"
                 font.family: Fonts.poppins.name
-                font.pixelSize: 11
+                font.pixelSize: Fonts.scale(11)
                 color: Theme.foreground
             }
         }

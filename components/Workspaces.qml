@@ -30,7 +30,7 @@ Row {
                 anchors.centerIn: parent
                 text: workspaceButton.workspaceId
                 font.family: Fonts.poppins.name
-                font.pixelSize: 11
+                font.pixelSize: Fonts.scale(11)
                 color: workspaceButton.selected
                        ? (root.backgroundEnabled ? Theme.background : Theme.accent) : Theme.foreground
             }

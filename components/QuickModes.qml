@@ -96,7 +96,7 @@ FocusScope {
                     Icon {
                         anchors.centerIn: parent
                         icon: modeButton.modelData.icon
-                        font.pixelSize: 16
+                        font.pixelSize: Fonts.scale(16)
                         color: modeButton.on || modeButton.activeFocus ? Theme.accent : Theme.foreground
                         opacity: modeButton.available && !modeButton.pending ? 1 : 0.4
                     }
@@ -129,7 +129,7 @@ FocusScope {
         Icon {
             anchors.centerIn: parent
             icon: "\ue429"
-            font.pixelSize: 18
+            font.pixelSize: Fonts.scale(18)
             color: QuickModesService.anyActive || root.expanded ? Theme.accent : Theme.foreground
         }
         MouseArea {
@@ -161,7 +161,7 @@ FocusScope {
                 wrapMode: Text.WordWrap
                 textFormat: Text.PlainText
                 font.family: Fonts.poppins.name
-                font.pixelSize: 11
+                font.pixelSize: Fonts.scale(11)
                 color: Theme.foreground
             }
         }

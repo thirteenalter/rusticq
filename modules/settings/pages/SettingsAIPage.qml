@@ -54,9 +54,9 @@ Process {
                                 wrapMode: Text.WordWrap
                                 color: Theme.muted
                                 font.family: Fonts.poppins.name
-                                font.pixelSize: 11
+                                font.pixelSize: Fonts.scale(11)
                             }
-                            Text { text: "Provider"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 13 }
+                            Text { text: "Provider"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
                             Repeater {
                                 model: [
                                     { name: "OpenAI · ChatGPT", provider: "openai", model: "gpt-4.1-mini" },
@@ -76,11 +76,11 @@ Process {
                                         anchors.fill: parent
                                         anchors.leftMargin: 12; anchors.rightMargin: 12
                                         spacing: 9
-                                        Icon { icon: "\uf371"; font.pixelSize: 18; color: Theme.accent }
-                                        Text { Layout.fillWidth: true; text: providerRow.modelData.name; font.pixelSize: 12;
+                                        Icon { icon: "\uf371"; font.pixelSize: Fonts.scale(18); color: Theme.accent }
+                                        Text { Layout.fillWidth: true; text: providerRow.modelData.name; font.pixelSize: Fonts.scale(12);
                                             font.family: Fonts.poppins.name; color: Theme.foreground }
                                         Icon { icon: "\ue5ca"; visible: SettingsStore.aiProvider === providerRow.modelData.provider;
-                                               font.pixelSize: 19; color: Theme.accent }
+                                               font.pixelSize: Fonts.scale(19); color: Theme.accent }
                                     }
                                     MouseArea {
                                         anchors.fill: parent
@@ -97,7 +97,7 @@ Process {
                                     }
                                 }
                             }
-                            Text { text: "Model ID"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 13 }
+                            Text { text: "Model ID"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 45
@@ -111,7 +111,7 @@ Process {
                                     text: SettingsStore.aiModel
                                     color: Theme.foreground
                                     font.family: Fonts.poppins.name
-                                    font.pixelSize: 12
+                                    font.pixelSize: Fonts.scale(12)
                                     onAccepted: saveModel()
                                 }
                             }
@@ -121,10 +121,27 @@ Process {
                                 radius: 9
                                 color: Theme.accent
                                 Text { anchors.centerIn: parent; text: "Save Model ID"; color: Theme.background;
-                                    font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
+                                    font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
                                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: saveModel() }
                             }
-                            Text { text: "API key (Linux Secret Service)"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 13 }
+                            Text { text: "Suggested models"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                            ColumnLayout { Layout.fillWidth: true; spacing: 5
+                                Repeater {
+                                    model: SettingsStore.aiProvider === "openai" ? ["gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini"] :
+                                           SettingsStore.aiProvider === "anthropic" ? ["claude-haiku-4-5-20251001", "claude-sonnet-4-5-20250929"] :
+                                           ["gemini-2.5-flash", "gemini-2.5-pro"]
+                                    delegate: Rectangle { id: modelChoice; required property string modelData
+                                        Layout.fillWidth: true; Layout.preferredHeight: 32; radius: 9
+                                        color: SettingsStore.aiModel === modelData ? Qt.alpha(Theme.accent,0.15) : Theme.surface
+                                        RowLayout { anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 10
+                                            Text { Layout.fillWidth: true; text: modelChoice.modelData; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+                                            Icon { visible: SettingsStore.aiModel === modelChoice.modelData; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: 16 }
+                                        }
+                                        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.aiModel = modelChoice.modelData; SettingsStore.save(); aiModelInput.text = modelChoice.modelData; } }
+                                    }
+                                }
+                            }
+                            Text { text: "API key (Linux Secret Service)"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 44
@@ -138,11 +155,11 @@ Process {
                                     verticalAlignment: TextInput.AlignVCenter
                                     color: Theme.foreground
                                     font.family: Fonts.poppins.name
-                                    font.pixelSize: 12
+                                    font.pixelSize: Fonts.scale(12)
                                     clip: true
                                 }
                                 Text { visible: keyInput.text.length === 0; anchors.verticalCenter: parent.verticalCenter;
-                                    x: 12; text: "Paste API key here (hidden)"; color: Theme.muted; font.pixelSize: 11;
+                                    x: 12; text: "Paste API key here (hidden)"; color: Theme.muted; font.pixelSize: Fonts.scale(11);
                                     font.family: Fonts.poppins.name }
                             }
                             RowLayout {
@@ -150,7 +167,7 @@ Process {
                                 spacing: 8
                                 Rectangle {
                                     Layout.fillWidth: true; Layout.preferredHeight: 36; radius: 9; color: Theme.accent
-                                    Text { anchors.centerIn: parent; text: "Save key"; font.pixelSize: 11; color: Theme.background;
+                                    Text { anchors.centerIn: parent; text: "Save key"; font.pixelSize: Fonts.scale(11); color: Theme.background;
                                         font.family: Fonts.poppinsSB.name }
                                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor;
                                         onClicked: {
@@ -161,14 +178,14 @@ Process {
                                 }
                                 Rectangle {
                                     Layout.fillWidth: true; Layout.preferredHeight: 36; radius: 9; color: Theme.surface
-                                    Text { anchors.centerIn: parent; text: "Check status"; font.pixelSize: 11; color: Theme.foreground;
+                                    Text { anchors.centerIn: parent; text: "Check status"; font.pixelSize: Fonts.scale(11); color: Theme.foreground;
                                         font.family: Fonts.poppinsSB.name }
                                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor;
                                         onClicked: keyAction.startAction("status", {provider: SettingsStore.aiProvider}) }
                                 }
                                 Rectangle {
                                     Layout.preferredWidth: 90; Layout.preferredHeight: 36; radius: 9; color: Theme.surface
-                                    Text { anchors.centerIn: parent; text: "Remove key"; font.pixelSize: 11; color: Theme.foreground;
+                                    Text { anchors.centerIn: parent; text: "Remove key"; font.pixelSize: Fonts.scale(11); color: Theme.foreground;
                                         font.family: Fonts.poppinsSB.name }
                                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor;
                                         onClicked: keyAction.startAction("key-delete", {provider: SettingsStore.aiProvider}) }
@@ -180,7 +197,7 @@ Process {
                                 text: "Select Check status to verify keyring access"
                                 wrapMode: Text.WordWrap
                                 color: Theme.muted
-                                font.pixelSize: 11
+                                font.pixelSize: Fonts.scale(11)
                                 font.family: Fonts.poppins.name
                             }
                             Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
@@ -189,13 +206,13 @@ Process {
                                 text: "Use an API key for in-shell chat. Website login is separate: it opens your provider in a browser and does not authorize the shell."
                                 wrapMode: Text.WordWrap
                                 color: Theme.muted
-                                font.pixelSize: 11
+                                font.pixelSize: Fonts.scale(11)
                                 font.family: Fonts.poppins.name
                             }
                             Rectangle {
                                 Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 9; color: Theme.surface
                                 Text { anchors.centerIn: parent; text: "Open provider website (browser login)";
-                                    font.pixelSize: 11; color: Theme.foreground; font.family: Fonts.poppinsSB.name }
+                                    font.pixelSize: Fonts.scale(11); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
                                 MouseArea {
                                     anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                                     onClicked: {

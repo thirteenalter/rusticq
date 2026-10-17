@@ -37,8 +37,11 @@ FloatingWindow {
     ]
     readonly property var activePage: pages.find(p => p.key === Store.settingsTab) || pages[0]
     readonly property var searchItems: [
-        {tab:"appearance", title:"Aether / Gruvbox color source", hint:"Theme, accent, palette"},
+        {tab:"appearance", title:"Color theme and accent", hint:"Aether Gruvbox theme palette"},
+        {tab:"appearance", title:"Wallpaper settings", hint:"Wallpaper swww awww hyprpaper image path"},
+        {tab:"appearance", title:"Typography and density", hint:"Font family size text compact comfortable"},
         {tab:"bar", title:"Bar position", hint:"Top Bottom Left Right"},
+        {tab:"bar", title:"Absolute center positioning", hint:"Centered icons screen middle offset"},
         {tab:"bar", title:"Bar layout and Clean Compact", hint:"Professional Compact Separated Simple Hover"},
         {tab:"bar", title:"Realtime margin editor", hint:"Spacing Edge Margin Slider"},
         {tab:"bar", title:"Icon spacing: Left, Center and Right", hint:"Per-icon spacing follows icon alignment; microphone wifi battery download upload all modes"},
@@ -120,13 +123,13 @@ FloatingWindow {
                                 RusticQIcon { anchors.centerIn: parent; iconSize: 28 }
                             }
                             Item { Layout.fillHeight: true }
-                            Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
-                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 4 RC2"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 9 }
+                            Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(15) }
+                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 4 RC3"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
                         }
                     }
                     RowLayout {
                         Layout.fillWidth: true; Layout.preferredHeight: 25
-                        Text { text: "S E T T I N G S"; font.family: Fonts.poppinsSB.name; color: Theme.muted; font.pixelSize: 9 }
+                        Text { text: "S E T T I N G S"; font.family: Fonts.poppinsSB.name; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     }
                     Flickable {
@@ -158,9 +161,9 @@ FloatingWindow {
                                 Rectangle {
                                     Layout.preferredWidth: 29; Layout.preferredHeight: 29; radius: 9
                                     color: active ? Qt.alpha(Theme.accent, 0.14) : Theme.surface
-                                    Icon { anchors.centerIn: parent; icon: navRow.modelData.symbol; font.pixelSize: 17; color: navRow.active ? Theme.accent : Theme.muted }
+                                    Icon { anchors.centerIn: parent; icon: navRow.modelData.symbol; font.pixelSize: Fonts.scale(17); color: navRow.active ? Theme.accent : Theme.muted }
                                 }
-                                Text { text: navRow.modelData.label; Layout.fillWidth: true; color: Theme.foreground; font.family: navRow.active ? Fonts.poppinsSB.name : Fonts.poppins.name; font.pixelSize: 12 }
+                                Text { text: navRow.modelData.label; Layout.fillWidth: true; color: Theme.foreground; font.family: navRow.active ? Fonts.poppinsSB.name : Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                                 Rectangle { visible: navRow.active; Layout.preferredWidth: 4; Layout.preferredHeight: 18; radius: 3; color: Theme.accent }
                             }
                             MouseArea {
@@ -174,9 +177,9 @@ FloatingWindow {
                     }
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     Text {
-                        text: "RUSTIQ · ALPHA 4 RC2\nQuickshell 0.3.1"
+                        text: "RUSTIQ · ALPHA 4 RC3\nQuickshell 0.3.1"
                         Layout.fillWidth: true
-                        color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10
+                        color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                     }
                 }
             }
@@ -191,8 +194,8 @@ FloatingWindow {
                     ColumnLayout {
                         anchors.fill: parent
                         spacing: 3
-                        Text { text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 22 }
-                        Text { text: "RUSTIQ / ALPHA 4 RC2 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                        Text { text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(22) }
+                        Text { text: "RUSTIQ / ALPHA 4 RC3 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -211,21 +214,21 @@ FloatingWindow {
                             id: searchField
                             Layout.fillWidth: true; Layout.fillHeight: true
                             verticalAlignment: TextInput.AlignVCenter
-                            color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 12
+                            color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                             onTextEdited: root.query = text
                             clip: true
                             Text {
                                 visible: searchField.text.length === 0
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "Search all settings"
-                                color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11
+                                color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
                             }
                         }
                         Rectangle {
                             visible: root.query.length > 0
                             Layout.preferredWidth: 24; Layout.preferredHeight: 24; radius: 7
                             color: Theme.background
-                            Icon { anchors.centerIn: parent; icon: "\ue5cd"; font.pixelSize: 16; color: Theme.foreground }
+                            Icon { anchors.centerIn: parent; icon: "\ue5cd"; font.pixelSize: Fonts.scale(16); color: Theme.foreground }
                             MouseArea { anchors.fill: parent; onClicked: { root.query = ""; searchField.text = ""; } }
                         }
                     }
@@ -269,21 +272,21 @@ FloatingWindow {
                         color: itemMouse.containsMouse ? Qt.alpha(Theme.accent, 0.13) : Theme.surface
                         RowLayout {
                             anchors.fill: parent; anchors.margins: 12; spacing: 10
-                            Icon { icon: "\ue8b6"; font.pixelSize: 19; color: Theme.accent }
+                            Icon { icon: "\ue8b6"; font.pixelSize: Fonts.scale(19); color: Theme.accent }
                             ColumnLayout {
                                 Layout.fillWidth: true; spacing: 3
-                                Text { text: searchRow.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 12 }
-                                Text { text: searchRow.modelData.tab.toUpperCase() + " · " + searchRow.modelData.hint; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10; elide: Text.ElideRight; Layout.fillWidth: true }
+                                Text { text: searchRow.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                                Text { text: searchRow.modelData.tab.toUpperCase() + " · " + searchRow.modelData.hint; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); elide: Text.ElideRight; Layout.fillWidth: true }
                             }
-                            Icon { icon: "\ue5cc"; color: Theme.accent; font.pixelSize: 18 }
+                            Icon { icon: "\ue5cc"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
                         }
                         MouseArea { id: itemMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.navigate(searchRow.modelData.tab) }
                     }
                 }
                 RowLayout {
                     Layout.fillWidth: true; Layout.preferredHeight: 18
-                    Icon { icon: "\ue5ca"; font.pixelSize: 15; color: Theme.success }
-                    Text { text: "Changes saved automatically · API keys remain in Linux keyring"; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                    Icon { icon: "\ue5ca"; font.pixelSize: Fonts.scale(15); color: Theme.success }
+                    Text { text: "Changes saved automatically · API keys remain in Linux keyring"; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                 }
             }
         }

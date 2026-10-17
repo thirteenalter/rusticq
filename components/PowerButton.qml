@@ -13,7 +13,7 @@ Rectangle {
     Icon {
         anchors.centerIn: parent
         icon: "\ue69b" // stat_minus_1
-        font.pixelSize: 18
+        font.pixelSize: Fonts.scale(18)
         color: Theme.foreground
     }
 

@@ -11,14 +11,14 @@ PopupWindow {
     required property var hostWindow
     property string kind: ""
     property string menuSection: "view"
-    readonly property bool singleSystem: kind === "wifi" || kind === "bluetooth" || kind === "battery"
+    readonly property bool singleSystem: kind === "wifi" || kind === "ethernet" || kind === "bluetooth" || kind === "battery"
     property real targetX: 0
     property real targetY: 0
     property string barPosition: "top"
     signal dismissed()
     implicitWidth: kind === "task" ? 480 : kind === "menu" ? 358 : 368
-    implicitHeight: kind === "task" ? 585 : kind === "wifi" ? 465 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
-                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? 345 : kind === "audio" ? ((widgetLoader.item && widgetLoader.item.advancedOpen) ? 407 : 286) : 190
+    implicitHeight: kind === "task" ? 585 : kind === "wifi" ? 465 : kind === "ethernet" ? 260 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
+                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? (menuSection === "share" ? 530 : 345) : kind === "audio" ? Math.min(650, Math.max(185, (widgetLoader.item ? widgetLoader.item.implicitHeight : 180) + 16)) : 190
     anchor.window: hostWindow
     anchor.edges: barPosition === "bottom" ? (Edges.Bottom | Edges.Left) : (Edges.Top | Edges.Left)
     anchor.gravity: barPosition === "bottom" ? (Edges.Top | Edges.Right)
@@ -50,7 +50,7 @@ PopupWindow {
             anchors.fill: parent
             anchors.margins: popup.singleSystem ? 0 : 8
             sourceComponent: popup.kind === "task" ? taskComponent : popup.kind === "wifi" ? wifiComponent :
-                                 popup.kind === "bluetooth" ? bluetoothComponent :
+                                 popup.kind === "ethernet" ? ethernetComponent : popup.kind === "bluetooth" ? bluetoothComponent :
                                  popup.kind === "battery" ? batteryComponent :
                                  popup.kind === "audio" ? audioComponent :
                                  popup.kind === "weather" ? weatherComponent :
@@ -62,6 +62,7 @@ PopupWindow {
 
     Component { id: taskComponent; SystemDashboard {} }
     Component { id: wifiComponent; BarWifi { standalone: true } }
+    Component { id: ethernetComponent; MiniEthernetInfo {} }
     Component { id: bluetoothComponent; BarBluetooth { standalone: true } }
     Component { id: batteryComponent; BarBattery { standalone: true } }
     Component { id: audioComponent; MiniAudio {} }

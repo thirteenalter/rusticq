@@ -43,7 +43,7 @@ Item {
                     Layout.fillWidth: true
                     color: Theme.muted
                     font.family: Fonts.poppins.name
-                    font.pixelSize: 10
+                    font.pixelSize: Fonts.scale(10)
                     wrapMode: Text.WordWrap
                 }
                 Rectangle {
@@ -51,7 +51,7 @@ Item {
                     Layout.preferredHeight: 28
                     radius: 9
                     color: Theme.surface
-                    Text { anchors.centerIn: parent; text: "Reset"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                    Text { anchors.centerIn: parent; text: "Reset"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetQuickOrder() }
                 }
             }
@@ -112,7 +112,7 @@ Item {
                         radius: 9
                         color: grabArea.pressed ? Qt.alpha(Theme.accent, .26) : Theme.surface
                         border.width: 0
-                        Icon { anchors.centerIn: parent; icon: "\ue8d5"; color: Theme.accent; font.pixelSize: 18 }
+                        Icon { anchors.centerIn: parent; icon: "\ue8d5"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
                         MouseArea {
                             id: grabArea
                             anchors.fill: parent

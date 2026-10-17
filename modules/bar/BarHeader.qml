@@ -22,7 +22,7 @@ Rectangle {
             Icon {
                 anchors.centerIn: parent
                 icon: Store.advancedVisible ? "\ue5c4" : "\ue69b" // stat_minus_1
-                font.pixelSize: 20
+                font.pixelSize: Fonts.scale(20)
                 color: Theme.accent
             }
             MouseArea {
@@ -36,7 +36,7 @@ Rectangle {
             Layout.fillWidth: true
             text: Store.advancedVisible ? "Advance" : "Quick Control"
             font.family: Fonts.poppinsSB.name
-            font.pixelSize: 18
+            font.pixelSize: Fonts.scale(18)
             color: Theme.foreground
         }
         Rectangle {
@@ -45,7 +45,7 @@ Rectangle {
             Layout.preferredHeight: 32
             radius: 10
             color: Store.quickReorderMode ? Qt.alpha(Theme.accent, 0.18) : Theme.surface
-            Icon { anchors.centerIn: parent; icon: "\ue8d5"; font.pixelSize: 19; color: Store.quickReorderMode ? Theme.accent : Theme.muted }
+            Icon { anchors.centerIn: parent; icon: "\ue8d5"; font.pixelSize: Fonts.scale(19); color: Store.quickReorderMode ? Theme.accent : Theme.muted }
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
@@ -61,7 +61,7 @@ Rectangle {
             Icon {
                 anchors.centerIn: parent
                 icon: "\ue5cd"  // close
-                font.pixelSize: 20
+                font.pixelSize: Fonts.scale(20)
             }
             MouseArea {
                 id: closeMouse

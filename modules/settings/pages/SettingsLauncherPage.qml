@@ -15,7 +15,7 @@ ColumnLayout {
             text: "Launcher layout mode"
             color: Theme.foreground
             font.family: Fonts.poppinsSB.name
-            font.pixelSize: 13
+            font.pixelSize: Fonts.scale(13)
         }
         RowLayout {
             Layout.fillWidth: true
@@ -41,11 +41,11 @@ ColumnLayout {
                         spacing: 5
                         RowLayout {
                             Layout.fillWidth: true
-                            Icon { icon: modeCard.modelData.icon; font.pixelSize: 18; color: Theme.accent }
-                            Text { text: modeCard.modelData.label; Layout.fillWidth: true; font.family: Fonts.poppinsSB.name; color: Theme.foreground; font.pixelSize: 12 }
-                            Icon { visible: modeCard.selected; icon: "\ue5ca"; font.pixelSize: 17; color: Theme.accent }
+                            Icon { icon: modeCard.modelData.icon; font.pixelSize: Fonts.scale(18); color: Theme.accent }
+                            Text { text: modeCard.modelData.label; Layout.fillWidth: true; font.family: Fonts.poppinsSB.name; color: Theme.foreground; font.pixelSize: Fonts.scale(12) }
+                            Icon { visible: modeCard.selected; icon: "\ue5ca"; font.pixelSize: Fonts.scale(17); color: Theme.accent }
                         }
-                        Text { Layout.fillWidth: true; text: modeCard.modelData.description; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted }
+                        Text { Layout.fillWidth: true; text: modeCard.modelData.description; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -76,8 +76,8 @@ ColumnLayout {
                     spacing: 4
                     RowLayout {
                         Layout.fillWidth: true
-                        Text { text: setting.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; Layout.fillWidth: true }
-                        Text { text: SettingsStore[setting.modelData.key] + " " + setting.modelData.suffix; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: 12 }
+                        Text { text: setting.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true }
+                        Text { text: SettingsStore[setting.modelData.key] + " " + setting.modelData.suffix; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                     }
                     SettingRangeSlider {
                         Layout.fillWidth: true
@@ -88,7 +88,7 @@ ColumnLayout {
                         onPreview: next => SettingsStore.updateLauncherSize(setting.modelData.key, next, false)
                         onCommit: next => SettingsStore.updateLauncherSize(setting.modelData.key, next, true)
                     }
-                    Text { text: setting.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                    Text { text: setting.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                 }
             }
         }
@@ -96,8 +96,8 @@ ColumnLayout {
             Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
             color: Theme.background
             RowLayout { anchors.centerIn: parent; spacing: 8
-                Icon { icon: "\ue863"; color: Theme.accent; font.pixelSize: 17 }
-                Text { text: "Reset launcher dimensions"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
+                Icon { icon: "\ue863"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
+                Text { text: "Reset launcher dimensions"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
             }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetLauncherSize() }
         }
@@ -126,7 +126,7 @@ ColumnLayout {
             wrapMode: Text.WordWrap
             color: Theme.muted
             font.family: Fonts.poppins.name
-            font.pixelSize: 11
+            font.pixelSize: Fonts.scale(11)
         }
     }
 }

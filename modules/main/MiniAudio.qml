@@ -4,144 +4,90 @@ import Quickshell.Services.Pipewire
 import "../../config"
 import "../../components"
 
+// Compact single audio card; height is measured from content, not the popup.
 Rectangle {
     id: root
+    implicitWidth: 350
+    implicitHeight: content.implicitHeight + 24
     radius: Theme.sectionRadius
     color: "transparent"
     border.width: 0
-    readonly property var sink: Pipewire.defaultAudioSink
-    readonly property bool available: sink !== null && sink.audio !== null
     property bool advancedOpen: false
-
-    PwObjectTracker { objects: [root.sink] }
-
+    readonly property var sink: Pipewire.defaultAudioSink
+    readonly property var source: Pipewire.defaultAudioSource
+    readonly property bool available: sink !== null && sink.audio !== null
+    readonly property var outputDevices: Pipewire.nodes.values.filter(n => n.audio !== null && n.isSink && !n.isStream)
+    readonly property var inputDevices: Pipewire.nodes.values.filter(n => n.audio !== null && !n.isSink && !n.isStream)
+    PwObjectTracker { objects: [root.sink, root.source].concat(root.outputDevices, root.inputDevices).filter(n => n !== null) }
     ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: Theme.sectionPadding
+        id: content
+        x: 12; y: 12; width: parent.width - 24
         spacing: 12
-
         RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-            Rectangle {
-                Layout.preferredWidth: 36
-                Layout.preferredHeight: 36
-                radius: 12
-                color: Qt.alpha(Theme.accent, 0.14)
-                Icon { anchors.centerIn: parent; icon: root.available && root.sink.audio.muted ? "\ue04f" : "\ue050"; font.pixelSize: 19; color: Theme.accent }
+            Layout.fillWidth: true; spacing: 9
+            Rectangle { Layout.preferredWidth: 32; Layout.preferredHeight: 32; radius: 10; color: Qt.alpha(Theme.accent, .13)
+                Icon { anchors.centerIn: parent; icon: root.available && root.sink.audio.muted ? "\ue04f" : "\ue050"; font.pixelSize: 18; color: Theme.accent }
             }
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 1
-                Text { text: "Audio"; color: Theme.foreground; font.pixelSize: Theme.sectionTitleSize; font.family: Fonts.poppinsSB.name }
-                Text { text: root.available ? (root.sink.audio.muted ? "Output muted" : "Default audio output") : "No active output device"; color: Theme.muted; font.pixelSize: 10; font.family: Fonts.poppins.name }
+            ColumnLayout { Layout.fillWidth: true; spacing: 1
+                Text { text: "Audio"; color: Theme.foreground; font.pixelSize: Fonts.scale(13); font.family: Fonts.poppinsSB.name }
+                Text { text: root.available ? (root.sink.description || "Default audio output") : "Output unavailable"; Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.muted; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name }
             }
-            Rectangle {
-                Layout.preferredWidth: 56
-                Layout.preferredHeight: 28
-                radius: 9
-                color: Qt.alpha(Theme.accent, 0.12)
-                Text { anchors.centerIn: parent; text: root.available ? Math.round(root.sink.audio.volume * 100) + "%" : "--"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
-            }
+            Text { text: root.available ? Math.round(root.sink.audio.volume * 100) + "%" : "--"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
         }
-
-        ControlSlider {
-            Layout.fillWidth: true
+        ControlSlider { Layout.fillWidth: true; Layout.preferredHeight: 28
             value: root.available ? Math.min(1, root.sink.audio.volume) : 0
             adjustable: root.available
-            onUserChanged: (next) => { if (root.available) root.sink.audio.volume = next; }
+            onUserChanged: next => { if (root.available) root.sink.audio.volume = next; }
         }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 8
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 40
-                radius: 10
-                color: Theme.surface
-                RowLayout {
-                    anchors.centerIn: parent
-                    spacing: 8
-                    Icon { icon: root.available && root.sink.audio.muted ? "\ue050" : "\ue04f"; color: Theme.accent; font.pixelSize: 18 }
-                    Text { text: root.available && root.sink.audio.muted ? "Unmute output" : "Mute output"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 12 }
+        RowLayout { Layout.fillWidth: true; spacing: 8
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 36; radius: 10; color: Theme.surface
+                RowLayout { anchors.centerIn: parent; spacing: 7
+                    Icon { icon: root.available && root.sink.audio.muted ? "\ue050" : "\ue04f"; font.pixelSize: 16; color: Theme.accent }
+                    Text { text: root.available && root.sink.audio.muted ? "Unmute" : "Mute output"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
                 }
-                MouseArea {
-                    anchors.fill: parent
-                    enabled: root.available
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.sink.audio.muted = !root.sink.audio.muted
-                }
+                MouseArea { anchors.fill: parent; enabled: root.available; cursorShape: Qt.PointingHandCursor; onClicked: root.sink.audio.muted = !root.sink.audio.muted }
             }
-            Rectangle {
-                Layout.preferredWidth: 118
-                Layout.preferredHeight: 40
-                radius: 10
-                color: root.advancedOpen ? Qt.alpha(Theme.accent, 0.16) : Theme.surface
-                border.width: 0
-                RowLayout {
-                    anchors.centerIn: parent
-                    spacing: 6
+            Rectangle { Layout.preferredWidth: 118; Layout.preferredHeight: 36; radius: 10; color: root.advancedOpen ? Qt.alpha(Theme.accent,.16) : Theme.surface
+                RowLayout { anchors.centerIn: parent; spacing: 6
                     Icon { icon: root.advancedOpen ? "\ue5ce" : "\ue5cf"; color: Theme.accent; font.pixelSize: 17 }
-                    Text { text: "Advanced"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
+                    Text { text: "Advanced"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
                 }
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.advancedOpen = !root.advancedOpen
-                }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.advancedOpen = !root.advancedOpen }
             }
         }
-
-        Rectangle {
-            visible: root.advancedOpen
-            Layout.fillWidth: true
-            Layout.preferredHeight: visible ? advancedContent.implicitHeight + 20 : 0
-            radius: 13
-            color: Theme.surface
-            border.width: 0
-            clip: true
-            ColumnLayout {
-                id: advancedContent
-                anchors.fill: parent
-                anchors.margins: 10
-                spacing: 10
-                Text {
-                    text: root.available ? "Quick levels" : "Audio output unavailable"
-                    color: Theme.foreground
-                    font.family: Fonts.poppinsSB.name
-                    font.pixelSize: 11
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
-                    Repeater {
-                        model: [25, 50, 75, 100]
-                        delegate: Rectangle {
-                            id: preset
-                            required property int modelData
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 30
-                            radius: 9
-                            color: root.available && Math.round(root.sink.audio.volume * 100) === modelData ? Qt.alpha(Theme.accent, 0.16) : Theme.background
-                            border.width: 0
-                            Text { anchors.centerIn: parent; text: preset.modelData + "%"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 10 }
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: root.available
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.sink.audio.volume = preset.modelData / 100
-                            }
-                        }
+        ColumnLayout { visible: root.advancedOpen; Layout.fillWidth: true; spacing: 9
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+            RowLayout { Layout.fillWidth: true
+                Text { text: "Microphone"; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                Text { text: root.source && root.source.audio ? Math.round(root.source.audio.volume * 100) + "%" : "N/A"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            }
+            ControlSlider { Layout.fillWidth: true; Layout.preferredHeight: 26
+                value: root.source && root.source.audio ? Math.min(1, root.source.audio.volume) : 0
+                adjustable: !!(root.source && root.source.audio)
+                onUserChanged: next => { if (root.source && root.source.audio) root.source.audio.volume = next; }
+            }
+            Text { text: "Output device"; color: Theme.muted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+            Repeater { model: root.outputDevices
+                delegate: Rectangle { id: output; required property var modelData; Layout.fillWidth: true; Layout.preferredHeight: 30; radius: 8
+                    color: Pipewire.defaultAudioSink === modelData ? Qt.alpha(Theme.accent,.16) : Theme.surface
+                    RowLayout { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10
+                        Text { Layout.fillWidth: true; text: output.modelData.description || output.modelData.name; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        Icon { visible: Pipewire.defaultAudioSink === output.modelData; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: 16 }
                     }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Pipewire.preferredDefaultAudioSink = output.modelData }
                 }
-                Text {
-                    Layout.fillWidth: true
-                    text: root.available ? "Muted: " + (root.sink.audio.muted ? "yes" : "no") + " · Volume: " + Math.round(root.sink.audio.volume * 100) + "%" : "Connect or enable a PipeWire output device to control audio here."
-                    color: Theme.muted
-                    wrapMode: Text.WordWrap
-                    font.family: Fonts.poppins.name
-                    font.pixelSize: 10
+            }
+            Text { text: "Input device · microphone"; color: Theme.muted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+            Text { visible: root.inputDevices.length === 0; text: "No microphone available"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            Repeater { model: root.inputDevices
+                delegate: Rectangle { id: input; required property var modelData; Layout.fillWidth: true; Layout.preferredHeight: 30; radius: 8
+                    color: Pipewire.defaultAudioSource === modelData ? Qt.alpha(Theme.accent,.16) : Theme.surface
+                    RowLayout { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10; spacing: 7
+                        Icon { icon: "\ue029"; color: Theme.accent; font.pixelSize: 16 }
+                        Text { Layout.fillWidth: true; text: input.modelData.description || input.modelData.name; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        Icon { visible: Pipewire.defaultAudioSource === input.modelData; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: 16 }
+                    }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Pipewire.preferredDefaultAudioSource = input.modelData }
                 }
             }
         }

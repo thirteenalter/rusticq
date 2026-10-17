@@ -8,7 +8,7 @@ ColumnLayout {
     width: parent ? parent.width : 680
     spacing: 14
     SettingsSection {
-        heading: "RusticQ · Alpha 4 RC2"
+        heading: "RusticQ · Alpha 4 RC3"
         description: "Arch Linux desktop shell · Quickshell 0.3.1"
         symbol: "\ue8b8"
 
@@ -48,7 +48,7 @@ ColumnLayout {
                     wrapMode: Text.WordWrap
                     color: Theme.foreground
                     font.family: Fonts.poppinsSB.name
-                    font.pixelSize: 12
+                    font.pixelSize: Fonts.scale(12)
                     Layout.fillWidth: true
                 }
                 Text {
@@ -56,7 +56,7 @@ ColumnLayout {
                     wrapMode: Text.WordWrap
                     color: Theme.muted
                     font.family: Fonts.poppins.name
-                    font.pixelSize: 10
+                    font.pixelSize: Fonts.scale(10)
                     Layout.fillWidth: true
                 }
             }
@@ -66,13 +66,13 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             text: "Settings now includes OS information, hardware, pacman packages, storage diagnostics and an opt-in Arch Updater. Gruvbox and Follow Aether remain available."
-            wrapMode: Text.WordWrap; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 12
+            wrapMode: Text.WordWrap; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
         Text {
             Layout.fillWidth: true
             text: "Settings: user-settings.json\nTheme: config/Theme.qml\nMonitor: Hyprland / nwg-displays\nAI: OpenAI / Anthropic / Gemini using Linux Secret Service"
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 11; lineHeight: 1.6
+            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); lineHeight: 1.6
         }
     }
 }
