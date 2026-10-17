@@ -110,7 +110,7 @@ Rectangle {
                 Layout.preferredWidth: 36
                 Layout.preferredHeight: 36
                 radius: 12
-                color: Qt.alpha(Theme.accent, 0.15)
+                color: Qt.alpha(Theme.accent, 0.12)
                 Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: 20; color: Theme.accent }
             }
             ColumnLayout {
@@ -118,6 +118,14 @@ Rectangle {
                 spacing: 1
                 Text { text: "App Launcher"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
                 Text { visible: !root.cleanHover; text: "Search installed applications"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+            }
+            Rectangle {
+                visible: SettingsStore.showRusticQIcon
+                Layout.preferredWidth: 28
+                Layout.preferredHeight: 28
+                radius: 9
+                color: Qt.alpha(Theme.accent, 0.10)
+                RusticQIcon { anchors.centerIn: parent; iconSize: 18 }
             }
             Text {
                 visible: !root.cleanHover

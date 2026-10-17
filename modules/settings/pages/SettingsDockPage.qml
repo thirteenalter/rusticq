@@ -29,8 +29,8 @@ ColumnLayout {
                 {label:"Files",desc:"Open home folder",key:"dockFiles",icon:"\ue2c7"},
                 {label:"Browser",desc:"Open default browser",key:"dockBrowser",icon:"\ue80b"},
                 {label:"Settings",desc:"Open RusticQ settings",key:"dockSettings",icon:"\ue8b8"},
-                {label:"System Monitor",desc:"Open performance graphs and processes",key:"dockTaskView",icon:"\uf190"},
-                {label:"AI",desc:"Cloud assistant sidebar",key:"dockAI",icon:"\ue8f4"}
+                {label:"System Monitor",desc:"Open performance graphs and processes",key:"dockTaskView",icon:"\ue322"},
+                {label:"AI",desc:"Cloud assistant sidebar",key:"dockAI",icon:"\uf371"}
             ]
             delegate: SettingsToggle {}
         }

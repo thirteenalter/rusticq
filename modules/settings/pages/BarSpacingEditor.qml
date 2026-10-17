@@ -12,13 +12,12 @@ ColumnLayout {
     property string side: "right"
     property string selectedIcon: "wifi"
     readonly property bool isVerticalBar: SettingsStore.barPosition === "left" || SettingsStore.barPosition === "right"
-    readonly property var leftChoices: [
-        {key:"arch", name:"Arch / AI", glyph:"\ueb8e"},
+    readonly property var allChoices: [
+        {key:"rusticq", name:"RusticQ", glyph:"\ue8b8"},
+        {key:"arch", name:"Arch / AI", glyph:"\uf371"},
         {key:"launcher", name:"App search", glyph:"\ue8b6"},
         {key:"menu", name:"Menu", glyph:"\ue5d2"},
-        {key:"workspaces", name:"Workspaces", glyph:"\ue30b"}
-    ]
-    readonly property var rightChoices: [
+        {key:"workspaces", name:"Workspaces", glyph:"\ue30b"},
         {key:"weather", name:"Weather", glyph:"\ue430"},
         {key:"time", name:"Clock", glyph:"\ue8b5"},
         {key:"date", name:"Date", glyph:"\uebcc"},
@@ -26,20 +25,35 @@ ColumnLayout {
         {key:"wifi", name:"Wi-Fi", glyph:"\ue63e"},
         {key:"battery", name:"Battery", glyph:"\uf304"},
         {key:"audio", name:"Audio", glyph:"\ue050"},
-        {key:"task", name:"Task View", glyph:"\uf190"},
+        {key:"task", name:"Task View", glyph:"\ue322"},
         {key:"quickModes", name:"Quick Modes", glyph:"\ue429"},
-        {key:"quickControl", name:"Quick Control", glyph:"\ue69b"}
+        {key:"quickControl", name:"Quick Control", glyph:"\ue69b"},
+        {key:"mic", name:"Microphone", glyph:"\ue029"},
+        {key:"down", name:"Download", glyph:"\ue5db"},
+        {key:"up", name:"Upload", glyph:"\ue5d8"}
     ]
-    readonly property var choices: side === "left" ? leftChoices : rightChoices
-    readonly property var activeChoice: choices.find(item => item.key === selectedIcon) || choices[0]
-    readonly property int defaultGap: side === "left" ? (["compact", "clean-compact"].indexOf(SettingsStore.barMode) !== -1 ? 4 : 5) : (["compact", "clean-compact"].indexOf(SettingsStore.barMode) !== -1 ? 3 : 4)
-    onSideChanged: selectedIcon = side === "left" ? "arch" : "wifi"
+    readonly property var choices: allChoices.filter(item => SettingsStore.placementFor(item.key) === side)
+    readonly property var activeChoice: choices.find(item => item.key === selectedIcon) || (choices.length ? choices[0] : null)
+    readonly property int defaultGap: side === "right" && ["compact", "clean-compact"].indexOf(SettingsStore.barMode) !== -1 ? 3 : ["compact", "clean-compact"].indexOf(SettingsStore.barMode) !== -1 ? 4 : side === "right" ? 4 : 5
+    // If an icon was moved by the alignment editor, select the first icon now in this zone.
+    onChoicesChanged: {
+        if (!choices.some(item => item.key === selectedIcon))
+            selectedIcon = choices.length ? choices[0].key : "";
+    }
+    onSideChanged: selectedIcon = choices.length ? choices[0].key : ""
+    Connections {
+        target: SettingsStore
+        function onBarIconMoved(key, zone) {
+            editor.side = zone;
+            editor.selectedIcon = key;
+        }
+    }
 
     RowLayout {
         Layout.fillWidth: true
         spacing: 9
         Repeater {
-            model: [{key:"left",label:"Left group",glyph:"\ue5de"},{key:"right",label:"Right group",glyph:"\ue5df"}]
+            model: [{key:"left",label:"Left",glyph:"\ue5de"},{key:"center",label:"Center",glyph:"\ue86c"},{key:"right",label:"Right",glyph:"\ue5df"}]
             delegate: Rectangle {
                 id: sideButton
                 required property var modelData
@@ -86,13 +100,22 @@ ColumnLayout {
             Text {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
-                text: "Baseline between controls in the " + (editor.side === "left" ? "left" : "right") + " group. The extra Before / After values below are added to this gap."
+                text: "Base gap for the " + editor.side + " group. Each icon adds its own Before / After spacing on top."
                 font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted
             }
         }
     }
 
-    Text { text: "Choose an icon to adjust"; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.foreground }
+    Text { text: "Icons assigned to " + editor.side; font.family: Fonts.poppinsSB.name; font.pixelSize: 12; color: Theme.foreground }
+    Text {
+        visible: editor.choices.length === 0
+        Layout.fillWidth: true
+        text: "This zone is empty. Move an icon here in Bar icon alignment above."
+        wrapMode: Text.WordWrap
+        color: Theme.muted
+        font.family: Fonts.poppins.name
+        font.pixelSize: 11
+    }
     GridLayout {
         Layout.fillWidth: true
         columns: 4
@@ -122,6 +145,7 @@ ColumnLayout {
     }
 
     Rectangle {
+        visible: editor.activeChoice !== null
         Layout.fillWidth: true
         implicitHeight: adjustContents.implicitHeight + 24
         radius: 11
@@ -132,8 +156,8 @@ ColumnLayout {
             spacing: 10
             RowLayout {
                 Layout.fillWidth: true
-                Icon { icon: editor.activeChoice.glyph; font.pixelSize: 20; color: Theme.accent }
-                Text { text: editor.activeChoice.name + " spacing"; font.pixelSize: 12; font.family: Fonts.poppinsSB.name; color: Theme.foreground; Layout.fillWidth: true }
+                Icon { icon: editor.activeChoice ? editor.activeChoice.glyph : "\ue429"; font.pixelSize: 20; color: Theme.accent }
+                Text { text: (editor.activeChoice ? editor.activeChoice.name : "Icon") + " spacing"; font.pixelSize: 12; font.family: Fonts.poppinsSB.name; color: Theme.foreground; Layout.fillWidth: true }
                 Rectangle {
                     Layout.preferredWidth: 86; Layout.preferredHeight: 29; radius: 8
                     color: Theme.surface
@@ -172,13 +196,13 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            text: editor.isVerticalBar ? "On Left/Right bar positions, Before/After become top/bottom spacing." : "Spacing changes immediately on the bar. Settings are saved per layout mode."
+            text: editor.isVerticalBar ? "On vertical bars, Left / Center / Right become Top / Middle / Bottom; Before / After become upper/lower spacing." : "Spacing applies immediately, with separate saved values for each bar layout mode."
             font.family: Fonts.poppins.name; font.pixelSize: 10; color: Theme.muted
         }
         Rectangle {
             Layout.preferredWidth: 112; Layout.preferredHeight: 32
             radius: 9; color: Theme.background
-            Text { anchors.centerIn: parent; text: "Reset this side"; font.pixelSize: 10; font.family: Fonts.poppinsSB.name; color: Theme.foreground }
+            Text { anchors.centerIn: parent; text: "Reset zone"; font.pixelSize: 10; font.family: Fonts.poppinsSB.name; color: Theme.foreground }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetSideSpacing(editor.side) }
         }
     }

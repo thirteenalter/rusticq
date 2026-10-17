@@ -13,6 +13,7 @@ Singleton {
     property string barPosition: "top"
     property bool showNotifications: true
     property bool showLauncher: true
+    property bool showRusticQIcon: true
     // App launcher geometry and density (persisted; monitor size is still clamped).
     property string launcherLayoutMode: "compact" // compact | clean-hover
     property int launcherWidth: 660
@@ -118,14 +119,80 @@ Singleton {
         marginOverrides = all;
         save();
     }
-    // Manual icon spacing is independent for each bar mode and each side.
-    // "before" and "after" are extra pixels on top of the side's base gap.
+    // RC2: persistent alignment for every bar item, not only optional indicators.
+    // On vertical bars Left / Center / Right map to top / middle / bottom.
+    readonly property var barIconKeys: ["rusticq", "arch", "launcher", "menu", "workspaces", "weather", "time", "date",
+        "bluetooth", "wifi", "battery", "audio", "task", "quickModes", "quickControl", "mic", "down", "up"]
+    readonly property var defaultBarPlacements: ({
+        rusticq:"left", arch:"left", launcher:"left", menu:"left", workspaces:"left",
+        weather:"right", time:"right", date:"right", bluetooth:"right", wifi:"right",
+        battery:"right", audio:"right", task:"right", quickModes:"right", quickControl:"right",
+        mic:"right", down:"right", up:"right"
+    })
+    property var barIconPlacements: ({})
+    signal barIconMoved(string key, string zone)
+    function placementFor(key) {
+        if (barIconKeys.indexOf(key) < 0) return "right";
+        const value = barIconPlacements[key];
+        return ["left", "center", "right"].indexOf(value) !== -1 ? value : defaultBarPlacements[key];
+    }
+    function transferIconSpacing(key, fromZone, toZone) {
+        if (fromZone === toZone) return;
+        const all = Object.assign({}, barSpacingOverrides);
+        let changed = false;
+        for (const modeName of spacingModes) {
+            const mode = Object.assign({}, all[modeName] || {});
+            const from = Object.assign({}, mode[fromZone] || {});
+            const fromItems = Object.assign({}, from.items || {});
+            if (!Object.prototype.hasOwnProperty.call(fromItems, key)) continue;
+            const to = Object.assign({}, mode[toZone] || {});
+            const toItems = Object.assign({}, to.items || {});
+            // The icon takes its latest manual Before/After values to the new zone.
+            toItems[key] = fromItems[key];
+            changed = true;
+            delete fromItems[key];
+            from.items = fromItems;
+            to.items = toItems;
+            mode[fromZone] = from;
+            mode[toZone] = to;
+            all[modeName] = mode;
+        }
+        if (changed) barSpacingOverrides = all;
+    }
+    function setIconPlacement(key, zone) {
+        if (barIconKeys.indexOf(key) < 0 || ["left", "center", "right"].indexOf(zone) < 0) return;
+        const fromZone = placementFor(key);
+        if (fromZone === zone) return;
+        transferIconSpacing(key, fromZone, zone);
+        const next = Object.assign({}, barIconPlacements);
+        next[key] = zone;
+        barIconPlacements = next;
+        barIconMoved(key, zone);
+        save();
+    }
+    function resetIconPlacements() {
+        for (const key of barIconKeys)
+            transferIconSpacing(key, placementFor(key), defaultBarPlacements[key]);
+        barIconPlacements = ({});
+        save();
+    }
+    function validateIconPlacements(raw) {
+        const clean = {};
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) return clean;
+        for (const key of barIconKeys)
+            if (["left", "center", "right"].indexOf(raw[key]) >= 0) clean[key] = raw[key];
+        return clean;
+    }
+    // Manual spacing: three zones, independent for every bar layout mode.
+    // All items share ONE registry; a relocated item is editable in its new zone.
     readonly property var spacingModes: ["compact", "clean-compact", "separated", "professional", "simple"]
-    readonly property var spacingLeftItems: ["arch", "launcher", "menu", "workspaces"]
-    readonly property var spacingRightItems: ["weather", "time", "date", "bluetooth", "wifi", "battery", "audio", "task", "quickModes", "quickControl"]
+    readonly property var spacingZones: ["left", "center", "right"]
     property var barSpacingOverrides: ({})
-    function validSpacingItem(side, key) {
-        return (side === "left" ? spacingLeftItems : side === "right" ? spacingRightItems : []).indexOf(key) !== -1;
+    function validSpacingItem(zone, key) {
+        return spacingZones.indexOf(zone) >= 0 && barIconKeys.indexOf(key) >= 0;
+    }
+    function iconsInZone(zone) {
+        return barIconKeys.filter(key => placementFor(key) === zone);
     }
     function spacingGroup(side, fallback) {
         const sideSettings = (barSpacingOverrides[barMode] || {})[side] || {};
@@ -137,7 +204,7 @@ Singleton {
         return Number.isInteger(record[edge]) ? record[edge] : 0;
     }
     function setGroupSpacing(side, value, persist) {
-        if (["left", "right"].indexOf(side) < 0 || !Number.isFinite(value)) return;
+        if (spacingZones.indexOf(side) < 0 || !Number.isFinite(value)) return;
         const all = Object.assign({}, barSpacingOverrides);
         const mode = Object.assign({}, all[barMode] || {});
         const group = Object.assign({}, mode[side] || {});
@@ -167,7 +234,7 @@ Singleton {
         all[barMode] = mode; barSpacingOverrides = all; save();
     }
     function resetSideSpacing(side) {
-        if (["left", "right"].indexOf(side) < 0) return;
+        if (spacingZones.indexOf(side) < 0) return;
         const all = Object.assign({}, barSpacingOverrides);
         const mode = Object.assign({}, all[barMode] || {});
         delete mode[side]; all[barMode] = mode; barSpacingOverrides = all; save();
@@ -179,13 +246,12 @@ Singleton {
             const sourceMode = raw[mode];
             if (!sourceMode || typeof sourceMode !== "object" || Array.isArray(sourceMode)) continue;
             const parsedMode = {};
-            for (const side of ["left", "right"]) {
+            for (const side of spacingZones) {
                 const source = sourceMode[side];
                 if (!source || typeof source !== "object" || Array.isArray(source)) continue;
                 const parsed = { items: {} };
                 if (Number.isInteger(source.gap) && source.gap >= 0 && source.gap <= 16) parsed.gap = source.gap;
-                const candidates = side === "left" ? spacingLeftItems : spacingRightItems;
-                for (const key of candidates) {
+                for (const key of barIconKeys) {
                     const item = (source.items || {})[key];
                     if (!item || typeof item !== "object" || Array.isArray(item)) continue;
                     const value = {};
@@ -208,6 +274,7 @@ Singleton {
     property bool showBattery: true
     property bool showAudio: true
     property bool showQuickControl: true
+    property string quickControlButtonStyle: "plain" // plain | filled
     property bool showWeather: true
     property bool showWorkspaces: true
     property bool showIndicators: true
@@ -218,6 +285,9 @@ Singleton {
     property bool showGamingMode: true
     property bool showNightMode: true
     property bool showMicMute: true
+    property bool showMicrophoneStatus: false
+    property bool showDownloadSpeed: false
+    property bool showUploadSpeed: false
     property string aiProvider: "openai"
     property string aiModel: "gpt-4.1-mini"
     readonly property color accentColor: accentName === "green" ? "#b8bb26" :
@@ -254,8 +324,24 @@ Singleton {
                 marginOverrides = validated;
             }
             barSpacingOverrides = validateSpacingOverrides(data.barSpacingOverrides);
+            barIconPlacements = validateIconPlacements(data.barIconPlacements);
+            // Migrate RC2 optional icon placements without altering users' other settings.
+            for (const pair of [["mic", "microphoneStatusPlacement"], ["down", "downloadSpeedPlacement"], ["up", "uploadSpeedPlacement"]])
+                if (!barIconPlacements[pair[0]] && ["left", "center", "right"].indexOf(data[pair[1]]) !== -1) {
+                    const copy = Object.assign({}, barIconPlacements);
+                    copy[pair[0]] = data[pair[1]];
+                    barIconPlacements = copy;
+                }
+            // A previous RC2 version could save a Center placement while its spacing
+            // remained in Right. Normalize old JSON before the editor is displayed.
+            for (const key of barIconKeys)
+                for (const zone of spacingZones)
+                    if (zone !== placementFor(key))
+                        transferIconSpacing(key, zone, placementFor(key));
             if (["compact", "clean-hover"].indexOf(data.launcherLayoutMode) !== -1)
                 launcherLayoutMode = data.launcherLayoutMode;
+            if (["plain", "filled"].indexOf(data.quickControlButtonStyle) !== -1)
+                quickControlButtonStyle = data.quickControlButtonStyle;
             for (const key of ["launcherWidth", "launcherHeight", "launcherIconSize", "launcherRowHeight", "launcherFavoriteColumns"])
                 if (Number.isInteger(data[key])) updateLauncherSize(key, data[key], false);
             if (data.widgetPositions && typeof data.widgetPositions === "object" && !Array.isArray(data.widgetPositions)) {
@@ -270,12 +356,12 @@ Singleton {
             }
             if (validQuickOrder(data.quickControlOrder)) quickControlOrder = data.quickControlOrder.slice();
             if (typeof data.showMenuBar === "boolean") showMenuBar = data.showMenuBar;
-            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "showNotifications", "showLauncher", "showTaskView", "desktopCalendar", "desktopSystem", "desktopClock", "desktopMedia", "desktopWeather", "desktopConnectivity", "showDock", "dockAutoHide", "dockFiles", "dockBrowser", "dockSettings", "dockTaskView", "dockAI", "dockRunningApps", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
+            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "showNotifications", "showLauncher", "showRusticQIcon", "showTaskView", "desktopCalendar", "desktopSystem", "desktopClock", "desktopMedia", "desktopWeather", "desktopConnectivity", "showDock", "dockAutoHide", "dockFiles", "dockBrowser", "dockSettings", "dockTaskView", "dockAI", "dockRunningApps", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
                 if (typeof data[key] === "boolean") root[key] = data[key];
             if (typeof data.showWeather === "boolean") showWeather = data.showWeather;
             if (typeof data.showWorkspaces === "boolean") showWorkspaces = data.showWorkspaces;
             if (typeof data.showIndicators === "boolean") showIndicators = data.showIndicators;
-            for (const key of ["showQuickModes", "quickModesAutoHide", "showKeepAwake", "showSilent", "showGamingMode", "showNightMode", "showMicMute"])
+            for (const key of ["showQuickModes", "quickModesAutoHide", "showKeepAwake", "showSilent", "showGamingMode", "showNightMode", "showMicMute", "showMicrophoneStatus", "showDownloadSpeed", "showUploadSpeed"])
                 if (typeof data[key] === "boolean") root[key] = data[key];
             if (["openai", "anthropic", "gemini"].indexOf(data.aiProvider) !== -1) aiProvider = data.aiProvider;
             if (typeof data.aiModel === "string" && data.aiModel.length > 0 && data.aiModel !== "llama3.2") aiModel = data.aiModel;
@@ -291,6 +377,7 @@ Singleton {
             barPosition: barPosition,
             showNotifications: showNotifications,
             showLauncher: showLauncher,
+            showRusticQIcon: showRusticQIcon,
             launcherLayoutMode: launcherLayoutMode,
             launcherWidth: launcherWidth,
             launcherHeight: launcherHeight,
@@ -325,6 +412,7 @@ Singleton {
             cleanRightMode: cleanRightMode,
             marginOverrides: marginOverrides,
             barSpacingOverrides: barSpacingOverrides,
+            barIconPlacements: barIconPlacements,
             showArch: showArch,
             showTime: showTime,
             showDate: showDate,
@@ -333,6 +421,7 @@ Singleton {
             showBattery: showBattery,
             showAudio: showAudio,
             showQuickControl: showQuickControl,
+            quickControlButtonStyle: quickControlButtonStyle,
             showWeather: showWeather,
             showWorkspaces: showWorkspaces,
             showIndicators: showIndicators,
@@ -343,6 +432,9 @@ Singleton {
             showGamingMode: showGamingMode,
             showNightMode: showNightMode,
             showMicMute: showMicMute,
+            showMicrophoneStatus: showMicrophoneStatus,
+            showDownloadSpeed: showDownloadSpeed,
+            showUploadSpeed: showUploadSpeed,
             aiProvider: aiProvider,
             aiModel: aiModel
         }, null, 2) + "\n");

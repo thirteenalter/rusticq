@@ -21,6 +21,54 @@ ColumnLayout {
     readonly property var rows: details.rows || []
     readonly property bool hasRows: category === "apps" || category === "storage"
     property var desktopApps: []
+    // Package management is explicit. Never perform a mutation in refresh().
+    property string pendingAction: ""
+    property string pendingPackage: ""
+    property string confirmationText: ""
+    property string packageStatus: ""
+    property string newPackageName: ""
+    function requestOperation(action, pkg) {
+        pendingAction = action;
+        pendingPackage = String(pkg || "").trim();
+        confirmationText = "";
+        packageStatus = "";
+    }
+    function resolveGraphicalApp(entryId) {
+        if (packageResolve.running) return;
+        packageStatus = "Locating the owning pacman package…";
+        packageResolve.exec(["python3", Quickshell.shellPath("scripts/rustiq-package-manager.py"), "resolve-desktop", String(entryId || "")]);
+    }
+    Process {
+        id: packageResolve
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const response = JSON.parse(this.text.trim());
+                    if (!response.ok) throw Error(response.message || "Unknown owner");
+                    root.requestOperation("remove", response.package);
+                } catch (e) { root.packageStatus = "Cannot manage this desktop entry automatically: " + e; }
+            }
+        }
+    }
+    Process {
+        id: packageLauncher
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const response = JSON.parse(this.text.trim());
+                    root.packageStatus = response.message || "Terminal requested";
+                    if (!response.ok) throw Error(root.packageStatus);
+                    root.pendingAction = "";
+                    root.pendingPackage = "";
+                } catch (e) { root.packageStatus = "Could not start package transaction: " + e; }
+            }
+        }
+    }
+    function confirmPackage() {
+        if (pendingAction === "remove" && confirmationText !== pendingPackage) return;
+        if (!pendingPackage || packageLauncher.running) return;
+        packageLauncher.exec(["python3", Quickshell.shellPath("scripts/rustiq-package-manager.py"), "launch", pendingAction, pendingPackage]);
+    }
     function loadDesktopApps() {
         if (category !== "apps") return;
         const nativeEntries = DesktopEntries.applications.values;
@@ -181,10 +229,98 @@ ColumnLayout {
                         Text { anchors.centerIn: parent; visible: !appIcon.visible; text: String(desktopAppRow.modelData.name || "?").charAt(0).toUpperCase(); color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: 13 }
                     }
                     Text { text: desktopAppRow.modelData.name || "Unknown app"; Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11 }
-                    Text { text: desktopAppRow.modelData.genericName || "Desktop app"; Layout.preferredWidth: 150; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                    Text { text: desktopAppRow.modelData.genericName || "Desktop app"; Layout.preferredWidth: 95; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                    Rectangle {
+                        Layout.preferredWidth: 64; Layout.preferredHeight: 28
+                        radius: 8; color: Theme.surface
+                        Text { anchors.centerIn: parent; text: "Manage"; color: Theme.accent; font.pixelSize: 10; font.family: Fonts.poppinsSB.name }
+                        MouseArea { anchors.fill: parent; enabled: !packageResolve.running; cursorShape: Qt.PointingHandCursor; onClicked: root.resolveGraphicalApp(desktopAppRow.modelData.id) }
+                    }
                 }
             }
         }
+    }
+
+    SettingsSection {
+        visible: root.category === "apps"
+        heading: "Install repository package"
+        description: "Enter the exact pacman repository package name. AUR, Flatpak and AppImage are not supported."
+        symbol: "\ue5c3"
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            Rectangle {
+                Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10; color: Theme.background
+                TextInput {
+                    id: packageNameInput
+                    anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
+                    verticalAlignment: TextInput.AlignVCenter
+                    font.family: Fonts.poppins.name; font.pixelSize: 12; color: Theme.foreground
+                    onTextChanged: root.newPackageName = text
+                    Text { anchors.verticalCenter: parent.verticalCenter; visible: packageNameInput.text.length === 0; text: "Package name, e.g. gimp"; color: Theme.muted; font.pixelSize: 10 }
+                }
+            }
+            Rectangle {
+                Layout.preferredWidth: 88; Layout.preferredHeight: 38; radius: 10; color: Theme.accent
+                Text { anchors.centerIn: parent; text: "Install…"; color: Theme.background; font.pixelSize: 11; font.family: Fonts.poppinsSB.name }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.requestOperation("install", root.newPackageName) }
+            }
+        }
+    }
+
+    SettingsSection {
+        visible: root.category === "apps" && root.pendingAction.length > 0
+        heading: root.pendingAction === "remove" ? "Confirm uninstall" : "Confirm installation"
+        description: "Potentially destructive system change. Read the warning before proceeding."
+        symbol: "\ue002"
+        Text {
+            Layout.fillWidth: true
+            text: "Action: " + root.pendingAction.toUpperCase() + " · Package: " + root.pendingPackage
+            font.family: Fonts.poppinsSB.name; font.pixelSize: 13; color: Theme.foreground; wrapMode: Text.WordWrap
+        }
+        Text {
+            Layout.fillWidth: true
+            text: root.pendingAction === "remove" ?
+                "WARNING: Removing packages can break applications, dependencies, your desktop or system configuration. Pacman may refuse a removal if required elsewhere. Risks are your responsibility. Existing config files are preserved when possible." :
+                "WARNING: Installation may download packages, change dependencies or upgrade your system. On Arch, pacman performs a full upgrade with installation. On Omarchy, its official update runs first. Risks are your responsibility."
+            color: Theme.error; wrapMode: Text.WordWrap; font.family: Fonts.poppins.name; font.pixelSize: 11
+        }
+        Rectangle {
+            visible: root.pendingAction === "remove"
+            Layout.fillWidth: true; Layout.preferredHeight: visible ? 38 : 0
+            color: Theme.background; radius: 9
+            TextInput {
+                id: confirmField
+                anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
+                verticalAlignment: TextInput.AlignVCenter
+                color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 12
+                onTextChanged: root.confirmationText = text
+                Text { visible: confirmField.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: "Type the exact package name to authorize removal"; color: Theme.muted; font.pixelSize: 10 }
+            }
+        }
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            Rectangle {
+                Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10; color: Theme.background
+                Text { anchors.centerIn: parent; text: "Cancel"; color: Theme.foreground; font.pixelSize: 11 }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.pendingAction = "" }
+            }
+            Rectangle {
+                readonly property bool allowed: root.pendingAction === "install" || root.confirmationText === root.pendingPackage
+                Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
+                color: allowed ? Theme.accent : Theme.borderaccent
+                opacity: allowed ? 1 : .65
+                Text { anchors.centerIn: parent; text: "Open interactive terminal"; color: parent.allowed ? Theme.background : Theme.muted; font.pixelSize: 10; font.family: Fonts.poppinsSB.name }
+                MouseArea { anchors.fill: parent; enabled: parent.allowed && !packageLauncher.running; cursorShape: Qt.PointingHandCursor; onClicked: root.confirmPackage() }
+            }
+        }
+    }
+    SettingsSection {
+        visible: root.category === "apps" && root.packageStatus.length > 0
+        heading: "Package operation status"
+        symbol: "\ue88e"
+        Text { Layout.fillWidth: true; text: root.packageStatus; color: Theme.foreground; font.pixelSize: 11; wrapMode: Text.WordWrap }
     }
 
     SettingsSection {
@@ -233,7 +369,14 @@ ColumnLayout {
                     anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 11; spacing: 9
                     Rectangle { Layout.preferredWidth: 27; Layout.preferredHeight: 27; radius: 8; color: Qt.alpha(Theme.accent, 0.12); Icon { anchors.centerIn: parent; icon: root.category === "apps" ? "\ue5c3" : "\ue1db"; color: Theme.accent; font.pixelSize: 16 } }
                     Text { text: root.category === "apps" ? packageRow.modelData.name : packageRow.modelData.name + (packageRow.modelData.mount ? " · " + packageRow.modelData.mount : ""); Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: 11 }
-                    Text { text: root.category === "apps" ? packageRow.modelData.version : packageRow.modelData.size; Layout.preferredWidth: 160; horizontalAlignment: Text.AlignRight; elide: Text.ElideLeft; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                    Text { text: root.category === "apps" ? packageRow.modelData.version : packageRow.modelData.size; Layout.preferredWidth: root.category === "apps" ? 90 : 160; horizontalAlignment: Text.AlignRight; elide: Text.ElideLeft; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                    Rectangle {
+                        visible: root.category === "apps"
+                        Layout.preferredWidth: visible ? 76 : 0; Layout.preferredHeight: 28
+                        radius: 8; color: Qt.alpha(Theme.error, 0.12)
+                        Text { anchors.centerIn: parent; text: "Uninstall"; color: Theme.error; font.pixelSize: 10; font.family: Fonts.poppinsSB.name }
+                        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.requestOperation("remove", packageRow.modelData.name) }
+                    }
                 }
             }
         }

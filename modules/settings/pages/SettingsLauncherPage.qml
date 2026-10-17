@@ -103,6 +103,20 @@ ColumnLayout {
         }
     }
     SettingsSection {
+        heading: "RusticQ launcher branding"
+        description: "The launcher search trigger stays a magnifying-glass icon. Toggle the separate RusticQ brand icon independently."
+        symbol: "\ue8b6"
+        SettingsToggle {
+            modelData: ({
+                label: "Show RusticQ icon",
+                desc: "Displays the separate RusticQ brand icon in the bar and launcher header.",
+                key: "showRusticQIcon",
+                icon: "\ue8b8"
+            })
+        }
+    }
+
+    SettingsSection {
         heading: "Responsive behavior"
         description: "The overlay remains centered on the selected screen. Requested dimensions are clamped on smaller monitors; aspect ratio is not forced."
         symbol: "\ue30b"

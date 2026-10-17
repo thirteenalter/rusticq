@@ -1,7 +1,7 @@
 import QtQuick
 import "../config"
 
-// RusticQ launcher: Material 'terminal' glyph, no Nerd Font/Font Awesome.
+// RusticQ launcher: Material 'network_intel_node' glyph, no Nerd Font/Font Awesome.
 Rectangle {
     id: root
     property bool backgroundEnabled: true
@@ -13,7 +13,7 @@ Rectangle {
     border.color: Theme.borderaccent
     Icon {
         anchors.centerIn: parent
-        icon: "\ueb8e" // terminal
+        icon: "\uf371" // terminal
         font.pixelSize: 17
         color: Theme.accent
     }

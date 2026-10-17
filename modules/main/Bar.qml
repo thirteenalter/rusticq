@@ -49,8 +49,9 @@ PanelWindow {
     readonly property int groupSpacing: compactMode ? 4 : 5
     readonly property int leftGroupSpacing: SettingsStore.spacingGroup("left", compactMode ? 4 : 5)
     readonly property int rightGroupSpacing: SettingsStore.spacingGroup("right", compactMode ? 3 : 4)
+    readonly property bool cleanDetailsVisible: !cleanCompactMode || SettingsStore.cleanRightMode === "details" || SettingsStore.cleanRightMode === "hover"
 
-    implicitWidth: verticalMode ? (simpleMode ? 48 : cleanCompactMode ? 44 : compactMode ? 52 : professionalMode ? 74 : Theme.verticalBarWidth) : 0
+    implicitWidth: verticalMode ? (simpleMode ? 48 : cleanCompactMode ? 44 : compactMode ? 52 : Theme.verticalBarWidth) : 0
     implicitHeight: verticalMode ? 0 : barHeight
     IdleInhibitor {
         window: barWindow
@@ -88,224 +89,60 @@ PanelWindow {
     RowLayout {
         visible: !barWindow.verticalMode
         anchors.fill: parent
-        anchors.leftMargin: barWindow.professionalMode ? 17 : 0
-        anchors.rightMargin: barWindow.professionalMode ? 17 : 0
-        spacing: barWindow.compactMode ? 5 : 10
+        anchors.leftMargin: barWindow.professionalMode ? 14 : 4
+        anchors.rightMargin: barWindow.professionalMode ? 14 : 4
+        spacing: barWindow.professionalMode ? 12 : barWindow.compactMode ? 5 : 10
 
-        Rectangle {
+        BarZone {
+            id: leftZone
+            hostWindow: barWindow
+            zone: "left"
+            compact: barWindow.compactMode
+            clean: barWindow.cleanCompactMode
+            separated: barWindow.separatedMode
+            professional: barWindow.professionalMode
+            simple: barWindow.simpleMode
+            controlHeight: barWindow.compactControlHeight
             Layout.alignment: Qt.AlignVCenter
-            Layout.preferredHeight: barWindow.professionalMode ? 36 : barWindow.barHeight
-            Layout.preferredWidth: leftItems.implicitWidth + 2 * barWindow.groupPadding
-            color: barWindow.separatedMode ? Theme.surface : "transparent"
-            border.width: barWindow.separatedMode ? 1 : 0
-            border.color: Theme.borderaccent
-            radius: 12
-            RowLayout {
-                id: leftItems
-                anchors.centerIn: parent
-                spacing: barWindow.leftGroupSpacing
-                Arch {
-                    Layout.leftMargin: SettingsStore.spacingIcon("left", "arch", "before")
-                    Layout.rightMargin: SettingsStore.spacingIcon("left", "arch", "after")
-                    visible: SettingsStore.showArch
-                    backgroundEnabled: !barWindow.cleanCompactMode
-                    Layout.preferredWidth: implicitWidth
-                    Layout.preferredHeight: implicitHeight
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            barWindow.miniKind = "";
-                            Store.toggleAi(barWindow.screen);
-                        }
-                    }
-                }
-                Rectangle {
-                    id: launcherButton
-                    Layout.leftMargin: SettingsStore.spacingIcon("left", "launcher", "before")
-                    Layout.rightMargin: SettingsStore.spacingIcon("left", "launcher", "after")
-                    visible: SettingsStore.showLauncher
-                    Layout.preferredWidth: barWindow.compactMode ? 29 : 34
-                    Layout.preferredHeight: barWindow.compactControlHeight
-                    radius: height / 2
-                    color: barWindow.cleanCompactMode ? "transparent" : Theme.borderaccent
-                    Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: 18; color: Theme.accent }
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            barWindow.closeMini();
-                            Store.toggleLauncher(barWindow.screen);
-                        }
-                    }
-                }
-                ContextMenuBar {
-                    id: contextMenuBar
-                    Layout.leftMargin: SettingsStore.spacingIcon("left", "menu", "before")
-                    Layout.rightMargin: SettingsStore.spacingIcon("left", "menu", "after")
-                    visible: SettingsStore.showMenuBar && barWindow.width > 980
-                    vertical: false
-                    onMenuRequested: (section, item) => barWindow.openMenu(section, item)
-                    Layout.preferredWidth: visible ? implicitWidth : 0
-                    Layout.preferredHeight: visible ? implicitHeight : 0
-                }
-                Workspaces {
-                    Layout.leftMargin: SettingsStore.spacingIcon("left", "workspaces", "before")
-                    Layout.rightMargin: SettingsStore.spacingIcon("left", "workspaces", "after")
-                    backgroundEnabled: !barWindow.cleanCompactMode
-                    buttonSize: barWindow.compactMode ? barWindow.compactControlHeight : 23
-                    spacing: barWindow.compactMode ? barWindow.groupSpacing : 6
-                    visible: SettingsStore.showWorkspaces && !barWindow.simpleMode
-                    Layout.preferredWidth: implicitWidth
-                    Layout.preferredHeight: implicitHeight
-                }
-            }
+            Layout.preferredWidth: implicitWidth
+            Layout.preferredHeight: implicitHeight
         }
-
         Item { Layout.fillWidth: true }
+        BarZone {
+            id: centerZone
+            hostWindow: barWindow
+            zone: "center"
+            compact: barWindow.compactMode
+            clean: barWindow.cleanCompactMode
+            separated: barWindow.separatedMode
+            professional: barWindow.professionalMode
+            simple: barWindow.simpleMode
+            controlHeight: barWindow.compactControlHeight
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredWidth: implicitWidth
+            Layout.preferredHeight: implicitHeight
+        }
         Text {
-            visible: barWindow.professionalMode && barWindow.width > leftItems.implicitWidth + rightItems.implicitWidth + 340
+            visible: barWindow.professionalMode && centerZone.implicitWidth === 0
             text: Theme.useAether ? "RUSTICQ  /  AETHER" : "RUSTICQ  /  GRUVBOX"
             font.family: Fonts.poppinsSB.name
             font.pixelSize: 10
             color: Theme.muted
-            Layout.alignment: Qt.AlignVCenter
         }
         Item { Layout.fillWidth: true }
-
-        Rectangle {
+        BarZone {
+            id: rightZone
+            hostWindow: barWindow
+            zone: "right"
+            compact: barWindow.compactMode
+            clean: barWindow.cleanCompactMode
+            separated: barWindow.separatedMode
+            professional: barWindow.professionalMode
+            simple: barWindow.simpleMode
+            controlHeight: barWindow.compactControlHeight
             Layout.alignment: Qt.AlignVCenter
-            Layout.preferredHeight: barWindow.professionalMode ? 36 : barWindow.barHeight
-            Layout.preferredWidth: rightItems.implicitWidth + 2 * barWindow.groupPadding
-            color: barWindow.separatedMode ? Theme.surface : "transparent"
-            border.width: barWindow.separatedMode ? 1 : 0
-            border.color: Theme.borderaccent
-            radius: 12
-            RowLayout {
-                id: rightItems
-                HoverHandler { id: rightGroupHover }
-                anchors.centerIn: parent
-                spacing: barWindow.rightGroupSpacing
-                Rectangle {
-                    id: infoTray
-                    visible: !barWindow.simpleMode
-                    readonly property int trayPadding: barWindow.compactMode && !barWindow.cleanCompactMode ? 8 : 0
-                    Layout.preferredWidth: infoItems.implicitWidth + trayPadding * 2
-                    Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : infoItems.implicitHeight
-                    radius: height / 2
-                    color: barWindow.compactMode && !barWindow.cleanCompactMode ? Theme.borderaccent : "transparent"
-                    RowLayout {
-                        id: infoItems
-                        anchors.centerIn: parent
-                        spacing: barWindow.rightGroupSpacing
-                        Weather {
-                            id: trayWeather
-                            Layout.leftMargin: SettingsStore.spacingIcon("right", "weather", "before")
-                            Layout.rightMargin: SettingsStore.spacingIcon("right", "weather", "after")
-                            onActivated: localX => {
-                                const point = barWindow.mapFromItem(trayWeather, localX, 0);
-                                barWindow.openMini("weather", point.x);
-                            }
-                            visible: SettingsStore.showWeather
-                            showDetails: !barWindow.cleanCompactMode || SettingsStore.cleanRightMode === "details" || (SettingsStore.cleanRightMode === "hover" && rightGroupHover.hovered)
-                            showIcon: barWindow.compactMode
-                            horizontalPadding: barWindow.compactMode ? 0 : 7
-                            verticalPadding: barWindow.compactMode ? 0 : 6
-                            Layout.preferredWidth: implicitWidth
-                            Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : implicitHeight
-                        }
-                        Clock {
-                            id: trayClock
-                            useBarSpacing: true
-                            onTimeActivated: localX => {
-                                const point = barWindow.mapFromItem(trayClock, localX, 0);
-                                barWindow.openMini("time", point.x);
-                            }
-                            onDateActivated: localX => {
-                                const point = barWindow.mapFromItem(trayClock, localX, 0);
-                                barWindow.openMini("date", point.x);
-                            }
-                            showIcon: true
-                            showDate: SettingsStore.showDate
-                            showTime: SettingsStore.showTime
-                            showDetails: !barWindow.cleanCompactMode || SettingsStore.cleanRightMode === "details" || (SettingsStore.cleanRightMode === "hover" && rightGroupHover.hovered)
-                            visible: SettingsStore.showTime || SettingsStore.showDate
-                            horizontalPadding: barWindow.compactMode ? 0 : 6
-                            verticalPadding: barWindow.compactMode ? 0 : 6
-                            Layout.preferredWidth: implicitWidth
-                            Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : implicitHeight
-                        }
-                    }
-                }
-                Indicators {
-                    id: indicators
-                    onIconClicked: (kind, localX) => {
-                        // QsWindow is not a QQuickItem. Let Quickshell map from
-                        // the actual indicators Item into this window's coordinates.
-                        const pos = barWindow.mapFromItem(indicators, localX, 0);
-                        barWindow.openMini(kind, pos.x);
-                    }
-                    compact: barWindow.compactMode
-                    showDetails: !barWindow.cleanCompactMode || SettingsStore.cleanRightMode === "details" || (SettingsStore.cleanRightMode === "hover" && rightGroupHover.hovered)
-                    backgroundEnabled: !barWindow.cleanCompactMode
-                    visible: SettingsStore.showIndicators && !barWindow.simpleMode && (SettingsStore.showWifi || SettingsStore.showBluetooth || SettingsStore.showBattery || SettingsStore.showAudio)
-                    Layout.preferredWidth: implicitWidth
-                    Layout.preferredHeight: barWindow.compactMode ? barWindow.compactControlHeight : implicitHeight
-                }
-                Rectangle {
-                    id: taskButton
-                    Layout.leftMargin: SettingsStore.spacingIcon("right", "task", "before")
-                    Layout.rightMargin: SettingsStore.spacingIcon("right", "task", "after")
-                    visible: SettingsStore.showTaskView && !barWindow.simpleMode
-                    Layout.preferredWidth: barWindow.compactMode ? 29 : 34
-                    Layout.preferredHeight: barWindow.compactControlHeight
-                    radius: height / 2
-                    color: barWindow.cleanCompactMode ? "transparent" : Theme.borderaccent
-                    Icon { anchors.centerIn: parent; icon: "\uf190"; font.pixelSize: 18; color: Theme.accent }
-                    MouseArea {
-                        anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            const point = barWindow.mapFromItem(taskButton, taskButton.width / 2, 0);
-                            barWindow.openMini("task", point.x);
-                        }
-                    }
-                }
-                QuickModes {
-                    Layout.leftMargin: SettingsStore.spacingIcon("right", "quickModes", "before")
-                    Layout.rightMargin: SettingsStore.spacingIcon("right", "quickModes", "after")
-                    visible: SettingsStore.showQuickModes && hasModules
-                    backgroundEnabled: !barWindow.cleanCompactMode
-                    controlHeight: barWindow.compactControlHeight
-                    Layout.preferredWidth: implicitWidth
-                    Layout.preferredHeight: implicitHeight
-                }
-                Rectangle {
-                    id: sidebarToggle
-                    Layout.leftMargin: SettingsStore.spacingIcon("right", "quickControl", "before")
-                    Layout.rightMargin: SettingsStore.spacingIcon("right", "quickControl", "after")
-                    visible: SettingsStore.showQuickControl
-                    Layout.preferredWidth: barWindow.compactMode ? 32 : 40
-                    Layout.preferredHeight: barWindow.compactControlHeight
-                    radius: height / 2
-                    color: Store.sidebarVisible && Store.sidebarScreen === barWindow.screen
-                           ? Qt.alpha(Theme.accent, 0.25) : Theme.borderaccent
-                    Icon {
-                        anchors.centerIn: parent
-                        icon: "\ue69b" // stat_minus_1 — Google Material Symbols Rounded
-                        font.pixelSize: Theme.barSymbolSize
-                        color: Theme.foreground
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            barWindow.miniKind = "";
-                            Store.toggleQuick(barWindow.screen);
-                        }
-                    }
-                }
-            }
+            Layout.preferredWidth: implicitWidth
+            Layout.preferredHeight: implicitHeight
         }
     }
     VerticalBarContent {
@@ -324,22 +161,5 @@ PanelWindow {
         barPosition: barWindow.barPosition
         menuSection: barWindow.menuSection
         onDismissed: barWindow.miniKind = ""
-    }
-    // The minimal mode uses a truly centered clock, instead of shifting it
-    // based on unequal left/right control widths.
-    Clock {
-        id: simpleClock
-        showDate: SettingsStore.showDate
-        showTime: SettingsStore.showTime
-        visible: barWindow.simpleMode && !barWindow.verticalMode && (SettingsStore.showDate || SettingsStore.showTime)
-        anchors.centerIn: parent
-        onTimeActivated: localX => {
-            const point = barWindow.mapFromItem(simpleClock, localX, 0);
-            barWindow.openMini("time", point.x);
-        }
-        onDateActivated: localX => {
-            const point = barWindow.mapFromItem(simpleClock, localX, 0);
-            barWindow.openMini("date", point.x);
-        }
     }
 }

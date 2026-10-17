@@ -8,6 +8,7 @@ Item {
     signal activated()
     property int iconSlotWidth: 14
     property bool cleanStyle: false
+    property bool showValue: true
     readonly property color statusColor: BatteryService.percentage <= 15 && !BatteryService.charging
         ? Theme.error : Theme.foreground
     visible: BatteryService.available
@@ -34,7 +35,8 @@ Item {
         Text {
             Layout.alignment: Qt.AlignVCenter
             text: BatteryService.percentage + "%" + (BatteryService.charging ? " +" : "")
-            visible: true
+            visible: root.showValue
+            Layout.preferredWidth: visible ? implicitWidth : 0
             color: root.statusColor
             font.family: Fonts.poppins.name
             font.weight: Font.Medium

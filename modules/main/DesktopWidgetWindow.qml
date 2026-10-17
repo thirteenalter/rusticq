@@ -179,7 +179,7 @@ PanelWindow {
                     spacing: 8
                     RowLayout {
                         Layout.fillWidth: true; spacing: 8
-                        Icon { icon: "\uf190"; font.pixelSize: 18; color: Theme.accent }
+                        Icon { icon: "\ue322"; font.pixelSize: 18; color: Theme.accent }
                         ColumnLayout {
                             Layout.fillWidth: true; spacing: 1
                             Text { text: "System monitor"; font.pixelSize: 13; font.family: Fonts.poppinsSB.name; color: Theme.foreground }

@@ -84,6 +84,7 @@ Singleton {
             kind: "generic",
             glyph: "\ue7f4",
             tag: "Preview",
+            actions: [],
             reference: null,
             preview: true
         };
@@ -121,6 +122,26 @@ Singleton {
         onTriggered: root.refreshServerStatus()
     }
 
+    function hideToast() {
+        toastTimer.stop();
+        toast = null;
+    }
+
+    // Only invoke actions actually supplied by the D-Bus sender.
+    // Never infer a screenshot file path or synthesize shell commands.
+    function invokeAction(serial, index) {
+        const item = history.find(e => e.serial === serial);
+        if (!item || !item.reference || index < 0) return;
+        try {
+            const acts = item.reference.actions;
+            if (!acts || index >= acts.length) return;
+            acts[index].invoke();
+            hideToast();
+        } catch (e) {
+            console.warn("[RusticQ notifications] action unavailable:", e);
+        }
+    }
+
     function receive(n) {
         n.tracked = true;
         if (n.lastGeneration) return;
@@ -129,6 +150,13 @@ Singleton {
         const body = plain(n.body);
         const image = normalizedImage(n.image || "");
         const kind = detectKind(appName, title, body, image);
+        const actions = [];
+        if (n.actions) {
+            for (let i = 0; i < n.actions.length && i < 2; ++i) {
+                const a = n.actions[i];
+                if (a && a.text) actions.push({ text: String(a.text), sourceIndex: i });
+            }
+        }
         const entry = {
             serial: ++sequence,
             id: n.id,
@@ -143,6 +171,7 @@ Singleton {
             kind: kind,
             glyph: glyphFor(kind),
             tag: tagFor(kind),
+            actions: actions,
             reference: n
         };
         history = [entry].concat(history).slice(0, 40);
@@ -181,7 +210,7 @@ Singleton {
         keepOnReload: true
         persistenceSupported: true
         bodySupported: true
-        actionsSupported: false
+        actionsSupported: true
         imageSupported: true
         onNotification: notification => root.receive(notification)
     }

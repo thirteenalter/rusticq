@@ -5,6 +5,7 @@
   "barPosition": "top",
   "showNotifications": true,
   "showLauncher": true,
+  "showRusticQIcon": true,
   "launcherLayoutMode": "clean-hover",
   "launcherWidth": 802,
   "launcherHeight": 605,
@@ -31,9 +32,9 @@
   "showDock": true,
   "dockFiles": false,
   "dockBrowser": true,
-  "dockSettings": true,
+  "dockSettings": false,
   "dockTaskView": true,
-  "dockAI": true,
+  "dockAI": false,
   "dockRunningApps": true,
   "quickControlOrder": [
     "notifications",
@@ -53,6 +54,9 @@
   "cleanRightDetails": false,
   "cleanRightMode": "icons",
   "marginOverrides": {
+    "clean-compact": {
+      "right": 0
+    },
     "simple": {
       "top": 1,
       "bottom": 2
@@ -61,6 +65,9 @@
   "barSpacingOverrides": {
     "clean-compact": {
       "left": {
+        "items": {}
+      },
+      "center": {
         "items": {
           "arch": {
             "before": 7,
@@ -71,14 +78,23 @@
       "right": {
         "items": {
           "wifi": {
-            "before": 4
+            "before": 9,
+            "after": 4
           },
           "battery": {
-            "before": 4,
+            "before": 8,
+            "after": 0
+          },
+          "audio": {
+            "before": 7,
+            "after": 3
+          },
+          "quickControl": {
+            "before": 0,
             "after": 0
           }
         },
-        "gap": 13
+        "gap": 8
       }
     },
     "professional": {
@@ -107,6 +123,14 @@
       }
     }
   },
+  "barIconPlacements": {
+    "arch": "center",
+    "bluetooth": "right",
+    "quickControl": "right",
+    "mic": "right",
+    "down": "right",
+    "up": "right"
+  },
   "showArch": true,
   "showTime": true,
   "showDate": true,
@@ -115,6 +139,7 @@
   "showBattery": true,
   "showAudio": true,
   "showQuickControl": true,
+  "quickControlButtonStyle": "filled",
   "showWeather": true,
   "showWorkspaces": true,
   "showIndicators": true,
@@ -125,6 +150,9 @@
   "showGamingMode": true,
   "showNightMode": true,
   "showMicMute": true,
+  "showMicrophoneStatus": false,
+  "showDownloadSpeed": false,
+  "showUploadSpeed": false,
   "aiProvider": "openai",
   "aiModel": "gpt-4.1-mini"
 }

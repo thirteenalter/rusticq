@@ -106,8 +106,8 @@ PanelWindow {
                             {icon:"\ue2c7",label:"Files",enabled:SettingsStore.dockFiles,command:["sh", "-c", "xdg-open \"$HOME\""]},
                             {icon:"\ue80b",label:"Browser",enabled:SettingsStore.dockBrowser,command:["sh", "-c", "xdg-open https://www.google.com"]},
                             {icon:"\ue8b8",label:"Settings",enabled:SettingsStore.dockSettings,command:[]},
-                            {icon:"\uf190",label:"Monitor",enabled:SettingsStore.dockTaskView,command:[],action:"system-monitor"},
-                            {icon:"\ue8f4",label:"AI",enabled:SettingsStore.dockAI,command:[]}
+                            {icon:"\uf500",label:"Monitor",enabled:SettingsStore.dockTaskView,command:[],action:"system-monitor"},
+                            {icon:"\uf371",label:"AI",enabled:SettingsStore.dockAI,command:[]}
                         ]
                         delegate: ColumnLayout {
                             id: app
@@ -120,7 +120,8 @@ PanelWindow {
                                 Layout.preferredWidth: 46; Layout.preferredHeight: 46
                                 radius: 14
                                 color: mouse.containsMouse ? Qt.alpha(Theme.accent, .18) : Theme.surface
-                                Icon { anchors.centerIn: parent; icon: app.modelData.icon; color: Theme.accent; font.pixelSize: 23 }
+                                RusticQIcon { anchors.centerIn: parent; iconSize: 23; visible: app.modelData.label === "Settings" }
+                                Icon { anchors.centerIn: parent; visible: app.modelData.label !== "Settings"; icon: app.modelData.icon; color: Theme.accent; font.pixelSize: 23 }
                                 MouseArea {
                                     id: mouse
                                     anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor

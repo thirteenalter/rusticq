@@ -8,6 +8,7 @@ Item {
     signal activated()
     property int iconSlotWidth: 14
     property bool cleanStyle: false
+    property bool showValue: true
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property bool available: sink !== null && sink.audio !== null
     readonly property int percentage: available ? Math.round(sink.audio.volume * 100) : 0
@@ -19,13 +20,15 @@ Item {
         anchors.centerIn: parent
         spacing: root.cleanStyle ? Theme.barIconTextGap : 5
         Icon {
-            icon: !root.available || root.sink.audio.muted ? "\ue04f" : "\ue050"
+            icon: !root.available || root.sink.audio.muted ? "\ue04f" : root.percentage <= 1 ? "\ue04e" : root.percentage < 55 ? "\ue04d" : "\ue050"
             font.pixelSize: Theme.barSymbolSize
             color: Theme.foreground
             Layout.preferredWidth: root.iconSlotWidth
             Layout.alignment: Qt.AlignVCenter
         }
         Text {
+            visible: root.showValue
+            Layout.preferredWidth: visible ? implicitWidth : 0
             text: root.available ? root.percentage + "%" : "–"
             font.family: Fonts.poppins.name
             font.weight: Font.Medium

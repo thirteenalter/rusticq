@@ -32,7 +32,7 @@ FloatingWindow {
         {key:"apps", label:"Installed apps", symbol:"\ue5c3", detail:"Package inventory"},
         {key:"storage", label:"Storage", symbol:"\ue1db", detail:"Disks & maintenance"},
         {key:"updates", label:"Arch Updater", symbol:"\ue5d5", detail:"Packages & terminal"},
-        {key:"ai", label:"AI Providers", symbol:"\ue8f4", detail:"Cloud assistant"},
+        {key:"ai", label:"AI Providers", symbol:"\uf371", detail:"Cloud assistant"},
         {key:"about", label:"About", symbol:"\ue88e", detail:"Project information"}
     ]
     readonly property var activePage: pages.find(p => p.key === Store.settingsTab) || pages[0]
@@ -41,7 +41,9 @@ FloatingWindow {
         {tab:"bar", title:"Bar position", hint:"Top Bottom Left Right"},
         {tab:"bar", title:"Bar layout and Clean Compact", hint:"Professional Compact Separated Simple Hover"},
         {tab:"bar", title:"Realtime margin editor", hint:"Spacing Edge Margin Slider"},
-        {tab:"bar", title:"Icon spacing: Left and Right groups", hint:"Per-icon gap before after wifi battery menu launcher weather date audio"},
+        {tab:"bar", title:"Icon spacing: Left, Center and Right", hint:"Per-icon spacing follows icon alignment; microphone wifi battery download upload all modes"},
+        {tab:"bar", title:"Extra status icons", hint:"Microphone network download upload left center right"},
+        {tab:"bar", title:"Bar icon alignment", hint:"Relocate every icon left center right clock wifi battery audio task quick control menu"},
         {tab:"modules", title:"App launcher and status modules", hint:"Icons Wifi Bluetooth Battery Audio Weather Clock"},
         {tab:"modules", title:"Menu bar and quick modes", hint:"Edit View Share File Shell Tools Night Silent"},
         {tab:"widgets", title:"Desktop widgets", hint:"Calendar Clock CPU RAM Music Media Now Playing Weather Connectivity Battery"},
@@ -50,7 +52,7 @@ FloatingWindow {
         {tab:"display", title:"Monitor configuration", hint:"Resolution Refresh rate Scale Position"},
         {tab:"os", title:"Operating system information", hint:"Linux kernel distro hostname uptime session"},
         {tab:"hardware", title:"Hardware details", hint:"CPU GPU PCI motherboard RAM BIOS sensors"},
-        {tab:"apps", title:"Installed applications", hint:"Pacman package list foreign explicit AUR"},
+        {tab:"apps", title:"Installed applications", hint:"Pacman package list foreign explicit AUR install uninstall graphical application remove risk warning"},
         {tab:"storage", title:"Storage maintenance", hint:"Disk capacity filesystem mount cache journal"},
         {tab:"updates", title:"Arch Updater", hint:"Check updates upgrade downloads pacman progress logs terminal"},
         {tab:"ai", title:"AI provider setup", hint:"OpenAI Anthropic Claude Gemini API key"},
@@ -111,15 +113,15 @@ FloatingWindow {
                             anchors.margins: 13
                             spacing: 4
                             Rectangle {
-                                Layout.preferredWidth: 41
-                                Layout.preferredHeight: 41
-                                radius: 13
-                                color: Qt.alpha(Theme.accent, 0.20)
-                                Icon { anchors.centerIn: parent; icon: "\ue8b8"; color: Theme.accent; font.pixelSize: 24 }
+                                Layout.preferredWidth: 46
+                                Layout.preferredHeight: 46
+                                radius: 14
+                                color: Qt.alpha(Theme.accent, 0.12)
+                                RusticQIcon { anchors.centerIn: parent; iconSize: 28 }
                             }
                             Item { Layout.fillHeight: true }
                             Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 15 }
-                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 4 RC1"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 9 }
+                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 4 RC2"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 9 }
                         }
                     }
                     RowLayout {
@@ -172,7 +174,7 @@ FloatingWindow {
                     }
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     Text {
-                        text: "RUSTIQ · ALPHA 4 RC1\nQuickshell 0.3.1"
+                        text: "RUSTIQ · ALPHA 4 RC2\nQuickshell 0.3.1"
                         Layout.fillWidth: true
                         color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10
                     }
@@ -190,7 +192,7 @@ FloatingWindow {
                         anchors.fill: parent
                         spacing: 3
                         Text { text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 22 }
-                        Text { text: "RUSTIQ / ALPHA 4 RC1 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
+                        Text { text: "RUSTIQ / ALPHA 4 RC2 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10 }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -204,7 +206,7 @@ FloatingWindow {
                     radius: 12; color: Theme.surface
                     RowLayout {
                         anchors.fill: parent; anchors.leftMargin: 13; anchors.rightMargin: 13; spacing: 9
-                        Icon { icon: "\ue8b6"; font.pixelSize: 19; color: Theme.accent }
+                        RusticQIcon { iconSize: 19 }
                         TextInput {
                             id: searchField
                             Layout.fillWidth: true; Layout.fillHeight: true

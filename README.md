@@ -1,4 +1,4 @@
-# RusticQ · Alpha 4 RC1
+# RusticQ · Alpha 4 RC2
 
 A modular desktop shell for **Quickshell 0.3.1**, Hyprland, Arch Linux, and Wayland. Supports the original **Gruvbox** palette or **Follow Aether** applied colors, Poppins, and Google Material Symbols.
 
@@ -11,6 +11,13 @@ qs -p .
 ```
 
 Test with a separate directory before replacing your existing shell. Quickshell 0.3.1 and a working Hyprland session are required. System features optionally use NetworkManager, BlueZ, UPower, PipeWire, and other existing desktop services.
+
+## Alpha 4 RC2 corrective fix — icon placement & package management
+
+- Every primary bar icon supports Left / Center / Right placement in Settings → Bar; vertical positions map to Top / Middle / Bottom.
+- New package management actions in Settings → Installed Apps require explicit confirmation, with an interactive terminal and risk warnings.
+- Dynamic audio levels, new `e322` Task View icon and `f371` AI launcher.
+- Full changes and limitations: `changelog/ALPHA-4-RC2-BAR-PACKAGE-FIX.md`.
 
 ## Alpha 4 RC1 corrective fix — Omarchy update + dock windows
 

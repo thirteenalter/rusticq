@@ -129,8 +129,63 @@ ColumnLayout {
 
 
     SettingsSection {
-        heading: "Icon spacing · Left / Right"
-        description: "Select a side, click any icon, and adjust its Before / After margin. Independent per bar mode."
+        heading: "Quick Control bar icon"
+        description: "Choose whether the bar trigger uses only the icon or a filled background with the icon."
+        symbol: "\ue69b"
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            Repeater {
+                model: [
+                    { key: "plain", label: "No bg with icon", description: "Transparent button with icon only" },
+                    { key: "filled", label: "Bg with icon", description: "Rounded filled background behind the icon" }
+                ]
+                delegate: Rectangle {
+                    id: qcMode
+                    required property var modelData
+                    readonly property bool chosen: SettingsStore.quickControlButtonStyle === modelData.key
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 62
+                    radius: 11
+                    color: chosen ? Qt.alpha(Theme.accent, 0.14) : Theme.background
+                    border.width: chosen ? 1 : 0
+                    border.color: Theme.accent
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 10
+                        Rectangle {
+                            Layout.preferredWidth: 28
+                            Layout.preferredHeight: 28
+                            radius: 14
+                            color: qcMode.modelData.key === "filled" ? Theme.borderaccent : "transparent"
+                            border.width: qcMode.modelData.key === "plain" ? 1 : 0
+                            border.color: qcMode.modelData.key === "plain" ? Theme.borderaccent : "transparent"
+                            Icon { anchors.centerIn: parent; icon: "\ue69b"; font.pixelSize: 16; color: qcMode.modelData.key === "filled" ? Theme.accent : Theme.foreground }
+                        }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 2
+                            Text { text: qcMode.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 11; Layout.fillWidth: true }
+                            Text { text: qcMode.modelData.description; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: 10; Layout.fillWidth: true; wrapMode: Text.WordWrap }
+                        }
+                    }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.quickControlButtonStyle = qcMode.modelData.key; SettingsStore.save(); } }
+                }
+            }
+        }
+    }
+
+    SettingsSection {
+        heading: "Bar icon alignment · Left / Center / Right"
+        description: "Choose a position for every bar icon. Visibility remains controlled in Modules. Saved independently for each icon."
+        symbol: "\ue429"
+        BarAlignmentEditor { Layout.fillWidth: true }
+    }
+
+    SettingsSection {
+        heading: "Icon spacing · Left / Center / Right"
+        description: "Choose a zone and adjust the icons currently assigned to it. Spacing follows icons when they move, with independent values for each bar mode."
         symbol: "\ue8b8"
         BarSpacingEditor { Layout.fillWidth: true }
     }

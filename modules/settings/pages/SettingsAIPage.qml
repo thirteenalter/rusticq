@@ -76,7 +76,7 @@ Process {
                                         anchors.fill: parent
                                         anchors.leftMargin: 12; anchors.rightMargin: 12
                                         spacing: 9
-                                        Icon { icon: "\ue8f4"; font.pixelSize: 18; color: Theme.accent }
+                                        Icon { icon: "\uf371"; font.pixelSize: 18; color: Theme.accent }
                                         Text { Layout.fillWidth: true; text: providerRow.modelData.name; font.pixelSize: 12;
                                             font.family: Fonts.poppins.name; color: Theme.foreground }
                                         Icon { icon: "\ue5ca"; visible: SettingsStore.aiProvider === providerRow.modelData.provider;

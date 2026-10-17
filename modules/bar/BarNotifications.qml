@@ -9,7 +9,7 @@ Rectangle {
     id: root
     Layout.fillWidth: true
     property bool expanded: false
-    Layout.preferredHeight: expanded ? Math.min(520, Math.max(320, 212 + NotificationCenter.history.length * 92 + (NotificationCenter.receivesSystemNotifications ? 0 : 130))) : 66
+    Layout.preferredHeight: expanded ? Math.min(540, Math.max(336, 228 + NotificationCenter.history.length * 104 + (NotificationCenter.receivesSystemNotifications ? 0 : 136))) : 68
     radius: Theme.sectionRadius
     color: Qt.alpha(Theme.foreground, 0.02)
     border.color: Theme.borderaccent
@@ -17,8 +17,8 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 13
-        spacing: 10
+        anchors.margins: 14
+        spacing: 12
 
         SectionHeader {
             Layout.fillWidth: true
@@ -126,13 +126,14 @@ Rectangle {
         RowLayout {
             visible: root.expanded
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 10
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 32
+                Layout.preferredHeight: 34
                 radius: 10
                 color: Theme.background
                 RowLayout {
+                    id: dndStatusRow
                     anchors.fill: parent
                     anchors.leftMargin: 10
                     anchors.rightMargin: 10
@@ -150,7 +151,7 @@ Rectangle {
                     id: actionPill
                     required property var modelData
                     Layout.preferredWidth: modelData.action === "clear" ? 60 : 74
-                    Layout.preferredHeight: 32
+                    Layout.preferredHeight: 34
                     radius: 10
                     color: modelData.accent ? Qt.alpha(Theme.accent, 0.18) : Theme.background
                     border.width: modelData.accent ? 1 : 0
@@ -192,7 +193,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            spacing: 8
+            spacing: 10
             model: NotificationCenter.history
             delegate: Rectangle {
                 id: itemRow
@@ -200,20 +201,21 @@ Rectangle {
                 readonly property bool hasPreview: String(modelData.image || "").length > 0
                 readonly property bool isScreenshot: modelData.kind === "screenshot"
                 width: ListView.view.width
-                height: hasPreview ? 96 : 82
+                height: Math.max(hasPreview ? 110 : 94, contentLayout.implicitHeight + 24)
                 radius: 14
                 color: Theme.background
                 border.width: 0
 
                 RowLayout {
+                    id: contentLayout
                     anchors.fill: parent
-                    anchors.margins: 10
-                    spacing: 10
+                    anchors.margins: 12
+                    spacing: 12
 
                     Rectangle {
                         Layout.alignment: Qt.AlignTop
-                        Layout.preferredWidth: 38
-                        Layout.preferredHeight: 38
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
                         radius: 12
                         color: Qt.alpha(Theme.accent, 0.12)
                         Icon {
@@ -226,7 +228,7 @@ Rectangle {
 
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 2
+                        spacing: 4
 
                         RowLayout {
                             Layout.fillWidth: true
@@ -280,18 +282,50 @@ Rectangle {
                             Layout.fillWidth: true
                             font.pixelSize: 10
                             color: Theme.muted
-                            maximumLineCount: hasPreview ? 2 : 2
+                            maximumLineCount: hasPreview ? 2 : 3
                             wrapMode: Text.WordWrap
                             elide: Text.ElideRight
                             textFormat: Text.PlainText
+                        }
+
+                        RowLayout {
+                            visible: itemRow.modelData.actions && itemRow.modelData.actions.length > 0
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: visible ? 30 : 0
+                            spacing: 6
+                            Repeater {
+                                model: itemRow.modelData.actions ? itemRow.modelData.actions.length : 0
+                                delegate: Rectangle {
+                                    id: historyAction
+                                    required property int index
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 30
+                                    radius: 9
+                                    color: index === 0 ? Qt.alpha(Theme.accent, 0.16) : Theme.surface
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: itemRow.modelData.actions[historyAction.index].text
+                                        color: index === 0 ? Theme.accent : Theme.foreground
+                                        font.family: Fonts.poppinsSB.name
+                                        font.pixelSize: 10
+                                        elide: Text.ElideRight
+                                        textFormat: Text.PlainText
+                                    }
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: NotificationCenter.invokeAction(itemRow.modelData.serial, itemRow.modelData.actions[historyAction.index].sourceIndex)
+                                    }
+                                }
+                            }
                         }
                     }
 
                     Rectangle {
                         visible: hasPreview
                         Layout.alignment: Qt.AlignTop
-                        Layout.preferredWidth: 58
-                        Layout.preferredHeight: 58
+                        Layout.preferredWidth: 64
+                        Layout.preferredHeight: 64
                         radius: 12
                         clip: true
                         color: Theme.surface
@@ -319,8 +353,8 @@ Rectangle {
 
                     Rectangle {
                         Layout.alignment: Qt.AlignTop
-                        Layout.preferredWidth: 26
-                        Layout.preferredHeight: 26
+                        Layout.preferredWidth: 28
+                        Layout.preferredHeight: 28
                         radius: 8
                         color: dismissMouse.containsMouse ? Qt.alpha(Theme.accent, 0.10) : "transparent"
                         Icon { anchors.centerIn: parent; icon: "\ue5cd"; color: Theme.muted; font.pixelSize: 16 }

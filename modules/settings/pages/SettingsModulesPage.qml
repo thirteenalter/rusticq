@@ -13,11 +13,12 @@ ColumnLayout {
         symbol: "\ue8b6"
         Repeater {
             model: [
+                {label:"RusticQ brand icon",desc:"Dedicated brand icon on the bar",key:"showRusticQIcon",icon:"\ue8b8"},
                 {label:"App launcher",desc:"Search installed applications",key:"showLauncher",icon:"\ue8b6"},
-                {label:"Arch / AI launcher",desc:"Assistant sidebar",key:"showArch",icon:"\ueb8e"},
+                {label:"Arch / AI launcher",desc:"Assistant sidebar",key:"showArch",icon:"\uf371"},
                 {label:"Workspace switcher",desc:"Hyprland workspaces",key:"showWorkspaces",icon:"\ue30b"},
                 {label:"Quick Control",desc:"Full quick settings panel",key:"showQuickControl",icon:"\ue69b"},
-                {label:"Task View",desc:"CPU, RAM and process details",key:"showTaskView",icon:"\uf190"},
+                {label:"Task View",desc:"CPU, RAM and process details",key:"showTaskView",icon:"\ue322"},
                 {label:"Notification center",desc:"Toast and notification history",key:"showNotifications",icon:"\ue7f4"}
             ]
             delegate: SettingsToggle {}
@@ -36,6 +37,9 @@ ColumnLayout {
                 {label:"Bluetooth",desc:"Wireless devices",key:"showBluetooth",icon:"\ue1a7"},
                 {label:"Battery",desc:"Charging status",key:"showBattery",icon:"\uf304"},
                 {label:"Audio",desc:"Output volume",key:"showAudio",icon:"\ue050"},
+                {label:"Microphone status",desc:"Input microphone on / muted",key:"showMicrophoneStatus",icon:"\ue029"},
+                {label:"Download speed",desc:"Network receive rate · live",key:"showDownloadSpeed",icon:"\ue5db"},
+                {label:"Upload speed",desc:"Network transmit rate · live",key:"showUploadSpeed",icon:"\ue5d8"},
                 {label:"System indicators",desc:"Master toggle for network, battery and audio",key:"showIndicators",icon:"\ue8b8"}
             ]
             delegate: SettingsToggle {}
@@ -52,7 +56,7 @@ ColumnLayout {
                 {label:"Edit",desc:"RusticQ settings shortcuts",key:"showMenuEdit",icon:"\ue3c9"},
                 {label:"View",desc:"Switch bar layouts",key:"showMenuView",icon:"\ue8f4"},
                 {label:"Share",desc:"Local screenshots",key:"showMenuShare",icon:"\ue3c2"},
-                {label:"Shell",desc:"Terminal and system monitoring",key:"showMenuShell",icon:"\ueb8e"},
+                {label:"Shell",desc:"Terminal and system monitoring",key:"showMenuShell",icon:"\uf371"},
                 {label:"Tools",desc:"Settings and capture shortcuts",key:"showMenuTools",icon:"\ue8b8"}
             ]
             delegate: SettingsToggle {}
