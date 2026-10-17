@@ -35,7 +35,7 @@ FloatingWindow {
         {key:"storage", label:"Storage", symbol:"\ue1db", detail:"Disks & maintenance"},
         {key:"updates", label:"Arch Updater", symbol:"\ue5d5", detail:"Packages & terminal"},
         {key:"shortcuts", label:"Shortcuts", symbol:"\ue312", detail:"Edit and restore keybindings"},
-        {key:"integration", label:"Integration", symbol:"\ue8b8", detail:"Permanent shell & backup"},
+        {key:"integration", label:"Integration", symbol:"\ue8b8", detail:"Dependencies & permanent shell"},
         {key:"ai", label:"AI Providers", symbol:"\uf371", detail:"Cloud assistant"},
         {key:"about", label:"About", symbol:"\ue88e", detail:"Project information"}
     ]
@@ -64,6 +64,7 @@ FloatingWindow {
         {tab:"storage", title:"Storage maintenance", hint:"Disk capacity filesystem mount cache journal"},
         {tab:"updates", title:"Arch Updater", hint:"Check updates upgrade downloads pacman progress logs terminal"},
         {tab:"shortcuts", title:"Keybindings", hint:"Hyprland shortcut keys override Lua Omarchy default bindings Settings Launcher Quick AI"},
+        {tab:"integration", title:"Required and optional dependencies", hint:"Packages install python quickshell Material Symbols WiFi Bluetooth screen recording screenshot arch"},
         {tab:"integration", title:"Make RusticQ Permanent", hint:"Omarchy shell replacement backup enable revert startup persistent"},
         {tab:"ai", title:"AI provider setup", hint:"OpenAI Anthropic Claude Gemini API key"},
         {tab:"about", title:"About RusticQ", hint:"Version Quickshell"}
@@ -131,7 +132,7 @@ FloatingWindow {
                             }
                             Item { Layout.fillHeight: true }
                             Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(15) }
-                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 4 RC4"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 4 RC5"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
                         }
                     }
                     RowLayout {
@@ -184,7 +185,7 @@ FloatingWindow {
                     }
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     Text {
-                        text: "RUSTIQ · ALPHA 4 RC4\nQuickshell 0.3.1"
+                        text: "RUSTIQ · ALPHA 4 RC5\nQuickshell 0.3.1"
                         Layout.fillWidth: true
                         color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                     }
@@ -202,7 +203,7 @@ FloatingWindow {
                         anchors.fill: parent
                         spacing: 3
                         Text { text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(22) }
-                        Text { text: "RUSTIQ / ALPHA 4 RC4 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        Text { text: "RUSTIQ / ALPHA 4 RC5 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     }
                     MouseArea {
                         anchors.fill: parent

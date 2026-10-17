@@ -105,16 +105,16 @@
             "before": 7,
             "after": 3
           },
+          "task": {
+            "before": 5
+          },
           "quickModes": {
-            "after": 4,
-            "before": 2
+            "before": 2,
+            "after": 4
           },
           "quickControl": {
             "before": 0,
             "after": 0
-          },
-          "task": {
-            "before": 5
           }
         },
         "gap": 11
@@ -184,6 +184,7 @@
     },
     "simple": {
       "right": {
+        "items": {},
         "gap": 15
       }
     }
@@ -279,7 +280,7 @@
     },
     "clean-compact": {
       "showRusticQIcon": true,
-      "showLauncher": true,
+      "showLauncher": false,
       "showArch": true,
       "showWorkspaces": true,
       "showQuickControl": true,

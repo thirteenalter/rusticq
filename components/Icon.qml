@@ -11,7 +11,7 @@ Text {
         source: "../assets/google.ttf"
     }
 
-    font.family: material.name
+    font.family: material.status === FontLoader.Ready ? material.name : "Material Symbols Rounded"
     font.pixelSize: Fonts.scale(14)
 
     color: Theme.foreground

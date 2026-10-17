@@ -1,60 +1,126 @@
-# RusticQ · Alpha 4 RC3
+<div align="center">
+  <img src="assets/rusticq-about-lockup.png" alt="RusticQ logo" width="390" />
 
-A modular desktop shell for **Quickshell 0.3.1**, Hyprland, Arch Linux, and Wayland. Supports the original **Gruvbox** palette or **Follow Aether** applied colors, Poppins, and Google Material Symbols.
+  # RusticQ
+  **A modular Quickshell desktop for Hyprland · Alpha 4 RC5**
 
-## Install / test
+  A configurable Wayland bar, launcher, widgets, dock, shortcuts, and system settings.
 
-Back up your active configuration. Extract this complete archive and launch from the directory containing `shell.qml`:
+  [Features](FEATURES.md) · [Installation](docs/INSTALLATION.md) · [Dependencies](docs/DEPENDENCIES.md) · [Structure](docs/PROJECT-STRUCTURE.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
+</div>
+
+## Overview
+
+RusticQ is a user-space desktop shell configuration built with **Quickshell/QML**, for **Hyprland on Arch Linux**, including compatible **Omarchy Quattro** installations. It does not replace your window manager. RC5 was developed against **Quickshell 0.3.1**; other releases require testing.
+
+- **Bar:** Compact, Clean Compact, Separated, Professional and Simple layouts, Top/Bottom/Left/Right placement, per-layout icon visibility, icon order/placement and spacing.
+- **Launcher & workspaces:** app search, launcher on the focused monitor, workspace navigation and assignable shortcuts.
+- **Popups & controls:** connectivity, Bluetooth, battery, audio, clock/calendar, notifications, Quick Control and Quick Modes.
+- **Extras:** optional desktop widgets, dock, media controls, system monitor, screenshots and recording.
+- **Settings:** appearance, devices, apps, updates, shortcuts, AI providers and reversible Omarchy integration.
+
+Detailed module and feature inventory: **[FEATURES.md](FEATURES.md)**.
+
+## Quick start
+
+### 1. Try RC5 without installing anything
+
+A working Hyprland/Wayland session and Quickshell are required:
 
 ```bash
+cd ~/dev/quickshell                # folder containing shell.qml
 qs -p .
 ```
 
-Test with a separate directory before replacing your existing shell. Quickshell 0.3.1 and a working Hyprland session are required. System features optionally use NetworkManager, BlueZ, UPower, PipeWire, and other existing desktop services.
+### 2. Install to your user account (recommended)
 
-## Alpha 4 RC2 corrective fix — icon placement & package management
+On Arch/Omarchy, from this **full source** directory:
 
-- Every primary bar icon supports Left / Center / Right placement in Settings → Bar; vertical positions map to Top / Middle / Bottom.
-- New package management actions in Settings → Installed Apps require explicit confirmation, with an interactive terminal and risk warnings.
-- Dynamic audio levels, new `e322` Task View icon and `f371` AI launcher.
-- Full changes and limitations: `changelog/ALPHA-4-RC2-BAR-PACKAGE-FIX.md`.
+```bash
+bash scripts/install.sh --dry-run   # inspect the plan
+bash scripts/install.sh             # install missing core packages; then copy the shell
+~/.local/bin/rusticq                # launch, without replacing Omarchy
+```
 
-## Alpha 4 RC1 corrective fix — Omarchy update + dock windows
+The setup installs *only missing core packages* from configured pacman repositories with interactive sudo approval. It does **not** start or enable services, overwrite `~/.config/hypr`, change your active shell startup, or enable permanent integration. Existing RusticQ source installs are saved under `~/.local/state/rusticq/setup-backups/` before an upgrade.
 
-RusticQ detects Omarchy's guarded update flow and launches `omarchy update` interactively in a terminal after user confirmation rather than calling `pacman -Syu` directly. The Dock → Show running apps switch now observes Hyprland's live toplevel model. See [`changelog/ALPHA-4-RC-1-OMARCHY-DOCK-FIX.md`](changelog/ALPHA-4-RC-1-OMARCHY-DOCK-FIX.md). No version bump.
+For offline setup or if packages are already managed separately:
 
-## Alpha 4 RC1 correction — Settings window & dock alignment
+```bash
+bash scripts/install.sh --skip-deps
+```
 
-Settings starts as a smaller floating top-level window (940 × 660 px), without an internal outer rounded border or header close button. Hyprland controls the outside corners. A targeted, best-effort Hyprland Lua dispatcher helper floats and centers only the RusticQ Settings window without editing your compositor configuration. Dock width follows its actual visible row contents, keeping both margins balanced. See [`changelog/ALPHA-4-RC-1-FLOATING-SETTINGS-DOCK-ALIGNMENT-FIX.md`](changelog/ALPHA-4-RC-1-FLOATING-SETTINGS-DOCK-ALIGNMENT-FIX.md). No version bump.
+[Full installation and rollback guide →](docs/INSTALLATION.md)
 
-## Alpha 4 RC1 additions
+### 3. Optional integrations
 
-- Settings now includes OS information, Hardware, Installed Apps, Storage, and Arch Updater as independently scrollable sidebar destinations.
-- OS and hardware diagnostics are read-only. Installed Apps includes graphical desktop entries and the searchable pacman inventory.
-- Arch Updater supports safe `checkupdates` checks, shows pending package versions, and displays persistent live pacman output. Upgrades require separate manual confirmation and PolicyKit authorization; no upgrade runs automatically.
-- The sidebar scrolls when categories exceed the screen height, and Settings search covers new pages.
-- See **[`changelog/ALPHA-4-RC-1.md`](changelog/ALPHA-4-RC-1.md)** for full details and safety notes.
+Open **Settings → Integration → Required & optional dependencies**, select a missing tool, type `INSTALL`, then approve the package operation in the terminal. Reading the page only checks `pacman -Q`; it never installs packages automatically. Examples: Bluetooth, Wi-Fi, recording, screenshots, media playback, night light, and package-update tools.
 
-## Alpha 4 changes
+**Permanent Omarchy replacement is a different action below this section.** It requires Omarchy Quattro detection, a backup, and the explicit confirmation phrase `ENABLE RUSTICQ`. The default user-local setup leaves it off.
 
-- Moved prior release notes and hotfix summaries into **[`changelog/`](changelog/)**. Root `README.md` now describes the current project instead of concatenating obsolete version notes.
-- Replaced the fixed **Wi-Fi/Battery** spacer with adjustable per-icon spacing; default distances are compact again. Use **Settings → Bar → Icon spacing** to select Left/Right, edit the baseline group gap and the Before/After margins of any icon. Values persist separately for each bar mode.
-- Added **Dock → Show running apps** (off by default): list of real graphical windows advertised through Hyprland, icon via the desktop icon theme, click to activate; horizontal scrolling when the row outgrows the display. Not a list of background processes.
-- App Launcher is now a **single card**, with the only border on its outer surface.
-- **Quick Control drag arrangement**: click the handle/reorder icon in the header, drag a section by its grip and release to move it. Order is saved as `quickControlOrder` in `user-settings.json`. Reset button restores the original order. Notifications adopts the same section-header design.
+## Planned `curl` setup
 
-## Manual spacing (Alpha 4 correction)
+A verified HTTPS release and public hosting **have not been configured**. The repository includes `scripts/bootstrap.sh`, ready to publish with the full build. Once a real release URL and its SHA-256 are available, the supported workflow will be:
 
-The left and right bar groups now have separate baseline spacing controls, plus individual Before/After spacing for Arch/AI, App Search, Menu, Workspaces, Weather, Clock, Date, Bluetooth, Wi-Fi, Battery, Audio, Task View, Quick Modes, and Quick Control. Spacing is based on layout margins rather than absolute positions; it adapts when icons are hidden. The Left/Right vertical bar uses the same controls as top/bottom margins. **Reset icon** clears the selected icon overrides; **Reset this side** clears the active side for the current layout mode. No previous `user-settings.json` values are overwritten.
+```bash
+curl -fsSLo bootstrap.sh "<PUBLISHED_BOOTSTRAP_HTTPS_URL>"
+# Review bootstrap.sh before running it.
+bash bootstrap.sh --url "<PUBLISHED_FULL_ZIP_HTTPS_URL>" --sha256 "<64_HEX_SHA256_FROM_RELEASE>"
+```
 
-## Quick Control default order
+`bootstrap.sh` requires HTTPS, checks the supplied SHA-256, rejects unsafe ZIP entries, and then uses `scripts/install.sh`. The placeholders above are intentionally **not live links**. Never use a random unverified `curl | bash` command.
 
-Wi-Fi → Bluetooth → Battery → System → Notifications. System remains permanently expanded, independently of its position.
+## Update from ZIPs
 
-## Settings
+Every release provides two archives:
 
-Use the Settings sidebar for Appearance, Bar, Modules, Widgets, Dock, Displays, OS Information, Hardware, Installed Apps, Storage, Arch Updater, AI Providers, and About. The new **Show running apps** option is under **Dock**. User preferences are stored in `user-settings.json`; API credentials remain in the Linux keyring.
+| Archive | Use |
+| --- | --- |
+| **Full build** | Entire `quickshell/` source directory, suitable for a fresh extraction. |
+| **Patch** | Only changed/new files, with the same `quickshell/` paths. Extract over the matching RC5 base. |
 
-## Release notes
+Example for a patch downloaded locally:
 
-See **[`changelog/ALPHA-4.md`](changelog/ALPHA-4.md)** and older records in `changelog/`. Source changes do not guarantee that every interaction works on a real Hyprland installation. Verify using `qs -p .` and `qs log -f`.
+```bash
+unzip -o rusticq-alpha4-rc5-setup-patch.zip -d ~/dev
+cd ~/dev/quickshell
+qs -p .
+```
+
+The ZIP itself contains no installer that runs on extraction. Only run `install.sh` when you explicitly want an additional user-local installation at `~/.local/share/rusticq/source`. That installation is **separate** from your development folder.
+
+## Safety and portability
+
+- **Arch-based systems** are supported for automatic pacman dependency installation; other Linux distributions require manual setup and are not claimed as tested.
+- No default Omarchy package files under `/usr/share/omarchy` are modified by setup. Permanent integration is reversible, but desktop replacement can disrupt a session; test first.
+- The full ZIP does not bundle proprietary/third-party font binaries. The installer adds the official Arch **Material Symbols** font package for icon fallback. Optional Poppins `.ttf` files can be placed in `assets/` if you have them and their licenses permit it; otherwise the UI uses a system sans font.
+- Apps, power, audio, and network features require corresponding running desktop services; merely installing packages does not turn them on.
+- Not all optional features are tested on all hardware. See [dependencies](docs/DEPENDENCIES.md) and [troubleshooting](docs/TROUBLESHOOTING.md).
+
+## Developer map
+
+| Path | Role |
+| --- | --- |
+| `shell.qml` | Shell entry point and cross-module action routing. |
+| `modules/bar/`, `modules/main/` | Bar, overlay, launcher, dock, widgets, popup windows. |
+| `modules/settings/` | Settings window and independent pages. |
+| `components/` | Shared Material-style QML controls. |
+| `config/` | Persistent settings, theme, typography, allowlisted dependencies. |
+| `services/` | QML system adapters (network, battery, media, notifications). |
+| `scripts/` | Safe Python/shell helpers, setup, diagnostics and integration. |
+| `tools/` | Regression tests and static validation. |
+| `changelog/` | Historical release notes and fixes. |
+| `docs/` | Setup, dependency matrix, project structure and recovery. |
+
+For details, see [PROJECT-STRUCTURE.md](docs/PROJECT-STRUCTURE.md) and [COMPAT-0.3.1.md](COMPAT-0.3.1.md).
+
+## Troubleshooting
+
+```bash
+quickshell --version
+qs -p .
+qs log -f
+python3 scripts/rusticq-dependencies.py status
+```
+
+A failed optional install is not proof that RusticQ was installed or activated. Review its terminal output. If you have changed Omarchy startup and cannot log in, use the [TTY recovery procedure](docs/TROUBLESHOOTING.md).
