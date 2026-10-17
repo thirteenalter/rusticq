@@ -137,28 +137,30 @@ Singleton {
         battery:"right", audio:"right", task:"right", quickModes:"right", quickControl:"right",
         mic:"right", down:"right", up:"right"
     })
+    // v5: independent layout profiles. Legacy barIconPlacements is read ONLY for migration.
     property var barIconPlacements: ({})
+    property var barIconPlacementsByMode: ({})
     signal barIconMoved(string key, string zone)
     function placementFor(key) {
         if (barIconKeys.indexOf(key) < 0) return "right";
-        const value = barIconPlacements[key];
+        const value = (barIconPlacementsByMode[barMode] || {})[key];
         return ["left", "center", "right"].indexOf(value) !== -1 ? value : defaultBarPlacements[key];
     }
-    function transferIconSpacing(key, fromZone, toZone) {
+    function transferIconSpacing(key, fromZone, toZone, onlyMode) {
         if (fromZone === toZone) return;
         const all = Object.assign({}, barSpacingOverrides);
         let changed = false;
-        for (const modeName of spacingModes) {
+        // Never move a different layout mode's spacing when relocating an icon.
+        for (const modeName of (onlyMode ? [onlyMode] : spacingModes)) {
             const mode = Object.assign({}, all[modeName] || {});
             const from = Object.assign({}, mode[fromZone] || {});
             const fromItems = Object.assign({}, from.items || {});
             if (!Object.prototype.hasOwnProperty.call(fromItems, key)) continue;
             const to = Object.assign({}, mode[toZone] || {});
             const toItems = Object.assign({}, to.items || {});
-            // The icon takes its latest manual Before/After values to the new zone.
             toItems[key] = fromItems[key];
-            changed = true;
             delete fromItems[key];
+            changed = true;
             from.items = fromItems;
             to.items = toItems;
             mode[fromZone] = from;
@@ -171,17 +173,21 @@ Singleton {
         if (barIconKeys.indexOf(key) < 0 || ["left", "center", "right"].indexOf(zone) < 0) return;
         const fromZone = placementFor(key);
         if (fromZone === zone) return;
-        transferIconSpacing(key, fromZone, zone);
-        const next = Object.assign({}, barIconPlacements);
-        next[key] = zone;
-        barIconPlacements = next;
+        transferIconSpacing(key, fromZone, zone, barMode);
+        const all = Object.assign({}, barIconPlacementsByMode);
+        const current = Object.assign({}, all[barMode] || {});
+        current[key] = zone;
+        all[barMode] = current;
+        barIconPlacementsByMode = all;
         barIconMoved(key, zone);
         save();
     }
     function resetIconPlacements() {
         for (const key of barIconKeys)
-            transferIconSpacing(key, placementFor(key), defaultBarPlacements[key]);
-        barIconPlacements = ({});
+            transferIconSpacing(key, placementFor(key), defaultBarPlacements[key], barMode);
+        const all = Object.assign({}, barIconPlacementsByMode);
+        delete all[barMode];
+        barIconPlacementsByMode = all;
         save();
     }
     function validateIconPlacements(raw) {
@@ -189,6 +195,14 @@ Singleton {
         if (!raw || typeof raw !== "object" || Array.isArray(raw)) return clean;
         for (const key of barIconKeys)
             if (["left", "center", "right"].indexOf(raw[key]) >= 0) clean[key] = raw[key];
+        return clean;
+    }
+    function validateModePlacements(raw) {
+        const clean = {};
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) return clean;
+        for (const mode of spacingModes)
+            if (raw[mode] && typeof raw[mode] === "object" && !Array.isArray(raw[mode]))
+                clean[mode] = validateIconPlacements(raw[mode]);
         return clean;
     }
     // Manual spacing: three zones, independent for every bar layout mode.
@@ -273,6 +287,82 @@ Singleton {
         }
         return result;
     }
+    // v5: display preferences are scoped to the selected BAR LAYOUT, not the device.
+    // Keep global legacy show* properties so old settings files can migrate safely.
+    readonly property var barVisibilityKeys: [
+        "showRusticQIcon", "showLauncher", "showArch", "showWorkspaces", "showQuickControl",
+        "showTaskView", "showWeather", "showTime", "showDate", "showWifi", "showBluetooth",
+        "showBattery", "showAudio", "showMicrophoneStatus", "showDownloadSpeed",
+        "showUploadSpeed", "showIndicators", "showMenuBar", "showMenuFile", "showMenuEdit",
+        "showMenuView", "showMenuShare", "showMenuShell", "showMenuTools", "showQuickModes",
+        "showKeepAwake", "showSilent", "showGamingMode", "showNightMode", "showMicMute"
+    ]
+    // The simple mode starts lean for fresh installations. Existing RC4 users keep
+    // their current configuration through a one-time legacy migration below.
+    readonly property var simpleHiddenIcons: [
+        "showArch", "showTaskView", "showWeather", "showDate", "showBluetooth",
+        "showMenuBar", "showMenuFile", "showMenuEdit", "showMenuView", "showMenuShare",
+        "showMenuShell", "showMenuTools", "showQuickModes", "showMicrophoneStatus",
+        "showDownloadSpeed", "showUploadSpeed"
+    ]
+    property var barIconVisibilityProfiles: ({})
+    function modeIconVisible(key, modeName) {
+        if (barVisibilityKeys.indexOf(key) < 0) return root[key] === true;
+        const mode = modeName || barMode;
+        const record = barIconVisibilityProfiles[mode] || {};
+        if (typeof record[key] === "boolean") return record[key];
+        if (mode === "simple" && simpleHiddenIcons.indexOf(key) >= 0) return false;
+        return root[key] === true;
+    }
+    function setModeIconVisible(key, visible) {
+        if (barVisibilityKeys.indexOf(key) < 0 || typeof visible !== "boolean") return;
+        const all = Object.assign({}, barIconVisibilityProfiles);
+        const record = Object.assign({}, all[barMode] || {});
+        record[key] = visible;
+        all[barMode] = record;
+        barIconVisibilityProfiles = all;
+        save();
+    }
+    function validateVisibilityProfiles(raw) {
+        const clean = {};
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) return clean;
+        for (const mode of spacingModes) {
+            const values = raw[mode];
+            if (!values || typeof values !== "object" || Array.isArray(values)) continue;
+            const record = {};
+            for (const key of barVisibilityKeys)
+                if (typeof values[key] === "boolean") record[key] = values[key];
+            clean[mode] = record;
+        }
+        return clean;
+    }
+    function resetModeVisibility() {
+        const all = Object.assign({}, barIconVisibilityProfiles);
+        delete all[barMode];
+        barIconVisibilityProfiles = all;
+        save();
+    }
+    function useMinimalModePreset() {
+        const keep = ["showRusticQIcon", "showLauncher", "showWorkspaces", "showTime",
+            "showWifi", "showBattery", "showAudio", "showQuickControl", "showIndicators"];
+        const record = {};
+        for (const key of barVisibilityKeys)
+            record[key] = keep.indexOf(key) >= 0;
+        const all = Object.assign({}, barIconVisibilityProfiles);
+        all[barMode] = record;
+        barIconVisibilityProfiles = all;
+        save();
+    }
+    function copyVisibilityFromMode(sourceMode) {
+        if (spacingModes.indexOf(sourceMode) < 0 || sourceMode === barMode) return;
+        const record = {};
+        for (const key of barVisibilityKeys)
+            record[key] = modeIconVisible(key, sourceMode);
+        const all = Object.assign({}, barIconVisibilityProfiles);
+        all[barMode] = record;
+        barIconVisibilityProfiles = all;
+        save();
+    }
     // Individual bar modules/icons (all enabled initially, safely migrates RC1).
     property bool showArch: true
     property bool showTime: true
@@ -341,19 +431,26 @@ Singleton {
             }
             barSpacingOverrides = validateSpacingOverrides(data.barSpacingOverrides);
             barIconPlacements = validateIconPlacements(data.barIconPlacements);
-            // Migrate RC2 optional icon placements without altering users' other settings.
+            // Upgrade old global alignment into 5 isolated layout profiles.
             for (const pair of [["mic", "microphoneStatusPlacement"], ["down", "downloadSpeedPlacement"], ["up", "uploadSpeedPlacement"]])
-                if (!barIconPlacements[pair[0]] && ["left", "center", "right"].indexOf(data[pair[1]]) !== -1) {
-                    const copy = Object.assign({}, barIconPlacements);
-                    copy[pair[0]] = data[pair[1]];
-                    barIconPlacements = copy;
+                if (!barIconPlacements[pair[0]] && ["left", "center", "right"].indexOf(data[pair[1]]) !== -1)
+                    barIconPlacements[pair[0]] = data[pair[1]];
+            if (data.barIconPlacementsByMode && typeof data.barIconPlacementsByMode === "object")
+                barIconPlacementsByMode = validateModePlacements(data.barIconPlacementsByMode);
+            else {
+                const legacy = {};
+                for (const modeName of spacingModes) legacy[modeName] = Object.assign({}, barIconPlacements);
+                barIconPlacementsByMode = legacy;
+            }
+            // Normalize legacy per-zone spacing only within its own layout mode.
+            for (const modeName of spacingModes) {
+                const targetPlacement = barIconPlacementsByMode[modeName] || {};
+                for (const key of barIconKeys) {
+                    const targetZone = targetPlacement[key] || defaultBarPlacements[key];
+                    for (const zone of spacingZones)
+                        if (zone !== targetZone) transferIconSpacing(key, zone, targetZone, modeName);
                 }
-            // A previous RC2 version could save a Center placement while its spacing
-            // remained in Right. Normalize old JSON before the editor is displayed.
-            for (const key of barIconKeys)
-                for (const zone of spacingZones)
-                    if (zone !== placementFor(key))
-                        transferIconSpacing(key, zone, placementFor(key));
+            }
             if (["compact", "clean-hover"].indexOf(data.launcherLayoutMode) !== -1)
                 launcherLayoutMode = data.launcherLayoutMode;
             if (["plain", "filled"].indexOf(data.quickControlButtonStyle) !== -1)
@@ -379,6 +476,19 @@ Singleton {
             if (typeof data.showIndicators === "boolean") showIndicators = data.showIndicators;
             for (const key of ["showQuickModes", "quickModesAutoHide", "showKeepAwake", "showSilent", "showGamingMode", "showNightMode", "showMicMute", "showMicrophoneStatus", "showDownloadSpeed", "showUploadSpeed"])
                 if (typeof data[key] === "boolean") root[key] = data[key];
+            // Migrate RC4's single global icon toggle set *after* loading its flags.
+            // Existing users do not unexpectedly lose icons in Simple mode.
+            if (data.barIconVisibilityProfiles && typeof data.barIconVisibilityProfiles === "object")
+                barIconVisibilityProfiles = validateVisibilityProfiles(data.barIconVisibilityProfiles);
+            else {
+                const migrated = {};
+                for (const modeName of spacingModes) {
+                    const record = {};
+                    for (const key of barVisibilityKeys) record[key] = root[key] === true;
+                    migrated[modeName] = record;
+                }
+                barIconVisibilityProfiles = migrated;
+            }
             if (["openai", "anthropic", "gemini"].indexOf(data.aiProvider) !== -1) aiProvider = data.aiProvider;
             if (typeof data.aiModel === "string" && data.aiModel.length > 0 && data.aiModel !== "llama3.2") aiModel = data.aiModel;
         } catch (e) {
@@ -436,7 +546,9 @@ Singleton {
             cleanRightMode: cleanRightMode,
             marginOverrides: marginOverrides,
             barSpacingOverrides: barSpacingOverrides,
-            barIconPlacements: barIconPlacements,
+            barIconPlacements: barIconPlacements, // legacy compatibility; not changed by v5 UI
+            barIconPlacementsByMode: barIconPlacementsByMode,
+            barIconVisibilityProfiles: barIconVisibilityProfiles,
             showArch: showArch,
             showTime: showTime,
             showDate: showDate,

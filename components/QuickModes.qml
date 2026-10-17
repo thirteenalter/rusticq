@@ -6,22 +6,32 @@ import "../services"
 
 FocusScope {
     id: root
+    property var targetScreen: null
     property bool backgroundEnabled: true
     property int controlHeight: 24
     property bool revealed: false
     property var hoveredButton: null
     readonly property bool expanded: !SettingsStore.quickModesAutoHide || revealed || activeFocus
     readonly property var modes: [
-        { key: "awake", title: "Keep Awake", icon: "\ue541", show: SettingsStore.showKeepAwake },
-        { key: "silent", title: "Silent", icon: "\ue7f6", show: SettingsStore.showSilent },
-        { key: "gaming", title: "Gaming Mode", icon: "\ue30f", show: SettingsStore.showGamingMode },
-        { key: "night", title: "Night Mode", icon: "\ue51c", show: SettingsStore.showNightMode },
-        { key: "mic", title: "Mute Microphone", icon: "\ue02b", show: SettingsStore.showMicMute }
+        { key: "awake", title: "Keep Awake", icon: "\ue541", show: SettingsStore.modeIconVisible("showKeepAwake") },
+        { key: "silent", title: "Silent", icon: "\ue7f6", show: SettingsStore.modeIconVisible("showSilent") },
+        { key: "gaming", title: "Gaming Mode", icon: "\ue30f", show: SettingsStore.modeIconVisible("showGamingMode") },
+        { key: "night", title: "Night Mode", icon: "\ue51c", show: SettingsStore.modeIconVisible("showNightMode") },
+        { key: "mic", title: "Mute Microphone", icon: "\ue02b", show: SettingsStore.modeIconVisible("showMicMute") }
     ].filter(mode => mode.show)
     readonly property bool hasModules: modes.length > 0
     implicitWidth: 28 + (expanded && hasModules ? modeButtons.implicitWidth + 8 : 0)
     implicitHeight: controlHeight
 
+    Connections {
+        target: Store
+        function onShortcutBarRequested(kind, screenName) {
+            if (kind !== "quick-modes" || !root.targetScreen || root.targetScreen.name !== screenName)
+                return;
+            root.revealed = !root.revealed;
+            if (root.revealed) QuickModesService.refresh();
+        }
+    }
     function reveal() {
         closeDelay.stop();
         revealed = true;

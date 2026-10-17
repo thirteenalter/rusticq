@@ -97,6 +97,116 @@ ColumnLayout {
     }
 
     SettingsSection {
+        heading: "Icon preferences · " + SettingsStore.barMode
+        description: "Each layout remembers its own visible icons, menu buttons and Left / Center / Right arrangement. Toggle here, or use Modules for individual menu and Quick Modes buttons."
+        symbol: "\ue429"
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            Repeater {
+                model: [
+                    {label:"Minimal", action:"minimal"},
+                    {label:"Reset mode", action:"reset"}
+                ]
+                delegate: Rectangle {
+                    id: profileAction
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 38
+                    radius: 10
+                    color: profileMouse.containsMouse ? Qt.alpha(Theme.accent, .15) : Theme.background
+                    border.width: 1
+                    border.color: Theme.borderaccent
+                    Text { anchors.centerIn: parent; text: profileAction.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    MouseArea {
+                        id: profileMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (profileAction.modelData.action === "minimal") SettingsStore.useMinimalModePreset();
+                            else SettingsStore.resetModeVisibility();
+                        }
+                    }
+                }
+            }
+        }
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 6
+            Text { text: "Copy from"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            Repeater {
+                model: SettingsStore.spacingModes.filter(mode => mode !== SettingsStore.barMode)
+                delegate: Rectangle {
+                    id: copyModeButton
+                    required property string modelData
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 32
+                    radius: 8
+                    color: copyMouse.containsMouse ? Qt.alpha(Theme.accent, .13) : Theme.background
+                    Text {
+                        anchors.centerIn: parent
+                        text: copyModeButton.modelData === "clean-compact" ? "Clean Compact" :
+                            copyModeButton.modelData[0].toUpperCase() + copyModeButton.modelData.substring(1)
+                        color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                    }
+                    MouseArea { id: copyMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.copyVisibilityFromMode(copyModeButton.modelData) }
+                }
+            }
+        }
+        Text {
+            Layout.fillWidth: true
+            text: "The Minimal preset changes this mode only. Reset mode restores default visibility without modifying the other four layouts."
+            wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+        }
+        GridLayout {
+            Layout.fillWidth: true
+            columns: 2
+            columnSpacing: 8
+            rowSpacing: 8
+            Repeater {
+                model: [
+                    {key:"showRusticQIcon", label:"RusticQ"},
+                    {key:"showLauncher", label:"Launcher"},
+                    {key:"showArch", label:"AI"},
+                    {key:"showWorkspaces", label:"Workspaces"},
+                    {key:"showWeather", label:"Weather"},
+                    {key:"showTime", label:"Clock"},
+                    {key:"showDate", label:"Calendar"},
+                    {key:"showIndicators", label:"Status group"},
+                    {key:"showWifi", label:"Wi-Fi"},
+                    {key:"showBluetooth", label:"Bluetooth"},
+                    {key:"showBattery", label:"Battery"},
+                    {key:"showAudio", label:"Audio"},
+                    {key:"showTaskView", label:"Task view"},
+                    {key:"showMenuBar", label:"Menu bar"},
+                    {key:"showQuickModes", label:"Quick Modes"},
+                    {key:"showQuickControl", label:"Quick Control"},
+                    {key:"showMicrophoneStatus", label:"Microphone"},
+                    {key:"showDownloadSpeed", label:"Download rate"},
+                    {key:"showUploadSpeed", label:"Upload rate"}
+                ]
+                delegate: Rectangle {
+                    id: iconSwitch
+                    required property var modelData
+                    readonly property bool enabledForMode: SettingsStore.modeIconVisible(modelData.key)
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 38
+                    radius: 10
+                    color: switchMouse.containsMouse ? Qt.alpha(Theme.accent, .10) : Theme.background
+                    RowLayout {
+                        anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12; spacing: 8
+                        Text { text: iconSwitch.modelData.label; Layout.fillWidth: true; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground; elide: Text.ElideRight }
+                        Rectangle {
+                            Layout.preferredWidth: 29; Layout.preferredHeight: 18
+                            radius: 9; color: iconSwitch.enabledForMode ? Theme.accent : Theme.borderaccent
+                            Rectangle { width: 12; height: 12; radius: 6; anchors.verticalCenter: parent.verticalCenter; x: iconSwitch.enabledForMode ? parent.width - 15 : 3; color: iconSwitch.enabledForMode ? Theme.background : Theme.muted }
+                        }
+                    }
+                    MouseArea { id: switchMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.setModeIconVisible(iconSwitch.modelData.key, !iconSwitch.enabledForMode) }
+                }
+            }
+        }
+    }
+
+    SettingsSection {
         visible: SettingsStore.barMode === "clean-compact"
         heading: "Clean Compact labels"
         description: "Battery and volume percentages remain visible in all modes."
@@ -210,7 +320,7 @@ ColumnLayout {
 
     SettingsSection {
         heading: "Bar icon alignment · Left / Center / Right"
-        description: "Choose a position for every bar icon. Visibility remains controlled in Modules. Saved independently for each icon."
+        description: "Positions apply only to the currently selected layout mode. Left / Center / Right settings won't change other layouts."
         symbol: "\ue429"
         BarAlignmentEditor { Layout.fillWidth: true }
     }

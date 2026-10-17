@@ -10,6 +10,7 @@ import "../../components"
 FloatingWindow {
     id: monitorWindow
     visible: Store.systemMonitorVisible
+    screen: Store.monitorScreen
     title: "RusticQ · System Monitor"
     // Closing the floating window from the compositor must also reset its
     // LazyLoader state; the header intentionally has no close button.

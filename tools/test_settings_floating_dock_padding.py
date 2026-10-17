@@ -31,14 +31,14 @@ def test_floats_resizes_and_centers_only_settings():
         assert len(expressions) == 3
         assert all('address:0x123abd' in s for s in expressions)
         assert 'float(' in expressions[0] and 'action = "set"' in expressions[0]
-        assert 'resize(' in expressions[1] and 'x = 940' in expressions[1]
-        assert 'y = 600' in expressions[1] and 'relative = false' in expressions[1]
+        assert 'resize(' in expressions[1] and 'x = 1100' in expressions[1]
+        assert 'y = 760' in expressions[1] and 'relative = false' in expressions[1]
         assert 'center(' in expressions[2]
 
 
 def test_matching_floating_window_is_not_resized():
     client = {'title': 'RusticQ · Settings', 'address': '0x123abd',
-              'floating': True, 'size': [940, 600]}
+              'floating': True, 'size': [1100, 760]}
     with patch.object(helper, 'dispatch') as call:
         assert helper.ensure_float(client)
         call.assert_not_called()
@@ -46,7 +46,7 @@ def test_matching_floating_window_is_not_resized():
 
 def test_floating_wrong_size_resizes_without_toggling_float():
     client = {'title': 'RusticQ · Settings', 'address': '0x123abd',
-              'floating': True, 'size': [940, 660]}
+              'floating': True, 'size': [1100, 700]}
     with patch.object(helper, 'dispatch', return_value=Mock(returncode=0, stdout='ok', stderr='')) as call:
         assert helper.ensure_float(client)
         expressions = [x.args[0] for x in call.call_args_list]
@@ -64,8 +64,9 @@ def test_invalid_window_address_never_dispatches():
 
 def test_settings_outer_geometry():
     source = (ROOT / 'modules/settings/SettingsWindow.qml').read_text()
-    assert 'implicitWidth: 940' in source and 'implicitHeight: 600' in source
-    assert 'minimumSize: Qt.size(760, 500)' in source
+    assert 'Math.min(1100, screen ? screen.width - 64 : 1100)' in source
+    assert 'Math.min(760, screen ? screen.height - 88 : 760)' in source
+    assert 'minimumSize: Qt.size(600, 480)' in source
     assert 'maximized: false' in source and 'fullscreen: false' in source
     assert 'radius: 18\n        color: Theme.background' not in source
     assert 'border.width: 1\n        border.color: Theme.borderaccent\n        clip: true' not in source

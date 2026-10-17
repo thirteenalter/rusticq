@@ -15,12 +15,12 @@ Item {
     signal actionFinished()
     anchors.fill: parent
     readonly property var sections: [
-        {key: "file", title: "File", enabled: SettingsStore.showMenuFile},
-        {key: "edit", title: "Edit", enabled: SettingsStore.showMenuEdit},
-        {key: "view", title: "View", enabled: SettingsStore.showMenuView},
-        {key: "share", title: "Share", enabled: SettingsStore.showMenuShare},
-        {key: "shell", title: "Shell", enabled: SettingsStore.showMenuShell},
-        {key: "tools", title: "Tools", enabled: SettingsStore.showMenuTools}
+        {key: "file", title: "File", enabled: SettingsStore.modeIconVisible("showMenuFile")},
+        {key: "edit", title: "Edit", enabled: SettingsStore.modeIconVisible("showMenuEdit")},
+        {key: "view", title: "View", enabled: SettingsStore.modeIconVisible("showMenuView")},
+        {key: "share", title: "Share", enabled: SettingsStore.modeIconVisible("showMenuShare")},
+        {key: "shell", title: "Shell", enabled: SettingsStore.modeIconVisible("showMenuShell")},
+        {key: "tools", title: "Tools", enabled: SettingsStore.modeIconVisible("showMenuTools")}
     ].filter(item => item.enabled)
     readonly property var entries: currentSection === "file" ? [
         {title: "Home folder", desc: "Open your home directory", icon: "\ue2c7", action: "file-home"},

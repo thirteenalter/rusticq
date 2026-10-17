@@ -17,12 +17,12 @@ Item {
         spacing: 4
         Repeater {
             model: [
-                {label: "File", key: "file", enabled: SettingsStore.showMenuFile},
-                {label: "Edit", key: "edit", enabled: SettingsStore.showMenuEdit},
-                {label: "View", key: "view", enabled: SettingsStore.showMenuView},
-                {label: "Share", key: "share", enabled: SettingsStore.showMenuShare},
-                {label: "Shell", key: "shell", enabled: SettingsStore.showMenuShell},
-                {label: "Tools", key: "tools", enabled: SettingsStore.showMenuTools}
+                {label: "File", key: "file", enabled: SettingsStore.modeIconVisible("showMenuFile")},
+                {label: "Edit", key: "edit", enabled: SettingsStore.modeIconVisible("showMenuEdit")},
+                {label: "View", key: "view", enabled: SettingsStore.modeIconVisible("showMenuView")},
+                {label: "Share", key: "share", enabled: SettingsStore.modeIconVisible("showMenuShare")},
+                {label: "Shell", key: "shell", enabled: SettingsStore.modeIconVisible("showMenuShell")},
+                {label: "Tools", key: "tools", enabled: SettingsStore.modeIconVisible("showMenuTools")}
             ].filter(item => item.enabled)
             delegate: Rectangle {
                 id: menuButton
@@ -67,7 +67,7 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: root.menuRequested(SettingsStore.showMenuView ? "view" : SettingsStore.showMenuEdit ? "edit" : SettingsStore.showMenuShare ? "share" : SettingsStore.showMenuFile ? "file" : SettingsStore.showMenuShell ? "shell" : "tools", verticalTrigger)
+            onClicked: root.menuRequested(SettingsStore.modeIconVisible("showMenuView") ? "view" : SettingsStore.modeIconVisible("showMenuEdit") ? "edit" : SettingsStore.modeIconVisible("showMenuShare") ? "share" : SettingsStore.modeIconVisible("showMenuFile") ? "file" : SettingsStore.modeIconVisible("showMenuShell") ? "shell" : "tools", verticalTrigger)
         }
     }
 }

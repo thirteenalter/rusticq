@@ -30,13 +30,13 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         Text {
-            text: "For vertical bars: Left = top, Center = middle, Right = bottom"
+            text: "Editing " + SettingsStore.barMode + ". On vertical bars: Left = top, Center = middle, Right = bottom."
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
             Layout.fillWidth: true; wrapMode: Text.WordWrap
         }
         Rectangle {
-            Layout.preferredHeight: 31; Layout.preferredWidth: 82; radius: 9; color: Theme.background
-            Text { anchors.centerIn: parent; text: "Reset all"; font.pixelSize: Fonts.scale(10); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
+            Layout.preferredHeight: 31; Layout.preferredWidth: 96; radius: 9; color: Theme.background
+            Text { anchors.centerIn: parent; text: "Reset mode"; font.pixelSize: Fonts.scale(10); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetIconPlacements() }
         }
     }

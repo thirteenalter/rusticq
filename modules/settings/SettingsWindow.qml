@@ -11,10 +11,12 @@ import "pages"
 FloatingWindow {
     id: root
     visible: Store.settingsVisible
+    screen: Store.settingsScreen
     title: "RusticQ · Settings"
-    implicitWidth: 940
-    implicitHeight: 600
-    minimumSize: Qt.size(760, 500)
+    // v5: roomy 1100 × 760 settings window, clamped to active monitor bounds.
+    implicitWidth: Math.max(600, Math.min(1100, screen ? screen.width - 64 : 1100))
+    implicitHeight: Math.max(480, Math.min(760, screen ? screen.height - 88 : 760))
+    minimumSize: Qt.size(600, 480)
     maximized: false
     fullscreen: false
     color: Theme.background
@@ -32,6 +34,8 @@ FloatingWindow {
         {key:"apps", label:"Installed apps", symbol:"\ue5c3", detail:"Package inventory"},
         {key:"storage", label:"Storage", symbol:"\ue1db", detail:"Disks & maintenance"},
         {key:"updates", label:"Arch Updater", symbol:"\ue5d5", detail:"Packages & terminal"},
+        {key:"shortcuts", label:"Shortcuts", symbol:"\ue312", detail:"Edit and restore keybindings"},
+        {key:"integration", label:"Integration", symbol:"\ue8b8", detail:"Permanent shell & backup"},
         {key:"ai", label:"AI Providers", symbol:"\uf371", detail:"Cloud assistant"},
         {key:"about", label:"About", symbol:"\ue88e", detail:"Project information"}
     ]
@@ -47,6 +51,7 @@ FloatingWindow {
         {tab:"bar", title:"Icon spacing: Left, Center and Right", hint:"Per-icon spacing follows icon alignment; microphone wifi battery download upload all modes"},
         {tab:"bar", title:"Extra status icons", hint:"Microphone network download upload left center right"},
         {tab:"bar", title:"Bar icon alignment", hint:"Relocate every icon left center right clock wifi battery audio task quick control menu"},
+        {tab:"bar", title:"Independent icon profiles per layout", hint:"Simple Compact Clean Compact Separated Professional icon visibility per mode presets minimal"},
         {tab:"modules", title:"App launcher and status modules", hint:"Icons Wifi Bluetooth Battery Audio Weather Clock"},
         {tab:"modules", title:"Menu bar and quick modes", hint:"Edit View Share File Shell Tools Night Silent"},
         {tab:"widgets", title:"Desktop widgets", hint:"Calendar Clock CPU RAM Music Media Now Playing Weather Connectivity Battery"},
@@ -58,6 +63,8 @@ FloatingWindow {
         {tab:"apps", title:"Installed applications", hint:"Pacman package list foreign explicit AUR install uninstall graphical application remove risk warning"},
         {tab:"storage", title:"Storage maintenance", hint:"Disk capacity filesystem mount cache journal"},
         {tab:"updates", title:"Arch Updater", hint:"Check updates upgrade downloads pacman progress logs terminal"},
+        {tab:"shortcuts", title:"Keybindings", hint:"Hyprland shortcut keys override Lua Omarchy default bindings Settings Launcher Quick AI"},
+        {tab:"integration", title:"Make RusticQ Permanent", hint:"Omarchy shell replacement backup enable revert startup persistent"},
         {tab:"ai", title:"AI provider setup", hint:"OpenAI Anthropic Claude Gemini API key"},
         {tab:"about", title:"About RusticQ", hint:"Version Quickshell"}
     ]
@@ -124,7 +131,7 @@ FloatingWindow {
                             }
                             Item { Layout.fillHeight: true }
                             Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(15) }
-                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 4 RC3"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                            Text { text: "RUSTIQ DESKTOP  ·  ALPHA 4 RC4"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
                         }
                     }
                     RowLayout {
@@ -177,7 +184,7 @@ FloatingWindow {
                     }
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     Text {
-                        text: "RUSTIQ · ALPHA 4 RC3\nQuickshell 0.3.1"
+                        text: "RUSTIQ · ALPHA 4 RC4\nQuickshell 0.3.1"
                         Layout.fillWidth: true
                         color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                     }
@@ -195,7 +202,7 @@ FloatingWindow {
                         anchors.fill: parent
                         spacing: 3
                         Text { text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(22) }
-                        Text { text: "RUSTIQ / ALPHA 4 RC3 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        Text { text: "RUSTIQ / ALPHA 4 RC4 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -257,6 +264,8 @@ FloatingWindow {
                             Store.settingsTab === "apps" ? appsPage :
                             Store.settingsTab === "storage" ? storagePage :
                             Store.settingsTab === "updates" ? updatesPage :
+                            Store.settingsTab === "shortcuts" ? shortcutsPage :
+                            Store.settingsTab === "integration" ? integrationPage :
                             Store.settingsTab === "ai" ? aiPage : aboutPage
                     }
                 }
@@ -303,6 +312,8 @@ FloatingWindow {
     Component { id: appsPage; SettingsAppsPage {} }
     Component { id: storagePage; SettingsStoragePage {} }
     Component { id: updatesPage; SettingsUpdaterPage {} }
+    Component { id: shortcutsPage; SettingsShortcutsPage {} }
+    Component { id: integrationPage; SettingsIntegrationPage {} }
     Component { id: aiPage; SettingsAIPage {} }
     Component { id: aboutPage; SettingsAboutPage {} }
 }

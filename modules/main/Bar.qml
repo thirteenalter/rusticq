@@ -31,6 +31,39 @@ PanelWindow {
         miniAnchorY = yPosition === undefined ? barHeight / 2 : yPosition;
         miniKind = kind;
     }
+    // Menu/popup shortcuts are handled by the bar belonging to the focused monitor.
+    // This works even when an icon is hidden or assigned to another bar zone.
+    Connections {
+        target: Store
+        function onShortcutBarRequested(kind, screenName) {
+            if (!barWindow.screen || barWindow.screen.name !== screenName) return;
+            const current = barWindow.miniKind;
+            if (kind === "quick-modes") return; // QuickModes.qml owns its reveal state.
+            if (kind === "menu-default") {
+                const sections = [
+                    ["edit", SettingsStore.modeIconVisible("showMenuEdit")], ["view", SettingsStore.modeIconVisible("showMenuView")],
+                    ["share", SettingsStore.modeIconVisible("showMenuShare")], ["file", SettingsStore.modeIconVisible("showMenuFile")],
+                    ["shell", SettingsStore.modeIconVisible("showMenuShell")], ["tools", SettingsStore.modeIconVisible("showMenuTools")]
+                ];
+                const enabled = sections.find(pair => pair[1]);
+                if (!enabled) return;
+                kind = "menu-" + enabled[0];
+            }
+            if (kind.indexOf("menu-") === 0) {
+                const section = kind.substring(5);
+                if (current === "menu" && barWindow.menuSection === section) {
+                    barWindow.closeMini();
+                } else {
+                    barWindow.menuSection = section;
+                    barWindow.miniAnchorX = 14;
+                    barWindow.miniAnchorY = barWindow.barHeight / 2;
+                    barWindow.miniKind = "menu";
+                }
+                return;
+            }
+            barWindow.openMini(kind, barWindow.width / 2, barWindow.height / 2);
+        }
+    }
     color: "transparent"
 
     readonly property string barPosition: SettingsStore.barPosition

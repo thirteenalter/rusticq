@@ -3,6 +3,8 @@ import QtQuick
 import Quickshell
 
 Singleton {
+    // Raised by the IPC dispatcher; each per-monitor bar consumes only its own actions.
+    signal shortcutBarRequested(string kind, string screenName)
     property bool sidebarVisible: false
     property bool advancedVisible: false
     property bool quickReorderMode: false
@@ -10,10 +12,12 @@ Singleton {
     property bool aiVisible: false
     property bool aiFullMode: false
     property var aiScreen: null
+    property var settingsScreen: null
     property bool settingsVisible: false
     property bool launcherVisible: false
     property var launcherScreen: null
     property bool taskViewVisible: false
+    property var monitorScreen: null
     property bool systemMonitorVisible: false
     property string settingsTab: "appearance"
 
@@ -37,7 +41,8 @@ Singleton {
         aiVisible = false;
         launcherVisible = true;
     }
-    function showSettings(tab) {
+    function showSettings(tab, screen) {
+        if (screen) settingsScreen = screen;
         if (tab) settingsTab = tab;
         settingsVisible = true;
         launcherVisible = false;

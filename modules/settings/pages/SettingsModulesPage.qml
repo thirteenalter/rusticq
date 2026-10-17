@@ -8,8 +8,13 @@ ColumnLayout {
     width: parent ? parent.width : 680
     spacing: 14
     SettingsSection {
+        heading: "Current layout · " + SettingsStore.barMode
+        description: "Bar icon switches below are saved only for this layout mode. Switch layouts in Settings → Bar to edit another profile. Notification delivery and quick-mode auto-hide remain global."
+        symbol: "\ue429"
+    }
+    SettingsSection {
         heading: "Launchers & bar components"
-        description: "Each icon can be shown or hidden independently."
+        description: "Show or hide icons independently for the active layout mode."
         symbol: "\ue8b6"
         Repeater {
             model: [
@@ -21,12 +26,12 @@ ColumnLayout {
                 {label:"Task View",desc:"CPU, RAM and process details",key:"showTaskView",icon:"\ue322"},
                 {label:"Notification center",desc:"Toast and notification history",key:"showNotifications",icon:"\ue7f4"}
             ]
-            delegate: SettingsToggle {}
+            delegate: SettingsToggle { perBarMode: modelData.key !== "showNotifications" && modelData.key !== "quickModesAutoHide" }
         }
     }
     SettingsSection {
         heading: "Status indicators"
-        description: "Choose which information appears on the bar."
+        description: "Visible status icons are saved separately in each bar layout."
         symbol: "\ue429"
         Repeater {
             model: [
@@ -42,12 +47,12 @@ ColumnLayout {
                 {label:"Upload speed",desc:"Network transmit rate · live",key:"showUploadSpeed",icon:"\ue5d8"},
                 {label:"System indicators",desc:"Master toggle for network, battery and audio",key:"showIndicators",icon:"\ue8b8"}
             ]
-            delegate: SettingsToggle {}
+            delegate: SettingsToggle { perBarMode: modelData.key !== "showNotifications" && modelData.key !== "quickModesAutoHide" }
         }
     }
     SettingsSection {
         heading: "Menu bar"
-        description: "Enable optional File, Edit, View, Share, Shell and Tools menus."
+        description: "Each layout remembers its own File, Edit, View, Share, Shell and Tools menus."
         symbol: "\ue5d2"
         Repeater {
             model: [
@@ -59,12 +64,12 @@ ColumnLayout {
                 {label:"Shell",desc:"Terminal and system monitoring",key:"showMenuShell",icon:"\uf371"},
                 {label:"Tools",desc:"Settings and capture shortcuts",key:"showMenuTools",icon:"\ue8b8"}
             ]
-            delegate: SettingsToggle {}
+            delegate: SettingsToggle { perBarMode: modelData.key !== "showNotifications" && modelData.key !== "quickModesAutoHide" }
         }
     }
     SettingsSection {
         heading: "Quick modes"
-        description: "Manage the bar's compact system shortcuts."
+        description: "Choose Quick Modes buttons for this layout; auto-hide behaviour remains global."
         symbol: "\ue429"
         Repeater {
             model: [
@@ -76,7 +81,7 @@ ColumnLayout {
                 {label:"Night Mode",desc:"Warm screen temperature",key:"showNightMode",icon:"\ue51c"},
                 {label:"Mute Microphone",desc:"Microphone mute",key:"showMicMute",icon:"\ue02b"}
             ]
-            delegate: SettingsToggle {}
+            delegate: SettingsToggle { perBarMode: modelData.key !== "showNotifications" && modelData.key !== "quickModesAutoHide" }
         }
     }
 }

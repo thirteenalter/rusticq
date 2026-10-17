@@ -6,7 +6,8 @@ import "../config"
 Rectangle {
     id: root
     required property var modelData
-    readonly property bool checked: SettingsStore[modelData.key] === true
+    property bool perBarMode: false
+    readonly property bool checked: perBarMode ? SettingsStore.modeIconVisible(modelData.key) : SettingsStore[modelData.key] === true
     Layout.fillWidth: true
     Layout.preferredHeight: 59
     radius: 12
@@ -45,6 +46,9 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: { SettingsStore[root.modelData.key] = !root.checked; SettingsStore.save(); }
+        onClicked: {
+            if (root.perBarMode) SettingsStore.setModeIconVisible(root.modelData.key, !root.checked);
+            else { SettingsStore[root.modelData.key] = !root.checked; SettingsStore.save(); }
+        }
     }
 }

@@ -18,7 +18,7 @@ vertical=(root/'modules/main/VerticalBarContent.qml').read_text()
 for key in ['showMicrophoneStatus','showDownloadSpeed','showUploadSpeed']:
     assert key in modules, f'{key} missing in Modules'
     assert key in store, f'{key} missing from persistence'
-    assert key not in barpage, f'{key} duplicated in Bar settings'
+    assert key in barpage, f'{key} must be available in the per-layout visibility editor'
 assert 'heading: "Extra status icons"' not in barpage
 assert 'BarAlignmentEditor' in barpage
 assert 'Icon spacing · Left / Center / Right' in barpage
@@ -53,7 +53,7 @@ const keys = ['arch','launcher','menu','workspaces','weather','time','date','blu
 const defaults = Object.fromEntries(keys.map(k=>[k,['arch','launcher','menu','workspaces'].includes(k)?'left':'right']));
 const ctx={
   barIconKeys:keys,defaultBarPlacements:defaults,
-  barIconPlacements:{},barSpacingOverrides:{},
+  barIconPlacements:{},barIconPlacementsByMode:{},barSpacingOverrides:{},
   spacingModes:['compact','clean-compact','separated','professional','simple'],
   spacingZones:['left','center','right'],barMode:'compact',saves:0,
   save(){this.saves++},barIconMoved(){}
@@ -68,13 +68,15 @@ for (const [i,mode] of expected.entries()) {
   ctx.barMode=mode;
   ctx.setIconSpacing('right','wifi','before',i+3,true);
   ctx.setIconSpacing('right','wifi','after',i+4,true);
+  ctx.setIconPlacement('wifi','center');
 }
-ctx.setIconPlacement('wifi','center');
+ctx.barMode='compact';
 assert.equal(ctx.placementFor('wifi'),'center');
 assert(ctx.iconsInZone('center').includes('wifi'));
 assert(!ctx.iconsInZone('right').includes('wifi'));
 for (const [i,mode] of expected.entries()) {
   ctx.barMode=mode;
+  assert.equal(ctx.placementFor('wifi'),'center');
   assert.equal(ctx.spacingIcon('center','wifi','before'),i+3);
   assert.equal(ctx.spacingIcon('center','wifi','after'),i+4);
   assert.equal(ctx.spacingIcon('right','wifi','before'),0);
@@ -88,9 +90,12 @@ ctx.resetIconPlacements();
 assert.equal(ctx.placementFor('wifi'),'right');
 assert.equal(ctx.spacingIcon('right','wifi','before'),5);
 assert(!ctx.iconsInZone('center').includes('wifi'));
+ctx.barMode='compact';
+assert.equal(ctx.placementFor('wifi'),'center','reset separated must not change compact');
+assert.equal(ctx.spacingIcon('center','wifi','before'),3);
 assert.equal(ctx.validateSpacingOverrides(ctx.barSpacingOverrides).separated.center.gap,12);
 assert(ctx.saves>0);
-console.log('Placement and spacing migration: five modes, 3 zones, reset OK');
+console.log('Per-mode placement and spacing: five modes, 3 zones, isolated reset OK');
 '''
 # Assignment of methods on ctx uses JS function expressions with `with(ctx)`
 # supported in non-strict Node commonjs.

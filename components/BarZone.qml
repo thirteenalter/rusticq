@@ -63,25 +63,26 @@ Item {
         return null;
     }
     function isEnabled(key) {
+        const shown = propertyKey => SettingsStore.modeIconVisible(propertyKey);
         switch (key) {
-        case "rusticq": return SettingsStore.showRusticQIcon;
-        case "arch": return SettingsStore.showArch;
-        case "launcher": return SettingsStore.showLauncher;
-        case "menu": return SettingsStore.showMenuBar;
-        case "workspaces": return SettingsStore.showWorkspaces;
-        case "weather": return SettingsStore.showWeather;
-        case "time": return SettingsStore.showTime;
-        case "date": return SettingsStore.showDate;
-        case "bluetooth": return SettingsStore.showIndicators && SettingsStore.showBluetooth;
-        case "wifi": return SettingsStore.showIndicators && SettingsStore.showWifi;
-        case "battery": return SettingsStore.showIndicators && SettingsStore.showBattery && BatteryService.available;
-        case "audio": return SettingsStore.showIndicators && SettingsStore.showAudio;
-        case "task": return SettingsStore.showTaskView;
-        case "quickModes": return SettingsStore.showQuickModes && (SettingsStore.showKeepAwake || SettingsStore.showSilent || SettingsStore.showGamingMode || SettingsStore.showNightMode || SettingsStore.showMicMute);
-        case "quickControl": return SettingsStore.showQuickControl;
-        case "mic": return SettingsStore.showMicrophoneStatus;
-        case "down": return SettingsStore.showDownloadSpeed;
-        case "up": return SettingsStore.showUploadSpeed;
+        case "rusticq": return shown("showRusticQIcon");
+        case "arch": return shown("showArch");
+        case "launcher": return shown("showLauncher");
+        case "menu": return shown("showMenuBar") && ["showMenuFile", "showMenuEdit", "showMenuView", "showMenuShare", "showMenuShell", "showMenuTools"].some(shown);
+        case "workspaces": return shown("showWorkspaces");
+        case "weather": return shown("showWeather");
+        case "time": return shown("showTime");
+        case "date": return shown("showDate");
+        case "bluetooth": return shown("showIndicators") && shown("showBluetooth");
+        case "wifi": return shown("showIndicators") && shown("showWifi");
+        case "battery": return shown("showIndicators") && shown("showBattery") && BatteryService.available;
+        case "audio": return shown("showIndicators") && shown("showAudio");
+        case "task": return shown("showTaskView");
+        case "quickModes": return shown("showQuickModes") && ["showKeepAwake", "showSilent", "showGamingMode", "showNightMode", "showMicMute"].some(shown);
+        case "quickControl": return shown("showQuickControl");
+        case "mic": return shown("showMicrophoneStatus");
+        case "down": return shown("showDownloadSpeed");
+        case "up": return shown("showUploadSpeed");
         }
         return false;
     }
@@ -135,7 +136,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: { root.hostWindow.closeMini(); Store.showSettings("appearance"); }
+                onClicked: { root.hostWindow.closeMini(); Store.showSettings("appearance", root.hostWindow.screen); }
             }
         }
     }
@@ -287,6 +288,7 @@ Item {
     Component {
         id: quickModesPart
         QuickModes {
+            targetScreen: root.hostWindow.screen
             backgroundEnabled: !root.clean
             controlHeight: root.controlHeight
         }
