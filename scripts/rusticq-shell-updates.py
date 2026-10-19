@@ -233,7 +233,43 @@ def release_summary(release):
                 published_at=release.get('published_at') or '', asset=full['name'],
                 size=full['size'], digest=digest, source_archive=bool(full.get('_source_archive')),
                 checksum_published=bool(digest.startswith('sha256:')),
-                url=REPO_URL + '/releases/tag/' + release['tag_name'])
+                url=REPO_URL + '/releases/tag/' + release['tag_name'],
+                danger=release_is_unstable(release))
+
+
+def release_is_unstable(release):
+    name = str(release.get('tag_name', '')) + ' ' + str(release.get('name', ''))
+    return bool(release.get('prerelease') or re.search(
+        r'(?:^|[^a-z])(alpha|beta|preview|nightly|dev|rc)(?:[^a-z]|$)', name, re.I))
+
+
+def list_releases():
+    """Published versions, including beta/alpha tags GitHub may label stable."""
+    releases, seen = [], set()
+    for page in range(1, 6):
+        data = json.loads(curl_bytes(API + '?per_page=100&page=' + str(page)))
+        if not isinstance(data, list):
+            raise UpdateError('Invalid GitHub release list.')
+        for release in data:
+            if not isinstance(release, dict) or release.get('draft'):
+                continue
+            tag = release.get('tag_name')
+            if not isinstance(tag, str) or not re.fullmatch(r'[A-Za-z0-9._-]{1,80}', tag) or tag in seen:
+                continue
+            seen.add(tag)
+            try:
+                summary = dict(release_summary(release), available=True)
+            except UpdateError as exc:
+                summary = dict(tag=tag, title=release.get('name') or tag,
+                               danger=release_is_unstable(release), available=False,
+                               message=str(exc), published_at=release.get('published_at') or '')
+            releases.append(summary)
+        if len(data) < 100:
+            break
+    if not releases:
+        raise UpdateError('No published RusticQ GitHub Releases found.')
+    return dict(ok=True, releases=releases, truncated=len(data) == 100,
+                message='Fetched ' + str(len(releases)) + ' published release versions.')
 
 
 def check_updates(tag=''):
@@ -544,7 +580,7 @@ def rollback(confirm, target='installed'):
 
 def run():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['status','check','reapply-local','update-shell','rollback'])
+    parser.add_argument('command', choices=['status','check','releases','reapply-local','update-shell','rollback'])
     parser.add_argument('--tag', default='', help='Specific published GitHub Release tag, e.g. beta-1')
     parser.add_argument('--confirm', default='')
     parser.add_argument('--target', choices=['installed','dev'], default='installed')
@@ -554,6 +590,8 @@ def run():
             emit(current_status())
         elif args.command == 'check':
             emit(check_updates(args.tag))
+        elif args.command == 'releases':
+            emit(list_releases())
         elif args.command == 'reapply-local':
             emit(apply_update('local', args.confirm, target=args.target))
         elif args.command == 'update-shell':

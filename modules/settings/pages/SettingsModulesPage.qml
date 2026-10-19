@@ -8,6 +8,22 @@ ColumnLayout {
     width: parent ? parent.width : 680
     spacing: 14
     SettingsSection {
+        heading: "System OSD"
+        description: "Auto-hide popups for speaker volume, microphone mute, screen and keyboard brightness, and touchpad state. No extra notification daemon."
+        symbol: "\ue050"
+        Repeater {
+            model: [{label:"Show system OSD",desc:"Auto-hide after 1.65 seconds; observes PipeWire and hardware backlight changes",key:"osdEnabled",icon:"\ue050"}]
+            delegate: SettingsToggle { perBarMode: false }
+        }
+        Rectangle {
+            Layout.fillWidth: true; Layout.preferredHeight: 35; radius: 10
+            color: Theme.background
+            Text { anchors.centerIn: parent; text: "Preview OSD"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                onClicked: Store.osdControlRequested("preview") }
+        }
+    }
+    SettingsSection {
         heading: "Memory optimization"
         description: "Optional: unload the hidden AI window. Chat context stays in its service, but closing AI can interrupt a pending reply."
         symbol: "\ue322"

@@ -11,13 +11,23 @@ Singleton {
     property string colorSource: "gruvbox"
     property string barMode: "separated"
     property bool barVisible: true
+    property bool barAutoHide: false
+    property bool showBarRecoveryHandle: true
+    readonly property string barVisibilityMode: barVisible ? (barAutoHide ? "auto" : "show") : (showBarRecoveryHandle ? "hide" : "hidden")
     property bool showBarToggleIcon: true
-    function setBarVisible(enabled) {
-        if (typeof enabled !== "boolean" || barVisible === enabled) return;
-        barVisible = enabled;
+    function setBarVisibilityMode(mode) {
+        if (["show", "auto", "hide", "hidden"].indexOf(mode) < 0) return;
+        barAutoHide = mode === "auto";
+        showBarRecoveryHandle = mode !== "hidden";
+        barVisible = mode === "show" || mode === "auto";
         save();
     }
+    function setBarVisible(enabled) {
+        if (typeof enabled !== "boolean") return;
+        setBarVisibilityMode(enabled ? "show" : "hide");
+    }
     function toggleBar() { setBarVisible(!barVisible); }
+    function toggleBarCompletely() { setBarVisibilityMode(barVisible ? "hidden" : "show"); }
     property string barPosition: "top"
     property bool absoluteCenter: true
     property int centerOffsetX: 0
@@ -67,6 +77,7 @@ Singleton {
     property string wallpaperPath: ""
     property string wallpaperBackend: "swaybg" // Only fresh settings; saved backend is retained.
     property bool lowMemoryShellMode: false
+    property bool osdEnabled: true
     property bool wallpaperAutoRestore: false
     property bool wallpaperReplaceOnRestore: false
     property string wallpaperFitMode: "fill"
@@ -642,7 +653,10 @@ Singleton {
             if (typeof data.wallpaperAutoRestore === "boolean") wallpaperAutoRestore = data.wallpaperAutoRestore;
             if (typeof data.wallpaperReplaceOnRestore === "boolean") wallpaperReplaceOnRestore = data.wallpaperReplaceOnRestore;
             if (typeof data.lowMemoryShellMode === "boolean") lowMemoryShellMode = data.lowMemoryShellMode;
+            if (typeof data.osdEnabled === "boolean") osdEnabled = data.osdEnabled;
             if (typeof data.barVisible === "boolean") barVisible = data.barVisible;
+            if (typeof data.barAutoHide === "boolean") barAutoHide = data.barAutoHide;
+            if (typeof data.showBarRecoveryHandle === "boolean") showBarRecoveryHandle = data.showBarRecoveryHandle;
             if (typeof data.showBarToggleIcon === "boolean") showBarToggleIcon = data.showBarToggleIcon;
             if (["solid", "wallpaper"].indexOf(data.lockscreenBackground) >= 0) lockscreenBackground = data.lockscreenBackground;
             if (["icons", "details", "hover"].indexOf(data.cleanRightMode) !== -1)
@@ -792,7 +806,10 @@ Singleton {
             wallpaperAutoRestore: wallpaperAutoRestore,
             wallpaperReplaceOnRestore: wallpaperReplaceOnRestore,
             lowMemoryShellMode: lowMemoryShellMode,
+            osdEnabled: osdEnabled,
             barVisible: barVisible,
+            barAutoHide: barAutoHide,
+            showBarRecoveryHandle: showBarRecoveryHandle,
             showBarToggleIcon: showBarToggleIcon,
             lockscreenBackground: lockscreenBackground,
             showNotifications: showNotifications,

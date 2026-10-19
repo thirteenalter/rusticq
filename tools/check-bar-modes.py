@@ -5,15 +5,18 @@ import re
 base = Path(__file__).resolve().parents[1]
 store = (base / "config/SettingsStore.qml").read_text()
 bar = (base / "modules/main/Bar.qml").read_text()
-settings = (base / "modules/settings/SettingsWindow.qml").read_text()
+settings = (base / "modules/settings/pages/SettingsBarPage.qml").read_text()
+zone = (base / "components/BarZone.qml").read_text()
 assert 'property string barMode:' in store
 assert 'barMode: barMode' in store
 assert 'data.barMode' in store
 for mode in ('compact', 'clean-compact', 'separated', 'professional', 'simple'):
     assert mode in bar and mode in store and mode in settings, mode
-assert 'Store.toggleQuick(barWindow.screen)' in bar
-assert 'Store.toggleAi(barWindow.screen)' in bar
-assert bar.count('Workspaces {') == 1 and bar.count('Indicators {') == 1
+assert 'Store.toggleQuick(root.hostWindow.screen)' in zone
+assert 'Store.toggleAi(root.hostWindow.screen)' in zone
+assert zone.count('Workspaces {') == 1
+assert 'readonly property var activeKeys: keys.filter(k => isEnabled(k))' in zone
+assert 'sourceComponent: sharedCenterZone' in bar
 for fname in ('BarBattery.qml', 'BarBluetooth.qml', 'BarWifi.qml'):
     s = (base / 'modules/bar' / fname).read_text()
     assert 'Theme.sectionPadding' in s, fname

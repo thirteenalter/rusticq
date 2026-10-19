@@ -34,7 +34,7 @@ def font_families():
 
 
 def choose(kind):
-    if kind not in ('wallpaper', 'font'):
+    if kind not in ('wallpaper', 'font', 'settings'):
         return emit(False, message='Invalid file picker type')
     options = [('zenity', ['zenity', '--file-selection', f'--title=Choose {kind}']),
                ('kdialog', ['kdialog', '--getopenfilename', str(HOME)]),
@@ -49,11 +49,14 @@ def choose(kind):
                 return emit(False, cancelled=True, message='Selection cancelled')
             path = Path(result.stdout.strip()).expanduser()
             try:
+                if path.is_symlink():
+                    return emit(False, message='Symlinked settings files are not supported')
                 resolved = path.resolve(strict=True)
-                resolved.relative_to(HOME)
+                if kind != 'settings':
+                    resolved.relative_to(HOME)
             except (OSError, ValueError):
-                return emit(False, message='Select a file under your home folder')
-            allowed = IMAGE_EXT if kind == 'wallpaper' else FONT_EXT
+                return emit(False, message='Choose an existing local file' if kind == 'settings' else 'Select a file under your home folder')
+            allowed = {'.json'} if kind == 'settings' else IMAGE_EXT if kind == 'wallpaper' else FONT_EXT
             if not resolved.is_file() or resolved.suffix.lower() not in allowed:
                 return emit(False, message='Unsupported file type')
             return emit(path=str(resolved))
@@ -98,7 +101,7 @@ def install_font(path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('action', choices=['fonts', 'pick-wallpaper', 'pick-font', 'install-font'])
+    parser.add_argument('action', choices=['fonts', 'pick-wallpaper', 'pick-font', 'pick-settings', 'install-font'])
     parser.add_argument('path', nargs='?')
     args = parser.parse_args()
     if args.action == 'fonts':
@@ -107,6 +110,8 @@ def main():
         return choose('wallpaper')
     if args.action == 'pick-font':
         return choose('font')
+    if args.action == 'pick-settings':
+        return choose('settings')
     if not args.path:
         return emit(False, message='Missing font file path')
     return install_font(args.path)

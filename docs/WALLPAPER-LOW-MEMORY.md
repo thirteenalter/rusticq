@@ -19,6 +19,13 @@ The selected backend, image path and restore-on-start checkbox are stored via
    this wallpaper re-applied at your next login/Quickshell start. It defaults
    to off, to avoid unexpectedly competing with Omarchy's startup services.
 
+If Apply previously stayed at “Applying wallpaper…” without starting swaybg,
+the Appearance page had an unqualified QML reference to
+`wallpaperReplaceConflicts`. The reference is now scoped to its wallpaper
+section. The replacement checkbox resets after each Apply, and Apply ignores
+clicks while the helper is running. Run `python3 -B tools/test_wallpaper_ui.py`
+for an offscreen interaction regression with a fake backend and temporary settings.
+
 The helper does **not** install packages, edit `~/.config/hypr`, or disable
 Omarchy startup hooks. If Omarchy starts another wallpaper service on every
 login, disable *that service's* autostart separately before enabling permanent

@@ -26,6 +26,67 @@ ColumnLayout {
     property string pendingPackage: ""
     property string confirmationText: ""
     property string packageStatus: ""
+    property bool packageAwaitingSystemAuth: false
+    property var authorizedCommand: []
+    property bool authorizationPassed: false
+    Process {
+        id: systemAuthorization
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const response = JSON.parse(this.text.trim());
+                if (response.ok && response.authorized) {
+                    root.authorizationPassed = true;
+                    root.packageStatus = "Polkit authorization approved. Starting package operation…";
+                    authorizedLaunchDelay.restart();
+                } else {
+                    root.authorizationPassed = false;
+                    root.authorizedCommand = [];
+                    root.packageAwaitingSystemAuth = false;
+                    root.packageStatus = response.message || "Polkit authorization was rejected.";
+                }
+            } catch(e) {
+                root.authorizationPassed = false;
+                root.authorizedCommand = [];
+                root.packageAwaitingSystemAuth = false;
+                root.packageStatus = "System authorization produced no valid response: " + String(e);
+            }
+        } }
+        onExited: (code, status) => {
+            if (code !== 0 && !root.authorizationPassed) {
+                root.packageAwaitingSystemAuth = false;
+                root.authorizedCommand = [];
+            }
+        }
+    }
+    Timer {
+        id: authorizedLaunchDelay
+        interval: 320
+        repeat: false
+        onTriggered: {
+            if (authorizationPassed && authorizedCommand.length && !packageLauncher.running) {
+                const cmd = authorizedCommand.slice();
+                authorizedCommand = [];
+                packageLauncher.exec(cmd);
+            }
+        }
+    }
+    property var authCapabilities: ({pkexec:false, known_agent_detected:false, fingerprint_configured:false})
+    function checkSystemAuth() {
+        if (category === "apps" && !authProbe.running)
+            authProbe.exec(["python3", Quickshell.shellPath("scripts/rustiq-package-manager.py"), "auth-capabilities"]);
+    }
+    Process { id: authProbe
+        stdout: StdioCollector { onStreamFinished: {
+            try { const data = JSON.parse(this.text.trim()); if (data.ok) {
+                root.authCapabilities = data;
+                Store.packageAuthAgentDetected = !!data.known_agent_detected;
+                Store.packageAuthNativeBundled = !!data.native_agent_bundled;
+                Store.packageAuthCanStartAgent = !!data.agent_service_available;
+                Store.packageAuthFingerprintConfigured = !!data.fingerprint_configured;
+            } }
+            catch (e) { root.packageStatus = "Polkit capability check failed: " + String(e); }
+        } }
+    }
     property string newPackageName: ""
     property string pendingProvider: "pacman"
     property string catalogQuery: ""
@@ -176,12 +237,14 @@ ColumnLayout {
     }
 
     function requestOperation(action, pkg, provider) {
+        checkSystemAuth();
         pendingProvider = provider || "pacman";
         pendingAction = action;
         pendingPackage = String(pkg || "").trim();
         confirmationText = "";
         packageStatus = "";
-        if (pendingPackage.length) Store.requestPackageConfirmation(action, pendingPackage, pendingProvider);
+        if (pendingPackage.length && !packageLauncher.running && !authorizedLaunchDelay.running && !systemAuthorization.running)
+            Store.requestPackageConfirmation(action, pendingPackage, pendingProvider);
     }
     function resolveGraphicalApp(entry) {
         if (packageResolve.running) return;
@@ -206,24 +269,47 @@ ColumnLayout {
             onStreamFinished: {
                 try {
                     const response = JSON.parse(this.text.trim());
+                    root.packageAwaitingSystemAuth = false;
                     root.packageStatus = response.message || "Package operation returned no details";
                     if (!response.ok) throw Error(root.packageStatus);
                     root.pendingAction = "";
                     root.pendingPackage = "";
                     Qt.callLater(root.refresh);
                     if (root.catalogQuery.trim().length > 1) Qt.callLater(root.lookupCatalog);
-                } catch (e) { root.packageStatus = "Package transaction failed: " + e; }
+                } catch (e) { root.packageAwaitingSystemAuth = false; root.packageStatus = "Package transaction failed: " + e; }
             }
         }
         onExited: (code, status) => {
-            if (code !== 0 && root.packageStatus.indexOf("Waiting for") === 0)
-                root.packageStatus = "Package operation did not finish. Check graphical Polkit authorization.";
+            root.packageAwaitingSystemAuth = false;
+            if (code !== 0 && (root.packageStatus.indexOf("Waiting for") === 0 || !root.packageStatus.length))
+                root.packageStatus = "Package operation did not finish. Check the system Polkit agent or Yay diagnostics.";
         }
     }
     function confirmPackage() {
-        if (!pendingPackage || packageLauncher.running) return;
-        packageStatus = "Processing " + pendingProvider + " " + pendingAction + " from GUI…";
-        packageLauncher.exec(["python3", Quickshell.shellPath("scripts/rustiq-package-manager.py"), "gui", pendingProvider, pendingAction, pendingPackage]);
+        if (!pendingPackage || packageLauncher.running || authorizedLaunchDelay.running || systemAuthorization.running) return;
+        authorizationPassed = false;
+        packageAwaitingSystemAuth = pendingProvider !== "flatpak";
+        packageStatus = pendingProvider === "yay"
+            ? "Building AUR package as your user. When privileged pacman work begins, approve the system Polkit password/fingerprint dialog."
+            : pendingProvider === "flatpak"
+            ? "Flatpak transaction started. System-wide installation may request Polkit authorization."
+            : "Waiting for the system Polkit password/fingerprint dialog. Return here for the transaction result.";
+        authorizedCommand = ["python3", Quickshell.shellPath("scripts/rustiq-package-manager.py"), "gui", pendingProvider, pendingAction, pendingPackage];
+        // Stage 1: package confirmation FloatingWindow. Stage 2: the native
+        // Polkit agent handles real PAM password/fingerprint UI, without a
+        // decorative intermediate authorization layer.
+        // No package command starts unless that explicit authorization succeeds.
+        systemAuthLaunchDelay.restart();
+    }
+    Timer {
+        id: systemAuthLaunchDelay
+        interval: 390
+        repeat: false
+        onTriggered: {
+            if (root.pendingPackage.length && !systemAuthorization.running)
+                systemAuthorization.exec(["python3", Quickshell.shellPath("scripts/rustiq-package-manager.py"),
+                                          "authorize", root.pendingProvider, root.pendingAction, root.pendingPackage]);
+        }
     }
     Connections {
         target: Store
@@ -517,6 +603,17 @@ ColumnLayout {
         Text { Layout.fillWidth: true; text: "Manual installs use the selected provider (All defaults to Pacman). Search results preserve their provider."; color: Theme.muted; wrapMode: Text.WordWrap; font.pixelSize: Fonts.scale(9) }
     }
 
+    SettingsSection {
+        visible: root.category === "apps" && (root.packageAwaitingSystemAuth || packageLauncher.running)
+        heading: "System authorization"
+        symbol: "\ue897"
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.foreground; font.pixelSize: Fonts.scale(11)
+            text: "Authorization is handled by your active system Polkit agent, not by RusticQ. If configured, scan your fingerprint; otherwise enter your password in the system dialog. No credentials are collected or stored by RusticQ." }
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.warning; font.pixelSize: Fonts.scale(10)
+            text: !root.authCapabilities.pkexec ? "Warning: pkexec unavailable. Pacman administration cannot proceed." :
+                  !root.authCapabilities.known_agent_detected ? "Polkit agent not detected by the local probe. If no prompt appears, start hyprpolkitagent or your current Polkit agent; do not run two agents." :
+                  (root.authCapabilities.fingerprint_configured ? "Fingerprint authentication may be available via PAM." : "Password authentication expected unless your PAM configuration enables another method.") }
+    }
     SettingsSection {
         visible: root.category === "apps" && root.packageStatus.length > 0
         heading: "Package operation status"

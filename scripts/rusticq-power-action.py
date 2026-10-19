@@ -2,7 +2,7 @@
 """User-invoked session actions for RusticQ's keyboard power menu.
 
 No sudo shell strings; no background power management. Poweroff/reboot require
-an extra in-GUI confirmation and loginctl/Polkit handles authorization.
+an extra in-GUI confirmation and systemd-logind/Polkit handles authorization.
 """
 import json
 import shutil
@@ -29,12 +29,19 @@ def action_command(name):
             raise RuntimeError('Omarchy screensaver unavailable: omarchy-launch-screensaver is not installed')
         return ['omarchy-launch-screensaver', 'force']
     if name == 'logout':
+        # UWSM must stop its managed session in order, before the compositor.
+        if shutil.which('uwsm'):
+            active = subprocess.run(['uwsm', 'check', 'is-active', 'Hyprland'],
+                                    capture_output=True, text=True, timeout=3,
+                                    stdin=subprocess.DEVNULL, check=False)
+            if active.returncode == 0:
+                return ['uwsm', 'stop']
         if not shutil.which('hyprctl'):
-            raise RuntimeError('Hyprland is not running')
-        return ['hyprctl', 'dispatch', 'exit']
-    if not shutil.which('loginctl'):
-        raise RuntimeError('loginctl is required for suspend/reboot/shutdown')
-    return ['loginctl', {'suspend':'suspend','reboot':'reboot','shutdown':'poweroff'}[name]]
+            raise RuntimeError('hyprctl is required to log out of Hyprland')
+        return ['hyprctl', 'dispatch', 'hl.dsp.exit()']
+    if not shutil.which('systemctl'):
+        raise RuntimeError('systemctl is required for suspend/reboot/shutdown')
+    return ['systemctl', {'suspend':'suspend','reboot':'reboot','shutdown':'poweroff'}[name]]
 
 
 def run(name):
@@ -64,6 +71,16 @@ def run(name):
         return {'ok': True, 'message': 'RusticQ Native Lock starts after the Power Menu closes'}
     proc = subprocess.run(argv, capture_output=True, text=True, timeout=12,
                           stdin=subprocess.DEVNULL, check=False)
+    if argv == ['hyprctl', 'dispatch', 'hl.dsp.exit()']:
+        # Legacy Hyprland rejects Lua expressions before executing anything.
+        # Retry only that explicit rejection, never a timeout or socket error.
+        if 'invalid dispatcher' in (proc.stdout + proc.stderr).lower():
+            proc = subprocess.run(['hyprctl', 'dispatch', 'exit'], capture_output=True,
+                                  text=True, timeout=12, stdin=subprocess.DEVNULL,
+                                  check=False)
+        # Some hyprctl versions report IPC errors on stdout with exit code 0.
+        if proc.returncode == 0 and proc.stdout.strip().lower() != 'ok':
+            return {'ok': False, 'message': (proc.stderr or proc.stdout or 'Hyprland did not acknowledge logout')[-350:]}
     if proc.returncode != 0:
         return {'ok': False, 'message': (proc.stderr or proc.stdout or 'System service rejected action')[-350:]}
     return {'ok': True, 'message': 'System accepted action: ' + name}

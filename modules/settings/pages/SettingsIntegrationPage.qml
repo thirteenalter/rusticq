@@ -29,6 +29,47 @@ ColumnLayout {
     property string shellUpdateAction: ""
     property string shellUpdateConfirm: ""
     property string shellReleaseTag: ""
+    property var shellReleaseOptions: []
+    property bool shellReleasesBusy: false
+    property string shellReleasesError: ""
+    property bool shellUpdateRiskAccepted: false
+    readonly property var shellSelectedRelease: shellReleaseOptions.find(item => item.tag === shellReleaseTag) || ({})
+    readonly property bool shellVersionDanger: !!shellSelectedRelease.danger ||
+        (!!shellUpdateStatus.release && (!shellReleaseTag.length || shellUpdateStatus.release.tag === shellReleaseTag) && !!shellUpdateStatus.release.danger)
+    readonly property bool shellVersionAvailable: !shellReleaseTag.length || shellSelectedRelease.available !== false
+    // Prevent an unverified manually typed tag from reusing stale metadata.
+    readonly property bool shellReleaseMetadataMatches: !!shellUpdateStatus.release && !!shellUpdateStatus.release.tag &&
+        (!shellReleaseTag.length || shellUpdateStatus.release.tag === shellReleaseTag)
+    function shellFetchVersions() {
+        if (shellReleasesBusy || shellReleaseListProc.running || shellUpdateBusy) return;
+        shellReleasesBusy = true;
+        shellReleasesError = "";
+        shellReleaseListProc.exec(["python3", shellUpdateHelper, "releases"]);
+    }
+    function selectShellRelease(tag) {
+        if (shellUpdateBusy || shellUpdateCheckBusy) return;
+        shellReleaseTag = tag;
+        shellUpdateAction = "";
+        shellUpdateConfirm = "";
+        shellUpdateRiskAccepted = false;
+        shellUpdateCheck();
+    }
+    Process {
+        id: shellReleaseListProc
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const data = JSON.parse(this.text.trim());
+                if (!data.ok || !Array.isArray(data.releases)) throw Error(data.message || "Release list invalid");
+                root.shellReleaseOptions = data.releases;
+                root.shellReleasesError = "";
+            } catch(e) { root.shellReleasesError = "Could not retrieve versions: " + String(e); }
+        } }
+        onExited: (code, status) => {
+            root.shellReleasesBusy = false;
+            if (code !== 0 && !root.shellReleasesError.length)
+                root.shellReleasesError = "Could not reach GitHub Releases (exit " + code + "). Retry when online.";
+        }
+    }
     property bool shellUpdateCheckBusy: false
     property bool shellUpdateCheckedOnce: false
     property string shellUpdateTarget: "dev"
@@ -39,7 +80,7 @@ ColumnLayout {
         interval: 3600000
         repeat: true
         running: root.visible
-        onTriggered: root.shellUpdateCheck()
+        onTriggered: { root.shellFetchVersions(); root.shellUpdateCheck(); }
     }
     function shellUpdateRefresh() {
         if (!shellUpdateStatusProc.running) shellUpdateStatusProc.exec(["python3", shellUpdateHelper, "status"]);
@@ -57,6 +98,7 @@ ColumnLayout {
         const phrase = shellUpdateAction === "reapply-local" ? "REAPPLY LOCAL" :
                        shellUpdateAction === "rollback" ? "ROLLBACK SHELL" : "UPDATE SHELL";
         if (shellUpdateConfirm !== phrase) return;
+        if (shellUpdateAction === "update-shell" && (!shellReleaseMetadataMatches || !shellVersionAvailable || (shellVersionDanger && !shellUpdateRiskAccepted))) return;
         shellUpdateBusy = true;
         shellUpdateMessage = "Preparing a verified shell update…";
         const cmd = ["python3", shellUpdateHelper, shellUpdateAction, "--confirm", phrase, "--target", shellUpdateTarget];
@@ -152,7 +194,82 @@ ColumnLayout {
     property string guardSummary: "Not checked yet"
     property string guardMessage: ""
     property bool guardBusy: false
-    Component.onCompleted: { refresh(); refreshDependencies(); refreshSafeTools(); shellUpdateRefresh(); }
+    // Portable user-settings export/import, built on the existing config guard.
+    property bool settingsTransferBusy: false
+    property string settingsTransferAction: ""
+    property string settingsTransferMessage: ""
+    property bool settingsTransferOk: true
+    property string settingsExportPath: ""
+    // Flush the live SettingsStore singleton first, even on first-run defaults.
+    Timer { id: settingsExportDelay; interval: 140; repeat: false; onTriggered: root.settingsTransfer("export") }
+    property string settingsImportPath: ""
+    property var settingsImportPreview: ({})
+    property string settingsImportConfirmation: ""
+    function settingsTransfer(action) {
+        if (settingsTransferBusy || settingsTransferProc.running) return;
+        if (action === "import" && (!settingsPreviewReady || settingsImportConfirmation !== "IMPORT SETTINGS")) return;
+        settingsTransferAction = action;
+        settingsTransferMessage = action === "export" ? "Saving settings…" : action === "inspect" ? "Inspecting JSON file…" : "Creating safety snapshot and importing…";
+        settingsTransferBusy = true;
+        const cmd = ["python3", guardHelper, action];
+        if (action !== "export") cmd.push("--path", settingsImportPath.trim());
+        if (action === "import") cmd.push("--confirm", "IMPORT SETTINGS", "--sha256", settingsImportPreview.sha256);
+        settingsTransferProc.exec(cmd);
+    }
+    readonly property bool settingsPreviewReady: !!settingsImportPreview.sha256 &&
+        settingsImportPreview.path === settingsImportPath.trim()
+    function invalidateSettingsPreview() {
+        settingsImportPreview = ({});
+        settingsImportConfirmation = "";
+    }
+    Process {
+        id: settingsTransferProc
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const reply = JSON.parse(this.text.trim());
+                root.settingsTransferOk = reply.ok === true;
+                if (reply.ok && reply.data) {
+                    if (root.settingsTransferAction === "export") {
+                        root.settingsExportPath = reply.data.path || "";
+                        root.settingsTransferMessage = reply.data.message + " File: " + root.settingsExportPath;
+                    } else if (root.settingsTransferAction === "inspect") {
+                        // Normalize ~/... paths so the preview matches the chosen file.
+                        root.settingsImportPath = reply.data.path || root.settingsImportPath;
+                        root.settingsImportPreview = reply.data;
+                        root.settingsTransferMessage = "Validated " + reply.data.fields + " settings · " + reply.data.format + ". Type IMPORT SETTINGS to apply.";
+                    } else {
+                        root.settingsTransferMessage = reply.data.message + (reply.data.backup_id ? " Backup: " + reply.data.backup_id : "");
+                        root.invalidateSettingsPreview();
+                    }
+                } else root.settingsTransferMessage = reply.error || "Settings operation failed.";
+            } catch (e) { root.settingsTransferOk = false; root.settingsTransferMessage = "Unexpected settings tool response: " + String(e); }
+        } }
+        onExited: (code, status) => {
+            root.settingsTransferBusy = false;
+            if (code !== 0 && root.settingsTransferMessage.indexOf("…") >= 0) {
+                root.settingsTransferOk = false;
+                root.settingsTransferMessage = "Settings operation exited with code " + code + ".";
+            }
+            Qt.callLater(root.refreshSafeTools);
+        }
+    }
+    Process {
+        id: settingsFilePickerProc
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const choice = JSON.parse(this.text.trim());
+                if (choice.ok && choice.path) {
+                    root.settingsImportPath = choice.path;
+                    root.invalidateSettingsPreview();
+                    root.settingsTransferMessage = "Selected: " + choice.path;
+                } else if (!choice.cancelled) {
+                    root.settingsTransferOk = false;
+                    root.settingsTransferMessage = choice.message || "File picker unavailable. Paste the JSON path instead.";
+                }
+            } catch (e) { root.settingsTransferMessage = "File picker could not provide a path. Paste a JSON file path."; }
+        } }
+    }
+    Component.onCompleted: { refresh(); refreshDependencies(); refreshSafeTools(); shellUpdateRefresh(); shellFetchVersions(); }
     function refreshSafeTools() {
         if (!doctorProc.running) doctorProc.exec(["python3", doctorHelper, "status", "--json"]);
         if (!guardStatusProc.running) guardStatusProc.exec(["python3", guardHelper, "status"]);
@@ -347,6 +464,75 @@ ColumnLayout {
         }
         Text { visible: root.guardMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.guardMessage; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
         Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "For explicit restore: rusticq config list settings, then rusticq config restore settings SNAPSHOT_ID --confirm RESTORE. Restart the shell after restoring."; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+    }
+
+    SettingsSection {
+        heading: "User settings · Save / Load"
+        description: "Transfer RusticQ appearance, bar, wallpaper, widgets, dock and shortcut UI preferences to another install. Does not export API keys, app usage, or Omarchy system configuration."
+        symbol: "\ue8b8"
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+            text: "Source: user-settings.json of this running RusticQ. Save creates a portable JSON in ~/Documents/RusticQ-Settings. Loading creates an automatic recovery snapshot and requires a RusticQ restart."
+            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+        RowLayout { Layout.fillWidth: true; spacing: 8
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10
+                color: root.settingsTransferBusy ? Theme.borderaccent : Theme.accent
+                Text { anchors.centerIn: parent; text: root.settingsTransferBusy && root.settingsTransferAction === "export" ? "Saving…" : "Save user settings"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                MouseArea { anchors.fill: parent; enabled: !root.settingsTransferBusy && !settingsExportDelay.running
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: { SettingsStore.save(); settingsExportDelay.restart(); } }
+            }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10; color: Theme.background
+                Text { anchors.centerIn: parent; text: "Browse settings JSON"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                MouseArea { anchors.fill: parent; enabled: !root.settingsTransferBusy && !settingsFilePickerProc.running
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: settingsFilePickerProc.exec(["python3", Quickshell.shellPath("scripts/rusticq-appearance.py"), "pick-settings"]) }
+            }
+        }
+        Text { Layout.fillWidth: true; visible: root.settingsExportPath.length > 0; wrapMode: Text.WrapAnywhere
+            text: "Saved file: " + root.settingsExportPath; color: Theme.accent; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 43; radius: 10; color: Theme.background
+            TextInput { id: transferImportPath
+                anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
+                verticalAlignment: TextInput.AlignVCenter; selectByMouse: true; clip: true
+                text: root.settingsImportPath
+                onTextEdited: { root.settingsImportPath = text; root.invalidateSettingsPreview(); }
+                color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                Text { anchors.verticalCenter: parent.verticalCenter; visible: parent.text.length === 0
+                    text: "Path to saved RusticQ .json (paste path or Browse)"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+            }
+        }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10
+            color: root.settingsImportPath.trim().length > 0 && !root.settingsTransferBusy ? Theme.surface : Theme.borderaccent
+            Text { anchors.centerIn: parent; text: "Validate & preview import"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            MouseArea { anchors.fill: parent; enabled: root.settingsImportPath.trim().length > 0 && !root.settingsTransferBusy
+                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor; onClicked: root.settingsTransfer("inspect") }
+        }
+        ColumnLayout { Layout.fillWidth: true; visible: root.settingsPreviewReady; spacing: 7
+            Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+                text: "Validated: " + (root.settingsImportPreview.fields || 0) + " settings · " + (root.settingsImportPreview.format || "JSON") + " · SHA-256 checked before import. Loading replaces this instance's settings file but preserves the current version in Config Recovery backups."
+                color: Theme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10; color: Theme.background
+                TextInput { anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
+                    verticalAlignment: TextInput.AlignVCenter; selectByMouse: true
+                    text: root.settingsImportConfirmation; onTextEdited: root.settingsImportConfirmation = text
+                    color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                    Text { visible: parent.text.length === 0; anchors.verticalCenter: parent.verticalCenter
+                        text: "Type IMPORT SETTINGS to confirm"; color: Theme.muted; font.pixelSize: Fonts.scale(10) } }
+            }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10
+                color: root.settingsImportConfirmation === "IMPORT SETTINGS" && !root.settingsTransferBusy ? Theme.accent : Theme.borderaccent
+                Text { anchors.centerIn: parent; text: "Load user settings"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                MouseArea { anchors.fill: parent
+                    enabled: root.settingsPreviewReady && root.settingsImportConfirmation === "IMPORT SETTINGS" && !root.settingsTransferBusy
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor; onClicked: root.settingsTransfer("import") }
+            }
+        }
+        Text { visible: root.settingsTransferMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
+            text: root.settingsTransferMessage
+            color: root.settingsTransferOk ? Theme.accent : Theme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+            text: "After Load, restart RusticQ to apply imported settings. Do not change other settings before restarting: the running instance may otherwise overwrite imported values."
+            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
     }
 
     SettingsSection {
@@ -563,9 +749,53 @@ ColumnLayout {
                     onClicked: root.shellUpdateCheck() }
             }
         }
+        RowLayout { Layout.fillWidth: true; spacing: 8
+            Text { Layout.fillWidth: true; text: "Available GitHub versions"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            Rectangle { Layout.preferredWidth: 115; Layout.preferredHeight: 31; radius: 9; color: Theme.background
+                Text { anchors.centerIn: parent; text: root.shellReleasesBusy ? "Fetching…" : "Refresh versions"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+                MouseArea { anchors.fill: parent; enabled: !root.shellReleasesBusy && !root.shellUpdateBusy; cursorShape: Qt.PointingHandCursor
+                    onClicked: root.shellFetchVersions() }
+            }
+        }
+        Text { visible: root.shellReleasesError.length > 0; Layout.fillWidth: true; text: root.shellReleasesError
+            wrapMode: Text.WordWrap; color: Theme.warning; font.pixelSize: Fonts.scale(10) }
+        ListView {
+            id: releaseVersionsList
+            visible: root.shellReleaseOptions.length > 0
+            Layout.fillWidth: true
+            Layout.preferredHeight: visible ? Math.min(198, root.shellReleaseOptions.length * 43 + 4) : 0
+            clip: true; spacing: 4; boundsBehavior: Flickable.StopAtBounds
+            model: root.shellReleaseOptions
+            delegate: Rectangle {
+                id: releaseEntry
+                required property var modelData
+                width: ListView.view.width; height: 39; radius: 8
+                readonly property bool chosen: root.shellReleaseTag === modelData.tag
+                color: chosen ? Qt.alpha(Theme.accent, .16) : Theme.background
+                border.width: chosen ? 1 : 0; border.color: Theme.accent
+                RowLayout { anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 10; spacing: 9
+                    Text { Layout.fillWidth: true; elide: Text.ElideRight; text: releaseEntry.modelData.title + " (" + releaseEntry.modelData.tag + ")"
+                        color: releaseEntry.modelData.available === false ? Theme.muted : Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                    Rectangle { visible: !!releaseEntry.modelData.danger; Layout.preferredWidth: 96; Layout.preferredHeight: 22
+                        color: Qt.alpha(Theme.warning, .16); radius: 6; border.color: Theme.warning; border.width: 1
+                        Text { anchors.centerIn: parent; text: "BETA / RISK"; color: Theme.warning; font.pixelSize: Fonts.scale(9) }
+                    }
+                    Text { text: releaseEntry.modelData.available === false ? "Unavailable" : releaseEntry.chosen ? "Selected" : "Select";
+                        color: releaseEntry.modelData.available === false ? Theme.warning : Theme.accent; font.pixelSize: Fonts.scale(10) }
+                }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                    enabled: releaseEntry.modelData.available !== false && !root.shellUpdateBusy && !root.shellUpdateCheckBusy
+                    onClicked: root.selectShellRelease(releaseEntry.modelData.tag) }
+            }
+        }
         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10; color: Theme.background
             TextInput { id: updateTagInput; anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10
-                verticalAlignment: TextInput.AlignVCenter; text: root.shellReleaseTag; onTextEdited: root.shellReleaseTag = text
+                verticalAlignment: TextInput.AlignVCenter; text: root.shellReleaseTag; onTextEdited: {
+                    root.shellReleaseTag = text;
+                    root.shellUpdateRiskAccepted = false;
+                    root.shellUpdateAction = "";
+                    root.shellUpdateConfirm = "";
+                }
                 color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); selectByMouse: true
                 Text { visible: parent.text.length === 0; anchors.verticalCenter: parent.verticalCenter
                     text: "Optional release tag (e.g. beta-1); blank = newest published release"
@@ -578,11 +808,14 @@ ColumnLayout {
                     " · Verification: " + (root.shellUpdateStatus.release.source_archive ? "official source ZIP (HTTPS; no published checksum)" : (root.shellUpdateStatus.release.digest || "checksum asset required"))) :
                   "Checking official GitHub Releases… Full ZIPs with checksums are preferred; GitHub source ZIP is the fallback."
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+        Text { visible: root.shellVersionDanger && root.shellReleaseMetadataMatches
+            Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.warning; font.pixelSize: Fonts.scale(10)
+            text: "DANGER: this release is beta/alpha/RC or marked prerelease. It may contain regressions; older versions can invalidate newer settings. Make sure a rollback snapshot is available." }
         RowLayout { Layout.fillWidth: true; spacing: 8
             Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10
-                color: root.shellUpdateTargetReady && root.shellUpdateStatus.release && root.shellUpdateStatus.release.tag ? Theme.accent : Theme.borderaccent
+                color: root.shellUpdateTargetReady && root.shellReleaseMetadataMatches && root.shellVersionAvailable ? Theme.accent : Theme.borderaccent
                 Text { anchors.centerIn: parent; text: "Update Shell (GitHub)"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
-                MouseArea { anchors.fill: parent; enabled: root.shellUpdateTargetReady && root.shellUpdateStatus.release && !!root.shellUpdateStatus.release.tag && !root.shellUpdateBusy && !root.shellUpdateCheckBusy
+                MouseArea { anchors.fill: parent; enabled: root.shellUpdateTargetReady && root.shellReleaseMetadataMatches && root.shellVersionAvailable && !root.shellUpdateBusy && !root.shellUpdateCheckBusy
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: { root.shellUpdateAction = "update-shell"; root.shellUpdateConfirm = ""; } }
             }
@@ -599,6 +832,17 @@ ColumnLayout {
             Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
                 text: "Confirm " + parent.phrase + " → " + (root.shellUpdateTarget === "dev" ? "~/dev/quickshell" : "~/.local/share/rusticq/shell") + ". Original files and user settings are preserved for rollback. GitHub source ZIPs have no independent published SHA-256. Restart the active shell manually."
                 color: Theme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            RowLayout { visible: root.shellUpdateAction === "update-shell" && root.shellVersionDanger; Layout.fillWidth: true; spacing: 9
+                Rectangle { Layout.preferredWidth: 27; Layout.preferredHeight: 27; radius: 7
+                    color: root.shellUpdateRiskAccepted ? Qt.alpha(Theme.accent,.18) : Theme.background
+                    border.color: root.shellUpdateRiskAccepted ? Theme.accent : Theme.warning; border.width: 1
+                    Text { anchors.centerIn: parent; text: root.shellUpdateRiskAccepted ? "✓" : "!"; color: Theme.warning; font.pixelSize: Fonts.scale(13) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                        onClicked: root.shellUpdateRiskAccepted = !root.shellUpdateRiskAccepted }
+                }
+                Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "I understand the risks of installing a pre-release version and may need to roll back.";
+                    color: Theme.warning; font.pixelSize: Fonts.scale(10) }
+            }
             Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10; color: Theme.background
                 TextInput { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10; verticalAlignment: TextInput.AlignVCenter
                     text: root.shellUpdateConfirm; onTextEdited: root.shellUpdateConfirm = text; selectByMouse: true
@@ -613,9 +857,11 @@ ColumnLayout {
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { root.shellUpdateAction = ""; root.shellUpdateConfirm = ""; } }
                 }
                 Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
-                    color: root.shellUpdateConfirm === updateConfirmColumn.phrase && !root.shellUpdateBusy ? Theme.accent : Theme.borderaccent
+                    color: root.shellUpdateConfirm === updateConfirmColumn.phrase && !root.shellUpdateBusy &&
+                        (root.shellUpdateAction !== "update-shell" || !root.shellVersionDanger || root.shellUpdateRiskAccepted) ? Theme.accent : Theme.borderaccent
                     Text { anchors.centerIn: parent; text: root.shellUpdateBusy ? "Installing…" : "Confirm & install"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
-                    MouseArea { anchors.fill: parent; enabled: root.shellUpdateConfirm === updateConfirmColumn.phrase && !root.shellUpdateBusy
+                    MouseArea { anchors.fill: parent; enabled: root.shellUpdateConfirm === updateConfirmColumn.phrase && !root.shellUpdateBusy &&
+                        (root.shellUpdateAction !== "update-shell" || !root.shellVersionDanger || root.shellUpdateRiskAccepted)
                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor; onClicked: root.shellUpdateApply() }
                 }
             }

@@ -1,336 +1,9 @@
 {
-  "accentName": "green",
-  "colorSource": "gruvbox",
-  "barMode": "clean-compact",
-  "barPosition": "top",
   "absoluteCenter": true,
-  "centerOffsetX": -10,
-  "uiFontFamily": "poppins",
-  "uiCustomFont": "Noto Music",
-  "uiFontScale": 1,
-  "uiDensity": "comfortable",
-  "desktopProfile": "custom",
-  "desktopProfilePrevious": {},
-  "wallpaperPath": "/home/ryznxx/Downloads/Silhouette Amidst the Wildfire Embers.png",
-  "wallpaperBackend": "swaybg",
-  "wallpaperFitMode": "fill",
-  "wallpaperAutoRestore": false,
-  "wallpaperReplaceOnRestore": false,
-  "lowMemoryShellMode": false,
-  "barVisible": true,
-  "showBarToggleIcon": true,
-  "lockscreenBackground": "solid",
-  "showNotifications": true,
-  "showLauncher": true,
-  "showRusticQIcon": true,
-  "launcherLayoutMode": "clean-hover",
-  "launcherWidth": 802,
-  "launcherHeight": 605,
-  "launcherIconSize": 30,
-  "launcherRowHeight": 56,
-  "launcherFavoriteColumns": 3,
-  "showTaskView": true,
-  "desktopCalendar": true,
-  "desktopSystem": true,
-  "desktopClock": true,
-  "desktopMedia": true,
-  "desktopWeather": false,
-  "desktopConnectivity": false,
-  "desktopNotes": false,
-  "desktopKanban": false,
-  "desktopRandomImage": false,
-  "widgetImageFolder": "",
-  "widgetImageRotateSeconds": 0,
-  "widgetPositions": {
-    "HDMI-A-1:media": {
-      "x": 0.013082298136645963,
-      "y": 0.7484109443530702
-    },
-    "HDMI-A-1:system": {
-      "x": 0.012240392080745342,
-      "y": 0.5323757595486112
-    },
-    "HDMI-A-1:calendar": {
-      "x": 0.01155376552795031,
-      "y": 0.2448137091898428
-    },
-    "HDMI-A-1:randomImage": {
-      "x": 0.21971429412688442,
-      "y": 0.09792889435279188
-    },
-    "HDMI-A-1:kanban": {
-      "x": 0.23059098285619176,
-      "y": 0.0891202059659091
-    },
-    "HDMI-A-1:notes": {
-      "x": 0.21491653726708074,
-      "y": 0.386195372839053
-    },
-    "HDMI-A-1:notes:3": {
-      "x": 0.21982261274779716,
-      "y": 0.11248951113952373
-    },
-    "HDMI-A-1:kanban:3": {
-      "x": 0.2444846861856421,
-      "y": 0.6050265395444243
-    },
-    "HDMI-A-1:randomImage:3": {
-      "x": 0.2220492490265874,
-      "y": 0.24237062898042727
-    },
-    "eDP-1:media": {
-      "x": 0.011849767080745343,
-      "y": 0.7689487390350878
-    },
-    "eDP-1:system": {
-      "x": 0.01218458850931677,
-      "y": 0.5479781539351852
-    }
-  },
-  "widgetWorkspaceScopes": {
-    "notes": [
-      3
-    ],
-    "kanban": [
-      3
-    ],
-    "randomImage": []
-  },
-  "workspaceNotes": {
-    "HDMI-A-1:2": "",
-    "HDMI-A-1:3": "dick",
-    "HDMI-A-1:4": "",
-    "eDP-1:10": "",
-    "eDP-1:3": "",
-    "eDP-1:2": "",
-    "eDP-1:1": "",
-    "eDP-1:4": "",
-    "eDP-1:5": "",
-    "eDP-1:6": "",
-    "eDP-1:7": ""
-  },
-  "widgetSizes": {
-    "HDMI-A-1:notes:3": {
-      "width": 320,
-      "height": 343
-    },
-    "HDMI-A-1:kanban:3": {
-      "width": 494,
-      "height": 329
-    },
-    "HDMI-A-1:randomImage:3": {
-      "width": 354,
-      "height": 756
-    }
-  },
-  "showDock": true,
-  "dockFiles": false,
-  "dockBrowser": true,
-  "dockSettings": false,
-  "dockTaskView": true,
-  "dockAI": false,
-  "dockRunningApps": true,
-  "quickControlOrder": [
-    "notifications",
-    "wifi",
-    "bluetooth",
-    "battery",
-    "system"
-  ],
-  "dockAutoHide": true,
-  "showMenuBar": true,
-  "showMenuEdit": true,
-  "showMenuView": true,
-  "showMenuShare": true,
-  "showMenuFile": false,
-  "showMenuShell": true,
-  "showMenuTools": false,
-  "cleanRightDetails": false,
-  "cleanRightMode": "icons",
-  "marginOverrides": {
-    "clean-compact": {
-      "right": 0
-    },
-    "separated": {
-      "top": 10,
-      "bottom": 4,
-      "left": 8
-    },
-    "simple": {
-      "top": 1,
-      "bottom": 2
-    }
-  },
-  "barSpacingOverrides": {
-    "clean-compact": {
-      "left": {
-        "items": {}
-      },
-      "center": {
-        "items": {
-          "arch": {
-            "before": 7,
-            "after": 0
-          }
-        }
-      },
-      "right": {
-        "items": {
-          "date": {
-            "before": 3,
-            "after": 3
-          },
-          "bluetooth": {
-            "before": 0
-          },
-          "wifi": {
-            "before": 9,
-            "after": 11
-          },
-          "battery": {
-            "before": 0,
-            "after": 0
-          },
-          "audio": {
-            "before": 6,
-            "after": 3
-          },
-          "task": {
-            "before": 5
-          },
-          "quickModes": {
-            "before": 2,
-            "after": 4
-          },
-          "quickControl": {
-            "before": 0,
-            "after": 0
-          }
-        },
-        "gap": 11
-      }
-    },
-    "separated": {
-      "left": {
-        "items": {
-          "workspaces": {
-            "before": 0,
-            "after": 6
-          }
-        }
-      },
-      "right": {
-        "items": {
-          "bluetooth": {
-            "before": 7
-          },
-          "wifi": {
-            "before": 13,
-            "after": 11
-          },
-          "battery": {
-            "before": 6,
-            "after": 10
-          },
-          "audio": {
-            "before": 0,
-            "after": 9
-          },
-          "task": {
-            "before": 0,
-            "after": 5
-          },
-          "quickModes": {
-            "after": 5
-          }
-        },
-        "gap": 3
-      }
-    },
-    "professional": {
-      "left": {
-        "items": {},
-        "gap": 10
-      },
-      "right": {
-        "items": {
-          "bluetooth": {
-            "before": 8
-          },
-          "wifi": {
-            "before": 9,
-            "after": 13
-          },
-          "battery": {
-            "before": 0,
-            "after": 9
-          },
-          "audio": {
-            "after": 7
-          }
-        },
-        "gap": 5
-      }
-    },
-    "simple": {
-      "right": {
-        "items": {},
-        "gap": 15
-      }
-    }
-  },
-  "barIconPlacements": {
-    "arch": "center",
-    "weather": "right",
-    "bluetooth": "right",
-    "quickControl": "right",
-    "mic": "right",
-    "down": "right",
-    "up": "left"
-  },
-  "barIconPlacementsByMode": {
-    "compact": {
-      "arch": "center",
-      "weather": "right",
-      "bluetooth": "right",
-      "quickControl": "right",
-      "mic": "right",
-      "down": "right",
-      "up": "left"
-    },
-    "clean-compact": {
-      "arch": "center",
-      "down": "left",
-      "up": "left"
-    },
-    "separated": {
-      "arch": "center",
-      "weather": "right",
-      "bluetooth": "right",
-      "quickControl": "right",
-      "mic": "right",
-      "down": "right",
-      "up": "left"
-    },
-    "professional": {
-      "arch": "center",
-      "weather": "right",
-      "bluetooth": "right",
-      "quickControl": "right",
-      "mic": "right",
-      "down": "right",
-      "up": "left"
-    },
-    "simple": {
-      "arch": "center",
-      "weather": "right",
-      "bluetooth": "right",
-      "quickControl": "right",
-      "mic": "right",
-      "down": "right",
-      "up": "left"
-    }
-  },
+  "accentName": "green",
+  "aiModel": "gpt-4.1-mini",
+  "aiProvider": "openai",
+  "barAutoHide": false,
   "barIconOrderByMode": {
     "clean-compact": [
       "arch",
@@ -355,192 +28,522 @@
       "mic"
     ]
   },
-  "barIconVisibilityProfiles": {
-    "compact": {
-      "showRusticQIcon": true,
-      "showLauncher": true,
-      "showArch": true,
-      "showWorkspaces": true,
-      "showQuickControl": true,
-      "showTaskView": true,
-      "showWeather": true,
-      "showTime": true,
-      "showDate": true,
-      "showWifi": true,
-      "showBluetooth": true,
-      "showBattery": true,
-      "showAudio": true,
-      "showMicrophoneStatus": false,
-      "showDownloadSpeed": false,
-      "showUploadSpeed": false,
-      "showIndicators": true,
-      "showMenuBar": true,
-      "showMenuFile": false,
-      "showMenuEdit": true,
-      "showMenuView": true,
-      "showMenuShare": true,
-      "showMenuShell": true,
-      "showMenuTools": false,
-      "showQuickModes": true,
-      "showKeepAwake": true,
-      "showSilent": true,
-      "showGamingMode": true,
-      "showNightMode": true,
-      "showMicMute": true
-    },
+  "barIconPlacements": {
+    "arch": "center",
+    "bluetooth": "right",
+    "down": "right",
+    "mic": "right",
+    "quickControl": "right",
+    "up": "left",
+    "weather": "right"
+  },
+  "barIconPlacementsByMode": {
     "clean-compact": {
-      "showRusticQIcon": true,
-      "showLauncher": false,
-      "showArch": true,
-      "showWorkspaces": true,
-      "showQuickControl": true,
-      "showBarToggleIcon": false,
-      "showTaskView": true,
-      "showWeather": true,
-      "showTime": true,
-      "showDate": true,
-      "showWifi": true,
-      "showBluetooth": true,
-      "showBattery": true,
-      "showAudio": true,
-      "showMicrophoneStatus": false,
-      "showDownloadSpeed": false,
-      "showUploadSpeed": false,
-      "showIndicators": true,
-      "showMenuBar": true,
-      "showMenuFile": false,
-      "showMenuEdit": true,
-      "showMenuView": true,
-      "showMenuShare": true,
-      "showMenuShell": true,
-      "showMenuTools": false,
-      "showQuickModes": true,
-      "showKeepAwake": true,
-      "showSilent": true,
-      "showGamingMode": true,
-      "showNightMode": true,
-      "showMicMute": true
+      "arch": "center",
+      "down": "left",
+      "up": "left"
     },
-    "separated": {
-      "showRusticQIcon": true,
-      "showLauncher": true,
-      "showArch": true,
-      "showWorkspaces": true,
-      "showQuickControl": true,
-      "showTaskView": true,
-      "showWeather": true,
-      "showTime": true,
-      "showDate": true,
-      "showWifi": true,
-      "showBluetooth": true,
-      "showBattery": true,
-      "showAudio": true,
-      "showMicrophoneStatus": false,
-      "showDownloadSpeed": false,
-      "showUploadSpeed": false,
-      "showIndicators": true,
-      "showMenuBar": true,
-      "showMenuFile": false,
-      "showMenuEdit": true,
-      "showMenuView": true,
-      "showMenuShare": true,
-      "showMenuShell": true,
-      "showMenuTools": false,
-      "showQuickModes": true,
-      "showKeepAwake": true,
-      "showSilent": true,
-      "showGamingMode": true,
-      "showNightMode": true,
-      "showMicMute": true
+    "compact": {
+      "arch": "center",
+      "bluetooth": "right",
+      "down": "right",
+      "mic": "right",
+      "quickControl": "right",
+      "up": "left",
+      "weather": "right"
     },
     "professional": {
-      "showRusticQIcon": true,
-      "showLauncher": true,
+      "arch": "center",
+      "bluetooth": "right",
+      "down": "right",
+      "mic": "right",
+      "quickControl": "right",
+      "up": "left",
+      "weather": "right"
+    },
+    "separated": {
+      "arch": "center",
+      "bluetooth": "right",
+      "down": "right",
+      "mic": "right",
+      "quickControl": "right",
+      "up": "left",
+      "weather": "right"
+    },
+    "simple": {
+      "arch": "center",
+      "bluetooth": "right",
+      "down": "right",
+      "mic": "right",
+      "quickControl": "right",
+      "up": "left",
+      "weather": "right"
+    }
+  },
+  "barIconVisibilityProfiles": {
+    "clean-compact": {
       "showArch": true,
-      "showWorkspaces": true,
-      "showQuickControl": true,
-      "showTaskView": true,
-      "showWeather": true,
-      "showTime": true,
-      "showDate": true,
-      "showWifi": true,
-      "showBluetooth": true,
-      "showBattery": true,
       "showAudio": true,
-      "showMicrophoneStatus": false,
+      "showBarToggleIcon": false,
+      "showBattery": true,
+      "showBluetooth": true,
+      "showDate": true,
       "showDownloadSpeed": false,
-      "showUploadSpeed": false,
+      "showGamingMode": true,
       "showIndicators": true,
+      "showKeepAwake": true,
+      "showLauncher": true,
       "showMenuBar": true,
-      "showMenuFile": false,
       "showMenuEdit": true,
-      "showMenuView": true,
+      "showMenuFile": false,
       "showMenuShare": true,
       "showMenuShell": true,
       "showMenuTools": false,
-      "showQuickModes": true,
-      "showKeepAwake": true,
-      "showSilent": true,
-      "showGamingMode": true,
+      "showMenuView": true,
+      "showMicMute": true,
+      "showMicrophoneStatus": false,
       "showNightMode": true,
-      "showMicMute": true
+      "showQuickControl": true,
+      "showQuickModes": true,
+      "showRusticQIcon": true,
+      "showSilent": true,
+      "showTaskView": true,
+      "showTime": true,
+      "showUploadSpeed": false,
+      "showWeather": true,
+      "showWifi": true,
+      "showWorkspaces": true
+    },
+    "compact": {
+      "showArch": true,
+      "showAudio": true,
+      "showBattery": true,
+      "showBluetooth": true,
+      "showDate": true,
+      "showDownloadSpeed": false,
+      "showGamingMode": true,
+      "showIndicators": true,
+      "showKeepAwake": true,
+      "showLauncher": true,
+      "showMenuBar": true,
+      "showMenuEdit": true,
+      "showMenuFile": false,
+      "showMenuShare": true,
+      "showMenuShell": true,
+      "showMenuTools": false,
+      "showMenuView": true,
+      "showMicMute": true,
+      "showMicrophoneStatus": false,
+      "showNightMode": true,
+      "showQuickControl": true,
+      "showQuickModes": true,
+      "showRusticQIcon": true,
+      "showSilent": true,
+      "showTaskView": true,
+      "showTime": true,
+      "showUploadSpeed": false,
+      "showWeather": true,
+      "showWifi": true,
+      "showWorkspaces": true
+    },
+    "professional": {
+      "showArch": true,
+      "showAudio": true,
+      "showBattery": true,
+      "showBluetooth": true,
+      "showDate": true,
+      "showDownloadSpeed": false,
+      "showGamingMode": true,
+      "showIndicators": true,
+      "showKeepAwake": true,
+      "showLauncher": true,
+      "showMenuBar": true,
+      "showMenuEdit": true,
+      "showMenuFile": false,
+      "showMenuShare": true,
+      "showMenuShell": true,
+      "showMenuTools": false,
+      "showMenuView": true,
+      "showMicMute": true,
+      "showMicrophoneStatus": false,
+      "showNightMode": true,
+      "showQuickControl": true,
+      "showQuickModes": true,
+      "showRusticQIcon": true,
+      "showSilent": true,
+      "showTaskView": true,
+      "showTime": true,
+      "showUploadSpeed": false,
+      "showWeather": true,
+      "showWifi": true,
+      "showWorkspaces": true
+    },
+    "separated": {
+      "showArch": true,
+      "showAudio": true,
+      "showBattery": true,
+      "showBluetooth": true,
+      "showDate": true,
+      "showDownloadSpeed": false,
+      "showGamingMode": true,
+      "showIndicators": true,
+      "showKeepAwake": true,
+      "showLauncher": true,
+      "showMenuBar": true,
+      "showMenuEdit": true,
+      "showMenuFile": false,
+      "showMenuShare": true,
+      "showMenuShell": true,
+      "showMenuTools": false,
+      "showMenuView": true,
+      "showMicMute": true,
+      "showMicrophoneStatus": false,
+      "showNightMode": true,
+      "showQuickControl": true,
+      "showQuickModes": true,
+      "showRusticQIcon": true,
+      "showSilent": true,
+      "showTaskView": true,
+      "showTime": true,
+      "showUploadSpeed": false,
+      "showWeather": true,
+      "showWifi": true,
+      "showWorkspaces": true
     },
     "simple": {
-      "showRusticQIcon": false,
-      "showLauncher": false,
       "showArch": false,
-      "showWorkspaces": true,
-      "showQuickControl": true,
-      "showTaskView": false,
-      "showWeather": false,
-      "showTime": true,
-      "showDate": false,
-      "showWifi": false,
-      "showBluetooth": false,
-      "showBattery": true,
       "showAudio": true,
-      "showMicrophoneStatus": false,
+      "showBattery": true,
+      "showBluetooth": false,
+      "showDate": false,
       "showDownloadSpeed": false,
-      "showUploadSpeed": false,
+      "showGamingMode": false,
       "showIndicators": true,
+      "showKeepAwake": false,
+      "showLauncher": false,
       "showMenuBar": false,
-      "showMenuFile": false,
       "showMenuEdit": false,
-      "showMenuView": false,
+      "showMenuFile": false,
       "showMenuShare": false,
       "showMenuShell": false,
       "showMenuTools": false,
-      "showQuickModes": false,
-      "showKeepAwake": false,
-      "showSilent": false,
-      "showGamingMode": false,
+      "showMenuView": false,
+      "showMicMute": false,
+      "showMicrophoneStatus": false,
       "showNightMode": false,
-      "showMicMute": false
+      "showQuickControl": true,
+      "showQuickModes": false,
+      "showRusticQIcon": false,
+      "showSilent": false,
+      "showTaskView": false,
+      "showTime": true,
+      "showUploadSpeed": false,
+      "showWeather": false,
+      "showWifi": false,
+      "showWorkspaces": true
     }
   },
-  "showArch": true,
-  "showTime": true,
-  "showDate": true,
-  "showWifi": true,
-  "showBluetooth": true,
-  "showBattery": true,
-  "showAudio": true,
-  "showQuickControl": true,
-  "showNotificationIcon": true,
+  "barMode": "clean-compact",
+  "barPosition": "top",
+  "barSpacingOverrides": {
+    "clean-compact": {
+      "center": {
+        "items": {
+          "arch": {
+            "after": 0,
+            "before": 7
+          }
+        }
+      },
+      "left": {
+        "items": {}
+      },
+      "right": {
+        "gap": 11,
+        "items": {
+          "audio": {
+            "after": 3,
+            "before": 6
+          },
+          "battery": {
+            "after": 0,
+            "before": 0
+          },
+          "bluetooth": {
+            "before": 0
+          },
+          "date": {
+            "after": 3,
+            "before": 3
+          },
+          "quickControl": {
+            "after": 0,
+            "before": 0
+          },
+          "quickModes": {
+            "after": 4,
+            "before": 2
+          },
+          "task": {
+            "before": 5
+          },
+          "wifi": {
+            "after": 11,
+            "before": 9
+          }
+        }
+      }
+    },
+    "professional": {
+      "left": {
+        "gap": 10,
+        "items": {}
+      },
+      "right": {
+        "gap": 5,
+        "items": {
+          "audio": {
+            "after": 7
+          },
+          "battery": {
+            "after": 9,
+            "before": 0
+          },
+          "bluetooth": {
+            "before": 8
+          },
+          "wifi": {
+            "after": 13,
+            "before": 9
+          }
+        }
+      }
+    },
+    "separated": {
+      "left": {
+        "items": {
+          "workspaces": {
+            "after": 6,
+            "before": 0
+          }
+        }
+      },
+      "right": {
+        "gap": 3,
+        "items": {
+          "audio": {
+            "after": 9,
+            "before": 0
+          },
+          "battery": {
+            "after": 10,
+            "before": 6
+          },
+          "bluetooth": {
+            "before": 7
+          },
+          "quickModes": {
+            "after": 5
+          },
+          "task": {
+            "after": 5,
+            "before": 0
+          },
+          "wifi": {
+            "after": 11,
+            "before": 13
+          }
+        }
+      }
+    },
+    "simple": {
+      "right": {
+        "gap": 15,
+        "items": {}
+      }
+    }
+  },
+  "barVisible": true,
+  "centerOffsetX": -10,
+  "cleanRightDetails": false,
+  "cleanRightMode": "icons",
+  "colorSource": "gruvbox",
+  "desktopCalendar": true,
+  "desktopClock": true,
+  "desktopConnectivity": false,
+  "desktopKanban": false,
+  "desktopMedia": true,
+  "desktopNotes": false,
+  "desktopProfile": "custom",
+  "desktopProfilePrevious": {},
+  "desktopRandomImage": false,
+  "desktopSystem": true,
+  "desktopWeather": false,
+  "dockAI": false,
+  "dockAutoHide": true,
+  "dockBrowser": true,
+  "dockFiles": false,
+  "dockRunningApps": true,
+  "dockSettings": false,
+  "dockTaskView": true,
+  "launcherFavoriteColumns": 3,
+  "launcherHeight": 605,
+  "launcherIconSize": 30,
+  "launcherLayoutMode": "clean-hover",
+  "launcherRowHeight": 56,
+  "launcherWidth": 802,
+  "lockscreenBackground": "solid",
+  "lowMemoryShellMode": false,
+  "marginOverrides": {
+    "clean-compact": {
+      "right": 0
+    },
+    "separated": {
+      "bottom": 4,
+      "left": 8,
+      "top": 10
+    },
+    "simple": {
+      "bottom": 2,
+      "top": 1
+    }
+  },
+  "osdEnabled": true,
   "quickControlButtonStyle": "filled",
-  "showWeather": true,
-  "showWorkspaces": true,
-  "showIndicators": true,
-  "showQuickModes": true,
+  "quickControlOrder": [
+    "notifications",
+    "wifi",
+    "bluetooth",
+    "battery",
+    "system"
+  ],
   "quickModesAutoHide": true,
-  "showKeepAwake": true,
-  "showSilent": true,
+  "showArch": true,
+  "showAudio": true,
+  "showBarRecoveryHandle": true,
+  "showBarToggleIcon": true,
+  "showBattery": true,
+  "showBluetooth": true,
+  "showDate": true,
+  "showDock": true,
+  "showDownloadSpeed": false,
   "showGamingMode": true,
-  "showNightMode": true,
+  "showIndicators": true,
+  "showKeepAwake": true,
+  "showLauncher": true,
+  "showMenuBar": true,
+  "showMenuEdit": true,
+  "showMenuFile": false,
+  "showMenuShare": true,
+  "showMenuShell": true,
+  "showMenuTools": false,
+  "showMenuView": true,
   "showMicMute": true,
   "showMicrophoneStatus": false,
-  "showDownloadSpeed": false,
+  "showNightMode": true,
+  "showNotificationIcon": true,
+  "showNotifications": true,
+  "showQuickControl": true,
+  "showQuickModes": true,
+  "showRusticQIcon": true,
+  "showSilent": true,
+  "showTaskView": true,
+  "showTime": true,
   "showUploadSpeed": false,
-  "aiProvider": "openai",
-  "aiModel": "gpt-4.1-mini"
+  "showWeather": true,
+  "showWifi": true,
+  "showWorkspaces": true,
+  "uiCustomFont": "Noto Music",
+  "uiDensity": "comfortable",
+  "uiFontFamily": "poppins",
+  "uiFontScale": 1,
+  "wallpaperAutoRestore": false,
+  "wallpaperBackend": "swaybg",
+  "wallpaperFitMode": "fill",
+  "wallpaperPath": "/home/ryznxx/Downloads/Silhouette Amidst the Wildfire Embers.png",
+  "wallpaperReplaceOnRestore": false,
+  "widgetImageFolder": "",
+  "widgetImageRotateSeconds": 0,
+  "widgetPositions": {
+    "HDMI-A-1:calendar": {
+      "x": 0.01155376552795031,
+      "y": 0.2448137091898428
+    },
+    "HDMI-A-1:kanban": {
+      "x": 0.23059098285619176,
+      "y": 0.0891202059659091
+    },
+    "HDMI-A-1:kanban:3": {
+      "x": 0.2444846861856421,
+      "y": 0.6050265395444243
+    },
+    "HDMI-A-1:media": {
+      "x": 0.013082298136645963,
+      "y": 0.7484109443530702
+    },
+    "HDMI-A-1:notes": {
+      "x": 0.21491653726708074,
+      "y": 0.386195372839053
+    },
+    "HDMI-A-1:notes:3": {
+      "x": 0.21982261274779716,
+      "y": 0.11248951113952373
+    },
+    "HDMI-A-1:randomImage": {
+      "x": 0.21971429412688442,
+      "y": 0.09792889435279188
+    },
+    "HDMI-A-1:randomImage:3": {
+      "x": 0.2220492490265874,
+      "y": 0.24237062898042727
+    },
+    "HDMI-A-1:system": {
+      "x": 0.012240392080745342,
+      "y": 0.5323757595486112
+    },
+    "eDP-1:media": {
+      "x": 0.011849767080745343,
+      "y": 0.7689487390350878
+    },
+    "eDP-1:system": {
+      "x": 0.01218458850931677,
+      "y": 0.5479781539351852
+    }
+  },
+  "widgetSizes": {
+    "HDMI-A-1:kanban:3": {
+      "height": 329,
+      "width": 494
+    },
+    "HDMI-A-1:notes:3": {
+      "height": 343,
+      "width": 320
+    },
+    "HDMI-A-1:randomImage:3": {
+      "height": 756,
+      "width": 354
+    }
+  },
+  "widgetWorkspaceScopes": {
+    "kanban": [
+      3
+    ],
+    "notes": [
+      3
+    ],
+    "randomImage": []
+  },
+  "workspaceNotes": {
+    "HDMI-A-1:2": "",
+    "HDMI-A-1:3": "dick",
+    "HDMI-A-1:4": "",
+    "eDP-1:1": "",
+    "eDP-1:10": "",
+    "eDP-1:2": "",
+    "eDP-1:3": "",
+    "eDP-1:4": "",
+    "eDP-1:5": "",
+    "eDP-1:6": "",
+    "eDP-1:7": ""
+  }
 }

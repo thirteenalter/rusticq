@@ -28,9 +28,16 @@ ShellRoot {
     function dispatchShortcut(action) {
         const screen = focusedScreen();
         const screenName = screen ? screen.name : "";
+        if (action.indexOf("osd-") === 0) {
+            const osdAction = action.substring(4);
+            if (["volume-up", "volume-down", "volume-mute", "microphone-mute", "brightness-up", "brightness-down", "keyboard-up", "keyboard-down", "touchpad-toggle"].indexOf(osdAction) >= 0)
+                Store.osdControlRequested(osdAction);
+            return;
+        }
         if (action === "bar-toggle") { SettingsStore.toggleBar(); return; }
         if (action === "bar-show") { SettingsStore.setBarVisible(true); return; }
         if (action === "bar-hide") { SettingsStore.setBarVisible(false); return; }
+        if (action === "bar-hide-completely") { SettingsStore.toggleBarCompletely(); return; }
         if (action === "bar-menu") { Store.shortcutBarRequested("menu-default", screenName); return; }
         if (action === "bar-quick-modes") { Store.shortcutBarRequested("quick-modes", screenName); return; }
         if (action === "bar-network") {
@@ -155,6 +162,17 @@ ShellRoot {
         }
     }
 
+    // Omarchy Quattro's default Polkit agent lives INSIDE omarchy-shell. When
+    // RusticQ replaces that shell, it must own the native Polkit service or
+    // GUI elevation is left without an authentication agent.
+    NativePolkitAgent {}
+    // One native audio/hardware observer and one unfocused popup per monitor.
+    SystemOsdController {}
+    Variants {
+        model: Quickshell.screens
+        SystemOsd { required property var modelData; screen: modelData }
+    }
+
     // One server for the whole shell. Toast is rendered once, independent of monitors.
     NotificationToasts {}
 
@@ -201,10 +219,11 @@ ShellRoot {
     }
     // Keep the QR owner alive while hidden so its cleanup process can finish.
     WifiShareOverlay {}
-    LazyLoader {
-        active: Store.confirmationVisible
-        PackageConfirmationWindow {}
-    }
+    // Persistent confirmation window: avoids LazyLoader teardown racing the
+    // second-stage authorization window when focus changes under Hyprland.
+    PackageConfirmationWindow {}
+    // No fake intermediate authorization overlay. Package confirmation goes
+    // directly to the real, independent Polkit agent above.
     LazyLoader {
         active: Store.shortcutConfirmVisible
         ShortcutBackupConfirmationWindow {}

@@ -10,7 +10,21 @@ import "../../services"
 // never spawns a second bar, duplicates system watchers, or resets sidebar state.
 PanelWindow {
     id: barWindow
-    visible: SettingsStore.barVisible
+    visible: SettingsStore.barVisible && autoHide.shown
+    exclusionMode: SettingsStore.barAutoHide ? ExclusionMode.Ignore : ExclusionMode.Auto
+    onVisibleChanged: if (!visible) closeMini()
+    HoverHandler { id: barHover }
+    BarAutoHide {
+        id: autoHide
+        enabled: SettingsStore.barVisible && SettingsStore.barAutoHide
+        position: barWindow.barPosition
+        screen: barWindow.screen
+        hovered: barHover.hovered
+        heldOpen: barWindow.miniKind !== ""
+                  || (Store.sidebarVisible && Store.sidebarScreen === barWindow.screen)
+                  || (Store.launcherVisible && Store.launcherScreen === barWindow.screen)
+                  || (Store.aiVisible && Store.aiScreen === barWindow.screen)
+    }
     property string miniKind: ""
     property real miniAnchorX: 0
     property real miniAnchorY: 0

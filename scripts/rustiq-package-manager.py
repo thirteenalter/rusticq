@@ -11,7 +11,11 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import time
 import sys
+import urllib.request
+import urllib.parse
+import urllib.error
 from concurrent.futures import ThreadPoolExecutor
 
 PACKAGE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9@._+:-]{0,127}$")
@@ -141,14 +145,14 @@ def graphical_transaction(action, package):
     # Do not use -Rdd, -Sdd, --overwrite, --assume-installed, shell evaluation,
     # or a privileged invocation of Python from an editable checkout.
     if action == 'remove':
-        cmd = [str(pkexec), str(pacman), '-R', '--noconfirm', '--color', 'never', '--', package]
+        cmd = [str(pkexec), '--disable-internal-agent', str(pacman), '-R', '--noconfirm', '--color', 'never', '--', package]
     elif shutil.which('omarchy') or Path('/usr/share/libalpm/hooks/00-omarchy-update-guard.hook').exists():
         # Let Omarchy's pacman hooks enforce its package-management policy.
         # Avoid direct full upgrade: Omarchy migration/update hooks own upgrades.
-        cmd = [str(pkexec), str(pacman), '-S', '--needed', '--noconfirm', '--color', 'never', '--', package]
+        cmd = [str(pkexec), '--disable-internal-agent', str(pacman), '-S', '--needed', '--noconfirm', '--color', 'never', '--', package]
     else:
         # Arch supports full upgrades, never an unsupported partial -Sy update.
-        cmd = [str(pkexec), str(pacman), '-Syu', '--needed', '--noconfirm', '--color', 'never', '--', package]
+        cmd = [str(pkexec), '--disable-internal-agent', str(pacman), '-Syu', '--needed', '--noconfirm', '--color', 'never', '--', package]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=45 * 60, check=False,
                                 stdin=subprocess.DEVNULL)
@@ -386,7 +390,156 @@ def flatpak_location(package):
     raise RuntimeError('No Flatpak remotes configured. Add Flathub before using the GUI.')
 
 
+def lookup_aur_package(package):
+    """Verify exact AUR name via official HTTPS RPC, not yay's version-specific
+    -Sia/--nocolor preflight (which can be forwarded to pacman incorrectly).
+    The response is untrusted and is never treated as executable data.
+    """
+    validate_package(package)
+    url = 'https://aur.archlinux.org/rpc/v5/info?' + urllib.parse.urlencode({'arg[]': package})
+    request = urllib.request.Request(url, headers={'User-Agent': 'RusticQ-Package-Manager/1'})
+    try:
+        with urllib.request.urlopen(request, timeout=16) as response:
+            blob = response.read(160_001)
+        if len(blob) > 160_000:
+            raise RuntimeError('AUR metadata response is unexpectedly large')
+        data = json.loads(blob)
+    except (urllib.error.URLError, TimeoutError, ValueError, UnicodeError) as exc:
+        raise RuntimeError('Could not verify AUR package using official HTTPS RPC: ' + str(exc)[:200]) from exc
+    found = data.get('results') if isinstance(data, dict) else None
+    if not isinstance(found, list) or not any(isinstance(x, dict) and x.get('Name') == package for x in found):
+        raise RuntimeError('AUR package does not exist: ' + package)
+    return True
+
+
+# Polkit is the credential owner. These probes do not create a second agent
+# when an existing desktop authentication agent is already running.
+AGENT_PROCESS_MARKERS = (
+    'hyprpolkitagent', 'polkit-kde-authentication-agent',
+    'polkit-gnome-authentication-agent', 'lxqt-policykit-agent',
+    'mate-polkit', 'xfce-polkit',
+)
+
+
+def running_polkit_agent():
+    # pgrep's -x truncated comm field is unreliable for long executable names.
+    # Inspect only processes owned by this user; no privileges or D-Bus changes.
+    proc = Path('/proc')
+    if not proc.is_dir():
+        return False
+    for entry in proc.iterdir():
+        if not entry.name.isdigit():
+            continue
+        try:
+            if entry.stat().st_uid != os.getuid():
+                continue
+            cmdline = (entry / 'cmdline').read_bytes().split(b'\0')
+            if not cmdline or not cmdline[0]:
+                continue
+            executable = Path(os.fsdecode(cmdline[0])).name.lower()
+            if any(marker in executable for marker in AGENT_PROCESS_MARKERS):
+                return True
+        except (OSError, ValueError, UnicodeError):
+            continue
+    return False
+
+
+def agent_service_available():
+    if not shutil.which('systemctl'):
+        return False
+    check = subprocess.run(['systemctl', '--user', 'show', '-p', 'LoadState', '--value', 'hyprpolkitagent.service'],
+                           stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                           text=True, timeout=4, check=False)
+    return check.returncode == 0 and check.stdout.strip() == 'loaded'
+
+
+def native_agent_bundled():
+    """Native Polkit service is instantiated by RusticQ shell.qml.
+
+    Existence is NOT proof of a live registration; actual pkexec must still
+    succeed, and a failed request must never start a package transaction.
+    """
+    shell = Path(__file__).resolve().parents[1]
+    try:
+        return ('NativePolkitAgent {}' in (shell / 'shell.qml').read_text(encoding='utf-8')
+                and (shell / 'modules/main/NativePolkitAgent.qml').is_file())
+    except OSError:
+        return False
+
+
+def ensure_graphical_agent():
+    """Do not infer Polkit registration from process names.
+
+    Omarchy Quattro runs its agent inside omarchy-shell; RusticQ does the
+    same. Neither is named hyprpolkitagent in /proc. Probe by performing the
+    authorized pkexec transaction, which fails closed without a real agent.
+    """
+    if running_polkit_agent():
+        return dict(agent_ready=True, agent_started=False, agent='external')
+    if native_agent_bundled():
+        return dict(agent_ready=False, agent_started=False, agent='rusticq-native',
+                    message='RusticQ native Polkit agent included; awaiting actual pkexec/PAM result.')
+    if agent_service_available():
+        launch = subprocess.run(['systemctl', '--user', 'start', 'hyprpolkitagent.service'],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                text=True, timeout=9, check=False)
+        if launch.returncode == 0:
+            return dict(agent_ready=False, agent_started=True, agent='hyprpolkitagent',
+                        message='Hyprland agent service start requested; awaiting actual pkexec result.')
+        issue = clean_output(launch.stderr or launch.stdout).strip()[-280:]
+        raise RuntimeError('Hyprland Polkit service failed to start: ' + issue)
+    raise RuntimeError('No graphical Polkit agent bundled or known. On Omarchy Quattro, the agent belongs to omarchy-shell; '
+                       'when replacing that shell, use RusticQ with NativePolkitAgent or run another supported system agent.')
+
+
+def auth_capabilities():
+    polkit = Path('/usr/bin/pkexec').is_file()
+    try:
+        fingerprint_possible = (shutil.which('fprintd-verify') is not None and
+            Path('/etc/pam.d/polkit-1').is_file() and
+            'pam_fprintd.so' in Path('/etc/pam.d/polkit-1').read_text(errors='replace'))
+    except OSError:
+        fingerprint_possible = False
+    return dict(ok=True, pkexec=polkit, known_agent_detected=running_polkit_agent(),
+                native_agent_bundled=native_agent_bundled(),
+                agent_service_available=agent_service_available(),
+                fingerprint_configured=fingerprint_possible,
+                message='System Polkit agent performs password/fingerprint PAM authentication. RusticQ never reads credentials.')
+
+
+def preauthorize_package(source, action, package):
+    """Prompt immediately via native GUI instead of waiting for the AUR build.
+
+    This only executes /usr/bin/true after Polkit approval; it cannot install,
+    remove or elevate a user-controlled script. The actual pacman phase may
+    request authorization AGAIN depending on Polkit's retention policy.
+    """
+    validate_source_package(source, package)
+    if action not in ('install', 'remove'):
+        raise ValueError('Unsupported package operation')
+    if source == 'flatpak' and flatpak_location(package) == '--user':
+        return dict(ok=True, authorized=True, message='User Flatpak does not require administrator authentication.')
+    if not Path('/usr/bin/pkexec').is_file():
+        raise RuntimeError('pkexec is not installed; graphical administrator authorization is unavailable.')
+    agent = ensure_graphical_agent()
+    result = subprocess.run(['/usr/bin/pkexec', '--disable-internal-agent', '/usr/bin/true'],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL,
+                            text=True, timeout=150, check=False)
+    if result.returncode != 0:
+        message = clean_output(result.stderr + '\n' + result.stdout).strip()[-400:]
+        if result.returncode == 126:
+            raise RuntimeError('System authentication was cancelled. No package operation started.')
+        raise RuntimeError('Graphical Polkit authorization failed (pkexec exit ' + str(result.returncode) + '): ' +
+                           (message or 'No registered graphical agent answered the request.') +
+                           '. RusticQ requires an active native Polkit agent (check `qs -p .` logs for polkit registration), '
+                           'or a separate system agent. On Omarchy Quattro, the default agent stops when omarchy-shell is replaced.')
+    return dict(ok=True, authorized=True, agent_started=agent['agent_started'], agent=agent.get('agent', 'system'),
+                message='System Polkit approved. Continuing with the package operation.')
+
+
 def source_transaction(source, action, package):
+    if action not in ('install', 'remove'):
+        raise ValueError('Unsupported package operation')
     validate_source_package(source, package)
     if source == 'pacman':
         return graphical_transaction(action, package)
@@ -400,19 +553,29 @@ def source_transaction(source, action, package):
         if action == 'remove' and package in GUI_REMOVE_PROTECTED:
             raise RuntimeError('Protected core package')
         if action == 'install':
-            info = cmd_output(['yay', '-Sia', '--nocolor', package], timeout=25)
-            if info.returncode:
-                raise RuntimeError('AUR package unavailable: ' + info.stderr.strip()[-250:])
-            cmd = ['yay', '-Sa', '--needed', '--noconfirm', '--answerclean', 'None',
-                   '--answerdiff', 'None', '--answeredit', 'None', '--sudo', '/usr/bin/pkexec', package]
+            # AUR metadata lookup is independent of yay CLI versions. Some
+            # yay/pacman combinations reject legacy --nocolor forwarded by yay.
+            lookup_aur_package(package)
+            if not Path('/usr/bin/pkexec').is_file():
+                raise RuntimeError('pkexec is unavailable. Install a graphical Polkit agent; never launch yay with sudo.')
+            # Do not allow pkexec to fall back to a hidden /dev/tty prompt.
+            # Official yay accepts --sudo <command>; no sudo-loop flag is needed.
+            # Build/PKGBUILD phases stay unprivileged. Only pacman elevates via
+            # the session Polkit agent, which performs password/fingerprint PAM.
+            cmd = ['yay', '-S', '--aur', '--needed', '--noconfirm', '--answerclean', 'None',
+                   '--answerdiff', 'None', '--answeredit', 'None', '--sudo', '/usr/bin/pkexec',
+                   '--sudoflags', '--disable-internal-agent', '--', package]
         else:
             if cmd_output(['pacman', '-Qq', package], timeout=10).returncode:
                 raise RuntimeError('AUR package not installed')
             # Removing an AUR package is performed by pacman directly; it is
             # registered in the same pacman database, not a second database.
-            cmd = ['/usr/bin/pkexec', '/usr/bin/pacman', '-R', '--noconfirm', '--', package]
+            cmd = ['/usr/bin/pkexec', '--disable-internal-agent', '/usr/bin/pacman', '-R', '--noconfirm', '--', package]
         result = cmd_output(cmd, timeout=55 * 60)
         success = result.returncode == 0
+        if not success and ('nocolor' in clean_output(result.stderr + result.stdout).lower()
+                            or 'nosudoloop' in clean_output(result.stderr + result.stdout).lower()):
+            raise RuntimeError('yay/pacman combination rejected an unsupported command option. Inspect `yay -Pg`, `yay --version` and custom yay settings. RusticQ did not pass nocolor or nosudoloop.')
         state = cmd_output(['pacman', '-Qq', package], timeout=10).returncode == 0
         success = success and state == (action == 'install')
     else:
@@ -437,7 +600,7 @@ def source_transaction(source, action, package):
         result = cmd_output(cmd, timeout=55 * 60)
         state = package in flatpak_installed()
         success = result.returncode == 0 and state == (action == 'install')
-    details = ('\n'.join((result.stdout + '\n' + result.stderr).splitlines()[-12:]))[-1500:]
+    details = ('\n'.join(clean_output(result.stdout + '\n' + result.stderr).splitlines()[-12:]))[-1500:]
     return dict(ok=success, source=source, action=action, package=package,
                 message=(('Installed ' if action=='install' else 'Removed ') + package + ' using ' + source + '.'
                          if success else 'Package operation failed; inspect output and provider authorization. ') + ' ' + details)
@@ -449,6 +612,10 @@ def main(argv):
         return dict(ok=True, package=resolved['package'], provider=resolved['provider']) if isinstance(resolved, dict) else dict(ok=True, package=resolved, provider='pacman')
     if len(argv) == 1 and argv[0] == 'sources':
         return available_sources()
+    if len(argv) == 1 and argv[0] == 'auth-capabilities':
+        return auth_capabilities()
+    if len(argv) == 4 and argv[0] == 'authorize':
+        return preauthorize_package(argv[1], argv[2], argv[3])
     if len(argv) == 2 and argv[0] == 'search':
         return search_sources(argv[1])
     if len(argv) == 3 and argv[0] == 'search-source':

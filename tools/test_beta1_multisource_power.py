@@ -59,15 +59,17 @@ class SearchTests(unittest.TestCase):
     def test_yay_invoked_as_user_and_uses_polkit(self):
         with patch.object(PKG.shutil, 'which', return_value='/bin/mock'), \
              patch.object(PKG.os, 'geteuid', return_value=1000), \
+             patch.object(PKG.Path, 'is_file', return_value=True), \
+             patch.object(PKG, 'lookup_aur_package', return_value=True) as verified, \
              patch.object(PKG, 'cmd_output') as execute:
             execute.side_effect = [
-                subprocess.CompletedProcess([], 0, 'AUR package info', ''),
                 subprocess.CompletedProcess([], 0, 'installed', ''),
                 subprocess.CompletedProcess([], 0, 'my-aur-package', ''),
             ]
             result = PKG.source_transaction('yay','install','my-aur-package')
             self.assertTrue(result['ok'])
-            args = execute.call_args_list[1].args[0]
+            verified.assert_called_once_with('my-aur-package')
+            args = execute.call_args_list[0].args[0]
             self.assertEqual(args[0], 'yay')
             self.assertIn('--sudo', args)
             self.assertIn('/usr/bin/pkexec', args)
@@ -102,11 +104,11 @@ class SearchTests(unittest.TestCase):
 
 class PowerTests(unittest.TestCase):
     def test_power_actions_have_real_commands(self):
-        with patch.object(PWR.shutil, 'which', return_value='/usr/bin/tool'):
-            self.assertEqual(PWR.action_command('shutdown'), ['loginctl','poweroff'])
-            self.assertEqual(PWR.action_command('reboot'), ['loginctl','reboot'])
-            self.assertEqual(PWR.action_command('suspend'), ['loginctl','suspend'])
-            self.assertEqual(PWR.action_command('logout'), ['hyprctl','dispatch','exit'])
+        with patch.object(PWR.shutil, 'which', side_effect=lambda name: None if name == 'uwsm' else '/usr/bin/tool'):
+            self.assertEqual(PWR.action_command('shutdown'), ['systemctl','poweroff'])
+            self.assertEqual(PWR.action_command('reboot'), ['systemctl','reboot'])
+            self.assertEqual(PWR.action_command('suspend'), ['systemctl','suspend'])
+            self.assertEqual(PWR.action_command('logout'), ['hyprctl','dispatch','hl.dsp.exit()'])
             self.assertTrue(PWR.action_command('lock')[1].endswith('/scripts/rusticq-native-lock.py'))
         with self.assertRaises(ValueError):
             PWR.action_command('reboot; rm -rf /')

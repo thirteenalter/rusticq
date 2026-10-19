@@ -292,8 +292,9 @@ ColumnLayout {
     }
 
     SettingsSection {
+        id: wallpaperSection
         heading: "Wallpaper"
-        description: "Apply an image without modifying Aether's theme files. Auto-detects swww, awww, or hyprpaper when running; requires an existing wallpaper daemon."
+        description: "Apply a local image with swaybg, or use an already running awww, swww, or hyprpaper daemon. Aether's theme files stay unchanged."
         symbol: "\ue3f4"
         property string applyStatus: ""
         property bool applySuccess: false
@@ -388,18 +389,17 @@ ColumnLayout {
             }
             MouseArea {
                 anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                enabled: !wallpaperProcess.running
                 onClicked: {
                     SettingsStore.wallpaperPath = wallpaperPathInput.text.trim();
                     SettingsStore.save();
                     wallpaperFeedback.text = "Applying wallpaper…";
                     wallpaperFeedback.color = Theme.muted;
-                    if (!wallpaperProcess.running)
-                        {
-                            const args = ["python3", Quickshell.shellPath("scripts/rusticq-wallpaper.py"), SettingsStore.wallpaperPath,
-                                          "--backend", SettingsStore.wallpaperBackend, "--mode", SettingsStore.wallpaperFitMode];
-                            if (wallpaperReplaceConflicts) args.push("--replace-conflicts");
-                            wallpaperProcess.exec(args);
-                        }
+                    const args = ["python3", Quickshell.shellPath("scripts/rusticq-wallpaper.py"), SettingsStore.wallpaperPath,
+                                  "--backend", SettingsStore.wallpaperBackend, "--mode", SettingsStore.wallpaperFitMode];
+                    if (wallpaperSection.wallpaperReplaceConflicts) args.push("--replace-conflicts");
+                    wallpaperSection.wallpaperReplaceConflicts = false;
+                    wallpaperProcess.exec(args);
                 }
             }
         }
@@ -430,8 +430,8 @@ ColumnLayout {
         }
         RowLayout { Layout.fillWidth: true; spacing: 8
             Rectangle { Layout.preferredWidth: 25; Layout.preferredHeight: 25; radius: 6
-                color: wallpaperReplaceConflicts ? Theme.accent : Theme.surface
-                MouseArea { anchors.fill: parent; onClicked: wallpaperReplaceConflicts = !wallpaperReplaceConflicts }
+                color: wallpaperSection.wallpaperReplaceConflicts ? Theme.accent : Theme.surface
+                MouseArea { anchors.fill: parent; onClicked: wallpaperSection.wallpaperReplaceConflicts = !wallpaperSection.wallpaperReplaceConflicts }
             }
             Text { Layout.fillWidth: true; text: "Replace other wallpaper daemons this time (may end Omarchy's wallpaper process)"; wrapMode: Text.WordWrap
                 color: Theme.muted; font.pixelSize: Fonts.scale(10) }

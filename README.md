@@ -276,3 +276,16 @@ full ZIP assets, and **Rollback Shell**. It preserves the old shell at
 These shell updates are **separate from Omarchy/pacman upgrades** and take
 effect in a newly started Quickshell session. See
 [docs/SHELL-UPDATES.md](docs/SHELL-UPDATES.md).
+
+### System OSD — volume, brightness and touchpad
+
+RusticQ now has a lightweight on-screen popup for PipeWire speaker volume and mute, microphone mute, sysfs screen brightness, and keyboard backlight. The overlay is non-focusable, auto-hides, and appears on the focused monitor. Settings → Modules provides **Show system OSD** and **Preview OSD**. Shortcut actions allow changing screen/keyboard brightness and toggling a detected touchpad (USB mouse is never disabled); see [System OSD documentation](docs/SYSTEM-OSD-HARDWARE.md). No Omarchy default shortcuts are changed automatically.
+
+### Transfer user settings between RusticQ installations
+
+Settings → Integration → **User settings · Save / Load** can export your
+current `user-settings.json` as a portable JSON file and import an existing
+export or plain legacy settings file. Imports require validation, a typed
+confirmation and an automatic original-configuration snapshot before applying.
+**Restart RusticQ after importing.** See
+[User Settings Transfer](docs/USER-SETTINGS-TRANSFER.md).

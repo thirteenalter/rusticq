@@ -13,7 +13,7 @@ FloatingWindow {
     visible: Store.confirmationVisible
     title: "RusticQ · Package Confirmation"
     implicitWidth: 510
-    implicitHeight: (removing ? 378 : 330) + (Store.confirmationProvider === "yay" ? 36 : 0)
+    implicitHeight: (removing ? 418 : 370) + (Store.confirmationProvider === "yay" ? 36 : 0)
     minimumSize: Qt.size(430, 300)
     color: Theme.background
     Timer {
@@ -120,7 +120,11 @@ FloatingWindow {
                     MouseArea { anchors.fill: parent; enabled: parent.authorized; cursorShape: Qt.PointingHandCursor; onClicked: Store.acceptPackageConfirmation() }
                 }
             }
-            Text { Layout.fillWidth: true; text: "Follow the operation result in Settings. Some actions may require a graphical Polkit agent."; color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 49; radius: 9; color: Theme.surface
+                Text { anchors.fill: parent; anchors.margins: 9; wrapMode: Text.WordWrap; verticalAlignment: Text.AlignVCenter
+                    text: "Step 1 of 2 · Next, the actual Polkit/PAM password or fingerprint dialog opens. Credentials are never collected by this package confirmation window."
+                    color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+            }
         }
     }
 }

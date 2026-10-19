@@ -91,12 +91,19 @@ console.log('Widget compat and bar persistence JS passed');
         file=ROOT/'scripts/rustiq-desktop-integration.py'
         spec=importlib.util.spec_from_file_location('rusticq_shortcut_test',file)
         mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
-        for action in ['bar-toggle','bar-show','bar-hide']:
+        for action in ['bar-toggle','bar-show','bar-hide','bar-hide-completely']:
             self.assertIn(action,mod.ACTIONS)
-        self.assertEqual(mod.BAR_ACTIONS['barToggle'],['bar-toggle','bar-show','bar-hide'])
+        self.assertEqual(mod.BAR_ACTIONS['barToggle'],['bar-toggle','bar-show','bar-hide','bar-hide-completely'])
         cmd = mod.write_shortcuts({'bar-toggle':'SUPER + ALT + B'},'-- user binds\n',{})
         self.assertIn('RusticQ Toggle desktop bar',cmd)
         self.assertIn('dispatch bar-toggle',cmd)
         self.assertNotIn('o.rebind(',cmd)
+        cmd = mod.write_shortcuts({'bar-hide-completely':'SUPER + ALT + H'},'-- user binds\n',{})
+        self.assertIn('dispatch bar-hide-completely',cmd)
+        self.assertIn('RusticQ Show / hide bar completely',cmd)
+        self.assertIn('{key: "barToggle", name: "Bar visibility"}',
+                      (ROOT/'modules/settings/pages/SettingsShortcutsPage.qml').read_text())
+        self.assertIn('if (action === "bar-hide-completely") { SettingsStore.toggleBarCompletely(); return; }',
+                      (ROOT/'shell.qml').read_text())
 
 if __name__=='__main__': unittest.main()

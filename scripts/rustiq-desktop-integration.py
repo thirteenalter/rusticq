@@ -34,8 +34,18 @@ ACTION_CATALOG = [
     {"key": 'settings-appearance', "name": 'Appearance', "category": 'Settings pages'},
     {"key": 'settings-bar', "name": 'Bar layout', "category": 'Settings pages'},
     {"key": 'bar-toggle', "name": 'Toggle desktop bar', "category": 'Bar visibility'},
+    {"key": 'osd-volume-up', "name": 'Volume up (+5%)', "category": 'System OSD / hardware'},
+    {"key": 'osd-volume-down', "name": 'Volume down (-5%)', "category": 'System OSD / hardware'},
+    {"key": 'osd-volume-mute', "name": 'Mute / unmute speaker', "category": 'System OSD / hardware'},
+    {"key": 'osd-microphone-mute', "name": 'Mute / unmute microphone', "category": 'System OSD / hardware'},
+    {"key": 'osd-brightness-up', "name": 'Screen brightness up', "category": 'System OSD / hardware'},
+    {"key": 'osd-brightness-down', "name": 'Screen brightness down', "category": 'System OSD / hardware'},
+    {"key": 'osd-keyboard-up', "name": 'Keyboard light up', "category": 'System OSD / hardware'},
+    {"key": 'osd-keyboard-down', "name": 'Keyboard light down', "category": 'System OSD / hardware'},
+    {"key": 'osd-touchpad-toggle', "name": 'Enable / disable touchpad', "category": 'System OSD / hardware'},
     {"key": 'bar-show', "name": 'Show desktop bar', "category": 'Bar visibility'},
     {"key": 'bar-hide', "name": 'Hide desktop bar', "category": 'Bar visibility'},
+    {"key": 'bar-hide-completely', "name": 'Show / hide bar completely', "category": 'Bar visibility'},
     {"key": 'settings-modules', "name": 'Modules and indicators', "category": 'Settings pages'},
     {"key": 'settings-widgets', "name": 'Desktop widgets', "category": 'Settings pages'},
     {"key": 'settings-dock', "name": 'Dock', "category": 'Settings pages'},
@@ -109,7 +119,7 @@ ACTION_CATALOG = [
 # `bar_key` corresponds to SettingsStore.barIconKeys; the menu/workspace/QuickModes
 # buttons intentionally have multiple actions that can be assigned independently.
 BAR_ACTIONS = {
-    "barToggle": ["bar-toggle", "bar-show", "bar-hide"],
+    "barToggle": ["bar-toggle", "bar-show", "bar-hide", "bar-hide-completely"],
     "rusticq": ["settings"],
     "arch": ["ai"],
     "launcher": ["launcher"],

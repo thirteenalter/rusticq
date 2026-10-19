@@ -42,13 +42,13 @@ class PowerMenuAlignmentTests(unittest.TestCase):
         self.assertEqual(proc.call_args.args[0], ['omarchy-launch-screensaver', 'force'])
         self.assertTrue(proc.call_args.kwargs['start_new_session'])
 
-    def test_other_actions_unchanged(self):
-        with patch.object(PWR.shutil, 'which', return_value='/usr/bin/fake'):
+    def test_session_action_commands(self):
+        with patch.object(PWR.shutil, 'which', side_effect=lambda name: None if name == 'uwsm' else '/usr/bin/fake'):
             self.assertTrue(PWR.action_command('lock')[1].endswith('/scripts/rusticq-native-lock.py'))
-            self.assertEqual(PWR.action_command('suspend'), ['loginctl', 'suspend'])
-            self.assertEqual(PWR.action_command('reboot'), ['loginctl', 'reboot'])
-            self.assertEqual(PWR.action_command('shutdown'), ['loginctl', 'poweroff'])
-            self.assertEqual(PWR.action_command('logout'), ['hyprctl', 'dispatch', 'exit'])
+            self.assertEqual(PWR.action_command('suspend'), ['systemctl', 'suspend'])
+            self.assertEqual(PWR.action_command('reboot'), ['systemctl', 'reboot'])
+            self.assertEqual(PWR.action_command('shutdown'), ['systemctl', 'poweroff'])
+            self.assertEqual(PWR.action_command('logout'), ['hyprctl', 'dispatch', 'hl.dsp.exit()'])
 
     def test_menu_uses_consistent_columns_and_no_x(self):
         qml = (ROOT/'modules/power/PowerMenu.qml').read_text()

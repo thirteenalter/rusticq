@@ -43,7 +43,7 @@ class GuiPackagesTest(unittest.TestCase):
             response = PKG.graphical_transaction('install', 'firefox')
         command = execute.call_args.args[0]
         self.assertTrue(response['ok'])
-        self.assertEqual(command[:2], ['/usr/bin/pkexec', '/usr/bin/pacman'])
+        self.assertEqual(command[:3], ['/usr/bin/pkexec', '--disable-internal-agent', '/usr/bin/pacman'])
         self.assertIn('--noconfirm', command)
         self.assertEqual(command[-2:], ['--', 'firefox'])
         self.assertNotIn('python3', command)
@@ -57,7 +57,7 @@ class GuiPackagesTest(unittest.TestCase):
             response = PKG.graphical_transaction('remove', 'firefox')
         command = execute.call_args.args[0]
         self.assertFalse(response['ok'])
-        self.assertEqual(command[2:4], ['-R', '--noconfirm'])
+        self.assertEqual(command[3:5], ['-R', '--noconfirm'])
         self.assertNotIn('-Rdd', command)
         self.assertIn('cancelled', response['message'])
 

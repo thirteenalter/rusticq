@@ -3,8 +3,36 @@ import QtQuick
 import Quickshell
 
 Singleton {
+    id: root
     // Raised by the IPC dispatcher; each per-monitor bar consumes only its own actions.
     signal shortcutBarRequested(string kind, string screenName)
+    // One transient OSD shared by all monitors. No new notification daemon.
+    signal osdControlRequested(string action)
+    property bool osdVisible: false
+    property string osdKind: "volume"
+    property string osdLabel: ""
+    property int osdPercent: 0
+    property bool osdHasLevel: true
+    property bool osdMuted: false
+    property var osdScreen: null
+    function showOsd(kind, percent, label, hasLevel, muted, screen) {
+        if (!SettingsStore.osdEnabled) return;
+        if (["volume", "microphone", "brightness", "keyboard", "touchpad", "error"].indexOf(kind) < 0) return;
+        osdKind = kind;
+        osdPercent = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+        osdLabel = String(label || "").slice(0, 110);
+        osdHasLevel = hasLevel === true;
+        osdMuted = muted === true;
+        osdScreen = screen || osdScreen || (Quickshell.screens.length ? Quickshell.screens[0] : null);
+        osdVisible = true;
+        osdDismiss.restart();
+    }
+    Timer {
+        id: osdDismiss
+        interval: 1650
+        repeat: false
+        onTriggered: root.osdVisible = false
+    }
     property bool sidebarVisible: false
     property bool advancedVisible: false
     property bool quickReorderMode: false
@@ -49,6 +77,50 @@ Singleton {
     property string settingsTab: "appearance"
     // The confirmation is a separate overlay window, never an inline Settings card.
     signal packageOperationConfirmed(string action, string packageName, string provider)
+    // Human approval is a distinct, non-privileged layer. Actual credentials
+    // are requested ONLY by the already registered system Polkit/PAM agent.
+    property bool packageAuthVisible: false
+    property bool packageAuthPending: false
+    property bool packageAuthAgentDetected: true
+    property bool packageAuthNativeBundled: false
+    property bool packageAuthCanStartAgent: false
+    property bool packageAuthFingerprintConfigured: false
+    property var packageAuthScreen: null
+    property string packageAuthAction: ""
+    property string packageAuthPackage: ""
+    property string packageAuthProvider: "pacman"
+    function requestPackageAuthorization(action, packageName, provider) {
+        if (["install", "remove"].indexOf(action) < 0 || !packageName ||
+            ["pacman", "yay", "flatpak"].indexOf(provider) < 0) return;
+        packageAuthAction = action;
+        packageAuthPackage = packageName;
+        packageAuthProvider = provider;
+        packageAuthScreen = settingsScreen;
+        // The first FloatingWindow must release focus and be destroyed before
+        // the fullscreen Wayland authorization layer is made visible.
+        packageAuthPending = true;
+        packageAuthVisible = false;
+    }
+    function activatePendingPackageAuthorization() {
+        if (!packageAuthPending || !packageAuthAction || !packageAuthPackage) return;
+        packageAuthPending = false;
+        packageAuthVisible = true;
+    }
+    function cancelPackageAuthorization() {
+        packageAuthPending = false;
+        packageAuthVisible = false;
+        packageAuthAction = "";
+        packageAuthPackage = "";
+        packageAuthProvider = "pacman";
+    }
+    function approvePackageAuthorization() {
+        if (!packageAuthVisible || !packageAuthAction || !packageAuthPackage) return;
+        const action = packageAuthAction;
+        const name = packageAuthPackage;
+        const provider = packageAuthProvider;
+        cancelPackageAuthorization();
+        packageOperationConfirmed(action, name, provider);
+    }
     // Explicit confirmation of shortcut backup before changing an existing binding.
     signal shortcutBackupApproved()
     property bool shortcutConfirmVisible: false
@@ -93,6 +165,9 @@ Singleton {
         if (!confirmationVisible || !confirmationAction || !confirmationPackage) return;
         const action = confirmationAction, name = confirmationPackage, provider = confirmationProvider;
         cancelPackageConfirmation();
+        // First dialog was the package confirmation. The SECOND dialog should
+        // be the ACTUAL native Polkit/PAM prompt, not another decorative layer.
+        // SettingsInfoPage waits for this window to release focus before pkexec.
         packageOperationConfirmed(action, name, provider);
     }
 

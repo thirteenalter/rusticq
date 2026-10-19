@@ -16,6 +16,7 @@ ColumnLayout {
     property string actionFilter: ""
     property string selectedBarKey: "rusticq"
     readonly property var barGroups: [
+        {key: "barToggle", name: "Bar visibility"},
         {key: "rusticq", name: "RusticQ"}, {key: "arch", name: "AI"},
         {key: "launcher", name: "Launcher"}, {key: "menu", name: "Menus"},
         {key: "workspaces", name: "Workspaces"}, {key: "weather", name: "Weather"},

@@ -10,24 +10,26 @@ ColumnLayout {
 
     SettingsSection {
         heading: "Bar visibility"
-        description: "Hide bar from here or a shortcut; a small restore handle remains on each screen."
+        description: "Auto-hide reveals the bar at the screen edge. Hide completely removes both the bar and its restore button."
         symbol: "\ue5cd"
-        RowLayout {
-            Layout.fillWidth: true; spacing: 10
+        GridLayout {
+            Layout.fillWidth: true; columns: 2; columnSpacing: 10; rowSpacing: 10
             Repeater {
-                model: [{label:"Show bar",value:true},{label:"Hide bar",value:false}]
+                model: [{label:"Show bar",value:"show"}, {label:"Auto-hide",value:"auto"},
+                        {label:"Hide bar",value:"hide"}, {label:"Hide completely",value:"hidden"}]
                 delegate: Rectangle {
+                    id: visibilityChoice
                     required property var modelData
                     Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10
-                    color: SettingsStore.barVisible === modelData.value ? Qt.alpha(Theme.accent,.16) : Theme.background
-                    border.width: SettingsStore.barVisible === modelData.value ? 1 : 0
+                    color: SettingsStore.barVisibilityMode === modelData.value ? Qt.alpha(Theme.accent,.16) : Theme.background
+                    border.width: SettingsStore.barVisibilityMode === modelData.value ? 1 : 0
                     border.color: Theme.accent
                     Text { anchors.centerIn: parent; text: modelData.label; color: Theme.foreground; font.pixelSize: Fonts.scale(11) }
-                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.setBarVisible(modelData.value) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.setBarVisibilityMode(visibilityChoice.modelData.value) }
                 }
             }
         }
-        Text { Layout.fillWidth: true; text: "Assign bar-toggle / bar-show / bar-hide in Settings → Shortcuts. Bar recovery stays visible when hidden.";
+        Text { Layout.fillWidth: true; text: "Auto-hide closes after the pointer leaves; open bar popups keep it visible. To restore Hide completely, use Show bar here or the bar-show / bar-toggle shortcut from Settings → Shortcuts.";
                color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap }
     }
     SettingsSection {

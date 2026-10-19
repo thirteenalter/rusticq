@@ -24,16 +24,29 @@ source or the previous Swaybg release archive. Their original implementation
 cannot be verified without those local files. This hotfix addresses the
 exact missing SettingsStore API / signal errors shown in the runtime log.
 
-## Show/hide bar
+## Bar visibility
 
-- Settings → Bar → **Bar visibility**: Show bar / Hide bar buttons.
+- Settings → Bar → **Bar visibility**: **Show bar**, **Auto-hide**,
+  **Hide bar**, and **Hide completely**.
+- **Auto-hide** reveals the bar when the pointer touches its configured screen
+  edge. It closes 450 ms after the pointer leaves, while an open bar popup or
+  panel keeps its bar visible. Reveal state is independent on each monitor.
+  This mode overlays windows without reserving workspace space.
 - A hide icon on the bar itself, configurable and movable through Bar spacing
   and alignment, with independent per-layout visibility in Settings → Modules.
-- When hidden, a small **restore handle** remains at the configured bar edge
-  on each monitor. Clicking it shows the entire bar again.
-- Settings → Shortcuts: register actions **bar-toggle**, **bar-show** and
-  **bar-hide** to any supported Hyprland key combination. No shortcut is
+- **Hide bar** leaves a small **restore handle** at the configured bar edge on
+  each monitor. **Hide completely** removes that handle too, with no edge hover
+  trigger. Restore it with **Show bar** in Settings or a `bar-show` / `bar-toggle`
+  shortcut. From a terminal, use `qs ipc -p PATH call rusticq dispatch bar-show`,
+  where PATH is the running shell directory.
+- Settings → Shortcuts → **Bar visibility**: register actions **bar-toggle**,
+  **bar-show**, **bar-hide**, and **bar-hide-completely** (Show / hide bar completely)
+  to any supported Hyprland key combination. No shortcut is
   installed automatically, avoiding collisions with Omarchy bindings.
+- **Show / hide bar completely** toggles between **Show bar** and **Hide
+  completely** on each press. The selected Bar visibility option updates and
+  saves automatically. Existing `bar-hide-completely` bindings keep working;
+  a separate Show shortcut is no longer necessary for this action.
 - The setting is persisted in `user-settings.json`; hide/show applies across
   the bar's monitor instances. All existing modes and bar positions work.
 
@@ -62,6 +75,8 @@ before making disruptive service changes.
 
 ## Tests
 
-Run `python3 tools/test_widget_compat_bar_visibility.py` and
-`python3 tools/verify-static.py`. Actual `qs -p .` on Hyprland and the
-local-only widget QML files must still be tested on the target machine.
+Run `python3 tools/verify-static.py` and `python3 tools/check-bar-modes.py`.
+`python3 -B tools/test_bar_visibility_ui.py` requires a Wayland desktop and
+briefly opens test windows with isolated settings. It checks the four visibility
+modes, edge hover, timing, popup hold, independent reveal state and persistence.
+Physical multi-monitor hotplug still needs manual verification.

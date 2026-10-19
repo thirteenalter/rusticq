@@ -8,7 +8,7 @@ import "../../components"
 // Not exclusive and does not alter workspace geometry or switch monitors.
 PanelWindow {
     id: handle
-    visible: !SettingsStore.barVisible
+    visible: !SettingsStore.barVisible && SettingsStore.showBarRecoveryHandle
     implicitWidth: 46
     implicitHeight: 34
     color: "transparent"
