@@ -2,7 +2,7 @@
   <img src="assets/rusticq-about-lockup.png" alt="RusticQ logo" width="390" />
 
   # RusticQ
-  **A modular Quickshell desktop for Hyprland · Beta 1**
+  **A modular Quickshell desktop for Hyprland · Beta 3**
 
   A configurable Wayland bar, launcher, widgets, dock, shortcuts, and system settings.
 
@@ -11,7 +11,7 @@
 
 ## Overview
 
-RusticQ is a user-space desktop shell configuration built with **Quickshell/QML**, for **Hyprland on Arch Linux**, including compatible **Omarchy Quattro** installations. It does not replace your window manager. Beta 1 was developed against **Quickshell 0.3.1**; other releases require testing.
+RusticQ is a user-space desktop shell configuration built with **Quickshell/QML**, for **Hyprland on Arch Linux**, including compatible **Omarchy Quattro** installations. It does not replace your window manager. The current **Beta 3** source retains **Quickshell 0.3.1** compatibility as a minimum; real compositor testing is still required.
 
 - **Bar:** Compact, Clean Compact, Separated, Professional and Simple layouts, Top/Bottom/Left/Right placement, per-layout icon visibility, icon order/placement and spacing.
 - **Launcher & workspaces:** app search, launcher on the focused monitor, workspace navigation and assignable shortcuts.
@@ -20,6 +20,20 @@ RusticQ is a user-space desktop shell configuration built with **Quickshell/QML*
 - **Settings:** appearance, live displays, apps, updates, shortcuts, AI providers and reversible Omarchy integration.
 
 Detailed module and feature inventory: **[FEATURES.md](FEATURES.md)**.
+
+## Current source release — Beta 3 (`beta-3`)
+
+RusticQ's local source version is now **Beta 3**. The version is published in
+`VERSION` (CLI and updater) and `config/ReleaseInfo.qml` (QML UI), and both
+values are checked by automated tests. Beta 3 keeps all accumulated Beta 1
+features and hotfixes, including Native Polkit, System OSD, wallpaper low-memory
+mode, desktop widgets, shell updates and Save/Load User Settings.
+
+This **does not publish a GitHub Release or modify any running/installed shell**.
+GitHub beta tags from older releases remain available for explicitly confirmed
+downgrade/rollback. Run `qs -p .` to test locally; if using permanent integration,
+apply the source with Integration → Shell Updates → Reapply Local after review.
+Historical Beta 1 changelogs below are preserved for reference.
 
 ## Beta 1 — live Displays and floating confirmations
 
@@ -86,7 +100,7 @@ This is not a 50/50 completion claim. High-risk requests such as PAM/FIDO2, Polk
 - **Bar reorder:** in **Settings → Bar → Icon spacing & drag ordering**, drop **between** icons to insert (others shift; accent caret), or drop **on the center** of a card to swap the two icons (accent tile with `↔ Swap`). Cross-zone moves work in both modes. Use the small **‹ / ›** buttons for precise moves. Each layout (Simple, Compact, Clean Compact, Separated, Professional) retains its own order and spacing; Reset mode restores its original icon positions/order.
 - All three desktop widgets use the existing bottom-layer draggable per-monitor surfaces. New widgets are **disabled by default**, so upgrading does not add resource usage until explicitly enabled.
 
-## Latest Beta 1 hotfix: power overlay and multi-provider search
+## Historical Beta 1 hotfix: power overlay and multi-provider search
 
 - The System/Power menu uses the original monitor-scoped `PanelWindow` Wayland **Overlay** layer (not a compositor `FloatingWindow`), with keyboard navigation and confirmation.
 - Installed Apps search combines Pacman, Yay/AUR and Flatpak with per-provider status. Results are parsed from each tool's native CLI output; Flatpak requests full untruncated application IDs. A slow provider does not block completed results from the others.

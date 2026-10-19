@@ -39,6 +39,7 @@ MAX_FILES = 2600
 OMIT = {'.git', '.venv', '__pycache__', '.pytest_cache', 'node_modules', 'dist', 'build', '.rusticq-patch-backup'}
 PRIVATE = {'user-settings.json', 'app-usage.json', '.env', '.env.local'}
 PRESERVE = {'user-settings.json', 'app-usage.json'}
+VERSION_RE = re.compile(r'^(?:v?beta)[-_]?(\d+)$', re.I)
 REQUIRED = ['shell.qml', 'config/SettingsStore.qml', 'scripts/rustiq-desktop-integration.py',
             'modules/settings/pages/SettingsIntegrationPage.qml']
 
@@ -78,6 +79,40 @@ def state_read():
         except (OSError, ValueError):
             pass
     return {}
+
+
+def source_version(path):
+    """Return the source's local release tag, not a claim of GitHub publishing."""
+    version = path / 'VERSION'
+    if version.is_symlink() or not version.is_file():
+        return ''
+    try:
+        tag = version.read_text(encoding='utf8').strip()
+    except (OSError, UnicodeError):
+        return ''
+    return tag if re.fullmatch(r'[A-Za-z0-9._-]{1,50}', tag) else ''
+
+
+def version_relation(candidate, current):
+    """Compare known beta-N tags only; unknown/non-beta tags are incomparable."""
+    incoming = VERSION_RE.fullmatch(candidate or '')
+    active = VERSION_RE.fullmatch(current or '')
+    if not incoming or not active:
+        return None
+    i, a = int(incoming.group(1)), int(active.group(1))
+    return -1 if i < a else 1 if i > a else 0
+
+
+def effective_version(target, cache=None):
+    """Actual source VERSION takes precedence over stale updater state."""
+    path = destination_for(target)
+    on_disk = source_version(path)
+    if on_disk:
+        return on_disk
+    cache = cache if cache is not None else state_read()
+    entries = cache.get('targets') or {}
+    entry = entries.get(target) or {}
+    return entry.get('installed_tag', '') or (cache.get('installed_tag', '') if target == 'installed' else '')
 
 
 def installed():
@@ -139,10 +174,11 @@ def current_status():
     installed_backups = len(histories('installed'))
     dev_backups = len(histories('dev'))
     return dict(ok=True, installed=active, installed_path=str(SHELL), local_path=str(LOCAL),
+                source_version=source_version(Path(__file__).resolve().parents[1]),
                 dev_ready=LOCAL.is_dir() and (LOCAL / 'shell.qml').is_file(),
                 source=stamp.get('source', st.get('source', 'preinstalled')),
-                installed_tag=targets.get('installed', {}).get('installed_tag', st.get('installed_tag','')),
-                dev_tag=targets.get('dev', {}).get('installed_tag',''),
+                installed_tag=effective_version('installed', st) if active else '',
+                dev_tag=effective_version('dev', st),
                 checked_tag=st.get('checked_tag', ''), release=st.get('release', {}),
                 update_available=st.get('update_available', False),
                 state=st.get('state', 'idle'), phase=st.get('phase', ''), progress=st.get('progress', 0),
@@ -272,21 +308,29 @@ def list_releases():
                 message='Fetched ' + str(len(releases)) + ' published release versions.')
 
 
-def check_updates(tag=''):
+def check_updates(tag='', target='dev'):
+    """Compare the selected target, never mistake a local Beta 3 for old Beta 1."""
+    if target not in ('dev', 'installed'):
+        raise UpdateError('Unknown update target.')
     release = releases_get(tag)
     summary = release_summary(release)
     old = state_read()
-    last = old.get('targets', {}).get('dev', {}).get('installed_tag', '') or old.get('installed_tag', '')
-    # Never pretend a previously installed local build is older by version alone.
-    available = bool(last) and summary['tag'] != last
+    current = effective_version(target, old)
+    comparison = version_relation(summary['tag'], current)
+    downgrade = comparison == -1
+    available = comparison == 1 if comparison is not None else bool(current) and summary['tag'] != current
+    summary['downgrade'] = downgrade
+    summary['current_version'] = current
+    message = ('GitHub release is OLDER than your selected local source; this would downgrade it.' if downgrade else
+               'A newer GitHub release is available. Confirm before installing.' if available else
+               'GitHub tag matches this target.' if current and current == summary['tag'] else
+               'GitHub Release found. Current source version is unknown; review before installing.' if not current else
+               'A different GitHub release was found; version order is unknown, review before installing.')
     state_save(checked_tag=summary['tag'], release=summary, update_available=available,
-               message=('Different GitHub release available; ready for explicit download' if available else
-                        'Release found. Current installed version is unknown; review before installing.' if not last else
-                        'This release tag is already installed'),
-               state=old.get('state', 'idle'), progress=old.get('progress', 0),
+               message=message, state=old.get('state', 'idle'), progress=old.get('progress', 0),
                phase=old.get('phase', 'GitHub release metadata checked'))
     return dict(ok=True, update_available=available, release=summary,
-                installed_tag=last, message=state_read()['message'])
+                installed_tag=current, downgrade=downgrade, message=message)
 
 
 def validate_tree(tree):
@@ -581,7 +625,7 @@ def rollback(confirm, target='installed'):
 def run():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['status','check','releases','reapply-local','update-shell','rollback'])
-    parser.add_argument('--tag', default='', help='Specific published GitHub Release tag, e.g. beta-1')
+    parser.add_argument('--tag', default='', help='Specific published GitHub Release tag, e.g. beta-3')
     parser.add_argument('--confirm', default='')
     parser.add_argument('--target', choices=['installed','dev'], default='installed')
     args = parser.parse_args()
@@ -589,7 +633,7 @@ def run():
         if args.command == 'status':
             emit(current_status())
         elif args.command == 'check':
-            emit(check_updates(args.tag))
+            emit(check_updates(args.tag, target=args.target))
         elif args.command == 'releases':
             emit(list_releases())
         elif args.command == 'reapply-local':

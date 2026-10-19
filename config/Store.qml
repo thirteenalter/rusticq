@@ -14,8 +14,11 @@ Singleton {
     property int osdPercent: 0
     property bool osdHasLevel: true
     property bool osdMuted: false
+    // Keyboard is a discrete stage indicator, not an approximate percentage.
+    property int osdStage: 0
+    property int osdStages: 3
     property var osdScreen: null
-    function showOsd(kind, percent, label, hasLevel, muted, screen) {
+    function showOsd(kind, percent, label, hasLevel, muted, screen, stage, stages) {
         if (!SettingsStore.osdEnabled) return;
         if (["volume", "microphone", "brightness", "keyboard", "touchpad", "error"].indexOf(kind) < 0) return;
         osdKind = kind;
@@ -23,6 +26,8 @@ Singleton {
         osdLabel = String(label || "").slice(0, 110);
         osdHasLevel = hasLevel === true;
         osdMuted = muted === true;
+        osdStage = Math.max(0, Math.round(Number(stage) || 0));
+        osdStages = Math.max(1, Math.min(3, Math.round(Number(stages) || 3)));
         osdScreen = screen || osdScreen || (Quickshell.screens.length ? Quickshell.screens[0] : null);
         osdVisible = true;
         osdDismiss.restart();

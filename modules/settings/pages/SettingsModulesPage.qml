@@ -15,6 +15,29 @@ ColumnLayout {
             model: [{label:"Show system OSD",desc:"Auto-hide after 1.65 seconds; observes PipeWire and hardware backlight changes",key:"osdEnabled",icon:"\ue050"}]
             delegate: SettingsToggle { perBarMode: false }
         }
+        Text {
+            Layout.fillWidth: true
+            text: "Touchpad · controls only detected touchpads, never USB mice"
+            color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap
+        }
+        RowLayout {
+            Layout.fillWidth: true; spacing: 8
+            Repeater {
+                model: [{title:"Enable touchpad",action:"touchpad-on"},
+                        {title:"Disable touchpad",action:"touchpad-off"},
+                        {title:"Toggle touchpad",action:"touchpad-toggle"}]
+                delegate: Rectangle {
+                    required property var modelData
+                    Layout.fillWidth: true; Layout.preferredHeight: 35
+                    radius: 10; color: Theme.background
+                    Text { anchors.centerIn: parent; text: modelData.title; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+                    MouseArea {
+                        anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                        onClicked: Store.osdControlRequested(modelData.action)
+                    }
+                }
+            }
+        }
         Rectangle {
             Layout.fillWidth: true; Layout.preferredHeight: 35; radius: 10
             color: Theme.background

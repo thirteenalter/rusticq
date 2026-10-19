@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """RusticQ user CLI. Read-only by default; destructive operations need exact confirmation.
 
-Usage: rusticq status | doctor | config status|backup|list|restore | ipc action | watchdog status|install
+Usage: rusticq version | status | doctor | config status|backup|list|restore | ipc action | watchdog status|install
 Running `rusticq` without a subcommand continues launching the normal Quickshell desktop.
 """
 import argparse
@@ -74,6 +74,7 @@ def main(argv=None):
     parser.add_argument('--json', action='store_true', dest='json_flag')
     subs = parser.add_subparsers(dest='command', required=True)
     subs.add_parser('status')
+    subs.add_parser('version', help='Show local RusticQ source release version')
     subs.add_parser('doctor')
     c = subs.add_parser('config')
     c.add_argument('action', choices=['status', 'list', 'backup', 'restore'])
@@ -91,9 +92,17 @@ def main(argv=None):
     w.add_argument('--confirm', default='')
     args = parser.parse_args(argv)
     try:
-        if args.command == 'status':
+        if args.command == 'version':
+            tag = (ROOT / 'VERSION').read_text(encoding='utf8').strip()
+            if not tag or not tag.startswith('beta-'):
+                raise ValueError('Local source has no valid beta release version')
+            result = {'tag': tag, 'name': 'Beta ' + tag.removeprefix('beta-'),
+                      'source': str(ROOT), 'published_to_github': 'not_verified'}
+        elif args.command == 'status':
             doctor = import_from('rusticq-doctor.py', 'rusticq_doctor_cli')
-            result = {'shell_path': str(ROOT), 'doctor': doctor.doctor()['totals'],
+            result = {'shell_path': str(ROOT),
+                      'release': (ROOT / 'VERSION').read_text(encoding='utf8').strip() if (ROOT / 'VERSION').is_file() else 'unknown',
+                      'doctor': doctor.doctor()['totals'],
                       'config': config_action('status'), 'watchdog': watchdog_action('status')}
         elif args.command == 'doctor':
             result = import_from('rusticq-doctor.py', 'rusticq_doctor_cli').doctor()

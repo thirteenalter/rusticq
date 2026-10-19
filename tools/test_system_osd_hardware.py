@@ -73,15 +73,28 @@ class HardwareOSDTests(unittest.TestCase):
             return subprocess.CompletedProcess(args,0,stdout='ok',stderr='')
         with tempfile.TemporaryDirectory() as tmp, patch.object(mod,'RUNTIME',Path(tmp)/'rusticq'),patch.object(mod,'TOUCHPAD_STATUS',Path(tmp)/'rusticq'/'status.json'),patch.object(mod.subprocess,'run',side_effect=fake_run),patch.object(mod,'emit') as emitter:
             mod.change_touchpad()
-            self.assertEqual(calls[-1], ['hyprctl','keyword','device[elan-touchpad]:enabled','false'])
+            self.assertEqual(calls[-1], ['hyprctl','eval','hl.device({ name = \"elan-touchpad\", enabled = false })'])
             self.assertEqual(emitter.call_args.kwargs['enabled'],False)
             self.assertEqual(json.loads((Path(tmp)/'rusticq/status.json').read_text())['enabled'],False)
 
     def test_touchpad_unavailable_or_unknown_fails_closed(self):
         with patch.object(mod.subprocess,'run',return_value=subprocess.CompletedProcess([],0,stdout=json.dumps({'mice':[{'name':'some-mouse','enabled':True}]}),stderr='')):
             with self.assertRaisesRegex(ValueError,'No touchpad'):mod.change_touchpad()
-        with tempfile.TemporaryDirectory() as tmp, patch.object(mod,'TOUCHPAD_STATUS',Path(tmp)/'notfound'),patch.object(mod.subprocess,'run',return_value=subprocess.CompletedProcess([],0,stdout=json.dumps({'mice':[{'name':'elan-touchpad'}]}),stderr='')):
-            with self.assertRaisesRegex(ValueError,'did not expose'):mod.change_touchpad()
+        # Quattro commonly omits `enabled` in devices -j. Toggle using the
+        # default enabled baseline, then our session state for the next press.
+        with tempfile.TemporaryDirectory() as tmp, patch.object(mod,'RUNTIME',Path(tmp)/'runtime'),patch.object(mod,'TOUCHPAD_STATUS',Path(tmp)/'runtime/status.json'):
+            calls=[]
+            def fake_run(args,**kw):
+                calls.append(args)
+                if args[:3] == ['hyprctl','-j','devices']:
+                    return subprocess.CompletedProcess(args,0,stdout=json.dumps({'mice':[{'name':'elan-touchpad'}]}),stderr='')
+                return subprocess.CompletedProcess(args,0,stdout='ok',stderr='')
+            with patch.object(mod.subprocess,'run',side_effect=fake_run),patch.object(mod,'emit') as out:
+                mod.change_touchpad()
+                self.assertFalse(out.call_args.kwargs['enabled'])
+                mod.change_touchpad()
+                self.assertTrue(out.call_args.kwargs['enabled'])
+                self.assertEqual(len([x for x in calls if x[1]=='eval']),2)
 
     def test_safeguards_settings_and_shortcut_routing(self):
         shell=text('shell.qml');store=text('config/Store.qml');settings=text('config/SettingsStore.qml');registry=text('scripts/rustiq-desktop-integration.py');controller=text('modules/main/SystemOsdController.qml');ui=text('modules/main/SystemOsd.qml');modules=text('modules/settings/pages/SettingsModulesPage.qml')

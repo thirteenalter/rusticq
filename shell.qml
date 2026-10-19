@@ -30,7 +30,7 @@ ShellRoot {
         const screenName = screen ? screen.name : "";
         if (action.indexOf("osd-") === 0) {
             const osdAction = action.substring(4);
-            if (["volume-up", "volume-down", "volume-mute", "microphone-mute", "brightness-up", "brightness-down", "keyboard-up", "keyboard-down", "touchpad-toggle"].indexOf(osdAction) >= 0)
+            if (["volume-up", "volume-down", "volume-mute", "microphone-mute", "brightness-up", "brightness-down", "keyboard-up", "keyboard-down", "touchpad-toggle", "touchpad-on", "touchpad-off"].indexOf(osdAction) >= 0)
                 Store.osdControlRequested(osdAction);
             return;
         }

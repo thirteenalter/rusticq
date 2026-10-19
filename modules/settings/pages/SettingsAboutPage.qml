@@ -8,8 +8,8 @@ ColumnLayout {
     width: parent ? parent.width : 680
     spacing: 14
     SettingsSection {
-        heading: "RusticQ · Beta 1"
-        description: "Arch Linux desktop shell · Quickshell 0.3.1"
+        heading: "RusticQ · " + ReleaseInfo.displayName
+        description: "Release " + ReleaseInfo.tag + " · Arch Linux desktop shell · Quickshell " + ReleaseInfo.requiredQuickshell
         symbol: "\ue8b8"
 
         RowLayout {

@@ -35,7 +35,8 @@ ColumnLayout {
     property bool shellUpdateRiskAccepted: false
     readonly property var shellSelectedRelease: shellReleaseOptions.find(item => item.tag === shellReleaseTag) || ({})
     readonly property bool shellVersionDanger: !!shellSelectedRelease.danger ||
-        (!!shellUpdateStatus.release && (!shellReleaseTag.length || shellUpdateStatus.release.tag === shellReleaseTag) && !!shellUpdateStatus.release.danger)
+        (!!shellUpdateStatus.release && (!shellReleaseTag.length || shellUpdateStatus.release.tag === shellReleaseTag) &&
+         (!!shellUpdateStatus.release.danger || !!shellUpdateStatus.release.downgrade))
     readonly property bool shellVersionAvailable: !shellReleaseTag.length || shellSelectedRelease.available !== false
     // Prevent an unverified manually typed tag from reusing stale metadata.
     readonly property bool shellReleaseMetadataMatches: !!shellUpdateStatus.release && !!shellUpdateStatus.release.tag &&
@@ -89,7 +90,7 @@ ColumnLayout {
         if (shellUpdateBusy || shellUpdateCheckBusy || shellUpdateCheckProc.running) return;
         shellUpdateCheckBusy = true;
         shellUpdateMessage = "Checking GitHub Releases…";
-        const cmd = ["python3", shellUpdateHelper, "check"];
+        const cmd = ["python3", shellUpdateHelper, "check", "--target", shellUpdateTarget];
         if (shellReleaseTag.trim().length > 0) cmd.push("--tag", shellReleaseTag.trim());
         shellUpdateCheckProc.exec(cmd);
     }
@@ -693,7 +694,7 @@ ColumnLayout {
         description: "Automatically checks official GitHub Releases. Update ~/dev/quickshell even after restoring Omarchy, or update a permanently installed shell. Each target has separate rollback backups."
         symbol: "\ue869"
         Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: "Auto fetch: checks GitHub once on Settings load and hourly while open. Download/install requires confirmation."
+            text: "Local source: " + ReleaseInfo.tag + " · Auto fetch checks GitHub on Settings load and hourly while open. Download/install requires confirmation; local version does not imply GitHub publication."
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
         RowLayout { Layout.fillWidth: true; spacing: 8
             Repeater { model: ["dev", "installed"]
@@ -707,7 +708,14 @@ ColumnLayout {
                         font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                         enabled: !root.shellUpdateBusy
-                        onClicked: { root.shellUpdateTarget = modelData; root.shellUpdateAction = ""; root.shellUpdateConfirm = ""; }
+                        onClicked: {
+                            root.shellUpdateTarget = modelData;
+                            root.shellUpdateAction = "";
+                            root.shellUpdateConfirm = "";
+                            root.shellUpdateRiskAccepted = false;
+                            // Re-check against the newly selected target, not the previous target.
+                            Qt.callLater(root.shellUpdateCheck);
+                        }
                     }
                 }
             }
@@ -798,7 +806,7 @@ ColumnLayout {
                 }
                 color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); selectByMouse: true
                 Text { visible: parent.text.length === 0; anchors.verticalCenter: parent.verticalCenter
-                    text: "Optional release tag (e.g. beta-1); blank = newest published release"
+                    text: "Release tag (e.g. beta-3); blank = newest published release"
                     color: Theme.muted; font.pixelSize: Fonts.scale(10) }
             }
         }
@@ -810,7 +818,11 @@ ColumnLayout {
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
         Text { visible: root.shellVersionDanger && root.shellReleaseMetadataMatches
             Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.warning; font.pixelSize: Fonts.scale(10)
-            text: "DANGER: this release is beta/alpha/RC or marked prerelease. It may contain regressions; older versions can invalidate newer settings. Make sure a rollback snapshot is available." }
+            text: !!root.shellUpdateStatus.release && !!root.shellUpdateStatus.release.downgrade
+                ? "DANGER: This is OLDER than the selected installed version (" +
+                  (root.shellUpdateTarget === "dev" ? root.shellUpdateStatus.dev_tag : root.shellUpdateStatus.installed_tag) +
+                  "). Downgrades may invalidate settings and require rollback."
+                : "DANGER: This is a beta/alpha/RC prerelease and may contain regressions. Make sure a rollback snapshot is available." }
         RowLayout { Layout.fillWidth: true; spacing: 8
             Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10
                 color: root.shellUpdateTargetReady && root.shellReleaseMetadataMatches && root.shellVersionAvailable ? Theme.accent : Theme.borderaccent

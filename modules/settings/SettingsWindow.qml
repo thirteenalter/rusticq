@@ -136,7 +136,7 @@ FloatingWindow {
                             }
                             Item { Layout.fillHeight: true }
                             Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(15) }
-                            Text { text: "RUSTIQ DESKTOP  ·  BETA 1"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                            Text { text: "RUSTIQ DESKTOP  ·  " + ReleaseInfo.displayName.toUpperCase(); color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
                         }
                     }
                     RowLayout {
@@ -190,7 +190,7 @@ FloatingWindow {
                     }
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     Text {
-                        text: "RUSTIQ · BETA 1\nQuickshell 0.3.1"
+                        text: "RUSTIQ · " + ReleaseInfo.displayName.toUpperCase() + "\nQuickshell " + ReleaseInfo.requiredQuickshell
                         Layout.fillWidth: true
                         color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                     }
@@ -208,7 +208,7 @@ FloatingWindow {
                         anchors.fill: parent
                         spacing: 3
                         Text { text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(22) }
-                        Text { text: "RUSTIQ / BETA 1 · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        Text { text: "RUSTIQ / " + ReleaseInfo.displayName.toUpperCase() + " · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     }
                     MouseArea {
                         anchors.fill: parent

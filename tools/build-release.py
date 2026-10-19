@@ -62,7 +62,7 @@ def write_zip(target, entries):
     return hashlib.sha256(target.read_bytes()).hexdigest()
 
 
-def build(out, previous=None, *, root=ROOT, label='rusticq-beta1-phase2'):
+def build(out, previous=None, *, root=ROOT, label='rusticq-beta-3'):
     full = sources(root)
     base = read_previous(previous) if previous is not None else {}
     removed = sorted(set(base) - set(full))
@@ -88,7 +88,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out',required=True,type=Path)
     parser.add_argument('--previous',type=Path)
-    parser.add_argument('--label',default='rusticq-beta1-phase2')
+    parser.add_argument('--label',default='rusticq-beta-3')
     args=parser.parse_args()
     print(json.dumps(build(args.out,args.previous,label=args.label),indent=2))
 

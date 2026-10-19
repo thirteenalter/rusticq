@@ -56,3 +56,24 @@ No root, sudo, daemon registrations, persistent compositor edits, or automatic d
 7. Disable **Show system OSD** and verify the overlay stays hidden.
 
 If `qs -p .` reports QML warnings, share the complete error and your `hyprctl -j devices` output (remove any private device IDs if necessary). Full end-to-end Wayland testing is unavailable in the release builder.
+
+## Beta 1 OSD status/three-phase hotfix
+
+This hotfix makes **microphone mute/unmute a status-only indicator** (`MUTED`/`ACTIVE`). Its OSD contains neither the capture volume percentage nor a level bar. Speaker volume and screen brightness continue using percentages.
+
+Keyboard backlight is **Off or up to three real brightness levels**. If the LED device exposes `max_brightness=3`, the OSD shows three discrete segments and `1/3`, `2/3`, or `3/3`. Hardware with larger scales is mapped to three brightness phases when RusticQ changes it; devices supporting only one or two actual stages are reported truthfully as `1/1` or `1/2` rather than fabricating unsupported physical levels. Fn-key changes are also mapped into these discrete phases. `0` is Off (not Phase 1).
+
+Touchpad now has **Enable / Disable / Toggle** controls in Settings → Modules → System OSD, and the three corresponding `osd-touchpad-on`, `osd-touchpad-off`, `osd-touchpad-toggle` shortcut actions. OSD status is shown only after Hyprland accepts the device change. It selects devices explicitly named `touchpad`/`trackpad`, leaving external mice alone. On Omarchy Quattro it uses the `hl.device(...)` command; classic Hyprland can fall back to the `device[name]:enabled` keyword. Device names are quoted and never passed through a shell. Hyprland commonly omits the `enabled` field from its device inventory, so first toggle defaults to the normally enabled state **unless** an Omarchy persisted disable marker or previous RusticQ session state indicates otherwise. Explicit On/Off avoids any ambiguity on first use.
+
+Touchpad state changes made by RusticQ apply to the **running Hyprland session**. They do not rewrite Omarchy's persistent input configuration and may be overridden by Hyprland reload, existing rules, or external touchpad tools. When testing with Fn keys, bind `osd-touchpad-toggle` to that key under Settings → Shortcuts rather than replacing a working existing binding automatically. `touchpad-on` can always be bound separately as a recovery shortcut. The OSD does not claim to detect external programs' touchpad changes, only its own accepted operations.
+
+If a touchpad is not detected, the helper reports an error rather than disabling all pointer devices. No sudo, Polkit, or extra daemon is needed. Sample manual test:
+
+```bash
+cd ~/dev/quickshell
+python3 scripts/rusticq-osd-hardware.py touchpad-off
+python3 scripts/rusticq-osd-hardware.py touchpad-on
+hyprctl -j devices
+```
+
+These are **real touchpad state changes**; have a USB mouse or keyboard available during testing. Restart one Quickshell instance to load updated QML. A test on real hardware is still needed for each laptop's LED and touchpad interface.

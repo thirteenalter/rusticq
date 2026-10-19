@@ -53,7 +53,7 @@ PanelWindow {
                     color: Theme.foreground; elide: Text.ElideRight; textFormat: Text.PlainText
                 }
                 RowLayout {
-                    Layout.fillWidth: true; visible: Store.osdHasLevel
+                    Layout.fillWidth: true; visible: Store.osdHasLevel && root.kind !== "keyboard" && root.kind !== "microphone" && root.kind !== "touchpad"
                     spacing: 9
                     Rectangle {
                         Layout.fillWidth: true; Layout.preferredHeight: 6
@@ -67,11 +67,36 @@ PanelWindow {
                     }
                     Text { text: Store.osdMuted ? "MUTE" : Store.osdPercent + "%"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
                 }
+                // Three hardware brightness phases (+ Off) rather than a percent
+                // bar. Devices with only one or two physical steps show only
+                // their truthful number of available stages.
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: root.kind === "keyboard"
+                    spacing: 7
+                    Repeater {
+                        model: Store.osdStages
+                        delegate: Rectangle {
+                            Layout.fillWidth: true; Layout.preferredHeight: 7
+                            radius: 3
+                            color: index < Store.osdStage ? Theme.accent : Theme.surface
+                        }
+                    }
+                    Text {
+                        text: Store.osdStage === 0 ? "OFF" : Store.osdStage + "/" + Store.osdStages
+                        color: Store.osdStage === 0 ? Theme.muted : Theme.accent
+                        font.family: Fonts.poppinsSB.name
+                        font.pixelSize: Fonts.scale(10)
+                    }
+                }
                 Text {
-                    visible: !Store.osdHasLevel
-                    text: root.kind === "error" ? "Unavailable" : (Store.osdMuted ? "Disabled" : "Enabled")
-                    color: Store.osdMuted ? Theme.warning : Theme.accent
-                    font.pixelSize: Fonts.scale(10)
+                    visible: root.kind === "microphone" || root.kind === "touchpad" || root.kind === "error"
+                    text: root.kind === "error" ? "Unavailable"
+                        : root.kind === "microphone" ? (Store.osdMuted ? "MUTED" : "ACTIVE")
+                        : (Store.osdMuted ? "DISABLED" : "ENABLED")
+                    color: Store.osdMuted || root.kind === "error" ? Theme.warning : Theme.accent
+                    font.family: Fonts.poppinsSB.name
+                    font.pixelSize: Fonts.scale(11)
                 }
             }
         }

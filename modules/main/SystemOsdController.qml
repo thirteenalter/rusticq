@@ -19,9 +19,9 @@ Item {
             if (Quickshell.screens[i].name === name) return Quickshell.screens[i];
         return Quickshell.screens.length ? Quickshell.screens[0] : null;
     }
-    function present(kind, level, text, hasLevel, muted) {
+    function present(kind, level, text, hasLevel, muted, stage, stages) {
         if (!root.ready) return;
-        Store.showOsd(kind, level, text, hasLevel, muted, root.activeScreen());
+        Store.showOsd(kind, level, text, hasLevel, muted, root.activeScreen(), stage, stages);
     }
     Timer { interval: 1500; repeat: false; running: true; onTriggered: root.ready = true }
     PwObjectTracker { objects: [root.sink, root.source].filter(item => item !== null) }
@@ -44,8 +44,8 @@ Item {
         ignoreUnknownSignals: true
         function onMutedChanged() {
             if (root.source && root.source.audio)
-                root.present("microphone", root.source.audio.volume * 100,
-                             root.source.audio.muted ? "Microphone muted" : "Microphone on", true, root.source.audio.muted);
+                root.present("microphone", 0,
+                             root.source.audio.muted ? "Microphone muted" : "Microphone active", false, root.source.audio.muted);
         }
     }
     // One tiny Python watcher reads /sys/class/backlight and kbd_backlight.
@@ -57,8 +57,11 @@ Item {
         stdout: SplitParser { onRead: message => {
             try {
                 const info = JSON.parse(message);
-                if (info.kind === "brightness" || info.kind === "keyboard")
-                    root.present(info.kind, info.percent, info.kind === "brightness" ? "Screen brightness" : "Keyboard backlight", true, false);
+                if (info.kind === "brightness")
+                    root.present("brightness", info.percent, "Screen brightness", true, false);
+                else if (info.kind === "keyboard")
+                    root.present("keyboard", 0, info.stage === 0 ? "Keyboard light off" : "Keyboard backlight", false, false,
+                                 info.stage, info.stages);
             } catch(e) { /* Ignore non-JSON diagnostic output, never crash OSD. */ }
         } }
         stderr: SplitParser { onRead: message => console.warn("OSD hardware: " + message) }
@@ -71,9 +74,11 @@ Item {
                 if (!result.ok) root.present("error", 0, result.message || "Device unavailable", false, true);
                 else if (result.kind === "touchpad")
                     root.present("touchpad", 0, result.enabled ? "Touchpad enabled" : "Touchpad disabled", false, !result.enabled);
-                else if (result.kind === "keyboard" || result.kind === "brightness")
-                    root.present(result.kind, result.percent,
-                         result.kind === "keyboard" ? "Keyboard backlight" : "Screen brightness", true, false);
+                else if (result.kind === "keyboard")
+                    root.present("keyboard", 0, result.stage === 0 ? "Keyboard light off" : "Keyboard backlight", false, false,
+                                 result.stage, result.stages);
+                else if (result.kind === "brightness")
+                    root.present("brightness", result.percent, "Screen brightness", true, false);
             } catch(e) { root.present("error", 0, "Hardware control unavailable", false, true); }
         } }
     }
@@ -95,7 +100,7 @@ Item {
         const audio = root.source && root.source.audio;
         if (!audio) { root.present("error",0,"Microphone unavailable",false,true); return; }
         audio.muted = !audio.muted;
-        root.present("microphone", audio.volume * 100, audio.muted ? "Microphone muted" : "Microphone on", true, audio.muted);
+        root.present("microphone", 0, audio.muted ? "Microphone muted" : "Microphone active", false, audio.muted);
     }
     Connections {
         target: Store
@@ -104,7 +109,8 @@ Item {
             if (action === "preview") root.present("volume", 67, "RusticQ system OSD", true, false);
             else if (["volume-up","volume-down","volume-mute"].indexOf(action) >= 0) root.adjustVolume(action);
             else if (action === "microphone-mute") root.adjustMicrophone();
-            else if (["brightness-up","brightness-down","keyboard-up","keyboard-down","touchpad-toggle"].indexOf(action) >= 0) root.control(action);
+            else if (["brightness-up","brightness-down","keyboard-up","keyboard-down",
+                       "touchpad-toggle","touchpad-on","touchpad-off"].indexOf(action) >= 0) root.control(action);
         }
     }
 }
