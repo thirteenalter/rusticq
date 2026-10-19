@@ -6,6 +6,7 @@ confirmation from the UI and a matching CLI token. Only known Omarchy Quattro
 configuration signatures are edited; unexpected formats fail closed.
 """
 import argparse
+import time
 import hashlib
 import json
 import os
@@ -32,6 +33,9 @@ ACTION_CATALOG = [
     {"key": 'lock', "name": 'RusticQ lock screen', "category": 'Core'},
     {"key": 'settings-appearance', "name": 'Appearance', "category": 'Settings pages'},
     {"key": 'settings-bar', "name": 'Bar layout', "category": 'Settings pages'},
+    {"key": 'bar-toggle', "name": 'Toggle desktop bar', "category": 'Bar visibility'},
+    {"key": 'bar-show', "name": 'Show desktop bar', "category": 'Bar visibility'},
+    {"key": 'bar-hide', "name": 'Hide desktop bar', "category": 'Bar visibility'},
     {"key": 'settings-modules', "name": 'Modules and indicators', "category": 'Settings pages'},
     {"key": 'settings-widgets', "name": 'Desktop widgets', "category": 'Settings pages'},
     {"key": 'settings-dock', "name": 'Dock', "category": 'Settings pages'},
@@ -105,6 +109,7 @@ ACTION_CATALOG = [
 # `bar_key` corresponds to SettingsStore.barIconKeys; the menu/workspace/QuickModes
 # buttons intentionally have multiple actions that can be assigned independently.
 BAR_ACTIONS = {
+    "barToggle": ["bar-toggle", "bar-show", "bar-hide"],
     "rusticq": ["settings"],
     "arch": ["ai"],
     "launcher": ["launcher"],
@@ -153,6 +158,7 @@ REMAPS = STATE / 'remaps.json'
 OMARCHY_BACKUP_META = STATE / 'backup/omarchy-snapshot.json'
 SHIM = STATE / 'autostart.lua'
 STARTER = STATE / 'start-rusticq.sh'
+INSTALL_PROGRESS = STATE / 'permanent-install-progress.json'
 
 
 def digest(value):
@@ -259,6 +265,27 @@ def load_meta():
     return json.loads(META.read_text()) if META.is_file() else {}
 
 
+def restore_bindings_after_rejected_reload(previous, error):
+    """Fail closed: restore the exact old file AND reload it in the compositor.
+
+    The previous implementation restored only the file, leaving a possibly
+    invalid in-memory Hyprland configuration until the user manually reloaded.
+    Backup snapshots are never touched by this recovery path.
+    """
+    try:
+        save_atomic(BINDINGS, previous)
+    except (OSError, ValueError) as restore_error:
+        raise ValueError('Shortcut rejected (' + str(error) + '); automatic file restore FAILED: '
+                         + str(restore_error) + '. Use saved shortcut-history backup.') from restore_error
+    try:
+        run_hypr_reload()
+    except (OSError, ValueError, subprocess.TimeoutExpired) as recovery_error:
+        raise ValueError('Shortcut rejected (' + str(error) + '); previous bindings restored to disk '
+                         'but Hyprland reload/validation failed: ' + str(recovery_error)) from recovery_error
+    raise ValueError('Shortcut rejected (' + str(error) + '); original bindings restored '
+                     'and Hyprland reloaded. Snapshot backup preserved.') from error
+
+
 def run_hypr_reload():
     if not shutil.which('hyprctl') or not os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
         return 'Saved. Changes will apply after Hyprland starts/reloads.'
@@ -288,6 +315,231 @@ def is_omarchy():
 TREE_ROOT = STATE / 'backup' / 'user-config-preinstall'
 TREE_META = STATE / 'backup' / 'user-config-index.json'
 BACKUP_CONFIG_DIRS = ('hypr', 'omarchy', 'quickshell')
+
+# Shortcut backup layer is independent of the existing permanent-shell backup.
+# Full distribution defaults are immutable (once per machine); user dotfiles
+# get a new snapshot BEFORE EACH mutating shortcut/remap operation. Nothing is
+# automatically written back from snapshots: recovery must be deliberate.
+SHORTCUT_ARCHIVES = STATE / 'backup' / 'shortcut-history'
+FULL_DEFAULT_SNAPSHOT = STATE / 'backup' / 'omarchy-default-complete'
+# Omarchy/Hyprland-relevant dotfiles; deliberately exclude unrelated app data,
+# browsers, account databases, and secrets from arbitrary ~/.config folders.
+SHORTCUT_CONFIG_DIRS = (
+    'hypr', 'omarchy', 'quickshell', 'waybar', 'mako', 'swaync',
+    'swayosd', 'walker', 'fuzzel', 'rofi', 'wofi', 'wlogout',
+    'ghostty', 'kitty', 'alacritty', 'foot', 'wezterm',
+    'starship', 'fastfetch', 'btop', 'nvim', 'uwsm',
+)
+SHORTCUT_CONFIG_FILES = ('starship.toml', 'mimeapps.list')
+SHORTCUT_HOME_DOTFILES = (
+    '.bashrc', '.bash_profile', '.bash_aliases', '.zshrc', '.zprofile',
+    '.zshenv', '.profile', '.inputrc', '.Xresources', '.gitconfig',
+)
+
+
+def private_backup_directory(path):
+    """Refuse symlinked backup destinations and apply restrictive permissions."""
+    for item in (STATE, STATE / 'backup', SHORTCUT_ARCHIVES):
+        if item.is_symlink() or (item.exists() and not item.is_dir()):
+            raise ValueError('Unsafe backup directory (symlink or non-directory): ' + str(item))
+    path.mkdir(parents=True, exist_ok=True, mode=0o700)
+    for item in (STATE, STATE / 'backup', SHORTCUT_ARCHIVES, path):
+        if item.is_dir():
+            if item.is_symlink():
+                raise ValueError('Unsafe symlink in backup path: ' + str(item))
+            item.chmod(0o700)
+
+
+def _capture_sources(stage, sources, kind, max_bytes):
+    """Copy exact tree contents, never following source symlinks."""
+    records, missing = {}, []
+    total_bytes = 0
+    for prefix, origin in sources:
+        if not prefix or Path(prefix).is_absolute() or '..' in Path(prefix).parts:
+            raise ValueError('Invalid backup section')
+        # A symlinked top-level config tree can refer outside this scope.
+        # Reject rather than falsely claiming its external target was copied.
+        if origin.is_symlink():
+            raise ValueError('Symlinked top-level config cannot be snapshotted completely: ' + str(origin))
+        if not origin.exists():
+            missing.append(prefix)
+            continue
+        if not origin.is_dir() and not origin.is_file():
+            raise ValueError('Unsupported config entry: ' + str(origin))
+        paths = [origin] + sorted(origin.rglob('*')) if origin.is_dir() else [origin]
+        for item in paths:
+            suffix = item.relative_to(origin) if origin.is_dir() else Path()
+            rel = Path(prefix) / suffix
+            if len(rel.parts) > 24:
+                raise ValueError('Backup depth exceeded: ' + str(rel))
+            dest = stage / rel
+            if item.is_symlink():
+                # Nested links are represented in the archive as links, never
+                # dereferenced to arbitrary filesystem paths.
+                link = str(item.readlink())
+                dest.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                dest.symlink_to(link)
+                records[rel.as_posix()] = dict(type='symlink', sha256=digest(link))
+            elif item.is_dir():
+                dest.mkdir(parents=True, exist_ok=True, mode=0o700)
+            elif item.is_file():
+                file_size = item.stat().st_size
+                if file_size > 64_000_000 or total_bytes + file_size > max_bytes:
+                    raise ValueError('Backup size limit exceeded (' + kind + '); shortcut unchanged')
+                total_bytes += file_size
+                dest.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                shutil.copyfile(item, dest, follow_symlinks=False)
+                dest.chmod(0o600)
+                records[rel.as_posix()] = dict(type='file',
+                    sha256=hashlib.sha256(dest.read_bytes()).hexdigest(),
+                    original_mode=stat.S_IMODE(item.stat().st_mode))
+            else:
+                raise ValueError('Unsupported special config file: ' + str(item))
+            if len(records) > 18000:
+                raise ValueError('Backup file-count limit exceeded; shortcut unchanged')
+    return dict(version=1, kind=kind, source_roots={k: str(v) for k, v in sources},
+                files=records, missing=missing, count=len(records), bytes=total_bytes,
+                created_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()))
+
+
+def verify_shortcut_archive(folder):
+    """Verify immutable snapshot against SHA256 for every recorded item."""
+    manifest = folder / 'manifest.json'
+    if folder.is_symlink() or not folder.is_dir() or manifest.is_symlink() or not manifest.is_file():
+        raise ValueError('Shortcut snapshot is missing or unsafe: ' + str(folder))
+    data = json.loads(manifest.read_text(encoding='utf-8'))
+    if data.get('version') != 1 or data.get('kind') not in ('omarchy-default-complete', 'user-dotfiles-before-shortcut'):
+        raise ValueError('Unknown shortcut backup manifest')
+    entries = data.get('files')
+    if not isinstance(entries, dict) or len(entries) != data.get('count'):
+        raise ValueError('Invalid shortcut backup inventory')
+    for relative, record in entries.items():
+        rel = Path(relative)
+        if rel.is_absolute() or '..' in rel.parts or not rel.parts or rel.parts[0] not in ('default', 'config', 'home'):
+            raise ValueError('Invalid shortcut backup entry: ' + relative)
+        target = folder / rel
+        if record.get('type') == 'file':
+            if target.is_symlink() or not target.is_file() or hashlib.sha256(target.read_bytes()).hexdigest() != record.get('sha256'):
+                raise ValueError('Shortcut snapshot checksum mismatch: ' + relative)
+        elif record.get('type') == 'symlink':
+            if not target.is_symlink() or digest(str(target.readlink())) != record.get('sha256'):
+                raise ValueError('Shortcut snapshot symlink mismatch: ' + relative)
+        else:
+            raise ValueError('Invalid backup entry type')
+    return dict(ok=True, path=str(folder), kind=data['kind'], files=len(entries),
+                bytes=data.get('bytes', 0), created=data.get('created_utc', ''))
+
+
+def _write_shortcut_archive(target, sources, kind, max_bytes):
+    parent = target.parent
+    private_backup_directory(parent)
+    if target.exists() or target.is_symlink():
+        raise ValueError('Snapshot destination already exists; refusing overwrite: ' + str(target))
+    stage = Path(tempfile.mkdtemp(prefix='.pending-snapshot-', dir=parent))
+    stage.chmod(0o700)
+    try:
+        manifest = _capture_sources(stage, sources, kind, max_bytes)
+        save_atomic(stage / 'manifest.json', json.dumps(manifest, indent=2) + '\n', 0o600)
+        stage.rename(target)
+        return verify_shortcut_archive(target)
+    except Exception:
+        if stage.exists():
+            shutil.rmtree(stage)
+        raise
+
+
+def ensure_full_default_archive():
+    """One immutable backup of ALL /usr/share/omarchy/default, not just hypr/."""
+    if FULL_DEFAULT_SNAPSHOT.exists() or FULL_DEFAULT_SNAPSHOT.is_symlink():
+        return verify_shortcut_archive(FULL_DEFAULT_SNAPSHOT)
+    origin = omarchy_root() / 'default'
+    if not origin.exists():
+        # Do not mistake a broken/relocated Omarchy install for ordinary Hyprland.
+        # is_omarchy() requires this directory and would otherwise return False.
+        main = read_file(MAIN)
+        if 'default.hypr.omarchy' in main or (omarchy_root() / 'bin/omarchy').exists():
+            raise ValueError('Omarchy full defaults missing at ' + str(origin) + '. Backup and shortcut change aborted. Check OMARCHY_PATH.')
+        return None  # Independent non-Omarchy Hyprland can still use RusticQ.
+    return _write_shortcut_archive(FULL_DEFAULT_SNAPSHOT,
+            [('default', origin)], 'omarchy-default-complete', 512_000_000)
+
+
+def shortcut_backup_sources():
+    result = [('config/' + name, CONFIG / name) for name in SHORTCUT_CONFIG_DIRS]
+    result += [('config/' + name, CONFIG / name) for name in SHORTCUT_CONFIG_FILES]
+    result += [('home/' + name, HOME / name) for name in SHORTCUT_HOME_DOTFILES]
+    return result
+
+
+def backup_before_shortcut_change(operation):
+    """Verified independent backup BEFORE a shortcut or remap changes.
+
+    Do not call backup_omarchy(): that belongs to permanent shell integration,
+    and its legacy subset/symlink limits can block the independent full archive.
+    """
+    if META.is_file() and not OMARCHY_BACKUP_META.is_file():
+        raise ValueError('Permanent shell integration has missing recovery metadata; repair that backup before changing bindings.')
+    defaults = ensure_full_default_archive()
+    identifier = time.strftime('%Y%m%dT%H%M%SZ', time.gmtime()) + '-' + str(time.time_ns())
+    target = SHORTCUT_ARCHIVES / identifier
+    snapshot = _write_shortcut_archive(target, shortcut_backup_sources(),
+                                      'user-dotfiles-before-shortcut', 256_000_000)
+    # Verify both immutable archives one final time before any edit.
+    if defaults:
+        defaults = verify_shortcut_archive(FULL_DEFAULT_SNAPSHOT)
+    snapshot = verify_shortcut_archive(target)
+    return dict(backup_dir=str(target), backup_files=snapshot['files'],
+                backup_bytes=snapshot['bytes'],
+                default_backup_dir=defaults['path'] if defaults else '',
+                default_backup_files=defaults['files'] if defaults else 0,
+                backup_verified=True, operation=operation)
+
+
+def shortcut_archive_status():
+    """Read-only status, never imply an unverified archive is a valid backup."""
+    if SHORTCUT_ARCHIVES.is_symlink() or FULL_DEFAULT_SNAPSHOT.is_symlink():
+        return dict(count=0, latest='', defaults_present=False, directory=str(SHORTCUT_ARCHIVES),
+                    health='unsafe', message='Backup path is a symlink. Inspection required.')
+    present = SHORTCUT_ARCHIVES.is_dir()
+    archives = sorted(p for p in SHORTCUT_ARCHIVES.iterdir()
+                      if p.is_dir() and not p.is_symlink() and (p / 'manifest.json').is_file()) if present else []
+    return dict(count=len(archives), latest=str(archives[-1]) if archives else '',
+                defaults_present=FULL_DEFAULT_SNAPSHOT.is_dir() and
+                                 (FULL_DEFAULT_SNAPSHOT / 'manifest.json').is_file(),
+                directory=str(SHORTCUT_ARCHIVES),
+                health='unverified' if archives else 'missing')
+
+
+def verify_shortcut_backups():
+    """Detailed verification report; allow CLI/UI use even with zero snapshots."""
+    info = shortcut_archive_status()
+    if info.get('health') == 'unsafe':
+        raise ValueError(info['message'])
+    if not info['defaults_present'] and not info['count']:
+        raise ValueError('No Omarchy/dotfiles shortcut backup exists yet. Select "Create backup now", or confirm "Back up & apply" to create one before changing bindings.')
+    if is_omarchy() and not info['defaults_present']:
+        raise ValueError('Full default Omarchy backup is missing; verify cannot pass.')
+    defaults = verify_shortcut_archive(FULL_DEFAULT_SNAPSHOT) if info['defaults_present'] else None
+    archives = sorted(p for p in SHORTCUT_ARCHIVES.iterdir()
+                      if p.is_dir() and not p.is_symlink() and (p / 'manifest.json').is_file()) if SHORTCUT_ARCHIVES.is_dir() else []
+    if not archives:
+        raise ValueError('Default Omarchy is backed up, but no user dotfiles snapshots exist. Select Create backup now.')
+    verified = [verify_shortcut_archive(p) for p in archives]
+    return dict(ok=True, count=len(verified), latest=verified[-1]['path'],
+                latest_files=verified[-1]['files'], latest_bytes=verified[-1]['bytes'],
+                default=defaults, default_files=defaults['files'] if defaults else 0,
+                directory=str(SHORTCUT_ARCHIVES),
+                message=f'Verified {len(verified)} user snapshots and {defaults["files"] if defaults else 0} Omarchy default files (SHA-256).')
+
+
+def create_shortcut_backup_now():
+    """User-triggered backup without mutating any Hyprland configuration."""
+    snapshot = backup_before_shortcut_change('manual')
+    report = verify_shortcut_backups()
+    return dict(ok=True, **snapshot,
+                count=report['count'], default_files=report['default_files'],
+                directory=report['directory'],
+                message='Backup created and verified. No shortcut was changed. ' + report['message'])
 
 
 def snapshot_user_config():
@@ -612,15 +864,21 @@ def write_shortcuts(mapping, previous_content, remaps=None):
     def unbind(key):
         if key not in unbinds:
             unbinds.append(key)
+    # Omarchy Quattro variants disagree on whether o.rebind exists. The
+    # portable documented approach is to explicitly unbind, then o.bind.
+    # Unbind both the former key and new key for a remap, so existing defaults
+    # on either combination cannot execute alongside RusticQ's action.
     for r in remaps.values():
         unbind(r['from'])
-        binds.append('o.rebind(' + ', '.join(json.dumps(v) for v in (r['to'], r['label'], r['command'])) + ')')
+        unbind(r['to'])
+        binds.append('o.bind(' + ', '.join(json.dumps(v) for v in (r['to'], r['label'], r['command'])) + ')')
     for act in ACTIONS:
         if act not in mapping:
             continue
         combo = mapping[act]
+        unbind(combo)
         command = 'quickshell ipc -p ' + shlex.quote(str(target_shell)) + ' call rusticq dispatch ' + shlex.quote(act)
-        binds.append('o.rebind(' + json.dumps(combo) + ', ' + json.dumps('RusticQ ' + ACTIONS[act]) + ', ' + json.dumps(command) + ')')
+        binds.append('o.bind(' + json.dumps(combo) + ', ' + json.dumps('RusticQ ' + ACTIONS[act]) + ', ' + json.dumps(command) + ')')
     lines = ['hl.unbind(' + json.dumps(k) + ')' for k in unbinds] + binds
     if lines:
         return append_block(base_content, '\n'.join(lines))
@@ -654,6 +912,7 @@ def remap_binding(file, line, source_hash, key):
     if START in content and not (map_ or others):
         raise ValueError('Orphaned managed block; recover the previous metadata first.')
     updated = write_shortcuts(map_, content, updated_map)
+    archive = backup_before_shortcut_change('remap')
     STATE.mkdir(parents=True, exist_ok=True, mode=0o700)
     # Literal lines kept for auditing, but the source Lua is never modified.
     original_backup = STATE / 'shortcut-original.txt'
@@ -664,12 +923,11 @@ def remap_binding(file, line, source_hash, key):
     save_atomic(BINDINGS, updated)
     try:
         msg = run_hypr_reload()
-    except Exception:
-        save_atomic(BINDINGS, content)
-        raise
+    except Exception as error:
+        restore_bindings_after_rejected_reload(content, error)
     save_atomic(REMAPS, json.dumps(updated_map, indent=2) + '\n')
     save_atomic(SHORTCUT_BACKUPS, json.dumps(old_backups, indent=2) + '\n')
-    return {'ok': True, 'message': item['from'] + ' → ' + dest + '. Original line preserved. ' + msg, 'remap_id': item['id']}
+    return {'ok': True, 'message': item['from'] + ' → ' + dest + '. Original line preserved. ' + msg, 'remap_id': item['id'], **archive}
 
 
 def restore_remap(ident):
@@ -682,12 +940,12 @@ def restore_remap(ident):
     if START not in current:
         raise ValueError('Managed block missing. Cannot safely revert.')
     updated = write_shortcuts(load_shortcuts(), current, updated_map)
+    archive = backup_before_shortcut_change('remap-revert')
     save_atomic(BINDINGS, updated)
     try:
         msg = run_hypr_reload()
-    except Exception:
-        save_atomic(BINDINGS, current)
-        raise
+    except Exception as error:
+        restore_bindings_after_rejected_reload(current, error)
     if updated_map:
         save_atomic(REMAPS, json.dumps(updated_map, indent=2) + '\n')
     elif REMAPS.exists():
@@ -698,7 +956,7 @@ def restore_remap(ident):
         save_atomic(SHORTCUT_BACKUPS, json.dumps(old_backups, indent=2) + '\n')
     elif SHORTCUT_BACKUPS.exists():
         SHORTCUT_BACKUPS.unlink()
-    return {'ok': True, 'message': 'Restored original ' + removed['from'] + ' binding at ' + removed['file'] + ':' + str(removed['line']) + '. ' + msg}
+    return {'ok': True, 'message': 'Restored original ' + removed['from'] + ' binding at ' + removed['file'] + ':' + str(removed['line']) + '. ' + msg, **archive}
 
 
 def apply_keybinding(combo, action):
@@ -725,6 +983,7 @@ def apply_keybinding(combo, action):
     mapping[action] = key
     # Keep prior binding snapshots in the audit record even after reassignment.
     updated = write_shortcuts(mapping, content)
+    archive = backup_before_shortcut_change('shortcut')
     STATE.mkdir(parents=True, exist_ok=True, mode=0o700)
     original_backup = STATE / 'shortcut-original.txt'
     if not original_backup.exists():
@@ -732,12 +991,11 @@ def apply_keybinding(combo, action):
     save_atomic(BINDINGS, updated)
     try:
         reload_message = run_hypr_reload()
-    except Exception:
-        save_atomic(BINDINGS, content)
-        raise
+    except Exception as error:
+        restore_bindings_after_rejected_reload(content, error)
     save_atomic(SHORTCUTS, json.dumps(mapping, indent=2) + '\n')
     save_atomic(SHORTCUT_BACKUPS, json.dumps(new_backups, indent=2) + '\n')
-    return {'ok': True, 'message': f'{key} → {ACTIONS[action]}. Original lines backed up. ' + reload_message, 'shortcut': key, 'action': action}
+    return {'ok': True, 'message': f'{key} → {ACTIONS[action]}. Original lines backed up. ' + reload_message, 'shortcut': key, 'action': action, **archive}
 
 
 def restore_shortcut(action=None):
@@ -760,12 +1018,12 @@ def restore_shortcut(action=None):
         changed.clear()
         removed_key = None
     updated = write_shortcuts(changed, current)
+    archive = backup_before_shortcut_change('shortcut-revert')
     save_atomic(BINDINGS, updated)
     try:
         result = run_hypr_reload()
-    except Exception:
-        save_atomic(BINDINGS, current)
-        raise
+    except Exception as error:
+        restore_bindings_after_rejected_reload(current, error)
     if changed:
         save_atomic(SHORTCUTS, json.dumps(changed, indent=2) + '\n')
     elif SHORTCUTS.exists():
@@ -774,7 +1032,7 @@ def restore_shortcut(action=None):
     # Only the active override map is removed.
     # Original default bindings are revealed again after hl.unbind is removed.
     # No user/default Lua source lines were ever rewritten.
-    return {'ok': True, 'message': ('Restored ' + (removed_key or 'all shortcuts') + '. ' + result)}
+    return {'ok': True, 'message': ('Restored ' + (removed_key or 'all shortcuts') + '. ' + result), **archive}
 
 
 def safe_copy_shell():
@@ -790,7 +1048,108 @@ def safe_copy_shell():
         raise ValueError('Unable to copy installed RusticQ shell')
 
 
-def enable_permanent(token):
+
+def installed_shell_processes():
+    """Return live Quickshell PIDs whose argv uses the installed shell directory.
+
+    A restored Omarchy autostart does NOT stop the still-running RusticQ from
+    the previous login, so moving its files without checking can break it.
+    Ignore processes that cannot be inspected (permission / exited races).
+    """
+    users = []
+    proc_root = Path('/proc')
+    if not proc_root.is_dir():
+        return users
+    for proc in proc_root.iterdir():
+        if not proc.name.isdecimal():
+            continue
+        try:
+            raw = (proc / 'cmdline').read_bytes()
+        except (OSError, PermissionError):
+            continue
+        args = [part.decode('utf-8', 'replace') for part in raw.split(b'\0') if part]
+        if not args:
+            continue
+        executable = Path(args[0]).name
+        if executable not in ('quickshell', 'qs', 'quickshell-qt6'):
+            continue
+        target = str(DATA)
+        if any(arg == target or arg.startswith(target + '/') for arg in args[1:]):
+            users.append(int(proc.name))
+    return sorted(users)
+
+
+def stale_shell_summary():
+    """Pure status: distinguish an orphan directory from an in-use shell."""
+    if DATA.is_symlink():
+        return 'symlink', 'Installed-shell path is a symlink and will never be moved automatically.'
+    if not DATA.exists():
+        return 'absent', 'No previous installed shell remains.'
+    if not DATA.is_dir():
+        return 'not_directory', 'Installed-shell path is not a directory; inspect it manually.'
+    users = installed_shell_processes()
+    if users:
+        return 'in_use', ('A Quickshell process is still running from this folder (PID ' +
+                           ', '.join(map(str, users)) + '). Log out and log back into Omarchy '
+                           'before reinstalling; existing files are untouched.')
+    recognizable = (DATA / 'shell.qml').is_file() and (DATA / 'scripts/rustiq-desktop-integration.py').is_file()
+    return ('known' if recognizable else 'partial',
+            'Previous installed shell can be archived in full after explicit ENABLE RUSTICQ confirmation. '
+            'An incomplete layout is preserved as-is; no files are deleted.')
+
+
+def park_unmanaged_leftovers():
+    """Archive old installed-shell files to private history (never delete).
+
+    Once the user explicitly confirms ENABLE RUSTICQ and backup verification
+    succeeds, the *exact* known installed-shell path may contain an incomplete
+    or GitHub-updated tree. The old check required two specific files and
+    incorrectly blocked reinstall. Archiving it is safe if the directory is
+    real, not still in use, and the old manifest/startup hook is absent.
+    """
+    if META.exists() or START in read_file(MAIN):
+        raise ValueError('RusticQ startup still appears installed; use Restore first.')
+    candidates = [path for path in (SHIM, STARTER, DATA) if path.exists() or path.is_symlink()]
+    if not candidates:
+        return []
+    for path in candidates:
+        if path.is_symlink():
+            raise ValueError('Unsafe symlinked stale integration file: ' + str(path))
+        if path == DATA:
+            status, detail = stale_shell_summary()
+            if status not in ('known', 'partial'):
+                raise ValueError('Cannot archive old installed shell at ' + str(path) + '. ' + detail)
+        elif not path.is_file():
+            raise ValueError('Unknown stale integration path: ' + str(path))
+        elif path == SHIM and ('default.hypr' not in read_file(path) and 'hl.exec_cmd' not in read_file(path)):
+            raise ValueError('Unrecognized stale autostart shim; backup and inspect it manually.')
+        elif path == STARTER and 'quickshell' not in read_file(path):
+            raise ValueError('Unrecognized stale shell starter; backup and inspect it manually.')
+    history_root = STATE / 'stale-install-history'
+    if history_root.is_symlink() or (history_root.exists() and not history_root.is_dir()):
+        raise ValueError('Unsafe stale-install history path: ' + str(history_root))
+    history = history_root / (time.strftime('%Y%m%dT%H%M%SZ', time.gmtime()) + '-' + str(time.time_ns()))
+    history.mkdir(parents=True, mode=0o700)
+    parked = []
+    try:
+        for path in candidates:
+            destination = history / ('shell' if path == DATA else path.name)
+            path.rename(destination)
+            parked.append((path, destination))
+    except Exception:
+        for original, destination in reversed(parked):
+            destination.rename(original)
+        raise
+    return parked
+
+
+def reinstate_parked_on_failure(parked):
+    for original, saved in reversed(parked):
+        if saved.exists() and not original.exists():
+            saved.rename(original)
+
+
+def _enable_permanent(token):
     if token != 'ENABLE RUSTICQ':
         raise ValueError('Type ENABLE RUSTICQ to authorize changing session startup.')
     if META.exists():
@@ -805,11 +1164,17 @@ def enable_permanent(token):
         raise ValueError('Omarchy autostart differs from the supported Quattro version. No changes made.')
     if START in current_main:
         raise ValueError('A RusticQ integration block already exists. Revert first.')
-    if SHIM.exists() or STARTER.exists() or DATA.exists():
-        raise ValueError('Previous installation files exist. Move or restore them manually before installing.')
+    # A previous interrupted restore may leave orphaned launcher/shell files.
+    # Archive them *after* backup verification instead of blocking reinstall.
+    record_install_progress('enable', 7, 'Compatibility checks passed')
     backup_result = backup_omarchy()
+    record_install_progress('enable', 32, 'Omarchy and user configuration backed up')
     verify_omarchy_backup(require_complete=True)
+    record_install_progress('enable', 43, 'Backup checksums verified')
     originals = backup_result['snapshot']['user_files']
+    # Compute/validate all config transformations before parking old directories.
+    parked = []
+    copied_new_shell = False
     patched_autostart = original_autostart.replace(needle, 'hl.exec_cmd(' + json.dumps(shlex.quote(str(STARTER))) + ')', 1)
     preload = 'package.preload["default.hypr.autostart"] = function()\n  dofile(' + json.dumps(str(SHIM)) + ')\n  return true\nend'
     new_main = current_main.replace('require("default.hypr.omarchy")', managed_block(preload) + 'require("default.hypr.omarchy")', 1)
@@ -826,12 +1191,18 @@ def enable_permanent(token):
         installed_bindings = original_bindings.replace(old_cmd, new_cmd)
     metadata = {'version': 1, 'backup': originals, 'main_applied_hash': digest(new_main), 'omarchy_autostart_source_hash': digest(original_autostart), 'installed_shell': str(DATA)}
     try:
+        parked = park_unmanaged_leftovers()
+        copied_new_shell = True  # Includes a possible incomplete copytree.
         safe_copy_shell()
+        record_install_progress('enable', 67, 'RusticQ shell files copied')
         save_atomic(SHIM, patched_autostart)
         save_atomic(STARTER, '#!/bin/sh\nexec ' + shlex.quote(shutil.which('quickshell') or '/usr/bin/quickshell') + ' -n -p ' + shlex.quote(str(DATA)) + '\n', 0o700)
+        record_install_progress('enable', 81, 'Private next-login launcher created')
         save_atomic(MAIN, new_main)
         if installed_bindings != original_bindings:
             save_atomic(BINDINGS, installed_bindings)
+        record_install_progress('enable', 92, 'Hyprland user configuration updated')
+        metadata['bindings_modified'] = installed_bindings != original_bindings
         save_atomic(META, json.dumps(metadata, indent=2) + '\n')
         # Deliberately no Hyprland reload here. Replacement takes effect at next login.
     except Exception:
@@ -842,12 +1213,33 @@ def enable_permanent(token):
         if META.exists(): META.unlink()
         for path in (STARTER, SHIM):
             if path.exists(): path.unlink()
-        if DATA.exists(): shutil.rmtree(DATA)
+        # Only remove a NEW tree from this transaction. A failed parking step
+        # must never cause a pre-existing user directory to be deleted.
+        if copied_new_shell and DATA.is_dir() and not DATA.is_symlink():
+            shutil.rmtree(DATA)
+        reinstate_parked_on_failure(parked)
         raise
-    return {'ok': True, 'message': 'RusticQ installed for next login. Omarchy shell and user configs are backed up; current session unchanged.', 'backup_dir': str(STATE / 'backup')}
+    record_install_progress('enable', 100, 'Installed for next login — finished', 'completed')
+    return {'ok': True, 'message': 'Installation 100% complete. Startup is prepared for next login; current session unchanged.' + (' Previous interrupted installation files were safely archived.' if parked else ''), 'backup_dir': str(STATE / 'backup'), 'recovered_files': [str(saved) for _old, saved in parked], 'integration': integration_report()}
 
 
-def revert_permanent(token):
+def enable_permanent(token):
+    try:
+        return _enable_permanent(token)
+    except Exception as error:
+        # Never mask the original security/backup/rollback failure.
+        try:
+            if INSTALL_PROGRESS.is_file() and not META.is_file():
+                last = json.loads(INSTALL_PROGRESS.read_text(encoding='utf-8'))
+                if last.get('operation') == 'enable' and last.get('state') == 'running':
+                    record_install_progress('enable', min(99, last.get('percent', 0)),
+                                            'Installation stopped', 'failed', str(error))
+        except (OSError, ValueError, TypeError):
+            pass
+        raise
+
+
+def _revert_permanent(token):
     if token != 'RESTORE OMARCHY':
         raise ValueError('Type RESTORE OMARCHY to authorize reverting startup.')
     meta = load_meta()
@@ -865,11 +1257,13 @@ def revert_permanent(token):
         original = (STATE / 'backup/hyprland.original').read_text(encoding='utf-8')
     # Preserve *current* managed configs before writing, including any
     # personal changes since activation. Never force-restore entire user dirs.
+    record_install_progress('revert', 30, 'Saving pre-revert history')
     history = preserve_before_revert()
     # Keep shortcut overrides independent from permanent shell integration.
     bindings = read_file(BINDINGS)
     save_atomic(MAIN, original)
     META.unlink()
+    record_install_progress('revert', 72, 'Omarchy startup configuration restored')
     new_bindings = write_shortcuts(load_shortcuts(), bindings, load_remaps()) if START in bindings else bindings
     if new_bindings != bindings:
         save_atomic(BINDINGS, new_bindings)
@@ -890,7 +1284,129 @@ def revert_permanent(token):
     msg = 'Omarchy startup restored for next login. Original backups retained; pre-revert configs saved in ' + history + '. Shortcut overrides kept independent.'
     if parked is not None:
         msg += ' Previous RusticQ install parked at ' + str(parked)
-    return {'ok': True, 'message': msg}
+    record_install_progress('revert', 100, 'Omarchy startup restored for next login', 'completed', msg)
+    return {'ok': True, 'message': msg, 'integration': integration_report()}
+
+
+
+def record_install_progress(operation, percent, phase, state='running', message=''):
+    """Atomic, read-only-to-UI checkpoint. Percent counts completed steps, not time."""
+    if operation not in ('enable', 'revert') or state not in ('running', 'completed', 'failed'):
+        raise ValueError('Invalid integration progress update')
+    payload = dict(version=1, operation=operation, percent=max(0, min(int(percent), 100)),
+                   phase=phase, state=state, message=str(message)[:400], updated=int(time.time()))
+    save_atomic(INSTALL_PROGRESS, json.dumps(payload, ensure_ascii=False, indent=2) + '\n')
+
+
+def integration_report():
+    """Actual on-disk completion, distinct from current-session activation.
+
+    A previous version had no checkpoint. Existing valid installs are reported
+    complete based on tangible generated files instead of a fabricated timer.
+    """
+    meta = load_meta()
+    progress = {}
+    if INSTALL_PROGRESS.is_file() and not INSTALL_PROGRESS.is_symlink():
+        try:
+            candidate = json.loads(INSTALL_PROGRESS.read_text(encoding='utf-8'))
+            if isinstance(candidate, dict) and candidate.get('version') == 1:
+                progress = candidate
+        except (OSError, ValueError, UnicodeError):
+            progress = {}
+    permanent = bool(meta)
+    restoring = progress.get('operation') == 'revert' and progress.get('state') == 'running'
+    try:
+        main_managed = permanent and START in read_file(MAIN)
+    except (OSError, ValueError, UnicodeError):
+        main_managed = False
+    shell_copied = (DATA / 'shell.qml').is_file() and not DATA.is_symlink()
+    shim_created = SHIM.is_file() and not SHIM.is_symlink()
+    starter_created = STARTER.is_file() and not STARTER.is_symlink()
+    backups_created = OMARCHY_BACKUP_META.is_file() and TREE_META.is_file()
+    checks = dict(manifest=permanent, hyprland=main_managed,
+                  shim=shim_created, starter=starter_created, shell=shell_copied,
+                  backups=backups_created)
+    complete = permanent and all(checks.values())
+    backup_folder = STATE / 'backup'
+    binding_modified = bool(meta.get('bindings_modified', False)) if permanent else False
+    # Older manifests did not record bindings_modified; only report that their
+    # bindings may be managed, never claim this installer definitely touched it.
+    changes = [
+        dict(path=str(MAIN), action='Modified' if permanent else 'Not changed',
+             detail='Hyprland Lua startup hook', present=main_managed),
+        dict(path=str(BINDINGS), action=('Modified' if binding_modified else 'Possibly updated' if permanent else 'Not changed'),
+             detail='Shortcut path repointed only if a managed RusticQ binding existed',
+             present=BINDINGS.is_file() and not BINDINGS.is_symlink()),
+        dict(path=str(SHIM), action='Created' if permanent else 'Not created',
+             detail='Private Omarchy autostart override for next login', present=shim_created),
+        dict(path=str(STARTER), action='Created' if permanent else 'Not created',
+             detail='Shell starter used by Hyprland on next login', present=starter_created),
+        dict(path=str(DATA), action='Copied' if permanent else 'Not copied',
+             detail='Installed RusticQ source tree (contains shell.qml)', present=shell_copied),
+        dict(path=str(META), action='Created' if permanent else 'Not created',
+             detail='Integration manifest and restore reference', present=META.is_file()),
+        dict(path=str(backup_folder), action='Snapshot' if backup_folder.is_dir() else 'Missing',
+             detail='Original Omarchy and user-configuration backups; never removed by install', present=backup_folder.is_dir()),
+        dict(path=str(DEFAULT_AUTOSTART), action='Read only',
+             detail='Original Omarchy file is not edited', present=DEFAULT_AUTOSTART.is_file()),
+    ]
+    if permanent and not restoring:
+        if complete:
+            return dict(ok=True, operation='enable', state='installed', percent=100,
+                        phase='Installation completed — ready for next login',
+                        message='All required generated files are present. The current desktop session is not automatically replaced.',
+                        next_login=True, session_active='unverified', checks=checks, changes=changes)
+        failed = [name for name, passed in checks.items() if not passed]
+        return dict(ok=False, operation='enable', state='incomplete', percent=90,
+                    phase='Installation incomplete — files need attention',
+                    message='Missing or invalid installation items: ' + ', '.join(failed),
+                    next_login=False, session_active='unverified', checks=checks, changes=changes)
+    if progress.get('state') == 'running':
+        elapsed = time.time() - (progress.get('updated') or 0)
+        state = 'interrupted' if elapsed > 90 else 'running'
+        return dict(ok=False, operation=progress.get('operation', 'enable'), state=state,
+                    percent=min(99, max(0, int(progress.get('percent', 0)))),
+                    phase=progress.get('phase', 'Integration in progress'),
+                    message=('No recent progress; the operation may have been interrupted.' if state == 'interrupted' else progress.get('message', '')),
+                    next_login=False, session_active='unverified', checks=checks, changes=changes)
+    if progress.get('state') == 'failed':
+        return dict(ok=False, operation=progress.get('operation', 'enable'), state='failed',
+                    percent=min(99, max(0, int(progress.get('percent', 0)))),
+                    phase=progress.get('phase', 'Integration failed'), message=progress.get('message', ''),
+                    next_login=False, session_active='unverified', checks=checks, changes=changes)
+    if progress.get('state') == 'completed' and progress.get('operation') == 'revert':
+        for row in changes:
+            if row['path'] == str(MAIN):
+                row['action'] = 'Restored'
+                row['detail'] = 'Original Omarchy Lua startup restored in the user config'
+            elif row['path'] == str(DATA):
+                row['action'] = 'Archived'
+                row['detail'] = 'Installed copy moved to shell-previous* instead of deleted'
+            elif row['path'] in (str(SHIM), str(STARTER), str(META)):
+                row['action'] = 'Removed'
+            elif row['path'] == str(backup_folder):
+                row['action'] = 'Preserved'
+        return dict(ok=True, operation='revert', state='restored', percent=100,
+                    phase='Omarchy startup restored', message=progress.get('message', ''),
+                    next_login=True, session_active='unverified', checks=checks, changes=changes)
+    return dict(ok=True, operation='enable', state='not_installed', percent=0,
+                phase='Not installed permanently', message='No persistent RusticQ integration is installed.',
+                next_login=False, session_active='unverified', checks=checks, changes=changes)
+
+
+def revert_permanent(token):
+    try:
+        return _revert_permanent(token)
+    except Exception as error:
+        try:
+            if INSTALL_PROGRESS.is_file():
+                last = json.loads(INSTALL_PROGRESS.read_text(encoding='utf-8'))
+                if last.get('operation') == 'revert' and last.get('state') == 'running':
+                    record_install_progress('revert', min(99, last.get('percent', 0)),
+                                            'Restore stopped', 'failed', str(error))
+        except (OSError, ValueError, TypeError):
+            pass
+        raise
 
 
 def backup_health():
@@ -911,16 +1427,38 @@ def backup_health():
 
 
 
+
+def reinstall_readiness():
+    """Non-mutating diagnosis for Restore -> Enable workflows."""
+    manifest = META.is_file() and not META.is_symlink()
+    main = read_file(MAIN)
+    leftovers = [str(path) for path in (SHIM, STARTER, DATA) if path.exists() or path.is_symlink()]
+    managed = START in main
+    if manifest or managed:
+        message = 'Permanent integration is still registered. Restore before reinstalling.'
+    elif leftovers:
+        message = ('Previous files detected: ' + ', '.join(leftovers) +
+                   '. On confirmed install RusticQ validates and archives recognizable leftovers after backup verification.')
+    else:
+        message = 'No stale permanent-install files. Type ENABLE RUSTICQ to reinstall.'
+    shell_state, shell_note = stale_shell_summary()
+    if shell_state not in ('absent',):
+        message += ' ' + shell_note
+    return dict(ready=not (manifest or managed) and shell_state not in ('symlink', 'not_directory', 'in_use'),
+                stale_files=leftovers, shell_state=shell_state, shell_note=shell_note,
+                backup_metadata_present=OMARCHY_BACKUP_META.is_file(), message=message)
+
+
 def status():
     manifest = load_meta()
     bindings = read_file(BINDINGS)
-    return {'ok': True, 'permanent': bool(manifest), 'shortcut_managed': START in bindings, 'shortcuts': load_shortcuts(), 'shortcut_backups': load_shortcut_backups(), 'remaps': load_remaps(), 'backup_dir': str(STATE / 'backup'), 'omarchy_backup_ready': backup_health()['ok'], 'backup_health': backup_health(),
-            'installed_shell': str(DATA), 'omarchy_source': str(DEFAULT_AUTOSTART), 'compatibility': preview()}
+    return {'ok': True, 'permanent': bool(manifest), 'shortcut_managed': START in bindings, 'shortcuts': load_shortcuts(), 'shortcut_backups': load_shortcut_backups(), 'shortcut_archives': shortcut_archive_status(), 'remaps': load_remaps(), 'backup_dir': str(STATE / 'backup'), 'omarchy_backup_ready': backup_health()['ok'], 'backup_health': backup_health(),
+            'installed_shell': str(DATA), 'omarchy_source': str(DEFAULT_AUTOSTART), 'compatibility': preview(), 'integration': integration_report(), 'reinstall': reinstall_readiness()}
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('operation', choices=['status', 'preview', 'bindings', 'actions', 'shortcut', 'shortcut-revert', 'remap', 'remap-revert', 'backup-omarchy', 'verify-backup', 'enable', 'revert'])
+    parser.add_argument('operation', choices=['status', 'integration-progress', 'preview', 'bindings', 'actions', 'shortcut', 'shortcut-revert', 'remap', 'remap-revert', 'backup-omarchy', 'verify-backup', 'verify-shortcut-backups', 'create-shortcut-backup', 'list-shortcut-backups', 'enable', 'revert'])
     parser.add_argument('--key', default='SUPER + SHIFT + R')
     parser.add_argument('--action', default='settings', choices=list(ACTIONS))
     parser.add_argument('--all', action='store_true', help='Revert all RusticQ action shortcuts')
@@ -933,6 +1471,7 @@ def main():
     try:
         result = {
             'status': status,
+            'integration-progress': integration_report,
             'preview': preview,
             'bindings': catalogue,
             'actions': actions_catalogue,
@@ -941,6 +1480,9 @@ def main():
             'remap': lambda: remap_binding(args.file, args.line, args.source_hash, args.key),
             'remap-revert': lambda: restore_remap(args.remap_id),
             'backup-omarchy': backup_omarchy,
+            'verify-shortcut-backups': verify_shortcut_backups,
+            'create-shortcut-backup': create_shortcut_backup_now,
+            'list-shortcut-backups': lambda: dict(ok=True, **shortcut_archive_status()),
             'verify-backup': lambda: dict(ok=True, verification=verify_omarchy_backup(require_complete=not META.exists()), message='Original backup integrity verified'),
             'enable': lambda: enable_permanent(args.confirm),
             'revert': lambda: revert_permanent(args.confirm)

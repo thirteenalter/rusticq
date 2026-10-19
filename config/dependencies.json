@@ -183,6 +183,12 @@
       "name": "Hyprlock",
       "package": "hyprlock",
       "description": "Optional fallback locker. RusticQ Native Lock uses Quickshell WlSessionLock/PAM instead."
+    },
+    {
+      "id": "wallpaper-swaybg",
+      "name": "Swaybg Low Memory",
+      "package": "swaybg",
+      "description": "Low-memory static wallpaper backend; installed on request from Integration."
     }
   ]
 }

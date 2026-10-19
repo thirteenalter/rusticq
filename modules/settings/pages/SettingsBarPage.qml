@@ -9,6 +9,28 @@ ColumnLayout {
     spacing: 14
 
     SettingsSection {
+        heading: "Bar visibility"
+        description: "Hide bar from here or a shortcut; a small restore handle remains on each screen."
+        symbol: "\ue5cd"
+        RowLayout {
+            Layout.fillWidth: true; spacing: 10
+            Repeater {
+                model: [{label:"Show bar",value:true},{label:"Hide bar",value:false}]
+                delegate: Rectangle {
+                    required property var modelData
+                    Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10
+                    color: SettingsStore.barVisible === modelData.value ? Qt.alpha(Theme.accent,.16) : Theme.background
+                    border.width: SettingsStore.barVisible === modelData.value ? 1 : 0
+                    border.color: Theme.accent
+                    Text { anchors.centerIn: parent; text: modelData.label; color: Theme.foreground; font.pixelSize: Fonts.scale(11) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.setBarVisible(modelData.value) }
+                }
+            }
+        }
+        Text { Layout.fillWidth: true; text: "Assign bar-toggle / bar-show / bar-hide in Settings → Shortcuts. Bar recovery stays visible when hidden.";
+               color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap }
+    }
+    SettingsSection {
         heading: "Bar position"
         description: "Choose an edge. Left and Right use a vertical rail."
         symbol: "\ue30b"

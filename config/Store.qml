@@ -49,6 +49,26 @@ Singleton {
     property string settingsTab: "appearance"
     // The confirmation is a separate overlay window, never an inline Settings card.
     signal packageOperationConfirmed(string action, string packageName, string provider)
+    // Explicit confirmation of shortcut backup before changing an existing binding.
+    signal shortcutBackupApproved()
+    property bool shortcutConfirmVisible: false
+    property string shortcutConfirmTitle: ""
+    property string shortcutConfirmTarget: ""
+    property bool shortcutConfirmRecovery: false
+    property var shortcutConfirmScreen: null
+    function requestShortcutConfirmation(title, target, recovery) {
+        shortcutConfirmTitle = title;
+        shortcutConfirmTarget = target;
+        shortcutConfirmRecovery = !!recovery;
+        shortcutConfirmScreen = settingsScreen;
+        shortcutConfirmVisible = true;
+    }
+    function cancelShortcutConfirmation() { shortcutConfirmVisible = false; }
+    function approveShortcutConfirmation() {
+        if (!shortcutConfirmVisible) return;
+        shortcutConfirmVisible = false;
+        shortcutBackupApproved();
+    }
     property bool confirmationVisible: false
     property string confirmationAction: ""
     property string confirmationPackage: ""

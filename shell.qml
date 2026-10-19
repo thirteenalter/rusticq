@@ -28,6 +28,9 @@ ShellRoot {
     function dispatchShortcut(action) {
         const screen = focusedScreen();
         const screenName = screen ? screen.name : "";
+        if (action === "bar-toggle") { SettingsStore.toggleBar(); return; }
+        if (action === "bar-show") { SettingsStore.setBarVisible(true); return; }
+        if (action === "bar-hide") { SettingsStore.setBarVisible(false); return; }
         if (action === "bar-menu") { Store.shortcutBarRequested("menu-default", screenName); return; }
         if (action === "bar-quick-modes") { Store.shortcutBarRequested("quick-modes", screenName); return; }
         if (action === "bar-network") {
@@ -125,6 +128,32 @@ ShellRoot {
             screen: modelData
         }
     }
+    Variants {
+        model: Quickshell.screens
+        BarRecoveryHandle { required property var modelData; screen: modelData }
+    }
+
+    // Wallpaper restore is opt-in, once per shell, and never silently stops
+    // another running wallpaper service. Same managed process reused on reload.
+    Process {
+        id: wallpaperStartup
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const result = JSON.parse(this.text.trim());
+                if (!result.ok) console.warn("Wallpaper: " + result.message);
+            } catch(e) { console.warn("Wallpaper restore response invalid: " + String(e)); }
+        } }
+    }
+    Timer {
+        interval: 1400; repeat: false; running: true
+        onTriggered: {
+            if (!SettingsStore.wallpaperAutoRestore || SettingsStore.wallpaperBackend !== "swaybg" || !SettingsStore.wallpaperPath.length) return;
+            const args = ["python3", Quickshell.shellPath("scripts/rusticq-wallpaper.py"), SettingsStore.wallpaperPath,
+                          "--backend", "swaybg", "--mode", SettingsStore.wallpaperFitMode];
+            if (SettingsStore.wallpaperReplaceOnRestore) args.push("--replace-conflicts");
+            wallpaperStartup.exec(args);
+        }
+    }
 
     // One server for the whole shell. Toast is rendered once, independent of monitors.
     NotificationToasts {}
@@ -152,9 +181,14 @@ ShellRoot {
 
     // Keep the AI window instantiated while hidden to preserve active threads
     // and avoid interrupting its in-flight cloud request on presentation changes.
-    AiWrapper {
-        visible: Store.aiVisible
-        screen: Store.aiScreen
+    // Optional: unload only the hidden AI window, not chat/session services.
+    // Opt-in because closing it can cancel active replies or unsent drafts.
+    LazyLoader {
+        active: !SettingsStore.lowMemoryShellMode || Store.aiVisible
+        AiWrapper {
+            visible: Store.aiVisible
+            screen: Store.aiScreen
+        }
     }
 
     LazyLoader {
@@ -170,6 +204,10 @@ ShellRoot {
     LazyLoader {
         active: Store.confirmationVisible
         PackageConfirmationWindow {}
+    }
+    LazyLoader {
+        active: Store.shortcutConfirmVisible
+        ShortcutBackupConfirmationWindow {}
     }
 
 

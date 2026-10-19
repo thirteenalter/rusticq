@@ -87,7 +87,7 @@ class WidgetTests(unittest.TestCase):
         js='\n'.join(method(n) for n in names)
         code=r'''
 const assert=require('node:assert/strict');
-const barIconKeys=['rusticq','arch','launcher','menu','workspaces','weather','time','date','bluetooth','wifi','battery','audio','notifications','task','quickModes','quickControl','mic','down','up'];
+const barIconKeys=['rusticq','arch','launcher','menu','workspaces','weather','time','date','bluetooth','wifi','battery','audio','notifications','barToggle','task','quickModes','quickControl','mic','down','up'];
 const defaultBarPlacements={};
 for(const k of barIconKeys) defaultBarPlacements[k]=['rusticq','arch','launcher','menu','workspaces'].includes(k)?'left':'right';
 const spacingModes=['compact','clean-compact','separated','professional','simple'];

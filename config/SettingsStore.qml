@@ -10,6 +10,14 @@ Singleton {
     // Explicit opt-in: keep original Gruvbox when Aether is unavailable.
     property string colorSource: "gruvbox"
     property string barMode: "separated"
+    property bool barVisible: true
+    property bool showBarToggleIcon: true
+    function setBarVisible(enabled) {
+        if (typeof enabled !== "boolean" || barVisible === enabled) return;
+        barVisible = enabled;
+        save();
+    }
+    function toggleBar() { setBarVisible(!barVisible); }
     property string barPosition: "top"
     property bool absoluteCenter: true
     property int centerOffsetX: 0
@@ -57,7 +65,11 @@ Singleton {
         save();
     }
     property string wallpaperPath: ""
-    property string wallpaperBackend: "auto"
+    property string wallpaperBackend: "swaybg" // Only fresh settings; saved backend is retained.
+    property bool lowMemoryShellMode: false
+    property bool wallpaperAutoRestore: false
+    property bool wallpaperReplaceOnRestore: false
+    property string wallpaperFitMode: "fill"
     // RusticQ Native Lock uses WlSessionLock/PAM; the original Omarchy lock/idle
     // configuration stays untouched. Solid is safest for privacy by default.
     property string lockscreenBackground: "solid" // solid | wallpaper
@@ -239,11 +251,11 @@ Singleton {
     // RC2: persistent alignment for every bar item, not only optional indicators.
     // On vertical bars Left / Center / Right map to top / middle / bottom.
     readonly property var barIconKeys: ["rusticq", "arch", "launcher", "menu", "workspaces", "weather", "time", "date",
-        "bluetooth", "wifi", "battery", "audio", "notifications", "task", "quickModes", "quickControl", "mic", "down", "up"]
+        "bluetooth", "wifi", "battery", "audio", "notifications", "barToggle", "task", "quickModes", "quickControl", "mic", "down", "up"]
     readonly property var defaultBarPlacements: ({
         rusticq:"left", arch:"left", launcher:"left", menu:"left", workspaces:"left",
         weather:"right", time:"right", date:"right", bluetooth:"right", wifi:"right",
-        battery:"right", audio:"right", notifications:"right", task:"right", quickModes:"right", quickControl:"right",
+        battery:"right", audio:"right", notifications:"right", barToggle:"right", task:"right", quickModes:"right", quickControl:"right",
         mic:"right", down:"right", up:"right"
     })
     // v5: independent layout profiles. Legacy barIconPlacements is read ONLY for migration.
@@ -253,9 +265,11 @@ Singleton {
     property var barIconOrderByMode: ({})
     function validateBarIconOrder(order) {
         if (!Array.isArray(order)) return false;
-        // Preserve saved placements from releases before the dedicated bell icon.
-        const legacy = order.length === barIconKeys.length - 1 && order.indexOf("notifications") < 0;
-        if (!legacy && order.length !== barIconKeys.length) return false;
+        // Migrate both the old pre-bell layout and this release's new bar toggle
+        // without resetting a user's draggable icon order or per-mode placement.
+        const missing = barIconKeys.filter(key => order.indexOf(key) < 0);
+        if (missing.some(key => key !== "notifications" && key !== "barToggle")) return false;
+        if (order.length + missing.length !== barIconKeys.length) return false;
         return order.every((key, index) => barIconKeys.indexOf(key) >= 0 && order.indexOf(key) === index);
     }
     function normalizeBarOrder(order) {
@@ -264,6 +278,10 @@ Singleton {
         if (next.indexOf("notifications") < 0) {
             const after = next.indexOf("audio");
             next.splice(after < 0 ? next.length : after + 1, 0, "notifications");
+        }
+        if (next.indexOf("barToggle") < 0) {
+            const after = next.indexOf("notifications");
+            next.splice(after < 0 ? next.length : after + 1, 0, "barToggle");
         }
         return next;
     }
@@ -496,7 +514,7 @@ Singleton {
     // v5: display preferences are scoped to the selected BAR LAYOUT, not the device.
     // Keep global legacy show* properties so old settings files can migrate safely.
     readonly property var barVisibilityKeys: [
-        "showRusticQIcon", "showLauncher", "showArch", "showWorkspaces", "showQuickControl", "showNotificationIcon",
+        "showRusticQIcon", "showLauncher", "showArch", "showWorkspaces", "showQuickControl", "showNotificationIcon", "showBarToggleIcon",
         "showTaskView", "showWeather", "showTime", "showDate", "showWifi", "showBluetooth",
         "showBattery", "showAudio", "showMicrophoneStatus", "showDownloadSpeed",
         "showUploadSpeed", "showIndicators", "showMenuBar", "showMenuFile", "showMenuEdit",
@@ -619,7 +637,13 @@ Singleton {
             if (typeof data.uiFontScale === "number" && data.uiFontScale >= 0.85 && data.uiFontScale <= 1.2) uiFontScale = data.uiFontScale;
             if (["compact", "comfortable"].indexOf(data.uiDensity) >= 0) uiDensity = data.uiDensity;
             if (typeof data.wallpaperPath === "string" && data.wallpaperPath.length < 1024) wallpaperPath = data.wallpaperPath;
-            if (["auto", "swww", "awww", "hyprpaper"].indexOf(data.wallpaperBackend) >= 0) wallpaperBackend = data.wallpaperBackend;
+            if (["auto", "swww", "awww", "hyprpaper", "swaybg"].indexOf(data.wallpaperBackend) >= 0) wallpaperBackend = data.wallpaperBackend;
+            if (["fill", "fit", "stretch", "center", "tile"].indexOf(data.wallpaperFitMode) >= 0) wallpaperFitMode = data.wallpaperFitMode;
+            if (typeof data.wallpaperAutoRestore === "boolean") wallpaperAutoRestore = data.wallpaperAutoRestore;
+            if (typeof data.wallpaperReplaceOnRestore === "boolean") wallpaperReplaceOnRestore = data.wallpaperReplaceOnRestore;
+            if (typeof data.lowMemoryShellMode === "boolean") lowMemoryShellMode = data.lowMemoryShellMode;
+            if (typeof data.barVisible === "boolean") barVisible = data.barVisible;
+            if (typeof data.showBarToggleIcon === "boolean") showBarToggleIcon = data.showBarToggleIcon;
             if (["solid", "wallpaper"].indexOf(data.lockscreenBackground) >= 0) lockscreenBackground = data.lockscreenBackground;
             if (["icons", "details", "hover"].indexOf(data.cleanRightMode) !== -1)
                 cleanRightMode = data.cleanRightMode;
@@ -764,6 +788,12 @@ Singleton {
             desktopProfilePrevious: desktopProfilePrevious,
             wallpaperPath: wallpaperPath,
             wallpaperBackend: wallpaperBackend,
+            wallpaperFitMode: wallpaperFitMode,
+            wallpaperAutoRestore: wallpaperAutoRestore,
+            wallpaperReplaceOnRestore: wallpaperReplaceOnRestore,
+            lowMemoryShellMode: lowMemoryShellMode,
+            barVisible: barVisible,
+            showBarToggleIcon: showBarToggleIcon,
             lockscreenBackground: lockscreenBackground,
             showNotifications: showNotifications,
             showLauncher: showLauncher,

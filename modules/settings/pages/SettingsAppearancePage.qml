@@ -352,6 +352,7 @@ ColumnLayout {
                 source: wallpaperPathInput.text.trim().startsWith("/") ? "file://" + wallpaperPathInput.text.trim() : ""
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
+                sourceSize: Qt.size(720, 280)
                 visible: status === Image.Ready
             }
             ColumnLayout {
@@ -365,7 +366,7 @@ ColumnLayout {
         RowLayout {
             Layout.fillWidth: true; spacing: 7
             Repeater {
-                model: ["auto", "swww", "awww", "hyprpaper"]
+                model: ["swaybg", "hyprpaper", "awww", "swww", "auto"]
                 delegate: Rectangle {
                     id: backendChoice
                     required property string modelData
@@ -393,14 +394,89 @@ ColumnLayout {
                     wallpaperFeedback.text = "Applying wallpaper…";
                     wallpaperFeedback.color = Theme.muted;
                     if (!wallpaperProcess.running)
-                        wallpaperProcess.exec(["python3", Quickshell.shellPath("scripts/rusticq-wallpaper.py"), SettingsStore.wallpaperPath, "--backend", SettingsStore.wallpaperBackend]);
+                        {
+                            const args = ["python3", Quickshell.shellPath("scripts/rusticq-wallpaper.py"), SettingsStore.wallpaperPath,
+                                          "--backend", SettingsStore.wallpaperBackend, "--mode", SettingsStore.wallpaperFitMode];
+                            if (wallpaperReplaceConflicts) args.push("--replace-conflicts");
+                            wallpaperProcess.exec(args);
+                        }
                 }
             }
         }
+        property bool wallpaperReplaceConflicts: false
+        Text { Layout.fillWidth: true; text: "Swaybg scaling"; color: Theme.muted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+        RowLayout { Layout.fillWidth: true; spacing: 5
+            Repeater { model: ["fill", "fit", "stretch", "center", "tile"]
+                delegate: Rectangle {
+                    id: fitOption
+                    required property string modelData
+                    readonly property bool chosen: SettingsStore.wallpaperFitMode === modelData
+                    Layout.fillWidth: true; Layout.preferredHeight: 32; radius: 8
+                    color: chosen ? Qt.alpha(Theme.accent,.16) : Theme.background
+                    border.width: chosen ? 1 : 0; border.color: Theme.accent
+                    Text { anchors.centerIn: parent; text: fitOption.modelData; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                        onClicked: { SettingsStore.wallpaperFitMode = fitOption.modelData; SettingsStore.save(); } }
+                }
+            }
+        }
+        RowLayout { Layout.fillWidth: true; spacing: 8
+            Rectangle { Layout.preferredWidth: 25; Layout.preferredHeight: 25; radius: 6
+                color: SettingsStore.wallpaperAutoRestore ? Theme.accent : Theme.surface
+                MouseArea { anchors.fill: parent; onClicked: { SettingsStore.wallpaperAutoRestore = !SettingsStore.wallpaperAutoRestore; SettingsStore.save(); } }
+            }
+            Text { Layout.fillWidth: true; text: "Restore swaybg wallpaper on RusticQ startup (opt-in)"; wrapMode: Text.WordWrap
+                color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+        }
+        RowLayout { Layout.fillWidth: true; spacing: 8
+            Rectangle { Layout.preferredWidth: 25; Layout.preferredHeight: 25; radius: 6
+                color: wallpaperReplaceConflicts ? Theme.accent : Theme.surface
+                MouseArea { anchors.fill: parent; onClicked: wallpaperReplaceConflicts = !wallpaperReplaceConflicts }
+            }
+            Text { Layout.fillWidth: true; text: "Replace other wallpaper daemons this time (may end Omarchy's wallpaper process)"; wrapMode: Text.WordWrap
+                color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+        }
+        RowLayout { Layout.fillWidth: true; spacing: 8
+            Rectangle { Layout.preferredWidth: 25; Layout.preferredHeight: 25; radius: 6
+                color: SettingsStore.wallpaperReplaceOnRestore ? Theme.accent : Theme.surface
+                MouseArea { anchors.fill: parent
+                    onClicked: { SettingsStore.wallpaperReplaceOnRestore = !SettingsStore.wallpaperReplaceOnRestore; SettingsStore.save(); } }
+            }
+            Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+                text: "Allow replacing an existing Omarchy wallpaper process on startup (explicit opt-in)"
+                color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+        }
+        Process { id: memoryMeasureProc
+            stdout: StdioCollector { onStreamFinished: {
+                try {
+                    const data = JSON.parse(this.text.trim());
+                    wallpaperMemoryLabel.text = data.ok ? "RAM used: " + data.system_used_mib.toFixed(0) + " MiB / target 2048 MiB" + (data.change_from_baseline_mib === undefined ? "" : " · Δ " + data.change_from_baseline_mib + " MiB") : data.message;
+                } catch(e) { wallpaperMemoryLabel.text = "Memory report failed: " + String(e); }
+            } }
+        }
+        RowLayout { Layout.fillWidth: true; spacing: 8
+            Repeater { model: [{label:"Measure RAM",baseline:false},{label:"Set baseline",baseline:true}]
+                delegate: Rectangle {
+                    id: measurement
+                    required property var modelData
+                    Layout.fillWidth: true; Layout.preferredHeight: 33; radius: 9; color: Theme.background
+                    Text { anchors.centerIn: parent; text: measurement.modelData.label; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                        onClicked: if (!memoryMeasureProc.running) {
+                            const args = ["python3", Quickshell.shellPath("scripts/rusticq-idle-memory.py")];
+                            if (measurement.modelData.baseline) args.push("--save-baseline");
+                            memoryMeasureProc.exec(args);
+                        }
+                    }
+                }
+            }
+        }
+        Text { id: wallpaperMemoryLabel; Layout.fillWidth: true; text: "Memory: use Measure RAM for live values; 2 GiB is an optimization goal, not a guarantee.";
+            color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap }
         Text {
             id: wallpaperFeedback
             Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: "Wallpaper switching needs swww, awww, or hyprpaper already running. Follow Aether colors remain independent."
+            text: "Swaybg Low Memory works on Wayland; install swaybg first. Use explicit replace only if switching away from an existing wallpaper provider."
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
         }
     }

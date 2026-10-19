@@ -53,6 +53,7 @@ Item {
         case "wifi": return wifiPart;
         case "battery": return batteryPart;
         case "audio": return audioPart;
+        case "barToggle": return barTogglePart;
         case "notifications": return notificationsPart;
         case "task": return taskPart;
         case "quickModes": return quickModesPart;
@@ -78,6 +79,7 @@ Item {
         case "wifi": return shown("showIndicators") && shown("showWifi");
         case "battery": return shown("showIndicators") && shown("showBattery") && BatteryService.available;
         case "audio": return shown("showIndicators") && shown("showAudio");
+        case "barToggle": return shown("showBarToggleIcon");
         case "notifications": return shown("showNotificationIcon") && SettingsStore.showNotifications;
         case "task": return shown("showTaskView");
         case "quickModes": return shown("showQuickModes") && ["showKeepAwake", "showSilent", "showGamingMode", "showNightMode", "showMicMute"].some(shown);
@@ -299,6 +301,26 @@ Item {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: root.popup("notifications", parent)
+            }
+        }
+    }
+    Component {
+        id: barTogglePart
+        Rectangle {
+            implicitWidth: root.vertical ? 32 : 30
+            implicitHeight: root.controlHeight
+            radius: height / 2
+            color: root.clean ? "transparent" : Theme.borderaccent
+            Icon {
+                anchors.centerIn: parent
+                icon: "\ue5cd"
+                color: Theme.foreground
+                font.pixelSize: Fonts.scale(17)
+            }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: SettingsStore.setBarVisible(false)
             }
         }
     }

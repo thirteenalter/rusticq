@@ -254,3 +254,25 @@ For backend limitations and dependencies, see `docs/DEPENDENCIES.md`.
 ### Keyboard navigation for the Shell Menu Bar
 
 Open **File / Edit / View / Share / Shell / Tools** by clicking its bar label or using an existing RusticQ menu shortcut. With the menu popover focused, press **Left / Right** to cycle enabled menu categories, **Up / Down** to select an action, **Enter / Space** to activate it and **Escape** to close it. The selected row is highlighted and longer menus scroll to keep the selection visible. These keys only belong to the open menu and are not global keybindings.
+
+### Automatic shortcut safety snapshots
+
+Before changing or restoring any shortcut, RusticQ now privately archives the complete installed Omarchy defaults (once) and a fresh snapshot of `~/.config/hypr` plus relevant desktop/shell dotfiles (every operation). Changes are blocked if backup verification fails. Settings → Shortcuts displays the snapshot status and offers **Verify backup**. See [docs/AUTOMATIC-OMARCHY-SHORTCUT-BACKUPS.md](docs/AUTOMATIC-OMARCHY-SHORTCUT-BACKUPS.md).
+
+### Shortcuts: confirmed automatic Omarchy backups
+
+In Settings → Shortcuts, **Apply override** now opens a floating confirmation on the Settings workspace. **Back up & continue** creates verified snapshots of the complete installed Omarchy default tree (once) and selected Hyprland/dotfiles trees (before each shortcut change), then applies the requested binding. **Create backup now** does not edit bindings; **Verify backup** remains available even with zero snapshots and explains that state. See `docs/AUTOMATIC-OMARCHY-SHORTCUT-BACKUPS.md`.
+
+### RusticQ Beta 1 authoritative basecode — swaybg / Toggle Bar
+
+The Beta 1 source archive remains the canonical foundation. Wallpaper can use **swaybg Low Memory** in Settings → Appearance → Wallpaper; the existing `rusticq-idle-memory.py` provides Set baseline and Measure RAM. **Settings → Modules** has opt-in Low Memory Shell Mode. **Settings → Bar** offers Show/Hide, and **Settings → Shortcuts** can register `bar-toggle`, `bar-show`, or `bar-hide` while preserving backup of Omarchy bindings. When hidden, the bar retains a floating restore handle on each screen. Existing workspace widget settings, Native Lock, Wi-Fi QR, Notifications, and integration are preserved. See `docs/WALLPAPER-LOW-MEMORY.md`.
+
+### Updating an installed RusticQ shell
+
+**Settings → Integration → Shell Updates** supports confirmed **Reapply Local**
+from `~/dev/quickshell`, GitHub Release **Check / Update Shell** with verified
+full ZIP assets, and **Rollback Shell**. It preserves the old shell at
+`~/.local/share/rusticq/shell-before-update-*` and existing user settings.
+These shell updates are **separate from Omarchy/pacman upgrades** and take
+effect in a newly started Quickshell session. See
+[docs/SHELL-UPDATES.md](docs/SHELL-UPDATES.md).

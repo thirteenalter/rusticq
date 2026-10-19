@@ -24,6 +24,7 @@ ColumnLayout {
         {key:"battery", name:"Battery", icon:"\uf304"},
         {key:"audio", name:"Volume", icon:"\ue050"},
         {key:"notifications", name:"Notifications", icon:"\ue7f4"},
+        {key:"barToggle", name:"Bar hide", icon:"\ue5cd"},
         {key:"task", name:"Task view", icon:"\ue322"},
         {key:"quickModes", name:"Quick Modes", icon:"\ue429"},
         {key:"quickControl", name:"Quick Control", icon:"\ue69b"},

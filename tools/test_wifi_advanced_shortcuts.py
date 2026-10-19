@@ -98,7 +98,7 @@ class WifiAndShortcutTests(unittest.TestCase):
                 return data
             cli('shortcut','--key','SUPER + ESCAPE','--action','power')
             configured=bindings.read_text()
-            self.assertIn('o.rebind("SUPER + ESCAPE", "RusticQ Power menu"',configured)
+            self.assertIn('o.bind("SUPER + ESCAPE", "RusticQ Power menu"',configured)
             self.assertIn('o.bind("SUPER + ESCAPE", "Old recovery"',configured)
             state=home/'.state/rusticq/integration'
             self.assertEqual((state/'shortcut-original.txt').read_text(),original)
@@ -120,7 +120,9 @@ class WifiAndShortcutTests(unittest.TestCase):
         self.assertNotIn('Layout.preferredHeight: visible ? 335 : 0',bar)
         self.assertIn('kind === "wifi"',popup)
         self.assertIn('Theme.sectionPadding',audio)
-        self.assertIn('confirmedRecoveryOverride',settings)
+        self.assertIn('Store.requestShortcutConfirmation',settings)
+        self.assertIn('onShortcutBackupApproved',settings)
+        self.assertIn('create-shortcut-backup',settings)
         self.assertIn('root.shareQrRequested(screen, ssid)',wifi)
         self.assertIn('function beginWifiQr(screen, ssid)', popup)
         self.assertNotIn('qrLifetime',wifi)

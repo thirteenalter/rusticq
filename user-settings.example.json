@@ -1,0 +1,7 @@
+{
+  "wallpaperBackend": "swaybg",
+  "wallpaperFitMode": "fill",
+  "wallpaperAutoRestore": false,
+  "wallpaperReplaceOnRestore": false,
+  "lowMemoryShellMode": false
+}

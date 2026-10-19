@@ -26,6 +26,7 @@ ColumnLayout {
         {key:"battery", name:"Battery", glyph:"\uf304"},
         {key:"audio", name:"Audio", glyph:"\ue050"},
         {key:"notifications", name:"Notifications", glyph:"\ue7f4"},
+        {key:"barToggle", name:"Bar hide", glyph:"\ue5cd"},
         {key:"task", name:"Task View", glyph:"\ue322"},
         {key:"quickModes", name:"Quick Modes", glyph:"\ue429"},
         {key:"quickControl", name:"Quick Control", glyph:"\ue69b"},

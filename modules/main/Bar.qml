@@ -10,6 +10,7 @@ import "../../services"
 // never spawns a second bar, duplicates system watchers, or resets sidebar state.
 PanelWindow {
     id: barWindow
+    visible: SettingsStore.barVisible
     property string miniKind: ""
     property real miniAnchorX: 0
     property real miniAnchorY: 0

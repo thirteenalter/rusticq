@@ -28,7 +28,7 @@ class WidgetSwapTests(unittest.TestCase):
         fn='\n'.join(method(x) for x in methods)
         program=r'''
 const assert = require('node:assert/strict');
-const barIconKeys=['rusticq','arch','launcher','menu','workspaces','weather','time','date','bluetooth','wifi','battery','audio','notifications','task','quickModes','quickControl','mic','down','up'];
+const barIconKeys=['rusticq','arch','launcher','menu','workspaces','weather','time','date','bluetooth','wifi','battery','audio','notifications','barToggle','task','quickModes','quickControl','mic','down','up'];
 const defaultBarPlacements={};
 for(const key of barIconKeys) defaultBarPlacements[key]=['rusticq','arch','launcher','menu','workspaces'].includes(key)?'left':'right';
 const spacingModes=['compact','clean-compact','separated','professional','simple'];

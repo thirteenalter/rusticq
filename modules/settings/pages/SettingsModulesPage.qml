@@ -8,6 +8,15 @@ ColumnLayout {
     width: parent ? parent.width : 680
     spacing: 14
     SettingsSection {
+        heading: "Memory optimization"
+        description: "Optional: unload the hidden AI window. Chat context stays in its service, but closing AI can interrupt a pending reply."
+        symbol: "\ue322"
+        Repeater {
+            model: [{label:"Low Memory Shell Mode",desc:"Unload AI window when hidden. May cancel in-flight response.",key:"lowMemoryShellMode",icon:"\ue322"}]
+            delegate: SettingsToggle { perBarMode: false }
+        }
+    }
+    SettingsSection {
         heading: "Desktop profiles"
         description: "Apply a workspace-oriented UI preset without changing Omarchy's lock, idle, power or compositor service. Restore returns to your previous settings."
         symbol: "\ue8f4"
@@ -86,6 +95,7 @@ ColumnLayout {
                 {label:"Workspace switcher",desc:"Hyprland workspaces",key:"showWorkspaces",icon:"\ue30b"},
                 {label:"Quick Control",desc:"Full quick settings panel",key:"showQuickControl",icon:"\ue69b"},
                 {label:"Notification bell",desc:"Dedicated bar icon opens notification history",key:"showNotificationIcon",icon:"\ue7f4"},
+                {label:"Bar hide button",desc:"Hide bar; floating recovery handle remains on the monitor",key:"showBarToggleIcon",icon:"\ue5cd"},
                 {label:"Task View",desc:"CPU, RAM and process details",key:"showTaskView",icon:"\ue322"},
                 {label:"Notification center",desc:"Toast and notification history",key:"showNotifications",icon:"\ue7f4"}
             ]

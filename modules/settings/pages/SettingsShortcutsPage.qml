@@ -34,36 +34,77 @@ ColumnLayout {
     property string selectedRemapId: ""
     property string filterText: ""
     property string combo: "SUPER + SHIFT + R"
-    property bool confirmedRecoveryOverride: false
+    property string pendingVerb: ""
+    property string pendingSelectedAction: ""
+    property string commandVerb: ""
+    property var pendingCommand: []
     readonly property bool recoveryCombo: combo.replace(/\s/g, "").toUpperCase() === "SUPER+ESCAPE" || combo.replace(/\s/g, "").toUpperCase() === "SUPER+BACKSPACE"
     property string action: "settings"
     property string feedback: ""
     property bool successful: true
     property bool busy: false
+    property var shortcutArchives: ({count:0, latest:"", defaults_present:false, directory:""})
+    property string lastBackupDir: ""
     readonly property string helper: Quickshell.shellPath("scripts/rustiq-desktop-integration.py")
     readonly property var visibleEntries: entries.filter(e => (e.key + " " + e.label + " " + e.origin).toLowerCase().includes(filterText.toLowerCase()))
     Component.onCompleted: { refresh(); actionProc.exec(["python3", helper, "actions"]); }
     function refresh() { if (!listProc.running) listProc.exec(["python3", helper, "bindings"]); if (!statusProc.running) statusProc.exec(["python3", helper, "status"]); }
     function change(verb, selectedAction) {
         if (busy || commandProc.running) return;
-        if (verb === "shortcut" && recoveryCombo && !confirmedRecoveryOverride) {
-            successful = false;
-            feedback = "Confirm replacement of the recovery shortcut before applying. Original source will be backed up.";
+        if (["shortcut", "shortcut-revert", "remap", "remap-revert"].indexOf(verb) >= 0) {
+            pendingVerb = verb;
+            pendingSelectedAction = selectedAction || "";
+            const description = verb === "shortcut" ? "Apply shortcut override" :
+                verb === "shortcut-revert" ? "Restore selected shortcut" :
+                verb === "remap" ? "Change existing Omarchy binding" : "Restore existing Omarchy binding";
+            const target = verb === "shortcut" ? combo + " → " + action :
+                verb === "shortcut-revert" ? (selectedAction || action) :
+                verb === "remap" ? (selectedSource ? selectedSource.key + " → " + editKey : editKey) :
+                (selectedAction || selectedRemapId);
+            const frozen = buildCommand(verb, selectedAction);
+            if (!frozen.length) { successful = false; feedback = "Select a valid binding first."; return; }
+            pendingCommand = frozen;
+            Store.requestShortcutConfirmation(description, target,
+                verb === "shortcut" && recoveryCombo);
             return;
         }
-        busy = true;
+        executeCommand(verb, selectedAction);
+    }
+    function buildCommand(verb, selectedAction) {
         const cmd = ["python3", helper, verb];
         if (verb === "shortcut") cmd.push("--key", combo, "--action", action);
         if (verb === "shortcut-revert") cmd.push("--action", selectedAction || action);
         if (verb === "remap") {
-            if (!selectedSource || !selectedSource.source_hash) { busy = false; return; }
+            if (!selectedSource || !selectedSource.source_hash) return [];
             cmd.push("--file", selectedSource.file, "--line", String(selectedSource.line), "--hash", selectedSource.source_hash, "--key", editKey);
         }
         if (verb === "remap-revert") {
-            if (!(selectedAction || selectedRemapId)) { busy = false; return; }
+            if (!(selectedAction || selectedRemapId)) return [];
             cmd.push("--id", selectedAction || selectedRemapId);
         }
+        return cmd;
+    }
+    function executeCommand(verb, selectedAction, prepared) {
+        if (busy || commandProc.running) return;
+        const cmd = prepared || buildCommand(verb, selectedAction);
+        if (!cmd.length) return;
+        busy = true;
+        commandVerb = verb;
+        feedback = "";
         commandProc.exec(cmd);
+    }
+    Connections {
+        target: Store
+        function onShortcutBackupApproved() {
+            if (!root.pendingVerb || root.busy) return;
+            const verb = root.pendingVerb;
+            const target = root.pendingSelectedAction;
+            const cmd = root.pendingCommand;
+            root.pendingVerb = "";
+            root.pendingSelectedAction = "";
+            root.pendingCommand = [];
+            root.executeCommand(verb, target, cmd);
+        }
     }
     Process {
         id: actionProc
@@ -82,17 +123,32 @@ ColumnLayout {
     Process {
         id: statusProc
         stdout: StdioCollector { onStreamFinished: {
-            try { const data = JSON.parse(text); if (data.ok) { root.managed = data.shortcuts || {}; root.remaps = data.remaps || {}; } }
+            try { const data = JSON.parse(text); if (data.ok) { root.managed = data.shortcuts || {}; root.remaps = data.remaps || {}; root.shortcutArchives = data.shortcut_archives || root.shortcutArchives; } }
             catch (e) { root.feedback = String(e); }
         } }
     }
     Process {
         id: commandProc
         stdout: StdioCollector { onStreamFinished: {
-            try { const data = JSON.parse(text); root.successful = !!data.ok; root.feedback = data.message || "No response"; }
+            try {
+                const data = JSON.parse(text);
+                root.successful = !!data.ok;
+                if (data.backup_dir) root.lastBackupDir = data.backup_dir;
+                if (data.ok && data.count !== undefined && data.directory) {
+                    root.feedback = data.message || ("Verified " + data.count + " user snapshots and " + (data.default_files || 0) + " Omarchy files.");
+                } else if (data.ok && data.backup_verified) {
+                    root.feedback = "Backup VERIFIED (" + data.backup_files + " dotfiles, " + data.default_backup_files + " default files). " + (data.message || "Operation completed.") + " Saved: " + data.backup_dir;
+                } else root.feedback = data.message || (data.ok ? "Operation completed." : "Operation failed. See command output.");
+            }
             catch (e) { root.successful = false; root.feedback = String(e); }
         } }
-        onExited: (code, status) => { root.busy = false; Qt.callLater(root.refresh); }
+        stderr: StdioCollector { onStreamFinished: {
+            if (this.text.trim().length && !root.feedback.length) { root.successful = false; root.feedback = this.text.trim().slice(-450); }
+        } }
+        onExited: (code, status) => {
+            if (code !== 0 && !root.feedback.length) { root.successful = false; root.feedback = "Backup or shortcut command exited with code " + code; }
+            root.busy = false; Qt.callLater(root.refresh);
+        }
     }
     SettingsSection {
         heading: "Top bar button shortcuts"
@@ -174,25 +230,11 @@ ColumnLayout {
         Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Choose a RusticQ action and a key, then apply. Existing shortcuts on that key are temporarily masked; original source lines remain untouched."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
         Rectangle {
             Layout.fillWidth: true; Layout.preferredHeight: 43; radius: 10; color: Theme.background
-            TextInput { anchors.fill: parent; anchors.margins: 11; verticalAlignment: TextInput.AlignVCenter; text: root.combo; color: Theme.foreground; selectByMouse: true; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); onTextEdited: { root.combo = text; root.confirmedRecoveryOverride = false; } }
+            TextInput { anchors.fill: parent; anchors.margins: 11; verticalAlignment: TextInput.AlignVCenter; text: root.combo; color: Theme.foreground; selectByMouse: true; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); onTextEdited: root.combo = text }
         }
-        RowLayout {
-            visible: root.recoveryCombo
-            Layout.fillWidth: true
-            spacing: 10
-            Rectangle {
-                Layout.preferredWidth: 25; Layout.preferredHeight: 25; radius: 7
-                color: root.confirmedRecoveryOverride ? Qt.alpha(Theme.accent, .20) : Theme.surface
-                border.width: 1; border.color: root.confirmedRecoveryOverride ? Theme.accent : Theme.warning
-                Text { anchors.centerIn: parent; text: root.confirmedRecoveryOverride ? "✓" : "!"; color: root.confirmedRecoveryOverride ? Theme.accent : Theme.warning; font.pixelSize: Fonts.scale(14) }
-                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.confirmedRecoveryOverride = !root.confirmedRecoveryOverride }
-            }
-            Text {
-                Layout.fillWidth: true; wrapMode: Text.WordWrap
-                text: "I understand: overriding SUPER+ESCAPE/BACKSPACE replaces Omarchy's recovery binding. Save an original backup first. Restore using Settings or CLI if needed."
-                color: Theme.warning; font.pixelSize: Fonts.scale(10)
-            }
-        }
+        Text { visible: root.recoveryCombo; Layout.fillWidth: true; wrapMode: Text.WordWrap
+            text: "Recovery shortcut: the confirmation dialog will require explicit acknowledgment before backup + apply."
+            color: Theme.warning; font.pixelSize: Fonts.scale(10) }
         Text { text: "Action · " + (root.selectedAction ? root.selectedAction.name + " / " + root.selectedAction.category : root.action); color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
         Rectangle {
             Layout.fillWidth: true; Layout.preferredHeight: 41; radius: 9; color: Theme.background
@@ -232,6 +274,48 @@ ColumnLayout {
             }
         }
         Text { Layout.fillWidth: true; visible: root.feedback.length > 0; text: root.feedback; wrapMode: Text.WordWrap; color: root.successful ? Theme.accent : Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: backupInformation.implicitHeight + 24
+            color: Theme.background; radius: 11
+            border.width: 1
+            border.color: root.shortcutArchives.defaults_present && root.shortcutArchives.count > 0 ? Theme.borderaccent : Theme.warning
+            ColumnLayout {
+                id: backupInformation
+                anchors.left: parent.left; anchors.right: parent.right
+                anchors.top: parent.top; anchors.margins: 12
+                spacing: 9
+                RowLayout { Layout.fillWidth: true; spacing: 8
+                    Icon { icon: "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
+                    Text { Layout.fillWidth: true; text: "Automatic Omarchy & dotfiles backup"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                }
+                Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+                    text: root.shortcutArchives.count === 0 ?
+                        "NO BACKUP YET — create the first verified backup now or choose Apply override and confirm. No change is allowed without a valid snapshot." :
+                        root.shortcutArchives.count + " user snapshots · Full default Omarchy: " + (root.shortcutArchives.defaults_present ? "present" : "NOT SAVED") + ". Every Apply / Restore takes a new dotfiles snapshot."
+                    color: root.shortcutArchives.count === 0 ? Theme.warning : Theme.muted
+                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                RowLayout { Layout.fillWidth: true; spacing: 8
+                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9; color: Theme.accent
+                        Text { anchors.centerIn: parent; text: root.busy && root.commandVerb === "create-shortcut-backup" ? "Creating…" : "Create backup now"; color: Theme.background; font.pixelSize: Fonts.scale(10) }
+                        MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor
+                            onClicked: root.change("create-shortcut-backup") }
+                    }
+                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9; color: Theme.surface
+                        Text { anchors.centerIn: parent; text: root.busy && root.commandVerb === "verify-shortcut-backups" ? "Verifying…" : "Verify backup"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+                        MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor
+                            onClicked: root.change("verify-shortcut-backups") }
+                    }
+                }
+                Text { Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
+                    text: "Backup directory: " + (root.shortcutArchives.directory || "~/.local/state/rusticq/integration/backup/shortcut-history")
+                    color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                Text { Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
+                    visible: !!root.lastBackupDir || !!root.shortcutArchives.latest
+                    text: "Latest snapshot: " + (root.lastBackupDir || root.shortcutArchives.latest)
+                    color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+            }
+        }
     }
     SettingsSection {
         heading: "Edit an existing shortcut"

@@ -48,10 +48,10 @@ Rectangle {
         repeat: true
         onTriggered: root.next()
     }
-    Connections {
-        target: SettingsStore
-        function onWidgetImageFolderChanged() { root.imageName = ""; root.next(); }
-    }
+    // Reactive binding works even when QML cannot resolve a notify signal
+    // through Connections on the dynamically registered SettingsStore singleton.
+    property string activeFolder: SettingsStore.widgetImageFolder
+    onActiveFolderChanged: { imageName = ""; next(); }
     Component.onCompleted: next()
     ColumnLayout {
         id: imageArea
