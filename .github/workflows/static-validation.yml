@@ -1,0 +1,26 @@
+name: RusticQ source validation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate source structure
+        run: python3 tools/verify-static.py
+      - name: New launcher providers and reproducible release tests
+        run: python3 -m unittest discover -s tools -p 'test_beta2*.py' -v
+      - name: Phase 1 regression tests
+        run: |
+          python3 -m unittest discover -s tools -p 'test_beta1_feature_batch.py' -v
+          python3 -m unittest discover -s tools -p 'test_phase1_doctor_guard.py' -v
+      - name: Check installer syntax
+        run: bash -n scripts/install.sh scripts/bootstrap.sh
+      - name: Build deterministic full source ZIP
+        run: python3 tools/build-release.py --out /tmp/rusticq-build --label ci-validation

@@ -20,7 +20,7 @@ PanelWindow {
     color: "transparent"
     implicitWidth: 400
     implicitHeight: Math.max(340, Math.min(sideWindow.screen ? Math.max(340, sideWindow.screen.height - 85) : 690,
-                                             Math.min(690, quickCards.preferredContentHeight + 119)))
+                                             Math.min(780, quickCards.preferredContentHeight + 119)))
 
     HyprlandFocusGrab {
         active: true

@@ -9,7 +9,7 @@ import "../../components"
 Rectangle {
     id: root
     implicitWidth: 350
-    implicitHeight: Math.min(620, content.implicitHeight + 24)
+    implicitHeight: Math.min(620, content.implicitHeight + 2 * Theme.sectionPadding)
     radius: Theme.sectionRadius
     color: "transparent"
     border.width: 0
@@ -19,7 +19,10 @@ Rectangle {
     readonly property bool available: sink !== null && sink.audio !== null
     readonly property var outputDevices: Pipewire.nodes.values.filter(n => n.audio !== null && n.isSink && !n.isStream)
     readonly property var inputDevices: Pipewire.nodes.values.filter(n => n.audio !== null && !n.isSink && !n.isStream)
+    readonly property var playbackStreams: Pipewire.nodes.values.filter(n => n.audio !== null && n.isStream && !n.isSink)
+    // Track streams only while advanced controls are visible. No polling subprocesses.
     PwObjectTracker { objects: [root.sink, root.source].concat(root.outputDevices, root.inputDevices).filter(n => n !== null) }
+    PwObjectTracker { objects: root.advancedOpen ? root.playbackStreams : [] }
     // Native PipeWire peak capture (no synthetic/volume-only animation).
     // The monitors sample only while the Advanced view is open.
     PwNodePeakMonitor { id: outputPeak; node: root.sink; enabled: root.advancedOpen && root.visible && root.available }
@@ -28,11 +31,11 @@ Rectangle {
         anchors.fill: parent
         clip: true
         contentWidth: width
-        contentHeight: content.implicitHeight + 24
+        contentHeight: content.implicitHeight + 2 * Theme.sectionPadding
         boundsBehavior: Flickable.StopAtBounds
         ColumnLayout {
         id: content
-        x: 12; y: 12; width: parent.width - 24
+        x: Theme.sectionPadding; y: Theme.sectionPadding; width: parent.width - 2 * Theme.sectionPadding
         spacing: 12
         RowLayout {
             Layout.fillWidth: true; spacing: 9
@@ -113,6 +116,51 @@ Rectangle {
                         Icon { visible: Pipewire.defaultAudioSink === output.modelData; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: 16 }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Pipewire.preferredDefaultAudioSink = output.modelData }
+                }
+            }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+            RowLayout { Layout.fillWidth: true
+                Text { text: "Application audio mixer"; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                Text { text: root.playbackStreams.length + " streams"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+            }
+            Text {
+                visible: root.playbackStreams.length === 0
+                text: "No applications are currently playing audio. Start media to see per-app controls."
+                Layout.fillWidth: true; wrapMode: Text.WordWrap
+                color: Theme.muted; font.pixelSize: Fonts.scale(10)
+            }
+            Repeater {
+                model: root.playbackStreams
+                delegate: ColumnLayout {
+                    id: appStream
+                    required property var modelData
+                    readonly property var audioNode: modelData
+                    Layout.fillWidth: true; spacing: 5
+                    RowLayout { Layout.fillWidth: true; spacing: 6
+                        Text {
+                            Layout.fillWidth: true
+                            text: String(appStream.audioNode.properties && appStream.audioNode.properties["application.name"] ||
+                                         appStream.audioNode.description || appStream.audioNode.nickname || "Audio stream")
+                            color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                            elide: Text.ElideRight
+                        }
+                        Text {
+                            text: appStream.audioNode.audio ? Math.round(appStream.audioNode.audio.volume * 100) + "%" : "--"
+                            color: Theme.muted; font.pixelSize: Fonts.scale(10)
+                        }
+                        Rectangle { Layout.preferredWidth: 35; Layout.preferredHeight: 27; radius: 7
+                            color: appStream.audioNode.audio && appStream.audioNode.audio.muted ? Qt.alpha(Theme.accent, 0.20) : Theme.surface
+                            Icon { anchors.centerIn: parent; icon: appStream.audioNode.audio && appStream.audioNode.audio.muted ? "\ue04f" : "\ue050"; color: Theme.accent; font.pixelSize: Fonts.scale(15) }
+                            MouseArea { anchors.fill: parent; enabled: !!appStream.audioNode.audio; cursorShape: Qt.PointingHandCursor
+                                onClicked: appStream.audioNode.audio.muted = !appStream.audioNode.audio.muted
+                            }
+                        }
+                    }
+                    ControlSlider { Layout.fillWidth: true; Layout.preferredHeight: 24
+                        value: appStream.audioNode.audio ? Math.min(1, appStream.audioNode.audio.volume) : 0
+                        adjustable: !!appStream.audioNode.audio
+                        onUserChanged: value => { if (appStream.audioNode.audio) appStream.audioNode.audio.volume = value; }
+                    }
                 }
             }
             Text { text: "Input device · microphone"; color: Theme.muted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }

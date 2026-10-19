@@ -15,6 +15,7 @@ ColumnLayout {
     property bool lastOk: true
     property bool backupAttempted: false
     property bool backupBusy: false
+    property string backupIntegrity: "Not verified yet"
     property string typedConfirmation: ""
     property bool busy: false
     property string pendingAction: ""
@@ -24,21 +25,41 @@ ColumnLayout {
     property string dependencyFilter: ""
     property string selectedDependency: ""
     property string dependencyConfirmation: ""
+    property string selectedDependencyAction: "install"
     property string dependencyMessage: ""
     property bool dependencyBusy: false
     property bool dependencyLastOk: true
 
-    Component.onCompleted: { refresh(); refreshDependencies(); }
+    // Diagnostics and user-initiated JSON snapshots share the existing Settings page.
+    // They never run sudo, write Hyprland config or enable background services.
+    readonly property string doctorHelper: Quickshell.shellPath("scripts/rusticq-doctor.py")
+    readonly property string guardHelper: Quickshell.shellPath("scripts/rusticq-config-guard.py")
+    property string doctorSummary: "Not checked yet"
+    property string guardSummary: "Not checked yet"
+    property string guardMessage: ""
+    property bool guardBusy: false
+    Component.onCompleted: { refresh(); refreshDependencies(); refreshSafeTools(); }
+    function refreshSafeTools() {
+        if (!doctorProc.running) doctorProc.exec(["python3", doctorHelper, "status", "--json"]);
+        if (!guardStatusProc.running) guardStatusProc.exec(["python3", guardHelper, "status"]);
+    }
+    function makeConfigBackup() {
+        if (guardBusy || snapshotProc.running) return;
+        guardBusy = true;
+        snapshotProc.exec(["python3", guardHelper, "backup", "--kind", "settings"]);
+    }
     function refreshDependencies() {
         if (!dependencyStatusProc.running)
             dependencyStatusProc.exec(["python3", dependencyHelper, "status"]);
     }
     function requestDependencyInstall() {
         if (dependencyBusy || dependencyActionProc.running || selectedDependency.length === 0
-            || dependencyConfirmation !== "INSTALL") return;
+            || dependencyConfirmation !== (selectedDependencyAction === "remove" ? "REMOVE " + selectedDependency : "INSTALL")) return;
         dependencyBusy = true;
-        dependencyActionProc.exec(["python3", dependencyHelper, "launch", selectedDependency,
-                                   "--confirm", "INSTALL " + selectedDependency]);
+        dependencyMessage = "Waiting for graphical Polkit authorization and package transaction…";
+        dependencyActionProc.exec(["python3", dependencyHelper, "gui", selectedDependency,
+                                   "--operation", selectedDependencyAction,
+                                   "--confirm", selectedDependencyAction.toUpperCase() + " " + selectedDependency]);
     }
     function refresh() {
         if (!statusProc.running) statusProc.exec(["python3", helper, "status"]);
@@ -85,6 +106,17 @@ ColumnLayout {
             root.backupBusy = false;
             Qt.callLater(root.refresh);
         }
+    }
+    Process {
+        id: verifyBackupProc
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const report = JSON.parse(this.text);
+                root.backupIntegrity = report.ok === true ?
+                    ("Verified · " + (report.verification.default_files || 0) + " default files + " + (report.verification.user_files || 0) + " user files") :
+                    (report.message || "Integrity check failed");
+            } catch (e) { root.backupIntegrity = "Backup verification failed: " + e; }
+        } }
     }
     Process {
         id: actionProc
@@ -134,15 +166,74 @@ ColumnLayout {
                 root.dependencyMessage = result.message || "No dependency install status returned";
             } catch (e) {
                 root.dependencyLastOk = false;
-                root.dependencyMessage = "Cannot open dependency installer: " + String(e);
+                root.dependencyMessage = "Dependency transaction failed: " + String(e);
             }
         } }
-        onExited: (code, status) => { root.dependencyBusy = false; Qt.callLater(root.refreshDependencies); }
+        onExited: (code, status) => {
+            root.dependencyBusy = false;
+            root.dependencyConfirmation = "";
+            Qt.callLater(root.refreshDependencies);
+        }
+    }
+
+    Process {
+        id: doctorProc
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const r = JSON.parse(this.text);
+                root.doctorSummary = r.totals.ok + " OK · " + r.totals.warn + " warnings · " + r.totals.skip + " unavailable";
+            } catch (e) { root.doctorSummary = "Could not read Doctor report: " + e; }
+        } }
+    }
+    Process {
+        id: guardStatusProc
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const r = JSON.parse(this.text);
+                root.guardSummary = r.ok === true ? ("Settings: " + r.data.settings.status + " · " + r.data.settings.snapshots + " snapshots") : (r.error || "Error");
+            } catch (e) { root.guardSummary = "Could not read snapshot status: " + e; }
+        } }
+    }
+    Process {
+        id: snapshotProc
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const r = JSON.parse(this.text);
+                root.guardMessage = r.ok === true ? "Saved settings snapshot " + r.data.id : (r.error || "Backup failed");
+            } catch (e) { root.guardMessage = "Backup returned unreadable output: " + e; }
+        } }
+        onExited: (code, status) => {
+            root.guardBusy = false;
+            Qt.callLater(root.refreshSafeTools);
+        }
+    }
+    SettingsSection {
+        heading: "System Doctor & configuration recovery"
+        description: "Read-only system inspection and opt-in snapshots of user-settings.json. No installation, Omarchy changes, or background monitoring."
+        symbol: "\ue869"
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Doctor: " + root.doctorSummary; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.guardSummary; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+        RowLayout {
+            Layout.fillWidth: true; spacing: 8
+            Rectangle {
+                Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10; color: Theme.background
+                Text { anchors.centerIn: parent; text: "Run diagnostics"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.refreshSafeTools() }
+            }
+            Rectangle {
+                Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10
+                color: root.guardBusy ? Theme.borderaccent : Theme.accent
+                Text { anchors.centerIn: parent; text: root.guardBusy ? "Creating backup…" : "Backup settings now"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                MouseArea { anchors.fill: parent; enabled: !root.guardBusy; cursorShape: Qt.PointingHandCursor; onClicked: root.makeConfigBackup() }
+            }
+        }
+        Text { visible: root.guardMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.guardMessage; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "For explicit restore: rusticq config list settings, then rusticq config restore settings SNAPSHOT_ID --confirm RESTORE. Restart the shell after restoring."; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
     }
 
     SettingsSection {
         heading: "Required & optional dependencies"
-        description: "Core packages are installed by the local setup script. Install extra tools individually from a confirmed terminal. Opening this page never installs packages."
+        description: "Manage optional packages inside RusticQ with graphical Polkit authorization. Nothing installs on page load."
         symbol: "\ue869"
         RowLayout {
             Layout.fillWidth: true
@@ -219,17 +310,18 @@ ColumnLayout {
                         }
                     }
                     Text {
-                        text: dependencyRow.installed ? "Installed" : (dependencyRow.selected ? "Selected" : "Install")
+                        text: dependencyRow.installed ? (dependencyRow.modelData.group === "core" ? "Core · installed" : "Remove") : (dependencyRow.selected ? "Selected" : "Install")
                         color: dependencyRow.installed ? Theme.success : Theme.accent
                         font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10)
                     }
                 }
                 MouseArea {
                     anchors.fill: parent
-                    enabled: !dependencyRow.installed && !root.dependencyBusy
+                    enabled: !root.dependencyBusy && (!dependencyRow.installed || dependencyRow.modelData.group !== "core")
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: {
                         root.selectedDependency = dependencyRow.modelData.id;
+                        root.selectedDependencyAction = dependencyRow.installed ? "remove" : "install";
                         root.dependencyConfirmation = "";
                     }
                 }
@@ -238,7 +330,7 @@ ColumnLayout {
         Text {
             visible: root.selectedDependency.length > 0
             Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: "Selected: " + root.selectedDependency + ". Type INSTALL below, then review and approve the exact command in the terminal. Omarchy uses its own update flow first."
+            text: "Selected: " + root.selectedDependency + " · " + root.selectedDependencyAction.toUpperCase() + ". Confirm the action below, then authorize with graphical Polkit. Pacman's dependency and Omarchy policy checks remain enforced."
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
         }
         Rectangle {
@@ -255,7 +347,7 @@ ColumnLayout {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: parent.text.length === 0
-                    text: "Type INSTALL to authorize opening terminal"
+                    text: root.selectedDependencyAction === "remove" ? ("Type REMOVE " + root.selectedDependency) : "Type INSTALL to authorize installation"
                     color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                 }
             }
@@ -265,11 +357,11 @@ ColumnLayout {
             visible: root.selectedDependency.length > 0
             Layout.fillWidth: true; Layout.preferredHeight: visible ? 39 : 0
             radius: 11
-            readonly property bool canInstall: root.selectedDependency.length > 0 && root.dependencyConfirmation === "INSTALL" && !root.dependencyBusy
+            readonly property bool canInstall: root.selectedDependency.length > 0 && root.dependencyConfirmation === (root.selectedDependencyAction === "remove" ? "REMOVE " + root.selectedDependency : "INSTALL") && !root.dependencyBusy
             color: canInstall ? Theme.accent : Theme.borderaccent
             Text {
                 anchors.centerIn: parent
-                text: root.dependencyBusy ? "Opening terminal..." : "Open interactive installer"
+                text: root.dependencyBusy ? "Working…" : (root.selectedDependencyAction === "remove" ? "Remove from GUI" : "Install from GUI")
                 color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11)
             }
             MouseArea {
@@ -318,11 +410,34 @@ ColumnLayout {
                 }
                 Text {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap
-                    text: "On detection, a backup of Omarchy default Hyprland Lua and your current Hyprland config is created automatically. /usr/share/omarchy is never edited; no Omarchy package is removed."
+                    text: "Before activation RusticQ snapshots the original Omarchy default Lua tree plus ~/.config/hypr, ~/.config/omarchy, and ~/.config/quickshell (if present). Private checksummed copies stay available for recovery; revert restores only managed files, preserving other edits. /usr/share/omarchy is never edited."
                     color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                 }
             }
         }
+        Text {
+            Layout.fillWidth: true; wrapMode: Text.WordWrap
+            text: "Backup: " + ((root.info.backup_health && root.info.backup_health.message) || "Checking…")
+                + (root.info.backup_health ? " · Default files: " + (root.info.backup_health.defaults || 0) + " · User entries: " + (root.info.backup_health.user_files || 0) : "")
+            color: Theme.muted; font.pixelSize: Fonts.scale(10)
+        }
+        RowLayout {
+            Layout.fillWidth: true; spacing: 8
+            Rectangle {
+                Layout.fillWidth: true; Layout.preferredHeight: 33; radius: 9; color: Theme.background
+                Text { anchors.centerIn: parent; text: root.backupBusy ? "Backing up…" : "Backup default & user configs"; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                MouseArea { anchors.fill: parent; enabled: !root.backupBusy && root.info.permanent !== true; cursorShape: Qt.PointingHandCursor; onClicked: {
+                    root.backupBusy = true;
+                    backupProc.exec(["python3", root.helper, "backup-omarchy"]);
+                } }
+            }
+            Rectangle {
+                Layout.fillWidth: true; Layout.preferredHeight: 33; radius: 9; color: Theme.background
+                Text { anchors.centerIn: parent; text: "Verify backup"; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                MouseArea { anchors.fill: parent; enabled: !verifyBackupProc.running; cursorShape: Qt.PointingHandCursor; onClicked: verifyBackupProc.exec(["python3", root.helper, "verify-backup"]) }
+            }
+        }
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.backupIntegrity; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
         Text {
             Layout.fillWidth: true
             text: root.info.permanent ? "Installed for next login" : "Not installed permanently"

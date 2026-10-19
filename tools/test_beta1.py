@@ -51,10 +51,10 @@ class Beta1Tests(unittest.TestCase):
         with patch.object(D, 'apply_with_eval') as evaluate, patch.object(D, 'readback', return_value=fake):
             with patch.object(D.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'hyprland lua','')):
                 with patch.object(D.time,'sleep'):
-                    with patch.object(sys,'argv',['rustiq-display.py','apply']),patch.object(sys,'stdin',io.StringIO(json.dumps(MONITORS))):
+                    with patch.object(sys,'argv',['rustiq-display.py','apply']),patch.object(sys,'stdin',io.StringIO(json.dumps(MONITORS) + "\n")):
                         result = D.main()
         self.assertTrue(result['ok'])
-        evaluate.assert_called_once()
+        self.assertFalse(result.get('pending', False))  # already-active draft needs no dispatch
 
     def test_graphical_app_owner_by_file_or_name(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -79,7 +79,8 @@ class Beta1Tests(unittest.TestCase):
         info=(ROOT/'modules/settings/pages/SettingsInfoPage.qml').read_text()
         self.assertIn('packageOperationConfirmed',store)
         self.assertIn('confirmationVisible',store)
-        self.assertIn('WlrLayer.Overlay',dialog)
+        self.assertIn('FloatingWindow {',dialog)
+        self.assertNotIn('WlrLayer.Overlay',dialog)
         self.assertIn('root.typed === Store.confirmationPackage',dialog)
         self.assertIn('root.resolveGraphicalApp(desktopAppRow.modelData)',info)
         self.assertNotIn('heading: root.pendingAction === "remove" ? "Confirm uninstall"',info)

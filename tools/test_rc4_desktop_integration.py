@@ -37,18 +37,18 @@ def test_integration_cycle():
         assert all(x.read_bytes() == b for x,b in before.items())
         rc, res = cli(env, 'shortcut', '--key', 'SUPER + SPACE', '--action', 'settings')
         assert rc == 0, res
-        assert 'o.bind("SUPER + SPACE"' in keys.read_text()
+        assert 'o.rebind("SUPER + SPACE"' in keys.read_text()
         assert keys.read_text().count('RUSTICQ MANAGED RC4') == 2
         assert 'o.bind("SUPER + N"' in keys.read_text()
         rc, res = cli(env, 'shortcut', '--key', 'SUPER + T', '--action', 'launcher'); assert rc == 0, res
         assert keys.read_text().count('RUSTICQ MANAGED RC4') == 2
-        assert 'o.bind("SUPER + T"' in keys.read_text()
-        assert 'o.bind("SUPER + SPACE"' in keys.read_text()
+        assert 'o.rebind("SUPER + T"' in keys.read_text()
+        assert 'o.rebind("SUPER + SPACE"' in keys.read_text()
         rc, res = cli(env, 'bindings'); assert rc == 0 and any(i['key'] == 'SUPER + N' for i in res['bindings'])
         rc, res = cli(env, 'status'); assert res['shortcuts'] == {'settings': 'SUPER + SPACE', 'launcher': 'SUPER + T'}
         rc, res = cli(env, 'shortcut', '--key', 'SUPER + T\nquit()', '--action', 'launcher'); assert rc != 0
-        rc, res = cli(env, 'shortcut-revert'); assert rc == 0
-        assert keys.read_bytes() == before[keys]
+        rc, res = cli(env, 'shortcut-revert', '--all'); assert rc == 0
+        assert keys.read_bytes() == before[keys], (repr(keys.read_text()), repr(before[keys].decode()))
         rc, res = cli(env, 'shortcut', '--key', 'SUPER + SHIFT + R', '--action', 'settings'); assert rc == 0, res
         assert str(PROJECT) in keys.read_text()
         rc, res = cli(env, 'enable', '--confirm', 'wrong'); assert rc != 0
@@ -67,6 +67,9 @@ def test_integration_cycle():
         rc, res = cli(env, 'revert', '--confirm', 'wrong'); assert rc != 0
         rc, res = cli(env, 'revert', '--confirm', 'RESTORE OMARCHY'); assert rc == 0, res
         assert main.read_bytes() == before[main]
+        # Permanent-shell revert deliberately retains independent key overrides.
+        assert 'o.rebind("SUPER + SHIFT + R"' in keys.read_text()
+        rc, res = cli(env, 'shortcut-revert', '--action', 'settings'); assert rc == 0, res
         assert keys.read_bytes() == before[keys]
         assert not (home/'.local/state/rusticq/integration/manifest.json').exists()
         assert (home/'.local/share/rusticq/shell-previous/shell.qml').exists()

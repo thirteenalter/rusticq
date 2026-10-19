@@ -18,7 +18,17 @@ Rectangle {
 
     property bool expanded: true
     property bool standalone: false
+    property bool advancedOpen: false
+    property var popupScreen: null
+    signal shareQrRequested(var screen, string ssid)
+    // Keep room for a scanned AP list; network entries alone are scrollable.
+    readonly property real listHeightLimit: advancedOpen
+        ? Math.max(84, Math.min(218, (popupScreen ? popupScreen.height : 900) - advancedContent.implicitHeight - 256))
+        : 300
     readonly property bool contentOpen: standalone || expanded
+    // Standalone popup height follows the real controls. The Wi-Fi network
+    // list may scroll for dozens of APs, but Advanced Wi-Fi never clips.
+    implicitHeight: standalone ? wifiContent.implicitHeight + 2 * Theme.sectionPadding : 0
 
     WifiManager { id: manager }
 
@@ -83,6 +93,7 @@ Rectangle {
     }
 
     ColumnLayout {
+        id: wifiContent
         anchors.fill: parent
         anchors.margins: Theme.sectionPadding
         spacing: 12
@@ -144,11 +155,43 @@ Rectangle {
             }
         }
 
+        RowLayout {
+            visible: wifiWidget.standalone && wifiWidget.contentOpen
+            Layout.fillWidth: true
+            spacing: 8
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 34
+                radius: Theme.rowRadius
+                color: wifiWidget.advancedOpen ? Qt.alpha(Theme.accent, .16) : Theme.surface
+                RowLayout { anchors.centerIn: parent; spacing: 7
+                    Icon { icon: "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
+                    Text { text: wifiWidget.advancedOpen ? "Hide advanced Wi-Fi" : "Advanced Wi-Fi · QR, speed, DNS";
+                        color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: wifiWidget.advancedOpen = !wifiWidget.advancedOpen }
+            }
+        }
+        // No nested Flickable: Advanced grows to its actual implicit height.
+        // PopupWindow derives its height from this card instead of reserving a
+        // fixed 760px window with a separately scrolling 335px inner viewport.
+        WifiAdvanced {
+            id: advancedContent
+            visible: wifiWidget.standalone && wifiWidget.contentOpen && wifiWidget.advancedOpen
+            Layout.fillWidth: true
+            Layout.preferredHeight: visible ? implicitHeight : 0
+            targetScreen: wifiWidget.popupScreen
+            onShareQrRequested: (screen, ssid) => wifiWidget.shareQrRequested(screen, ssid)
+        }
+
         ListView {
             id: wifiList
             visible: wifiWidget.contentOpen
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.fillHeight: !wifiWidget.standalone
+            Layout.preferredHeight: wifiWidget.standalone
+                                    ? Math.min(wifiWidget.listHeightLimit,
+                                        Math.max(84, contentHeight + 4, Math.min(300, count * 70 + 8))) : -1
             clip: true
             spacing: 8
             model: manager.wifiDevice ? manager.wifiDevice.networks : null

@@ -6,7 +6,7 @@ import Quickshell.Io
 import "../../config"
 import "../../components"
 
-// Beta 1: one selected display, one aligned editor, safe preview/apply/readback.
+// Beta 1 live displays: HyprMon-style change-on-selection, verified readback and timed rollback.
 ColumnLayout {
     id: root
     Layout.fillWidth: true
@@ -15,6 +15,9 @@ ColumnLayout {
     property string selectedName: ""
     property string status: "Reading connected displays…"
     property bool failed: false
+    property bool awaitingKeep: false
+    property int secondsLeft: 0
+    property bool preserveReadStatus: false
     property bool busy: readMonitors.running || editMonitors.running
     readonly property var selected: drafts.find(m => m.name === selectedName) || null
     readonly property real minX: drafts.length ? Math.min.apply(null, drafts.map(m => m.x)) : 0
@@ -23,7 +26,32 @@ ColumnLayout {
     readonly property real maxY: drafts.length ? Math.max.apply(null, drafts.map(m => m.y + m.height / m.scale)) : 1080
     readonly property real previewScale: Math.max(.02, Math.min((preview.width-34) / Math.max(1,maxX-minX), (preview.height-34) / Math.max(1,maxY-minY)))
     function setField(name, field, value) {
+        if (busy) return;
         drafts = drafts.map(m => m.name === name ? Object.assign({},m,{[field]:value}) : m);
+        scheduleLive();
+    }
+    function scheduleLive() {
+        if (!busy) liveTimer.restart();
+    }
+    Timer {
+        id: liveTimer
+        interval: 140
+        repeat: false
+        onTriggered: root.run("apply")
+    }
+    Timer {
+        interval: 1000
+        running: root.awaitingKeep
+        repeat: true
+        onTriggered: {
+            if (root.secondsLeft > 0) root.secondsLeft -= 1;
+            if (root.secondsLeft <= 0) {
+                root.awaitingKeep = false;
+                root.status = "Revert timer expired. Reading restored monitor layout…";
+                root.preserveReadStatus = true;
+                readMonitors.running = true;
+            }
+        }
     }
     function chooseMode(value) {
         if (!selected) return;
@@ -32,6 +60,7 @@ ColumnLayout {
         drafts = drafts.map(m => m.name === selectedName ? Object.assign({},m,{
             mode: mode, width: match ? Number(match[1]) : m.width, height: match ? Number(match[2]) : m.height
         }) : m);
+        scheduleLive();
     }
     function place(side) {
         if (drafts.length < 2 || !selected) return;
@@ -42,14 +71,18 @@ ColumnLayout {
         const x=side==="right"?reference.x+rw:side==="left"?reference.x-tw:reference.x;
         const y=side==="below"?reference.y+rh:side==="above"?reference.y-th:reference.y;
         drafts=drafts.map(m=>m.name===target.name?Object.assign({},m,{x:x,y:y}):m);
+        scheduleLive();
     }
     QtObject { id: task; property string action: ""; property string input: "" }
     function run(action) {
-        if (busy || !drafts.length) return;
+        if (busy || (action !== "keep" && action !== "revert" && !drafts.length)) return;
+        liveTimer.stop();
         task.action=action;
-        task.input=JSON.stringify(drafts)+"\n";
+        task.input=(action === "keep" || action === "revert") ? "" : JSON.stringify(drafts)+"\n";
         failed=false;
-        status=action==="apply"?"Applying layout and verifying with Hyprland…":action==="export"?"Exporting Lua…":"Checking draft…";
+        status=action==="apply"?"Applying immediately and checking Hyprland…":
+               action==="keep"?"Keeping this display layout…":
+               action==="revert"?"Restoring the previous layout…":"Exporting Lua…";
         editMonitors.exec(["python3",Quickshell.shellPath("scripts/rustiq-display.py"),action]);
     }
     Process {
@@ -68,8 +101,9 @@ ColumnLayout {
                     transform:m.transform||0,vrr:!!m.vrr
                 }));
                 if (!root.drafts.some(m=>m.name===root.selectedName)) root.selectedName=root.drafts.length?root.drafts[0].name:"";
-                root.status=root.drafts.length?"Select a display, adjust it, then Apply. No changes happen until then.":"No connected display found.";
-                root.failed=false;
+                if (!root.preserveReadStatus)
+                    root.status=root.drafts.length?"Changes apply immediately. You will have 15 seconds to keep them.":"No connected display found.";
+                root.preserveReadStatus = false;
             } catch(e) {root.failed=true;root.status="Cannot read monitors: "+e;}
         } }
         onExited: (code, reason) => { if (code!==0) {root.failed=true;root.status="hyprctl monitors failed; ensure Hyprland is running.";} }
@@ -83,7 +117,22 @@ ColumnLayout {
                 const result=JSON.parse(this.text.trim());
                 root.failed=!result.ok;
                 root.status=result.message||(result.ok?"Success":"Failed");
-                if (result.ok && task.action==="apply") readMonitors.running=true;
+                if (result.ok) {
+                    if (task.action === "apply") {
+                        root.awaitingKeep = !!result.pending;
+                        root.secondsLeft = result.pending ? Number(result.seconds || 15) : 0;
+                    } else if (task.action === "keep" || task.action === "revert") {
+                        root.awaitingKeep = false;
+                        root.secondsLeft = 0;
+                    }
+                } else if (task.action === "apply") {
+                    root.awaitingKeep = false;
+                    root.secondsLeft = 0;
+                }
+                if (task.action === "apply" || task.action === "revert" || !result.ok) {
+                    root.preserveReadStatus = true;
+                    readMonitors.running = true;
+                }
             } catch(e) { root.failed=true;root.status="Display helper returned unreadable output: "+e; }
         } }
         onExited: (code,reason) => { if (code!==0 && !root.failed) { root.failed=true;root.status="Display command exited with "+code; } }
@@ -94,7 +143,7 @@ ColumnLayout {
         Layout.fillWidth:true; spacing:10
         ColumnLayout { Layout.fillWidth:true; spacing:3
             Text { text:"Your displays";font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(14);color:Theme.foreground }
-            Text { text:root.drafts.length+" connected · drag to arrange";font.pixelSize:Fonts.scale(10);color:Theme.muted }
+            Text { text:root.drafts.length+" connected · live controls";font.pixelSize:Fonts.scale(10);color:Theme.muted }
         }
         Rectangle { Layout.preferredWidth:88;Layout.preferredHeight:32;radius:9;color:Theme.surface
             Text { anchors.centerIn:parent;text:"Refresh";font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(10);color:Theme.foreground }
@@ -124,15 +173,17 @@ ColumnLayout {
                     Text { anchors.horizontalCenter:parent.horizontalCenter;text:screenChip.display.width+" × "+screenChip.display.height;color:Theme.muted;font.pixelSize:Fonts.scale(9) }
                 }
                 MouseArea { anchors.fill:parent;cursorShape:Qt.OpenHandCursor
-                    drag.target:screenChip
+                    drag.target:root.busy ? null : screenChip
                     drag.minimumX:1;drag.minimumY:1
                     drag.maximumX:Math.max(1,preview.width-screenChip.width-1)
                     drag.maximumY:Math.max(1,preview.height-screenChip.height-1)
                     onPressed:root.selectedName=screenChip.display.name
                     onReleased: {
+                        if (root.busy) return;
                         const nx=Math.round(root.minX+(screenChip.x-16)/root.previewScale);
                         const ny=Math.round(root.minY+(screenChip.y-16)/root.previewScale);
                         root.drafts=root.drafts.map(m=>m.name===screenChip.display.name?Object.assign({},m,{x:nx,y:ny}):m);
+                        root.scheduleLive();
                     }
                 }
             }
@@ -176,6 +227,7 @@ ColumnLayout {
                 Layout.fillWidth:true;Layout.preferredHeight:41
                 model:root.selected?(root.selected.modes.length?root.selected.modes:[root.selected.mode]):[]
                 currentIndex:root.selected?Math.max(0, model.findIndex(m=>String(m).replace("Hz","")===root.selected.mode)):0
+                enabled: !root.busy
                 onActivated: index => {if (index>=0 && index<model.length) root.chooseMode(model[index]);}
                 contentItem:Text { text:modeBox.currentText;verticalAlignment:Text.AlignVCenter;leftPadding:13;rightPadding:26;color:Theme.foreground;font.family:Fonts.poppins.name;font.pixelSize:Fonts.scale(11);elide:Text.ElideRight }
                 background:Rectangle { radius:10;color:Theme.background;border.color:modeBox.pressed?Theme.accent:Theme.borderaccent;border.width:1 }
@@ -201,7 +253,7 @@ ColumnLayout {
                         color:chosen?Qt.alpha(Theme.accent,.17):Theme.background
                         border.color:chosen?Theme.accent:Theme.borderaccent;border.width:1
                         Text { anchors.centerIn:parent;text:scaleBtn.modelData+"×";color:Theme.foreground;font.pixelSize:Fonts.scale(10) }
-                        MouseArea { anchors.fill:parent;cursorShape:Qt.PointingHandCursor;onClicked:if(root.selected)root.setField(root.selectedName,"scale",scaleBtn.modelData) }
+                        MouseArea { anchors.fill:parent;enabled:!root.busy;cursorShape:Qt.PointingHandCursor;onClicked:if(root.selected)root.setField(root.selectedName,"scale",scaleBtn.modelData) }
                     }
                 }
             }
@@ -212,28 +264,59 @@ ColumnLayout {
                         required property var modelData
                         Layout.fillWidth:true;Layout.preferredHeight:34;radius:8;color:Theme.background
                         Text { anchors.centerIn:parent;text:direction.modelData.title;color:Theme.foreground;font.pixelSize:Fonts.scale(10) }
-                        MouseArea { anchors.fill:parent;enabled:root.drafts.length>1;cursorShape:Qt.PointingHandCursor;onClicked:root.place(direction.modelData.id) }
+                        MouseArea { anchors.fill:parent;enabled:root.drafts.length>1&&!root.busy;cursorShape:Qt.PointingHandCursor;onClicked:root.place(direction.modelData.id) }
                     }
                 }
             }
             Text { text:root.selected?"Position "+root.selected.x+", "+root.selected.y+" px · "+root.selected.width+"×"+root.selected.height+" · "+root.selected.scale+"×":"";color:Theme.muted;font.pixelSize:Fonts.scale(10) }
         }
     }
-    RowLayout { Layout.fillWidth:true;spacing:8
-        Repeater { model:[{title:"Validate",action:"dry-run"},{title:"Apply layout",action:"apply"},{title:"Export Lua",action:"export"}]
-            delegate:Rectangle { id:applyButton
-                required property var modelData
-                Layout.fillWidth:true;Layout.preferredHeight:42;radius:10
-                readonly property bool important:modelData.action==="apply"
-                color:important?Theme.accent:Theme.surface
-                opacity:root.busy?.55:1
-                Text { anchors.centerIn:parent;text:applyButton.modelData.title;color:applyButton.important?Theme.background:Theme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11) }
-                MouseArea { anchors.fill:parent;enabled:!root.busy&&root.drafts.length>0;cursorShape:Qt.PointingHandCursor;onClicked:root.run(applyButton.modelData.action) }
+    Rectangle {
+        Layout.fillWidth: true
+        Layout.preferredHeight: root.awaitingKeep ? 54 : 0
+        visible: root.awaitingKeep
+        radius: 11
+        color: Qt.alpha(Theme.accent, 0.12)
+        border.color: Theme.accent
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: 9
+            spacing: 9
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+                Text { text: "New display layout is active"; font.family: Fonts.poppinsSB.name; color: Theme.foreground; font.pixelSize: Fonts.scale(11) }
+                Text { text: "Reverts in " + root.secondsLeft + "s if not kept"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+            }
+            Rectangle {
+                Layout.preferredWidth: 100; Layout.fillHeight: true; radius: 8; color: Theme.surface
+                Text { anchors.centerIn: parent; text: "Revert now"; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor; onClicked: root.run("revert") }
+            }
+            Rectangle {
+                Layout.preferredWidth: 120; Layout.fillHeight: true; radius: 8; color: Theme.accent
+                Text { anchors.centerIn: parent; text: "Keep changes"; color: Theme.background; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
+                MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor; onClicked: root.run("keep") }
             }
         }
     }
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: 8
+        Text {
+            Layout.fillWidth: true
+            text: root.busy ? "Applying…" : "Instant apply · verified against Hyprland"
+            color: Theme.muted
+            font.pixelSize: Fonts.scale(10)
+        }
+        Rectangle {
+            Layout.preferredWidth: 112; Layout.preferredHeight: 35; radius: 9; color: Theme.surface
+            Text { anchors.centerIn: parent; text: "Export Lua"; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+            MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor; onClicked: root.run("export") }
+        }
+    }
     Text { Layout.fillWidth:true;text:root.status;color:root.failed?Theme.error:Theme.muted;wrapMode:Text.WordWrap;font.pixelSize:Fonts.scale(11) }
-    Text { Layout.fillWidth:true;text:"Apply changes this session and verifies readback. Export Lua creates ~/.config/rustiq/monitors.lua; to persist on Omarchy, copy verified monitor rules into ~/.config/hypr/monitors.lua.";color:Theme.muted;wrapMode:Text.WordWrap;font.pixelSize:Fonts.scale(10) }
+    Text { Layout.fillWidth:true;text:"Select a resolution, scale, position or drag a screen: changes apply immediately. Keep within 15 seconds; otherwise the independent rollback guard restores the previous layout. Export Lua for startup persistence (Omarchy files are not overwritten).";color:Theme.muted;wrapMode:Text.WordWrap;font.pixelSize:Fonts.scale(10) }
     Rectangle { Layout.fillWidth:true;Layout.preferredHeight:34;radius:9;color:Theme.surface
         Text { anchors.centerIn:parent;text:"Open nwg-displays (alternative)";color:Theme.foreground;font.pixelSize:Fonts.scale(11) }
         MouseArea { anchors.fill:parent;cursorShape:Qt.PointingHandCursor;onClicked:Quickshell.execDetached(["nwg-displays"]) }

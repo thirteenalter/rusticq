@@ -1,44 +1,51 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Wayland
+import Quickshell.Io
 import "../../config"
 import "../../components"
 
-// Dedicated Wayland overlay surface: destructive confirmation never shifts Settings content.
-PanelWindow {
+// A compact toplevel on Settings' workspace; no full-screen layer shell scrim.
+// Hyprland places it by exact window address, never by the currently focused window.
+FloatingWindow {
     id: root
     screen: Store.confirmationScreen
     visible: Store.confirmationVisible
-    anchors { top: true; bottom: true; left: true; right: true }
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-    focusable: true
-    color: "transparent"
+    title: "RusticQ · Package Confirmation"
+    implicitWidth: 510
+    implicitHeight: (removing ? 378 : 330) + (Store.confirmationProvider === "yay" ? 36 : 0)
+    minimumSize: Qt.size(430, 300)
+    color: Theme.background
+    Timer {
+        id: arrangeTimer
+        interval: 280
+        repeat: false
+        onTriggered: if (root.visible && !arrangeProcess.running) arrangeProcess.running = true
+    }
+    Process {
+        id: arrangeProcess
+        command: ["python3", Quickshell.shellPath("scripts/rustiq-confirmation-float.py")]
+    }
     readonly property bool removing: Store.confirmationAction === "remove"
     property string typed: ""
     onVisibleChanged: {
         typed = "";
-        if (visible) Qt.callLater(function() { if (root.removing) authorizeField.forceActiveFocus(); else cancelButton.forceActiveFocus(); });
+        if (visible) {
+            arrangeTimer.restart();
+            Qt.callLater(function() { if (root.removing) authorizeField.forceActiveFocus(); else cancelButton.forceActiveFocus(); });
+        }
     }
     Keys.onEscapePressed: Store.cancelPackageConfirmation()
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.alpha("#050508", 0.75)
-        MouseArea { anchors.fill: parent; onClicked: Store.cancelPackageConfirmation() }
-    }
-    Rectangle {
-        width: Math.min(490, parent.width - 48)
-        implicitHeight: form.implicitHeight + 42
-        anchors.centerIn: parent
         color: Theme.background
         border.color: Theme.borderaccent
         border.width: 1
-        radius: 18
+        radius: 15
         ColumnLayout {
             id: form
-            anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
+            anchors.fill: parent
             anchors.margins: 21
             spacing: 14
             RowLayout {
@@ -51,7 +58,7 @@ PanelWindow {
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 3
                     Text { text: root.removing ? "Uninstall this package?" : "Install this package?"; color: Theme.foreground; font.pixelSize: Fonts.scale(16); font.family: Fonts.poppinsSB.name }
-                    Text { text: "System package operation · confirmation required"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                    Text { text: Store.confirmationProvider.toUpperCase() + " · explicit confirmation required"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
                 }
             }
             Rectangle {
@@ -61,9 +68,20 @@ PanelWindow {
             Text {
                 Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.muted
                 font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
-                text: root.removing ?
-                  "Pacman will check dependencies in a terminal. Removing system packages may break applications or the desktop. No force-remove is used." :
-                  "Pacman will ask for authorization in a terminal. On Arch it may update repositories; on Omarchy its update flow may run first."
+                text: Store.confirmationProvider === "yay" ?
+                  "AUR packages run third-party PKGBUILD scripts. Review the package source before approving. Yay builds as your user and requests Polkit for privileged pacman steps." :
+                  Store.confirmationProvider === "flatpak" ?
+                  "Flatpak installs applications from your configured remote. System installation may prompt for Polkit; user installation needs no administrator password." :
+                  root.removing ? "Pacman checks dependencies and blocks removals that would break installed packages. No force-remove flags are used." :
+                  "Pacman uses graphical Polkit and follows existing Omarchy safety hooks."
+            }
+            Rectangle {
+                visible: Store.confirmationProvider === "yay"
+                Layout.fillWidth: true; Layout.preferredHeight: visible ? 31 : 0
+                radius: 9; color: Theme.surface
+                Text { anchors.centerIn: parent; text: "Review AUR PKGBUILD / source ↗"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                    onClicked: Qt.openUrlExternally("https://aur.archlinux.org/packages/" + encodeURIComponent(Store.confirmationPackage)) }
             }
             Text {
                 visible: root.removing
@@ -102,7 +120,7 @@ PanelWindow {
                     MouseArea { anchors.fill: parent; enabled: parent.authorized; cursorShape: Qt.PointingHandCursor; onClicked: Store.acceptPackageConfirmation() }
                 }
             }
-            Text { Layout.fillWidth: true; text: "The terminal still asks for your sudo/pacman confirmation."; color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap }
+            Text { Layout.fillWidth: true; text: "Follow the operation result in Settings. Some actions may require a graphical Polkit agent."; color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap }
         }
     }
 }

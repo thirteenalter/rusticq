@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""RusticQ's allowlisted Arch dependency diagnostics / optional installation.
-
-status and core-packages are read-only; launch requires a visible confirmation
-and opens a terminal. apply prompts a second time inside the terminal before
-any package operation. Never run commands from user-provided package names.
-"""
+"""Read-only dependency inventory and opt-in graphical Polkit installation."""
 import argparse
 import json
 from pathlib import Path
@@ -50,76 +45,33 @@ def status():
             "missing_optional": sum(1 for it in items if it["group"] == "optional" and not it["installed"])}
 
 
-def choose_terminal():
-    candidates = [
-        ("ghostty", ["ghostty", "-e"]), ("foot", ["foot", "-e"]),
-        ("kitty", ["kitty", "-e"]), ("alacritty", ["alacritty", "-e"]),
-        ("wezterm", ["wezterm", "start", "--"]),
-        ("konsole", ["konsole", "-e"]), ("xterm", ["xterm", "-e"]),
-    ]
-    for name, command in candidates:
-        if shutil.which(name):
-            return command
-    raise RuntimeError("No supported terminal emulator installed. Open a terminal to install the package manually.")
-
-
-def launch(dep_id, confirmation):
+def gui_manage(dep_id, action, confirmation):
     entry = catalogue().get(dep_id)
     if entry is None:
-        raise ValueError("Unknown dependency ID")
-    if confirmation != "INSTALL " + dep_id:
-        raise ValueError("Explicit INSTALL <id> confirmation is required")
-    if not shutil.which("pacman"):
-        raise RuntimeError("This installer supports Arch Linux/pacman only")
-    if is_installed(entry["package"]):
-        return {"ok": True, "message": entry["name"] + " is already installed."}
-    cmd = choose_terminal() + [sys.executable, str(Path(__file__).resolve()), "apply", dep_id]
-    subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                     stderr=subprocess.DEVNULL, start_new_session=True)
-    return {"ok": True, "message": "Opened a terminal for " + entry["name"] + ". Confirm the install there; this does not imply success."}
-
-
-def apply(dep_id):
-    entry = catalogue().get(dep_id)
-    if entry is None:
-        raise ValueError("Unknown dependency ID")
-    if not shutil.which("pacman"):
-        raise RuntimeError("pacman not found")
-    package = entry["package"]
-    print("\nRusticQ optional dependency installer", flush=True)
-    print("Package:", package, "\nPurpose:", entry["description"], flush=True)
-    print("Official Arch repository packages only. No AUR and no --noconfirm.", flush=True)
-    answer = input("Type INSTALL to continue: ").strip()
-    if answer != "INSTALL":
-        print("Cancelled. No packages changed.")
-        return 1
-    if is_installed(package):
-        print("Already installed.")
-        return 0
-    if shutil.which("omarchy"):
-        print("Omarchy detected. Update with Omarchy's own guarded update command first.", flush=True)
-        result = subprocess.run(["omarchy", "update"], check=False)
-        if result.returncode:
-            print("Omarchy update did not finish. Package installation cancelled.")
-            return result.returncode
-        cmd = ["sudo", "pacman", "-S", "--needed", "--", package]
-    else:
-        # Arch partial upgrades are unsupported, so sync+upgrade with install.
-        cmd = ["sudo", "pacman", "-Syu", "--needed", "--", package]
-    print("Running:", " ".join(cmd), flush=True)
-    result = subprocess.run(cmd, check=False)
-    print("\nExit status:", result.returncode, flush=True)
-    try:
-        input("Press Enter to close this terminal...")
-    except EOFError:
-        pass
-    return result.returncode
+        raise ValueError('Unknown dependency ID')
+    if action not in ('install', 'remove'):
+        raise ValueError('Unsupported GUI action')
+    if action == 'remove' and entry['group'] != 'optional':
+        raise ValueError('Core RusticQ dependencies cannot be removed from Integration')
+    if confirmation != action.upper() + ' ' + dep_id:
+        raise ValueError('Exact ' + action.upper() + ' <id> confirmation required')
+    if is_installed(entry['package']) == (action == 'install'):
+        return {'ok': True, 'message': entry['name'] + ' is already in the requested state.'}
+    # Single policy for both package and dependency installs; no duplicate sudo
+    # paths or terminal launchers.
+    import importlib.util
+    helper = Path(__file__).with_name('rustiq-package-manager.py')
+    spec = importlib.util.spec_from_file_location('rusticq_package_ops', helper)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.graphical_transaction(action, entry['package'])
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["status", "core-packages", "missing-core", "launch", "apply"])
+    parser.add_argument("action", choices=["status", "core-packages", "missing-core", "gui"])
     parser.add_argument("dependency", nargs="?")
+    parser.add_argument("--operation", choices=["install", "remove"], default="install")
     parser.add_argument("--confirm", default="")
     args = parser.parse_args()
     try:
@@ -133,15 +85,10 @@ def main():
             for item in catalogue().values():
                 if item["group"] == "core" and not is_installed(item["package"]):
                     print(item["package"])
-        elif args.action == "launch":
-            print(json.dumps(launch(args.dependency, args.confirm), ensure_ascii=False))
-        else:
-            sys.exit(apply(args.dependency))
+        elif args.action == "gui":
+            print(json.dumps(gui_manage(args.dependency, args.operation, args.confirm), ensure_ascii=False))
     except (ValueError, RuntimeError, OSError, subprocess.TimeoutExpired) as exc:
-        if args.action == "apply":
-            print("ERROR:", exc, file=sys.stderr)
-        else:
-            print(json.dumps({"ok": False, "message": str(exc)}))
+        print(json.dumps({"ok": False, "message": str(exc)}))
         sys.exit(1)
 
 

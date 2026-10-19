@@ -33,3 +33,7 @@ The CLI depends on the managed integration files remaining in place. If those fi
 ## Restore a user-local source update
 
 Stop running RusticQ, inspect `~/.local/state/rusticq/setup-backups/`, and move the correct prior `source-...` directory to `~/.local/share/rusticq/source` after backing up the current install. This does not change Omarchy or its backup.
+
+## Live display change / screen goes black
+
+Changing a display from Settings applies at once but is provisional. Wait 15 seconds; the independent display rollback guard will attempt to restore the prior monitor layout if you do not press **Keep changes**. If Hyprland is still reachable in a terminal, use `python3 scripts/rustiq-display.py revert` in the RusticQ project to restore the pending snapshot immediately. `hyprctl -j monitors` lets you inspect the active outputs. If this also fails, return to a TTY to restore your own persisted monitor configuration. RusticQ does not overwrite your Omarchy monitor files during live changes.

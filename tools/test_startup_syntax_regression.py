@@ -21,9 +21,10 @@ with tempfile.TemporaryDirectory(prefix="rustiq-qml-syntax-") as temporary:
     shutil.copytree(root, temp, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
     target = temp / "modules" / "bar" / "BarMonitors.qml"
     original = target.read_text(encoding="utf-8")
-    needle = '            Text {\n                text: "Open nwg-displays"'
+    needle = '    Text { Layout.fillWidth:true;text:root.status;'
     assert needle in original
-    target.write_text(original.replace(needle, '            ; Text {\n                text: "Open nwg-displays"', 1), encoding="utf-8")
+    # Follow the previous closing `}` with an invalid QML separator.
+    target.write_text(original.replace(needle, '    ; Text { Layout.fillWidth:true;text:root.status;', 1), encoding="utf-8")
     failed = subprocess.run([sys.executable, str(temp / "tools" / "verify-static.py")], capture_output=True, text=True)
     assert failed.returncode != 0, "Checker wrongly accepted an invalid QML declaration separator"
     assert "invalid semicolon between QML object declarations" in failed.stdout, failed.stdout

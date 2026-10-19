@@ -4,12 +4,17 @@ Input is a JSON array on stdin; never invoke a shell or interpolate unchecked te
 The export command writes a standalone snippet; it never overwrites Hyprland config.
 """
 import json
+import os
+import secrets
 import math
 from pathlib import Path
 import re
 import subprocess
 import sys
 import time
+
+PENDING = Path.home() / ".local" / "state" / "rusticq" / "display-pending.json"
+ROLLBACK_SECONDS = 15
 
 NAME = re.compile(r'^[a-zA-Z0-9._:-]{1,80}$')
 MODE = re.compile(r'^(?:preferred|highres|highrr|maxwidth|\d{3,5}x\d{3,5}(?:@\d{1,3}(?:\.\d{1,6})?(?:Hz)?)?)$')
@@ -107,54 +112,161 @@ def apply_with_keyword(specs):
             raise RuntimeError('Hyprland keyword monitor failed: ' + response[:450])
 
 
+def from_active(active):
+    """Use the compositor as the source of truth for safe rollback."""
+    if isinstance(active, dict):
+        values = active.values()
+    else:
+        values = active
+    return [dict(name=str(m['name']), width=m['width'], height=m['height'],
+                 x=round(m['x']), y=round(m['y']), scale=float(m['scale']),
+                 mode=f"{m['width']}x{m['height']}@{float(m.get('refreshRate', 60)):.2f}")
+            for m in values if m.get('name') and m.get('width', 0) > 0]
+
+
+def apply_live(target):
+    """HyprMon-style runtime monitor keyword + Lua alternative for Quattro.
+
+    Verify effective values, never assume 'ok' means Hyprland accepted them.
+    """
+    errors = []
+    methods = [
+        ('keyword', lambda: apply_with_keyword(make_keyword_specs(target))),
+        ('lua', lambda: apply_with_eval(make_lua(target))),
+    ]
+    for label, method in methods:
+        try:
+            method()
+            time.sleep(.25)
+            mismatches = mismatches_for(target, readback())
+            if not mismatches:
+                return label
+            errors.append(label + ': ' + ', '.join(mismatches))
+        except (RuntimeError, subprocess.TimeoutExpired, OSError) as error:
+            errors.append(label + ': ' + str(error)[:260])
+    raise RuntimeError('Live monitor update failed: ' + ' · '.join(errors))
+
+
+def pending_read():
+    try:
+        data = json.loads(PENDING.read_text())
+        return data if isinstance(data, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def pending_write(data):
+    PENDING.parent.mkdir(parents=True, exist_ok=True)
+    temp = PENDING.with_name(PENDING.name + '.' + secrets.token_hex(6) + '.tmp')
+    try:
+        with temp.open('x') as handle:
+            os.chmod(temp, 0o600)
+            json.dump(data, handle)
+        temp.replace(PENDING)
+    finally:
+        temp.unlink(missing_ok=True)
+
+
+def pending_clear(token=None):
+    current = pending_read()
+    if current and (token is None or current.get('token') == token):
+        PENDING.unlink(missing_ok=True)
+
+
+def rollback(data):
+    baseline = validate(data['baseline'])
+    apply_live(baseline)
+    return baseline
+
+
+def watchdog(token):
+    time.sleep(ROLLBACK_SECONDS)
+    data = pending_read()
+    if data and data.get('token') == token:
+        try:
+            rollback(data)
+        except (RuntimeError, OSError, subprocess.TimeoutExpired):
+            # Keep the snapshot on disk so user can run `... revert` manually.
+            return 1
+        pending_clear(token)
+    return 0
+
+
+def launch_watchdog(token):
+    subprocess.Popen([sys.executable, str(Path(__file__).resolve()), 'watch', token],
+                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                     stderr=subprocess.DEVNULL, start_new_session=True,
+                     close_fds=True)
+
+
 def main():
     action = sys.argv[1] if len(sys.argv) > 1 else 'dry-run'
+    if action == 'watch':
+        if len(sys.argv) != 3 or not re.fullmatch('[0-9a-f]{32}', sys.argv[2]):
+            raise ValueError('Invalid watchdog token')
+        return dict(ok=watchdog(sys.argv[2]) == 0)
+    if action == 'keep':
+        if not pending_read():
+            return dict(ok=True, message='No pending display update to keep')
+        pending_clear()
+        return dict(ok=True, message='Display changes kept for this session. Export Lua for persistence.', pending=False)
+    if action == 'revert':
+        data = pending_read()
+        if not data:
+            return dict(ok=True, message='No pending display update to revert', pending=False)
+        rollback(data)
+        pending_clear(data['token'])
+        return dict(ok=True, message='Previous monitor layout restored', pending=False)
+    if action == 'status':
+        return dict(ok=True, pending=bool(pending_read()))
     if action not in ('dry-run', 'apply', 'export'):
         raise ValueError('Unknown action')
-    raw = json.load(sys.stdin)
-    monitors = validate(raw)
-    lua = make_lua(monitors)
+    # Quickshell Process keeps stdin open while it runs: json.load(sys.stdin)
+    # would wait for EOF forever. Read the single newline-framed JSON request.
+    line = sys.stdin.readline(131072)
+    if not line or not line.endswith("\n"):
+        raise ValueError('Display request was empty, incomplete or too large')
+    monitors = validate(json.loads(line))
     if action == 'export':
         target = Path.home() / '.config' / 'rustiq' / 'monitors.lua'
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text('-- Generated by RusticQ Beta 1; source explicitly in Hyprland config to persist.\n' + lua)
+        target.write_text('-- Generated by RusticQ Beta 1; source from Hyprland config to persist.\n' + make_lua(monitors))
         return dict(ok=True, message=f'Exported {target} (does not modify Hyprland config)')
-    if action == 'apply':
-        tried = []
-        eval_error = None
+    if action == 'dry-run':
+        return dict(ok=True, message='Display layout valid', lua=make_lua(monitors))
+
+    before = readback()
+    current = validate(from_active(before))
+    if {x['name'] for x in current} != {x['name'] for x in monitors}:
+        raise RuntimeError('Connected monitors changed. Refresh before applying.')
+    existing = pending_read()
+    baseline = validate(existing['baseline']) if existing else current
+    if not mismatches_for(monitors, before):
+        return dict(ok=True, message='Display settings already active', pending=bool(existing), seconds=max(0, int(ROLLBACK_SECONDS - (time.time() - existing.get('updated', time.time())))) if existing else 0)
+
+    # The original layout is kept until the user presses Keep, and an independent
+    # watchdog reverts it even when Settings closes or Quickshell crashes.
+    token = secrets.token_hex(16)
+    # Arm recovery *before* changing outputs; a helper crash must not leave
+    # a changed layout without its original layout on disk.
+    pending_write(dict(token=token, baseline=baseline, updated=time.time()))
+    try:
+        launch_watchdog(token)
+        method = apply_live(monitors)
+    except (RuntimeError, OSError, subprocess.TimeoutExpired) as error:
         try:
-            apply_with_eval(lua)
-            tried.append('lua')
-        except RuntimeError as e:
-            eval_error = str(e)
-        time.sleep(0.45)
-        active = readback()
-        mismatches = mismatches_for(monitors, active)
-        # Lua-enabled Omarchy rejects the legacy keyword parser, sometimes with exit code 0.
-        # Do not report a false success or mask a Lua error with the rejected fallback.
-        parser = subprocess.run(['hyprctl', 'version'], capture_output=True, text=True, timeout=8)
-        quattro_lua = 'lua' in (parser.stdout + parser.stderr).lower() or (Path.home() / '.config/hypr/hyprland.lua').exists()
-        if (eval_error or mismatches) and not quattro_lua:
-            apply_with_keyword(make_keyword_specs(monitors))
-            tried.append('keyword')
-            time.sleep(0.45)
-            active = readback()
-            mismatches = mismatches_for(monitors, active)
-        if mismatches:
-            detail = ', '.join(mismatches)
-            if eval_error:
-                detail = eval_error + ' · ' + detail
-            raise RuntimeError('Hyprland did not apply: ' + detail + '. Export Lua for persistence or use nwg-displays.')
-        method = ' + '.join(tried) if tried else 'readback'
-        if eval_error and 'keyword' in tried:
-            return dict(ok=True, message='Verified via keyword fallback: layout changed in running session. Export Lua to persist.')
-        return dict(ok=True, message='Verified: layout changed in running session via ' + method + '. Export Lua to persist.')
-    return dict(ok=True, message='Draft validation passed', lua=lua)
+            apply_live(baseline)
+            pending_clear()
+        except (RuntimeError, OSError, subprocess.TimeoutExpired) as revert_error:
+            raise RuntimeError(str(error) + '; automatic rollback also failed: ' + str(revert_error))
+        raise RuntimeError(str(error) + '; previous layout restored')
+    return dict(ok=True, pending=True, seconds=ROLLBACK_SECONDS,
+                message=f'Live via {method}. Keep changes within {ROLLBACK_SECONDS}s or they will revert.')
 
 
 if __name__ == '__main__':
     try:
         print(json.dumps(main()))
-    except (ValueError, RuntimeError, OSError, subprocess.TimeoutExpired, json.JSONDecodeError) as e:
-        print(json.dumps(dict(ok=False, message=str(e))))
+    except (ValueError, RuntimeError, OSError, subprocess.TimeoutExpired, json.JSONDecodeError, KeyError) as error:
+        print(json.dumps(dict(ok=False, message=str(error))))
         sys.exit(1)

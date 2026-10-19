@@ -64,10 +64,10 @@ with tempfile.TemporaryDirectory() as folder:
     result = run('actions')
     registry = result['actions']
     keys = [a['key'] for a in registry]
-    assert len(keys) == len(set(keys)) == 77
+    assert len(keys) == len(set(keys)) == 80
     for action in ('launcher', 'quick', 'ai', 'popup-wifi', 'popup-bluetooth', 'popup-weather',
                    'popup-task', 'menu-tools', 'bar-network', 'bar-menu', 'bar-quick-modes', 'item-file-downloads', 'item-view-clean-compact',
-                   'item-share-start-screen', 'mode-mic', 'settings-shortcuts', 'workspace-2'):
+                   'item-share-start-screen', 'mode-mic', 'settings-shortcuts', 'workspace-2', 'power', 'lock', 'item-shell-power'):
         assert action in keys, action
     bar = {key: set() for key in ("rusticq", "arch", "launcher", "menu", "workspaces", "weather", "time", "date", "bluetooth", "wifi", "battery", "audio", "task", "quickModes", "quickControl", "mic")}
     for record in registry:
@@ -110,4 +110,4 @@ with tempfile.TemporaryDirectory() as folder:
     run('shortcut-revert', '--action', 'launcher')
     assert (hypr / 'bindings.lua').read_text() == original
 
-print('PASS: 77 registered actions, focus routing contracts, per-action backups / restores')
+print('PASS: 80 registered actions, focus routing contracts, per-action backups / restores')

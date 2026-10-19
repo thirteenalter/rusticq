@@ -209,16 +209,10 @@ ColumnLayout {
     }
 
     SettingsSection {
-        heading: "Bar icon alignment · Left / Center / Right"
-        description: "Positions apply only to the currently selected layout mode. Left / Center / Right settings won't change other layouts."
-        symbol: "\ue429"
-        BarAlignmentEditor { Layout.fillWidth: true }
-    }
-
-    SettingsSection {
-        heading: "Icon spacing · Left / Center / Right"
-        description: "Choose a zone and adjust the icons currently assigned to it. Spacing follows icons when they move, with independent values for each bar mode."
+        heading: "Icon spacing & drag ordering · Left / Center / Right"
+        description: "Drag icons onto each other to reorder or across zones to relocate. Below, adjust gap and Before/After spacing. Everything stays independent per bar mode."
         symbol: "\ue8b8"
+        BarAlignmentEditor { Layout.fillWidth: true }
         BarSpacingEditor { Layout.fillWidth: true }
     }
 

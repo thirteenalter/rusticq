@@ -21,7 +21,7 @@ Item {
     property bool hovered: zoneHover.hovered
     readonly property bool showDetails: !clean || SettingsStore.cleanRightMode === "details" ||
         (SettingsStore.cleanRightMode === "hover" && hovered)
-    readonly property var keys: SettingsStore.barIconKeys.filter(k => SettingsStore.placementFor(k) === zone)
+    readonly property var keys: SettingsStore.iconsInZone(zone)
     readonly property var activeKeys: keys.filter(k => isEnabled(k))
     implicitWidth: activeKeys.length ? (vertical ? verticalColumn.implicitWidth + 8 : horizontalRow.implicitWidth + 10) : 0
     implicitHeight: activeKeys.length ? (vertical ? verticalColumn.implicitHeight : Math.max(controlHeight + (separated ? 8 : 0), horizontalRow.implicitHeight + (separated ? 8 : 0))) : 0
@@ -53,6 +53,7 @@ Item {
         case "wifi": return wifiPart;
         case "battery": return batteryPart;
         case "audio": return audioPart;
+        case "notifications": return notificationsPart;
         case "task": return taskPart;
         case "quickModes": return quickModesPart;
         case "quickControl": return controlPart;
@@ -77,6 +78,7 @@ Item {
         case "wifi": return shown("showIndicators") && shown("showWifi");
         case "battery": return shown("showIndicators") && shown("showBattery") && BatteryService.available;
         case "audio": return shown("showIndicators") && shown("showAudio");
+        case "notifications": return shown("showNotificationIcon") && SettingsStore.showNotifications;
         case "task": return shown("showTaskView");
         case "quickModes": return shown("showQuickModes") && ["showKeepAwake", "showSilent", "showGamingMode", "showNightMode", "showMicMute"].some(shown);
         case "quickControl": return shown("showQuickControl");
@@ -272,6 +274,32 @@ Item {
             showValue: !root.vertical
             iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
             onActivated: root.popup("audio", audioZoneIcon)
+        }
+    }
+    Component {
+        id: notificationsPart
+        Rectangle {
+            implicitWidth: root.vertical ? 32 : root.compact ? 29 : 32
+            implicitHeight: root.controlHeight
+            radius: height / 2
+            color: root.clean ? "transparent" : Theme.borderaccent
+            Icon {
+                anchors.centerIn: parent
+                icon: NotificationCenter.doNotDisturb ? "\ue7f6" : "\ue7f4"
+                color: NotificationCenter.unread > 0 ? Theme.accent : Theme.foreground
+                font.pixelSize: Fonts.scale(17)
+            }
+            Rectangle {
+                visible: NotificationCenter.unread > 0
+                anchors.right: parent.right; anchors.top: parent.top
+                width: 7; height: 7; radius: 4
+                color: Theme.accent
+            }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.popup("notifications", parent)
+            }
         }
     }
     Component {

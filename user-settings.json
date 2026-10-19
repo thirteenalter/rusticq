@@ -1,6 +1,6 @@
 {
   "accentName": "green",
-  "colorSource": "gruvbox",
+  "colorSource": "aether",
   "barMode": "clean-compact",
   "barPosition": "top",
   "absoluteCenter": true,
@@ -9,8 +9,11 @@
   "uiCustomFont": "Noto Music",
   "uiFontScale": 1,
   "uiDensity": "comfortable",
+  "desktopProfile": "custom",
+  "desktopProfilePrevious": {},
   "wallpaperPath": "/home/ryznxx/Downloads/Silhouette Amidst the Wildfire Embers.png",
   "wallpaperBackend": "auto",
+  "lockscreenBackground": "solid",
   "showNotifications": true,
   "showLauncher": true,
   "showRusticQIcon": true,
@@ -27,6 +30,11 @@
   "desktopMedia": true,
   "desktopWeather": false,
   "desktopConnectivity": false,
+  "desktopNotes": false,
+  "desktopKanban": false,
+  "desktopRandomImage": false,
+  "widgetImageFolder": "",
+  "widgetImageRotateSeconds": 0,
   "widgetPositions": {
     "HDMI-A-1:media": {
       "x": 0.013082298136645963,
@@ -39,6 +47,74 @@
     "HDMI-A-1:calendar": {
       "x": 0.01155376552795031,
       "y": 0.2448137091898428
+    },
+    "HDMI-A-1:randomImage": {
+      "x": 0.21971429412688442,
+      "y": 0.09792889435279188
+    },
+    "HDMI-A-1:kanban": {
+      "x": 0.23059098285619176,
+      "y": 0.0891202059659091
+    },
+    "HDMI-A-1:notes": {
+      "x": 0.21491653726708074,
+      "y": 0.386195372839053
+    },
+    "HDMI-A-1:notes:3": {
+      "x": 0.21982261274779716,
+      "y": 0.11248951113952373
+    },
+    "HDMI-A-1:kanban:3": {
+      "x": 0.2444846861856421,
+      "y": 0.6050265395444243
+    },
+    "HDMI-A-1:randomImage:3": {
+      "x": 0.2220492490265874,
+      "y": 0.24237062898042727
+    },
+    "eDP-1:media": {
+      "x": 0.011849767080745343,
+      "y": 0.7689487390350878
+    },
+    "eDP-1:system": {
+      "x": 0.01218458850931677,
+      "y": 0.5479781539351852
+    }
+  },
+  "widgetWorkspaceScopes": {
+    "notes": [
+      3
+    ],
+    "kanban": [
+      3
+    ],
+    "randomImage": []
+  },
+  "workspaceNotes": {
+    "HDMI-A-1:2": "",
+    "HDMI-A-1:3": "dick",
+    "HDMI-A-1:4": "",
+    "eDP-1:10": "",
+    "eDP-1:3": "",
+    "eDP-1:2": "",
+    "eDP-1:1": "",
+    "eDP-1:4": "",
+    "eDP-1:5": "",
+    "eDP-1:6": "",
+    "eDP-1:7": ""
+  },
+  "widgetSizes": {
+    "HDMI-A-1:notes:3": {
+      "width": 320,
+      "height": 343
+    },
+    "HDMI-A-1:kanban:3": {
+      "width": 494,
+      "height": 329
+    },
+    "HDMI-A-1:randomImage:3": {
+      "width": 354,
+      "height": 756
     }
   },
   "showDock": true,
@@ -47,7 +123,7 @@
   "dockSettings": false,
   "dockTaskView": true,
   "dockAI": false,
-  "dockRunningApps": false,
+  "dockRunningApps": true,
   "quickControlOrder": [
     "notifications",
     "wifi",
@@ -94,19 +170,23 @@
       },
       "right": {
         "items": {
+          "date": {
+            "before": 3,
+            "after": 3
+          },
           "bluetooth": {
-            "before": 4
+            "before": 0
           },
           "wifi": {
             "before": 9,
-            "after": 4
+            "after": 11
           },
           "battery": {
-            "before": 8,
+            "before": 0,
             "after": 0
           },
           "audio": {
-            "before": 7,
+            "before": 6,
             "after": 3
           },
           "task": {
@@ -214,11 +294,7 @@
     },
     "clean-compact": {
       "arch": "center",
-      "weather": "right",
-      "bluetooth": "right",
-      "quickControl": "right",
-      "mic": "right",
-      "down": "right",
+      "down": "left",
       "up": "left"
     },
     "separated": {
@@ -248,6 +324,29 @@
       "down": "right",
       "up": "left"
     }
+  },
+  "barIconOrderByMode": {
+    "clean-compact": [
+      "arch",
+      "rusticq",
+      "launcher",
+      "menu",
+      "workspaces",
+      "up",
+      "down",
+      "weather",
+      "time",
+      "date",
+      "bluetooth",
+      "wifi",
+      "battery",
+      "audio",
+      "notifications",
+      "task",
+      "quickModes",
+      "quickControl",
+      "mic"
+    ]
   },
   "barIconVisibilityProfiles": {
     "compact": {
@@ -289,7 +388,7 @@
       "showWorkspaces": true,
       "showQuickControl": true,
       "showTaskView": true,
-      "showWeather": true,
+      "showWeather": false,
       "showTime": true,
       "showDate": true,
       "showWifi": true,
@@ -419,6 +518,7 @@
   "showBattery": true,
   "showAudio": true,
   "showQuickControl": true,
+  "showNotificationIcon": true,
   "quickControlButtonStyle": "filled",
   "showWeather": true,
   "showWorkspaces": true,
@@ -433,6 +533,6 @@
   "showMicrophoneStatus": false,
   "showDownloadSpeed": false,
   "showUploadSpeed": false,
-  "aiProvider": "gemini",
-  "aiModel": "gemini-2.5-flash"
+  "aiProvider": "openai",
+  "aiModel": "gpt-4.1-mini"
 }

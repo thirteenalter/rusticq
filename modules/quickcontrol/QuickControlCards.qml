@@ -71,7 +71,7 @@ Item {
                         if (modelData === "wifi") return widget && widget.expanded ? 350 : 68;
                         if (modelData === "bluetooth") return widget && widget.expanded ? 300 : 68;
                         if (modelData === "battery") return widget && widget.expanded ? 330 : 68;
-                        if (modelData === "notifications") return widget && widget.expanded ? Math.min(410, Math.max(260, 188 + NotificationCenter.history.length * 76 + (NotificationCenter.receivesSystemNotifications ? 0 : 110))) : 68;
+                        if (modelData === "notifications") return widget && widget.expanded ? Math.min(575, Math.max(445, 305 + NotificationCenter.history.length * 112 + (NotificationCenter.receivesSystemNotifications ? 0 : 122))) : 68;
                         return 222;
                     }
                     readonly property bool highlighted: Store.quickReorderMode && root.dragSelection === index

@@ -405,4 +405,174 @@ ColumnLayout {
         }
     }
 
+    SettingsSection {
+        id: rusticqLockSection
+        heading: "RusticQ Lock Screen"
+        description: "Custom QML native lockscreen secured with Wayland WlSessionLock and Linux PAM. Omarchy configuration and ASCII screensaver remain untouched."
+        symbol: "\ue899"
+        property string lockMessage: "The test button locks the real session. Unlock using your Linux account password."
+        property bool lockSuccess: true
+        Process {
+            id: rusticqLockProcess
+            stdout: StdioCollector { onStreamFinished: {
+                try {
+                    const response = JSON.parse(this.text.trim());
+                    rusticqLockSection.lockSuccess = response.ok === true;
+                    rusticqLockSection.lockMessage = response.message || "No result from the native locker";
+                } catch(e) {
+                    rusticqLockSection.lockSuccess = false;
+                    rusticqLockSection.lockMessage = "Lock screen backend error: " + String(e);
+                }
+            } }
+        }
+        // Visual preview shares the same geometry, tokens, and content hierarchy
+        // as the WlSessionLockSurface. No password, focus or simulated unlock.
+        Rectangle {
+            id: nativeLockPreview
+            Layout.fillWidth: true
+            Layout.preferredHeight: 268
+            radius: Theme.sectionRadius
+            color: Theme.background
+            border.color: Theme.borderaccent
+            border.width: 1
+            clip: true
+            Image {
+                anchors.fill: parent
+                visible: SettingsStore.lockscreenBackground === "wallpaper" &&
+                         String(SettingsStore.wallpaperPath).startsWith("/") && status === Image.Ready
+                source: SettingsStore.lockscreenBackground === "wallpaper" && String(SettingsStore.wallpaperPath).startsWith("/")
+                        ? "file://" + SettingsStore.wallpaperPath : ""
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+            }
+            Rectangle { anchors.fill: parent; color: Qt.alpha(Theme.background, .90) }
+            Item {
+                anchors.fill: parent
+                anchors.margins: 14
+                Rectangle {
+                    id: previewBrand
+                    anchors.left: parent.left; anchors.top: parent.top
+                    width: 27; height: 27; radius: 9
+                    color: Qt.alpha(Theme.accent, .14)
+                    Icon { anchors.centerIn: parent; icon: "\ue899"; color: Theme.accent; font.pixelSize: Fonts.scale(15) }
+                }
+                Column {
+                    anchors.left: previewBrand.right; anchors.leftMargin: 8
+                    anchors.verticalCenter: previewBrand.verticalCenter; spacing: 0
+                    Text { text: "RusticQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                    Text { text: "Secure session"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(8) }
+                }
+                Rectangle {
+                    anchors.top: parent.top; anchors.right: parent.right
+                    width: 63; height: 24; radius: 8
+                    color: Theme.surface; border.width: 1; border.color: Theme.borderaccent
+                    Text { anchors.centerIn: parent; text: "LOCKED"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(8) }
+                }
+                Column {
+                    id: previewMain
+                    width: Math.min(270, parent.width - 10)
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.verticalCenterOffset: 12
+                    spacing: 8
+                    Column {
+                        width: parent.width; spacing: 0
+                        Text { anchors.horizontalCenter: parent.horizontalCenter; text: Qt.formatTime(new Date(), "hh:mm"); color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(27) }
+                        Text { anchors.horizontalCenter: parent.horizontalCenter; text: Qt.formatDate(new Date(), "ddd, d MMM yyyy"); color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(8) }
+                    }
+                    Rectangle {
+                        width: parent.width
+                        height: 112
+                        color: Theme.background
+                        radius: 12
+                        border.width: 1
+                        border.color: Theme.borderaccent
+                        Item {
+                            anchors.fill: parent
+                            anchors.margins: 11
+                            Rectangle {
+                                id: miniAvatar
+                                x: 0; y: 0; width: 27; height: 27; radius: 8
+                                color: Qt.alpha(Theme.accent, .14)
+                                Icon { anchors.centerIn: parent; icon: "\ue853"; color: Theme.accent; font.pixelSize: Fonts.scale(15) }
+                            }
+                            Column {
+                                anchors.left: miniAvatar.right; anchors.leftMargin: 8
+                                anchors.verticalCenter: miniAvatar.verticalCenter; spacing: 1
+                                Text { text: "Welcome back"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(9) }
+                                Text { text: "Linux account"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(8) }
+                            }
+                            Rectangle {
+                                anchors.left: parent.left; anchors.right: parent.right
+                                y: 36; height: 1; color: Theme.borderaccent
+                            }
+                            Rectangle {
+                                y: 44; width: parent.width; height: 24; radius: 7
+                                color: Theme.surface; border.width: 1; border.color: Theme.borderaccent
+                                Text { anchors.left: parent.left; anchors.leftMargin: 9; anchors.verticalCenter: parent.verticalCenter; text: "••••••••"; color: Theme.muted; font.pixelSize: Fonts.scale(8) }
+                            }
+                            Rectangle {
+                                y: 74; width: parent.width; height: 21; radius: 7; color: Theme.accent
+                                Text { anchors.centerIn: parent; text: "Unlock session →"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(8) }
+                            }
+                        }
+                    }
+                }
+                Text {
+                    anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Wayland session lock  ·  Linux PAM"
+                    color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(8)
+                }
+            }
+        }
+        Text { Layout.fillWidth: true; text: "Preview follows your current RusticQ palette, font, and lock background."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+        Text { text: "Lock background"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            Repeater {
+                model: [{name:"solid",title:"Solid · private"}, {name:"wallpaper",title:"Current wallpaper"}]
+                delegate: Rectangle {
+                    id: lockStyle
+                    required property var modelData
+                    readonly property bool chosen: SettingsStore.lockscreenBackground === modelData.name
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 38
+                    radius: 9
+                    color: chosen ? Qt.alpha(Theme.accent, .14) : Theme.background
+                    border.color: chosen ? Theme.accent : Theme.borderaccent
+                    border.width: 1
+                    Text { anchors.centerIn:parent; text:lockStyle.modelData.title; color: Theme.foreground; font.family:Fonts.poppins.name; font.pixelSize:Fonts.scale(11) }
+                    MouseArea { anchors.fill:parent; cursorShape:Qt.PointingHandCursor; onClicked: {
+                        SettingsStore.lockscreenBackground = lockStyle.modelData.name;
+                        SettingsStore.save();
+                    } }
+                }
+            }
+        }
+        RowLayout {
+            Layout.fillWidth: true; spacing: 8
+            Rectangle {
+                Layout.fillWidth: true; Layout.preferredHeight: 42; radius: 10
+                color: Theme.background
+                RowLayout { anchors.centerIn: parent; spacing: 8
+                    Icon { icon: "\ue889"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
+                    Text { text: "Check native lock"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: if (!rusticqLockProcess.running) rusticqLockProcess.exec(["python3",Quickshell.shellPath("scripts/rusticq-native-lock.py"),"prepare"]) }
+            }
+            Rectangle {
+                Layout.fillWidth: true; Layout.preferredHeight: 42; radius: 10
+                color: Theme.accent
+                RowLayout { anchors.centerIn: parent; spacing: 8
+                    Icon { icon: "\ue899"; color: Theme.background; font.pixelSize: Fonts.scale(18) }
+                    Text { text: "Lock now"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: if (!rusticqLockProcess.running) rusticqLockProcess.exec(["python3",Quickshell.shellPath("scripts/rusticq-native-lock.py"),"start"]) }
+            }
+        }
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Native mode needs Quickshell 0.3.1+, Wayland, and system PAM login policy. A separate Quickshell process provides the secure lock surface. Hyprlock remains an explicit emergency fallback via the CLI; neither Omarchy nor PAM files are overwritten."; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: rusticqLockSection.lockMessage; color: rusticqLockSection.lockSuccess ? Theme.muted : Theme.error; font.pixelSize: Fonts.scale(10) }
+    }
+
 }

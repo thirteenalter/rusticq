@@ -6,7 +6,7 @@ This is a **functional map of the current source**, not a promise that every mod
 
 | Feature group | Features | Source |
 | --- | --- | --- |
-| Bar modes | Compact, Clean Compact, Separated, Professional, Simple. Independent icon visibility/placement/spacing profiles. | `modules/bar/`, `modules/settings/pages/SettingsBarPage.qml`, `config/SettingsStore.qml` |
+| Bar modes | Compact, Clean Compact, Separated, Professional, Simple. Independent icon visibility/placement/spacing/order profiles with drag-and-drop reordering. | `modules/bar/`, `modules/settings/pages/SettingsBarPage.qml`, `config/SettingsStore.qml` |
 | Position and sizing | Top/Bottom/Left/Right bar, margins, monitor layout, icon spacing and alignment. | `modules/main/Bar.qml`, `modules/main/VerticalBarContent.qml`, bar settings pages |
 | Primary controls | RusticQ menu, launcher, AI, editable menu bar, workspace buttons, Quick Modes, Quick Control. | `modules/main/ContextMenu.qml`, `components/QuickModes.qml`, `components/Workspaces.qml` |
 | Status items | Weather, clock, calendar, network (Wi-Fi/Ethernet), Bluetooth, battery, audio, microphone and task access. | `components/`, `modules/bar/`, `modules/main/IndicatorPopup.qml` |
@@ -18,7 +18,7 @@ This is a **functional map of the current source**, not a promise that every mod
 | --- | --- | --- |
 | App Launcher | Search, launch, app presentation and sizing. | `modules/main/LauncherOverlay.qml`, `modules/main/MiniLauncher.qml` |
 | Dock | App shortcuts, running-app representation, auto-hide options. | `modules/main/RusticDock.qml`, `modules/settings/pages/SettingsDockPage.qml` |
-| Desktop widgets | Clock, date/calendar, weather, hardware stats, media and connectivity cards. | `modules/main/DesktopWidgets.qml`, `modules/main/DesktopWidgetWindow.qml` |
+| Desktop widgets | Clock, date/calendar, weather, hardware stats, media, connectivity, Notes, Kanban and locally randomized photo cards. | `modules/main/DesktopWidgets.qml`, `modules/main/DesktopWidgetWindow.qml` |
 | Monitoring | CPU/memory/disk/network graphs, process manager, task/dashboard views. | `modules/main/SystemMonitorWindow.qml`, `modules/main/SystemDashboard.qml`, `modules/process/` |
 | Notifications | Toasts, history and presentation. | `modules/main/NotificationToasts.qml`, `services/NotificationCenter.qml` |
 | Media and capture | Player cards, media controls; screenshots and screen recording when their tools are installed. | `modules/main/MiniAudio.qml`, `scripts/rustiq-capture.sh`, `scripts/rustiq-record.py` |
@@ -56,3 +56,34 @@ A feature is **optional** if its helper can be missing while the shell starts. I
 - Settings: persistent scrollbars for sidebar and content; the 1100×760 window size remains unchanged.
 - Audio: compact popup margin, advanced real output and microphone peaks and a user-initiated quiet test tone.
 - Remote installer: GitHub-hosted `scripts/install.sh` now bootstraps full source for `curl | bash` use once pushed to main.
+
+## Beta 1 Phase 2 — Integrated Launcher Tools
+
+- `:settings QUERY` — search existing RusticQ Settings destinations. Uses the existing `Store.showSettings` navigation.
+- `:emoji QUERY` — bounded local emoji/symbol catalog, optional `wl-clipboard` for selected copy.
+- `:wallpaper QUERY` — read-only local image search under `$HOME/Pictures` and wallpaper subdirectories. Selecting an image invokes the existing wallpaper service. No automatic indexing or wallpaper edits while searching.
+- `:color` — explicitly launched `hyprpicker`, copies validated HEX to clipboard, displays RGB/HSL breakdown in optional notification.
+- `:ocr` — explicitly selected region; `slurp → grim → tesseract → wl-copy` with no cloud APIs, history or background OCR.
+- `=NUMBER UNIT to UNIT` — dimensional unit conversion with a fixed safe conversion table.
+- Typo-tolerant application name search, preserving existing usage/pinned ranking for ties.
+- Feature-specific optional dependencies appear in Integration; builds are reproducible source archives using `tools/build-release.py`.
+
+The emoji catalog is not the full Unicode database, wallpaper listing is textual rather than thumbnails, and runtime Wayland tests still require the target desktop.
+
+## Beta 1 Phase 3 — Additional functional components
+
+- Local-only file/folder launcher providers, Hyprland live window/workspace search/focus.
+- Private, atomic Notes & Kanban backend (`scripts/rusticq-notes.py`), Settings task board and launcher commands.
+- Native stream-level PipeWire mixer within existing Advanced Audio (lazy binding).
+- On-demand group-by-app display for the existing notification history, expandable without losing original actions.
+- Desktop UI profiles (Gaming/Coding/Battery/Presentation) with restore previous in Modules.
+
+See `docs/audit/BETA1-PHASE3-REPORT.md` for feature status, limitations, conflicts and live tests.
+
+## Phase 4 widget + icon editor extensions
+
+- `modules/main/DesktopNotesCard.qml` — shared notes.json board/list, active only when desktop Notes or Kanban enabled; no new daemon.
+- `modules/main/DesktopRandomImageCard.qml` — local-only image slideshow (manual and optional timed rotation).
+- `scripts/rusticq-widget-images.py` — safe bounded image chooser, symlink rejection and home-directory restriction.
+- `modules/settings/pages/BarAlignmentEditor.qml` — drag-and-drop icon tiles with precise move controls in the **Icon spacing** section; `SettingsStore.barIconOrderByMode` is read by `components/BarZone.qml`.
+- The global appearance/theme, Quick Modes and keyboard bindings are unchanged; all widget toggles default to off.

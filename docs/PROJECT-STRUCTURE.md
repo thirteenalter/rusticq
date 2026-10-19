@@ -57,3 +57,13 @@ quickshell/
 Do not interchange the last two backups: they restore different things.
 
 Beta 1 includes `modules/main/PackageConfirmationWindow.qml` (separate confirmation layer) and `scripts/rustiq-audio-test.sh` (user-triggered quiet speaker test).
+
+## Phase 3 extensions
+
+- `scripts/rusticq-desktop-search.py`: bounded home file discovery and Hyprland client/workspace search; on-demand only.
+- `scripts/rusticq-notes.py`: local private Notes/Kanban store (atomic writes, file lock).
+- `modules/settings/pages/SettingsNotesPage.qml`: three-column note editor, no second Settings application.
+- `modules/main/MiniAudio.qml`: per-app PipeWire mixer uses existing native service.
+- `services/NotificationCenter.qml`: on-demand group display computed from original notification history.
+
+Phase 4: DesktopNotesCard and DesktopRandomImageCard live under `modules/main/`; both reuse DesktopWidgetWindow, not new Wayland-layer implementations. `scripts/rusticq-widget-images.py` selects local images with bounded `os.scandir` and refuses symlinks. Store.notesChanged synchronizes the Settings Kanban view with both desktop cards; the only persisted notes remain in `~/.local/state/rusticq/notes.json`. Per-mode order is stored in `barIconOrderByMode` within the existing settings JSON; missing keys fall back to the previous default ordering.

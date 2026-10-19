@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Hyprland
 import Quickshell.Services.Mpris
 import "../../config"
 import "../../services"
@@ -11,18 +12,38 @@ import "../../components"
 // Each card measures its own content; overflow scrolls on short displays.
 PanelWindow {
     id: desktop
-    visible: (kind === "calendar" && SettingsStore.desktopCalendar) ||
+    // On the Bottom layer these windows would otherwise appear on ALL
+    // workspaces. Filter using this monitor's active workspace, not global
+    // focusedWorkspace (which is incorrect on dual-monitor setups).
+    readonly property var hyprMonitor: screen ? Hyprland.monitorFor(screen) : null
+    readonly property int activeWorkspaceId: hyprMonitor && hyprMonitor.activeWorkspace ? hyprMonitor.activeWorkspace.id : -1
+    readonly property bool interactiveWidget: kind === "notes" || kind === "kanban" || kind === "randomImage"
+    readonly property bool workspaceAllowed: !interactiveWidget || SettingsStore.widgetAllowedOnWorkspace(kind, activeWorkspaceId)
+    focusable: interactiveWidget
+    visible: workspaceAllowed && ((kind === "calendar" && SettingsStore.desktopCalendar) ||
              (kind === "system" && SettingsStore.desktopSystem) ||
              (kind === "clock" && SettingsStore.desktopClock) ||
              (kind === "media" && SettingsStore.desktopMedia) ||
              (kind === "weather" && SettingsStore.desktopWeather) ||
-             (kind === "connectivity" && SettingsStore.desktopConnectivity)
+             (kind === "connectivity" && SettingsStore.desktopConnectivity) ||
+             (kind === "notes" && SettingsStore.desktopNotes) ||
+             (kind === "kanban" && SettingsStore.desktopKanban) ||
+             (kind === "randomImage" && SettingsStore.desktopRandomImage))
     anchors { top: true; left: true }
     property string kind: "clock"
-    readonly property var storedPosition: SettingsStore.widgetPosition(kind, screen ? screen.name : "")
+    readonly property var storedPosition: SettingsStore.widgetPosition(kind, screen ? screen.name : "", activeWorkspaceId)
+    readonly property var customSize: interactiveWidget ? SettingsStore.widgetSize(kind, screen ? screen.name : "", activeWorkspaceId) : null
+    property real resizedWidth: -1
+    property real resizedHeight: -1
+    function saveSize() {
+        SettingsStore.setWidgetSize(kind, screen ? screen.name : "", activeWorkspaceId, implicitWidth, implicitHeight);
+        resizedWidth = -1;
+        resizedHeight = -1;
+    }
     readonly property var defaultPoint: ({
         clock: [20,76], calendar: [20,210], system: [20,510],
-        media: [342,76], weather: [342,290], connectivity: [342,450]
+        media: [342,76], weather: [342,290], connectivity: [342,450],
+        notes: [665,76], kanban: [665,340], randomImage: [1000,76]
     })[kind] || [20,76]
     readonly property real maxX: Math.max(0, (screen ? screen.width : 1280) - implicitWidth - 8)
     readonly property real maxY: Math.max(0, (screen ? screen.height : 900) - implicitHeight - 8)
@@ -36,15 +57,18 @@ PanelWindow {
     margins.top: Math.round(positionY)
     function savePosition() {
         SettingsStore.setWidgetPosition(kind, screen ? screen.name : "",
-            maxX > 0 ? positionX/maxX : 0, maxY > 0 ? positionY/maxY : 0);
+            maxX > 0 ? positionX/maxX : 0, maxY > 0 ? positionY/maxY : 0, activeWorkspaceId);
         previewX = -1;
         previewY = -1;
     }
     exclusionMode: ExclusionMode.Ignore
     aboveWindows: false
     WlrLayershell.layer: WlrLayer.Bottom
-    implicitWidth: 302
-    implicitHeight: Math.max(95, Math.min(cards.implicitHeight,
+    implicitWidth: resizedWidth >= 0 ? Math.round(resizedWidth) : customSize ? customSize.width :
+        kind === "kanban" ? 410 : kind === "randomImage" ? 320 : kind === "notes" ? 340 : 302
+    implicitHeight: resizedHeight >= 0 ? Math.round(resizedHeight) : customSize ? customSize.height :
+        interactiveWidget ? (kind === "notes" ? 270 : kind === "kanban" ? 235 : 285) :
+        Math.max(95, Math.min(cards.implicitHeight,
         desktop.screen ? Math.max(95, desktop.screen.height - 24) : 750))
     color: "transparent"
 
@@ -59,8 +83,10 @@ PanelWindow {
     Item {
         id: dragHandle
         z: 20
-        x: 0; y: 0
-        width: desktop.width
+        // Dragging is reserved for this handle, not an invisible full-width
+        // layer stealing presses from TextInput, Kanban buttons or text selection.
+        x: desktop.width - 36; y: 0
+        width: 36
         height: 34
         // DragHandle is always on the top heading, not on media controls.
         DragHandler {
@@ -85,12 +111,36 @@ PanelWindow {
         }
         Icon {
             anchors.right: parent.right
-            anchors.rightMargin: 13
+            anchors.rightMargin: 9
             anchors.verticalCenter: parent.verticalCenter
             icon: "\ue25d"
             color: Theme.muted
             opacity: 0.8
             font.pixelSize: Fonts.scale(14)
+        }
+    }
+    // Resize grip. It only receives pointer gestures from the bottom-right
+    // corner; widgets can be resized independently for each workspace.
+    Item {
+        visible: desktop.interactiveWidget
+        z: 40
+        width: 29; height: 29
+        anchors.right: parent.right; anchors.bottom: parent.bottom
+        Icon { anchors.centerIn: parent; icon: "\ue3c6"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
+        DragHandler {
+            target: null
+            acceptedButtons: Qt.LeftButton
+            property real startWidth: 0
+            property real startHeight: 0
+            onActiveChanged: {
+                if (active) { startWidth = desktop.implicitWidth; startHeight = desktop.implicitHeight; }
+                else if (desktop.resizedWidth >= 0) desktop.saveSize();
+            }
+            onTranslationChanged: {
+                if (!active) return;
+                desktop.resizedWidth = Math.max(250, Math.min(1050, startWidth + translation.x));
+                desktop.resizedHeight = Math.max(145, Math.min(800, startHeight + translation.y));
+            }
         }
     }
     Flickable {
@@ -103,6 +153,29 @@ PanelWindow {
             id: cards
             width: desktop.width
             spacing: 0
+
+            Loader {
+                active: desktop.kind === "notes"
+                visible: active
+                Layout.fillWidth: true
+                Layout.preferredHeight: active ? Math.max(165, desktop.height) : 0
+                sourceComponent: DesktopScratchpadCard {
+                    monitorName: desktop.screen ? desktop.screen.name : ""
+                    workspaceId: desktop.activeWorkspaceId
+                }
+            }
+            Loader {
+                active: desktop.kind === "kanban"
+                visible: active
+                Layout.fillWidth: true
+                sourceComponent: DesktopNotesCard { boardKind: "kanban" }
+            }
+            Loader {
+                active: desktop.kind === "randomImage"
+                visible: active
+                Layout.fillWidth: true
+                sourceComponent: DesktopRandomImageCard {}
+            }
 
             Rectangle {
                 visible: desktop.kind === "clock"

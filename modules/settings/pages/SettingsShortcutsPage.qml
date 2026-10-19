@@ -34,6 +34,8 @@ ColumnLayout {
     property string selectedRemapId: ""
     property string filterText: ""
     property string combo: "SUPER + SHIFT + R"
+    property bool confirmedRecoveryOverride: false
+    readonly property bool recoveryCombo: combo.replace(/\s/g, "").toUpperCase() === "SUPER+ESCAPE" || combo.replace(/\s/g, "").toUpperCase() === "SUPER+BACKSPACE"
     property string action: "settings"
     property string feedback: ""
     property bool successful: true
@@ -44,6 +46,11 @@ ColumnLayout {
     function refresh() { if (!listProc.running) listProc.exec(["python3", helper, "bindings"]); if (!statusProc.running) statusProc.exec(["python3", helper, "status"]); }
     function change(verb, selectedAction) {
         if (busy || commandProc.running) return;
+        if (verb === "shortcut" && recoveryCombo && !confirmedRecoveryOverride) {
+            successful = false;
+            feedback = "Confirm replacement of the recovery shortcut before applying. Original source will be backed up.";
+            return;
+        }
         busy = true;
         const cmd = ["python3", helper, verb];
         if (verb === "shortcut") cmd.push("--key", combo, "--action", action);
@@ -167,7 +174,24 @@ ColumnLayout {
         Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Choose a RusticQ action and a key, then apply. Existing shortcuts on that key are temporarily masked; original source lines remain untouched."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
         Rectangle {
             Layout.fillWidth: true; Layout.preferredHeight: 43; radius: 10; color: Theme.background
-            TextInput { anchors.fill: parent; anchors.margins: 11; verticalAlignment: TextInput.AlignVCenter; text: root.combo; color: Theme.foreground; selectByMouse: true; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); onTextEdited: root.combo = text }
+            TextInput { anchors.fill: parent; anchors.margins: 11; verticalAlignment: TextInput.AlignVCenter; text: root.combo; color: Theme.foreground; selectByMouse: true; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); onTextEdited: { root.combo = text; root.confirmedRecoveryOverride = false; } }
+        }
+        RowLayout {
+            visible: root.recoveryCombo
+            Layout.fillWidth: true
+            spacing: 10
+            Rectangle {
+                Layout.preferredWidth: 25; Layout.preferredHeight: 25; radius: 7
+                color: root.confirmedRecoveryOverride ? Qt.alpha(Theme.accent, .20) : Theme.surface
+                border.width: 1; border.color: root.confirmedRecoveryOverride ? Theme.accent : Theme.warning
+                Text { anchors.centerIn: parent; text: root.confirmedRecoveryOverride ? "✓" : "!"; color: root.confirmedRecoveryOverride ? Theme.accent : Theme.warning; font.pixelSize: Fonts.scale(14) }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.confirmedRecoveryOverride = !root.confirmedRecoveryOverride }
+            }
+            Text {
+                Layout.fillWidth: true; wrapMode: Text.WordWrap
+                text: "I understand: overriding SUPER+ESCAPE/BACKSPACE replaces Omarchy's recovery binding. Save an original backup first. Restore using Settings or CLI if needed."
+                color: Theme.warning; font.pixelSize: Fonts.scale(10)
+            }
         }
         Text { text: "Action · " + (root.selectedAction ? root.selectedAction.name + " / " + root.selectedAction.category : root.action); color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
         Rectangle {

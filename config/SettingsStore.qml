@@ -17,8 +17,50 @@ Singleton {
     property string uiCustomFont: ""
     property real uiFontScale: 1.0
     property string uiDensity: "comfortable"
+    // Desktop-level presets intentionally do not force privileged power profiles,
+    // lock/idle settings, wallpaper services, or third-party theme agents.
+    property string desktopProfile: "custom"
+    property var desktopProfilePrevious: ({})
+    readonly property var desktopProfileKeys: ["barMode", "showNotifications", "desktopSystem", "showDock", "uiDensity", "launcherLayoutMode"]
+    readonly property var desktopProfilePresets: ({
+        coding: {barMode:"compact", showNotifications:true, desktopSystem:true, showDock:true, uiDensity:"compact", launcherLayoutMode:"compact"},
+        gaming: {barMode:"simple", showNotifications:false, desktopSystem:false, showDock:false, uiDensity:"compact", launcherLayoutMode:"compact"},
+        battery: {barMode:"simple", showNotifications:true, desktopSystem:false, showDock:false, uiDensity:"compact", launcherLayoutMode:"clean-hover"},
+        presentation: {barMode:"clean-compact", showNotifications:false, desktopSystem:false, showDock:false, uiDensity:"comfortable", launcherLayoutMode:"clean-hover"}
+    })
+    function applyDesktopProfile(profile) {
+        if (!Object.prototype.hasOwnProperty.call(desktopProfilePresets, profile)) return false;
+        const previous = {};
+        for (const key of desktopProfileKeys) previous[key] = root[key];
+        // Snapshot only when entering a preset from a non-preset state.
+        if (desktopProfile === "custom" || !desktopProfilePrevious || !Object.keys(desktopProfilePrevious).length)
+            desktopProfilePrevious = previous;
+        const data = desktopProfilePresets[profile];
+        for (const key of desktopProfileKeys) root[key] = data[key];
+        desktopProfile = profile;
+        save();
+        return true;
+    }
+    function restoreDesktopProfile() {
+        if (desktopProfile === "custom") return;
+        if (desktopProfilePrevious && Object.keys(desktopProfilePrevious).length) {
+            for (const key of desktopProfileKeys) {
+                const value = desktopProfilePrevious[key];
+                if (key === "barMode" && spacingModes.indexOf(value) < 0) continue;
+                if (key === "uiDensity" && ["compact", "comfortable"].indexOf(value) < 0) continue;
+                if (key === "launcherLayoutMode" && ["compact", "clean-hover"].indexOf(value) < 0) continue;
+                if (typeof value === "boolean" || typeof value === "string") root[key] = value;
+            }
+        }
+        desktopProfile = "custom";
+        desktopProfilePrevious = ({});
+        save();
+    }
     property string wallpaperPath: ""
     property string wallpaperBackend: "auto"
+    // RusticQ Native Lock uses WlSessionLock/PAM; the original Omarchy lock/idle
+    // configuration stays untouched. Solid is safest for privacy by default.
+    property string lockscreenBackground: "solid" // solid | wallpaper
     property bool showNotifications: true
     property bool showLauncher: true
     property bool showRusticQIcon: true
@@ -53,16 +95,83 @@ Singleton {
     property bool desktopClock: false
     property bool desktopMedia: false
     property bool desktopWeather: false
+    property bool desktopNotes: false
+    property bool desktopKanban: false
+    property bool desktopRandomImage: false
+    property string widgetImageFolder: "" // Empty: user Pictures folder, nothing fetched online.
+    property int widgetImageRotateSeconds: 0 // 0 = manual only; 60 / 300 / 900 allowed
     property bool desktopConnectivity: false
     // Per-monitor widget positions in normalized available screen space (0..1).
+    // Opt-in per-workspace visibility. Widget windows remain on the Bottom
+    // layer; they are hidden on every nonselected workspace of their monitor.
+    // Default WS1 for freshly activated interactive widgets.
+    property var widgetWorkspaceScopes: ({notes:[1], kanban:[1], randomImage:[1]})
+    function widgetAllowedOnWorkspace(kind, workspace) {
+        if (!Number.isInteger(workspace) || workspace < 1) return false;
+        const scope = widgetWorkspaceScopes[kind];
+        return Array.isArray(scope) && scope.indexOf(workspace) !== -1;
+    }
+    function setWidgetWorkspace(kind, workspace, show) {
+        if (["notes", "kanban", "randomImage"].indexOf(kind) < 0 ||
+            !Number.isInteger(workspace) || workspace < 1 || workspace > 10) return;
+        const next = Object.assign({}, widgetWorkspaceScopes);
+        const arr = Array.isArray(next[kind]) ? next[kind].slice() : [1];
+        const at = arr.indexOf(workspace);
+        if (show && at < 0) arr.push(workspace);
+        if (!show && at >= 0) arr.splice(at, 1);
+        next[kind] = arr.sort((a,b)=>a-b);
+        widgetWorkspaceScopes = next;
+        save();
+    }
+    // A plain-text scratchpad per monitor/workspace, independent of the task
+    // board backend. Stored locally with the normal existing settings file.
+    property var workspaceNotes: ({})
+    function workspaceNoteKey(monitor, workspace) {
+        return String(monitor || "default") + ":" + String(workspace);
+    }
+    function workspaceNote(monitor, workspace) {
+        return workspaceNotes[workspaceNoteKey(monitor, workspace)] || "";
+    }
+    function setWorkspaceNote(monitor, workspace, text) {
+        if (!Number.isInteger(workspace) || workspace < 1 || workspace > 10 ||
+            typeof text !== "string") return;
+        const key = workspaceNoteKey(monitor, workspace);
+        const all = Object.assign({}, workspaceNotes);
+        all[key] = text.slice(0, 30000);
+        workspaceNotes = all;
+        save();
+    }
+    property var widgetSizes: ({})
+    function widgetSize(kind, monitor, workspace) {
+        return widgetSizes[widgetKey(kind, monitor) + ":" + String(workspace)] || null;
+    }
+    function setWidgetSize(kind, monitor, workspace, width, height) {
+        if (["notes", "kanban", "randomImage"].indexOf(kind) < 0 ||
+            !Number.isInteger(workspace) || workspace < 1 || workspace > 10 ||
+            !Number.isFinite(width) || !Number.isFinite(height)) return;
+        const all = Object.assign({}, widgetSizes);
+        all[widgetKey(kind, monitor) + ":" + String(workspace)] = {
+            width: Math.round(Math.max(250, Math.min(1050, width))),
+            height: Math.round(Math.max(145, Math.min(800, height)))
+        };
+        widgetSizes = all;
+        save();
+    }
     property var widgetPositions: ({})
     function widgetKey(kind, monitor) { return String(monitor || "default") + ":" + kind; }
-    function widgetPosition(kind, monitor) { return widgetPositions[widgetKey(kind, monitor)] || null; }
-    function setWidgetPosition(kind, monitor, x, y) {
-        if (["clock", "calendar", "system", "media", "weather", "connectivity"].indexOf(kind) < 0) return;
+    function widgetPosition(kind, monitor, workspace) {
+        const base = widgetKey(kind, monitor);
+        if (Number.isInteger(workspace) && workspace > 0 && ["notes","kanban","randomImage"].indexOf(kind) >= 0)
+            return widgetPositions[base + ":" + String(workspace)] || widgetPositions[base] || null;
+        return widgetPositions[base] || null;
+    }
+    function setWidgetPosition(kind, monitor, x, y, workspace) {
+        if (["clock", "calendar", "system", "media", "weather", "connectivity", "notes", "kanban", "randomImage"].indexOf(kind) < 0) return;
         if (!Number.isFinite(x) || !Number.isFinite(y)) return;
         const copy = Object.assign({}, widgetPositions);
-        copy[widgetKey(kind, monitor)] = {x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y))};
+        const perWorkspace = Number.isInteger(workspace) && workspace > 0 && ["notes","kanban","randomImage"].indexOf(kind) >= 0;
+        const key = widgetKey(kind, monitor) + (perWorkspace ? ":" + String(workspace) : "");
+        copy[key] = {x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y))};
         widgetPositions = copy;
         save();
     }
@@ -130,16 +239,110 @@ Singleton {
     // RC2: persistent alignment for every bar item, not only optional indicators.
     // On vertical bars Left / Center / Right map to top / middle / bottom.
     readonly property var barIconKeys: ["rusticq", "arch", "launcher", "menu", "workspaces", "weather", "time", "date",
-        "bluetooth", "wifi", "battery", "audio", "task", "quickModes", "quickControl", "mic", "down", "up"]
+        "bluetooth", "wifi", "battery", "audio", "notifications", "task", "quickModes", "quickControl", "mic", "down", "up"]
     readonly property var defaultBarPlacements: ({
         rusticq:"left", arch:"left", launcher:"left", menu:"left", workspaces:"left",
         weather:"right", time:"right", date:"right", bluetooth:"right", wifi:"right",
-        battery:"right", audio:"right", task:"right", quickModes:"right", quickControl:"right",
+        battery:"right", audio:"right", notifications:"right", task:"right", quickModes:"right", quickControl:"right",
         mic:"right", down:"right", up:"right"
     })
     // v5: independent layout profiles. Legacy barIconPlacements is read ONLY for migration.
     property var barIconPlacements: ({})
     property var barIconPlacementsByMode: ({})
+    // Optional order override for each layout; existing profiles retain the RC4 order.
+    property var barIconOrderByMode: ({})
+    function validateBarIconOrder(order) {
+        if (!Array.isArray(order)) return false;
+        // Preserve saved placements from releases before the dedicated bell icon.
+        const legacy = order.length === barIconKeys.length - 1 && order.indexOf("notifications") < 0;
+        if (!legacy && order.length !== barIconKeys.length) return false;
+        return order.every((key, index) => barIconKeys.indexOf(key) >= 0 && order.indexOf(key) === index);
+    }
+    function normalizeBarOrder(order) {
+        if (!validateBarIconOrder(order)) return barIconKeys.slice();
+        const next = order.slice();
+        if (next.indexOf("notifications") < 0) {
+            const after = next.indexOf("audio");
+            next.splice(after < 0 ? next.length : after + 1, 0, "notifications");
+        }
+        return next;
+    }
+    function validateBarIconOrders(data) {
+        const clean = {};
+        if (!data || typeof data !== "object" || Array.isArray(data)) return clean;
+        for (const mode of spacingModes)
+            if (validateBarIconOrder(data[mode])) clean[mode] = normalizeBarOrder(data[mode]);
+        return clean;
+    }
+    function barOrder(modeName) {
+        const saved = barIconOrderByMode[modeName || barMode];
+        return normalizeBarOrder(saved);
+    }
+    // Swap positions of two tiles, including their Left/Center/Right zones.
+    // A dragged tile occupies the target's old slot, and vice versa.
+    function swapBarIcons(source, target) {
+        if (source === target || barIconKeys.indexOf(source) < 0 ||
+            barIconKeys.indexOf(target) < 0) return false;
+        const fromZone = placementFor(source), toZone = placementFor(target);
+        const order = barOrder().slice();
+        const a = order.indexOf(source), b = order.indexOf(target);
+        if (a < 0 || b < 0) return false;
+        // Exchanging slots also exchanges zones. Keep zone-specific spacing
+        // settings attached to the icon when moving between zones.
+        if (fromZone !== toZone) {
+            transferIconSpacing(source, fromZone, toZone, barMode);
+            transferIconSpacing(target, toZone, fromZone, barMode);
+            const allPlacements = Object.assign({}, barIconPlacementsByMode);
+            const placements = Object.assign({}, allPlacements[barMode] || {});
+            placements[source] = toZone;
+            placements[target] = fromZone;
+            allPlacements[barMode] = placements;
+            barIconPlacementsByMode = allPlacements;
+        }
+        order[a] = target;
+        order[b] = source;
+        const allOrders = Object.assign({}, barIconOrderByMode);
+        allOrders[barMode] = order;
+        barIconOrderByMode = allOrders;
+        if (fromZone !== toZone) {
+            barIconMoved(source, toZone);
+            barIconMoved(target, fromZone);
+        }
+        save();
+        return true;
+    }
+    // Drop a tile before another tile or at the end of a zone. Persist order
+    // separately from zone placement so rearranging cannot disable any icon.
+    function moveBarIcon(key, zone, beforeKey) {
+        if (barIconKeys.indexOf(key) < 0 || spacingZones.indexOf(zone) < 0) return false;
+        if (beforeKey && (barIconKeys.indexOf(beforeKey) < 0 || beforeKey === key || placementFor(beforeKey) !== zone)) return false;
+        const fromZone = placementFor(key);
+        if (fromZone !== zone) {
+            transferIconSpacing(key, fromZone, zone, barMode);
+            const placements = Object.assign({}, barIconPlacementsByMode);
+            const current = Object.assign({}, placements[barMode] || {});
+            current[key] = zone;
+            placements[barMode] = current;
+            barIconPlacementsByMode = placements;
+        }
+        const order = barOrder().slice();
+        order.splice(order.indexOf(key), 1);
+        const at = beforeKey ? order.indexOf(beforeKey) : (() => {
+            // Insert immediately after the final icon in the destination zone,
+            // without affecting the relative order in any other zone.
+            let last = -1;
+            for (let i = 0; i < order.length; i++)
+                if (placementFor(order[i]) === zone) last = i;
+            return last + 1;
+        })();
+        order.splice(at, 0, key);
+        const all = Object.assign({}, barIconOrderByMode);
+        all[barMode] = order;
+        barIconOrderByMode = all;
+        if (fromZone !== zone) barIconMoved(key, zone);
+        save();
+        return true;
+    }
     signal barIconMoved(string key, string zone)
     function placementFor(key) {
         if (barIconKeys.indexOf(key) < 0) return "right";
@@ -188,6 +391,9 @@ Singleton {
         const all = Object.assign({}, barIconPlacementsByMode);
         delete all[barMode];
         barIconPlacementsByMode = all;
+        const orders = Object.assign({}, barIconOrderByMode);
+        delete orders[barMode];
+        barIconOrderByMode = orders;
         save();
     }
     function validateIconPlacements(raw) {
@@ -214,7 +420,7 @@ Singleton {
         return spacingZones.indexOf(zone) >= 0 && barIconKeys.indexOf(key) >= 0;
     }
     function iconsInZone(zone) {
-        return barIconKeys.filter(key => placementFor(key) === zone);
+        return barOrder().filter(key => placementFor(key) === zone);
     }
     function spacingGroup(side, fallback) {
         const sideSettings = (barSpacingOverrides[barMode] || {})[side] || {};
@@ -290,7 +496,7 @@ Singleton {
     // v5: display preferences are scoped to the selected BAR LAYOUT, not the device.
     // Keep global legacy show* properties so old settings files can migrate safely.
     readonly property var barVisibilityKeys: [
-        "showRusticQIcon", "showLauncher", "showArch", "showWorkspaces", "showQuickControl",
+        "showRusticQIcon", "showLauncher", "showArch", "showWorkspaces", "showQuickControl", "showNotificationIcon",
         "showTaskView", "showWeather", "showTime", "showDate", "showWifi", "showBluetooth",
         "showBattery", "showAudio", "showMicrophoneStatus", "showDownloadSpeed",
         "showUploadSpeed", "showIndicators", "showMenuBar", "showMenuFile", "showMenuEdit",
@@ -372,6 +578,7 @@ Singleton {
     property bool showBattery: true
     property bool showAudio: true
     property bool showQuickControl: true
+    property bool showNotificationIcon: true
     property string quickControlButtonStyle: "plain" // plain | filled
     property bool showWeather: true
     property bool showWorkspaces: true
@@ -413,6 +620,7 @@ Singleton {
             if (["compact", "comfortable"].indexOf(data.uiDensity) >= 0) uiDensity = data.uiDensity;
             if (typeof data.wallpaperPath === "string" && data.wallpaperPath.length < 1024) wallpaperPath = data.wallpaperPath;
             if (["auto", "swww", "awww", "hyprpaper"].indexOf(data.wallpaperBackend) >= 0) wallpaperBackend = data.wallpaperBackend;
+            if (["solid", "wallpaper"].indexOf(data.lockscreenBackground) >= 0) lockscreenBackground = data.lockscreenBackground;
             if (["icons", "details", "hover"].indexOf(data.cleanRightMode) !== -1)
                 cleanRightMode = data.cleanRightMode;
             else if (typeof data.cleanRightDetails === "boolean")
@@ -430,6 +638,7 @@ Singleton {
                 marginOverrides = validated;
             }
             barSpacingOverrides = validateSpacingOverrides(data.barSpacingOverrides);
+            barIconOrderByMode = validateBarIconOrders(data.barIconOrderByMode);
             barIconPlacements = validateIconPlacements(data.barIconPlacements);
             // Upgrade old global alignment into 5 isolated layout profiles.
             for (const pair of [["mic", "microphoneStatusPlacement"], ["down", "downloadSpeedPlacement"], ["up", "uploadSpeedPlacement"]])
@@ -457,6 +666,35 @@ Singleton {
                 quickControlButtonStyle = data.quickControlButtonStyle;
             for (const key of ["launcherWidth", "launcherHeight", "launcherIconSize", "launcherRowHeight", "launcherFavoriteColumns"])
                 if (Number.isInteger(data[key])) updateLauncherSize(key, data[key], false);
+            if (data.widgetWorkspaceScopes && typeof data.widgetWorkspaceScopes === "object" &&
+                !Array.isArray(data.widgetWorkspaceScopes)) {
+                const cleanScopes = {};
+                for (const kind of ["notes", "kanban", "randomImage"]) {
+                    const ids = data.widgetWorkspaceScopes[kind];
+                    cleanScopes[kind] = Array.isArray(ids)
+                        ? ids.filter((id, i) => Number.isInteger(id) && id >= 1 && id <= 10 && ids.indexOf(id) === i)
+                        : [1];
+                }
+                widgetWorkspaceScopes = cleanScopes;
+            }
+            if (data.workspaceNotes && typeof data.workspaceNotes === "object" && !Array.isArray(data.workspaceNotes)) {
+                const notes = {};
+                for (const key in data.workspaceNotes)
+                    if (/^[a-zA-Z0-9_.:-]{1,120}$/.test(key) && typeof data.workspaceNotes[key] === "string")
+                        notes[key] = data.workspaceNotes[key].slice(0, 30000);
+                workspaceNotes = notes;
+            }
+            if (data.widgetSizes && typeof data.widgetSizes === "object" && !Array.isArray(data.widgetSizes)) {
+                const sizes = {};
+                for (const key in data.widgetSizes) {
+                    const v = data.widgetSizes[key];
+                    if (/^[a-zA-Z0-9_.:-]{1,120}$/.test(key) && v && typeof v === "object" &&
+                        Number.isFinite(v.width) && Number.isFinite(v.height))
+                        sizes[key] = {width:Math.round(Math.max(250,Math.min(1050,v.width))),
+                                      height:Math.round(Math.max(145,Math.min(800,v.height)))};
+                }
+                widgetSizes = sizes;
+            }
             if (data.widgetPositions && typeof data.widgetPositions === "object" && !Array.isArray(data.widgetPositions)) {
                 const validPositions = {};
                 for (const key in data.widgetPositions) {
@@ -467,9 +705,15 @@ Singleton {
                 }
                 widgetPositions = validPositions;
             }
+            for (const name of ["desktopNotes", "desktopKanban", "desktopRandomImage"])
+                if (typeof data[name] === "boolean") root[name] = data[name];
+            if (typeof data.widgetImageFolder === "string" && data.widgetImageFolder.length <= 1024 &&
+                data.widgetImageFolder.indexOf("\0") < 0) widgetImageFolder = data.widgetImageFolder;
+            if ([0, 60, 300, 900].indexOf(data.widgetImageRotateSeconds) >= 0)
+                widgetImageRotateSeconds = data.widgetImageRotateSeconds;
             if (validQuickOrder(data.quickControlOrder)) quickControlOrder = data.quickControlOrder.slice();
             if (typeof data.showMenuBar === "boolean") showMenuBar = data.showMenuBar;
-            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "showNotifications", "showLauncher", "showRusticQIcon", "showTaskView", "desktopCalendar", "desktopSystem", "desktopClock", "desktopMedia", "desktopWeather", "desktopConnectivity", "showDock", "dockAutoHide", "dockFiles", "dockBrowser", "dockSettings", "dockTaskView", "dockAI", "dockRunningApps", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl"])
+            for (const key of ["showMenuEdit", "showMenuView", "showMenuShare", "showMenuFile", "showMenuShell", "showMenuTools", "showNotifications", "showLauncher", "showRusticQIcon", "showTaskView", "desktopCalendar", "desktopSystem", "desktopClock", "desktopMedia", "desktopWeather", "desktopConnectivity", "showDock", "dockAutoHide", "dockFiles", "dockBrowser", "dockSettings", "dockTaskView", "dockAI", "dockRunningApps", "cleanRightDetails", "showArch", "showTime", "showDate", "showWifi", "showBluetooth", "showBattery", "showAudio", "showQuickControl", "showNotificationIcon"])
                 if (typeof data[key] === "boolean") root[key] = data[key];
             if (typeof data.showWeather === "boolean") showWeather = data.showWeather;
             if (typeof data.showWorkspaces === "boolean") showWorkspaces = data.showWorkspaces;
@@ -489,6 +733,15 @@ Singleton {
                 }
                 barIconVisibilityProfiles = migrated;
             }
+            if (["coding", "gaming", "battery", "presentation"].indexOf(data.desktopProfile) !== -1)
+                desktopProfile = data.desktopProfile;
+            if (data.desktopProfilePrevious && typeof data.desktopProfilePrevious === "object" && !Array.isArray(data.desktopProfilePrevious)) {
+                const clean = {};
+                for (const key of desktopProfileKeys)
+                    if (typeof data.desktopProfilePrevious[key] === "string" || typeof data.desktopProfilePrevious[key] === "boolean")
+                        clean[key] = data.desktopProfilePrevious[key];
+                desktopProfilePrevious = clean;
+            }
             if (["openai", "anthropic", "gemini"].indexOf(data.aiProvider) !== -1) aiProvider = data.aiProvider;
             if (typeof data.aiModel === "string" && data.aiModel.length > 0 && data.aiModel !== "llama3.2") aiModel = data.aiModel;
         } catch (e) {
@@ -507,8 +760,11 @@ Singleton {
             uiCustomFont: uiCustomFont,
             uiFontScale: uiFontScale,
             uiDensity: uiDensity,
+            desktopProfile: desktopProfile,
+            desktopProfilePrevious: desktopProfilePrevious,
             wallpaperPath: wallpaperPath,
             wallpaperBackend: wallpaperBackend,
+            lockscreenBackground: lockscreenBackground,
             showNotifications: showNotifications,
             showLauncher: showLauncher,
             showRusticQIcon: showRusticQIcon,
@@ -525,7 +781,15 @@ Singleton {
             desktopMedia: desktopMedia,
             desktopWeather: desktopWeather,
             desktopConnectivity: desktopConnectivity,
+            desktopNotes: desktopNotes,
+            desktopKanban: desktopKanban,
+            desktopRandomImage: desktopRandomImage,
+            widgetImageFolder: widgetImageFolder,
+            widgetImageRotateSeconds: widgetImageRotateSeconds,
             widgetPositions: widgetPositions,
+            widgetWorkspaceScopes: widgetWorkspaceScopes,
+            workspaceNotes: workspaceNotes,
+            widgetSizes: widgetSizes,
             showDock: showDock,
             dockFiles: dockFiles,
             dockBrowser: dockBrowser,
@@ -548,6 +812,7 @@ Singleton {
             barSpacingOverrides: barSpacingOverrides,
             barIconPlacements: barIconPlacements, // legacy compatibility; not changed by v5 UI
             barIconPlacementsByMode: barIconPlacementsByMode,
+            barIconOrderByMode: barIconOrderByMode,
             barIconVisibilityProfiles: barIconVisibilityProfiles,
             showArch: showArch,
             showTime: showTime,
@@ -557,6 +822,7 @@ Singleton {
             showBattery: showBattery,
             showAudio: showAudio,
             showQuickControl: showQuickControl,
+            showNotificationIcon: showNotificationIcon,
             quickControlButtonStyle: quickControlButtonStyle,
             showWeather: showWeather,
             showWorkspaces: showWorkspaces,

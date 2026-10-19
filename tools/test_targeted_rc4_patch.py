@@ -29,7 +29,7 @@ with tempfile.TemporaryDirectory() as d:
     assert (home/'.local/state/rusticq/integration/backup/omarchy-default-hypr/bindings.lua').is_file()
     res=cli('remap','--file',terminal['file'],'--line',terminal['line'],'--hash',terminal['source_hash'],'--key','SUPER + ALT + M')
     remap1=res['remap_id']; assert original_keys in (config/'bindings.lua').read_text()
-    assert 'o.bind("SUPER + ALT + M", "Terminal", "foot")' in (config/'bindings.lua').read_text()
+    assert 'o.rebind("SUPER + ALT + M", "Terminal", "foot")' in (config/'bindings.lua').read_text()
     cli('remap','--file',launcher['file'],'--line',launcher['line'],'--hash',launcher['source_hash'],'--key','SUPER + CTRL + L')
     assert 'SUPER + CTRL + L' in (config/'bindings.lua').read_text()
     cli('shortcut','--key','SUPER + ALT + H','--action','settings')
@@ -60,5 +60,7 @@ with tempfile.TemporaryDirectory() as d:
     assert (config/'bindings.lua').read_text().rstrip()==original_keys.rstrip(),repr((config/'bindings.lua').read_text())
     assert (config/'hyprland.lua').read_text()=='-- main\nrequire("default.hypr.omarchy")\nrequire("hypr.bindings")\n'
     assert cli('remap','--file',launcher['file'],'--line',launcher['line'],'--hash','wrong','--key','SUPER + P',ok=False)['ok'] is False
-    assert cli('remap','--file',launcher['file'],'--line',launcher['line'],'--hash',launcher['source_hash'],'--key','SUPER + ESCAPE',ok=False)['ok'] is False
+    sensitive = cli('remap','--file',launcher['file'],'--line',launcher['line'],'--hash',launcher['source_hash'],'--key','SUPER + ESCAPE')
+    assert sensitive['ok']
+    cli('remap-revert','--id', sensitive['remap_id'])
     print('RC4 patch all CLI scenarios pass')

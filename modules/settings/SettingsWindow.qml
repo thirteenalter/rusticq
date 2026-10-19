@@ -27,6 +27,7 @@ FloatingWindow {
         {key:"bar", label:"Bar", symbol:"\ue30b", detail:"Layout & margins"},
         {key:"modules", label:"Modules", symbol:"\ue429", detail:"Indicators & menus"},
         {key:"widgets", label:"Widgets", symbol:"\ue916", detail:"Desktop cards"},
+        {key:"notes", label:"Notes & Kanban", symbol:"\ue873", detail:"Local personal task board"},
         {key:"dock", label:"Dock", symbol:"\ue8b8", detail:"Apps & auto-hide"},
         {key:"launcher", label:"App Launcher", symbol:"\ue8b6", detail:"Window & icon size"},
         {key:"display", label:"Displays", symbol:"\ue30b", detail:"Monitor arrangement"},
@@ -44,6 +45,7 @@ FloatingWindow {
     readonly property var searchItems: [
         {tab:"appearance", title:"Color theme and accent", hint:"Aether Gruvbox theme palette"},
         {tab:"appearance", title:"Wallpaper settings", hint:"Wallpaper swww awww hyprpaper image path"},
+        {tab:"appearance", title:"RusticQ Lock Screen", hint:"Hyprlock PAM password clock secure wallpaper lock screen"},
         {tab:"appearance", title:"Typography and density", hint:"Font family size text compact comfortable"},
         {tab:"bar", title:"Bar position", hint:"Top Bottom Left Right"},
         {tab:"bar", title:"Absolute center positioning", hint:"Centered icons screen middle offset"},
@@ -56,6 +58,7 @@ FloatingWindow {
         {tab:"modules", title:"App launcher and status modules", hint:"Icons Wifi Bluetooth Battery Audio Weather Clock"},
         {tab:"modules", title:"Menu bar and quick modes", hint:"Edit View Share File Shell Tools Night Silent"},
         {tab:"widgets", title:"Desktop widgets", hint:"Calendar Clock CPU RAM Music Media Now Playing Weather Connectivity Battery"},
+        {tab:"notes", title:"Notes and Kanban", hint:"todo list writing memo private local tasks columns doing done"},
         {tab:"dock", title:"Custom dock", hint:"Apps Auto-hide Files Browser"},
         {tab:"launcher", title:"App launcher dimensions", hint:"Window width height icon size favorites columns row height"},
         {tab:"display", title:"Monitor configuration", hint:"Resolution Refresh rate Scale Position"},
@@ -261,6 +264,7 @@ FloatingWindow {
                             Store.settingsTab === "bar" ? barPage :
                             Store.settingsTab === "modules" ? modulesPage :
                             Store.settingsTab === "widgets" ? widgetsPage :
+                            Store.settingsTab === "notes" ? notesPage :
                             Store.settingsTab === "dock" ? dockPage :
                             Store.settingsTab === "launcher" ? launcherPage :
                             Store.settingsTab === "display" ? displayPage :
@@ -310,6 +314,7 @@ FloatingWindow {
     Component { id: barPage; SettingsBarPage {} }
     Component { id: modulesPage; SettingsModulesPage {} }
     Component { id: widgetsPage; SettingsWidgetsPage {} }
+    Component { id: notesPage; SettingsNotesPage {} }
     Component { id: dockPage; SettingsDockPage {} }
     Component { id: launcherPage; SettingsLauncherPage {} }
     Component { id: displayPage; SettingsDisplaysPage {} }

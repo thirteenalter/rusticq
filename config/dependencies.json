@@ -2,31 +2,187 @@
   "schema": 1,
   "platform": "Arch Linux / Hyprland (including compatible Omarchy Quattro)",
   "core": [
-    {"id":"quickshell", "name":"Quickshell", "package":"quickshell", "description":"QML desktop shell runtime (RC5 developed against 0.3.1)."},
-    {"id":"hyprland", "name":"Hyprland", "package":"hyprland", "description":"Wayland compositor, monitor and workspace integration."},
-    {"id":"python", "name":"Python 3", "package":"python", "description":"RusticQ integration, updates and diagnostics helpers."},
-    {"id":"material-symbols", "name":"Material Symbols", "package":"ttf-material-symbols-variable", "description":"System fallback for bar, menu and settings glyphs."}
+    {
+      "id": "quickshell",
+      "name": "Quickshell",
+      "package": "quickshell",
+      "description": "QML desktop shell runtime (RC5 developed against 0.3.1)."
+    },
+    {
+      "id": "hyprland",
+      "name": "Hyprland",
+      "package": "hyprland",
+      "description": "Wayland compositor, monitor and workspace integration."
+    },
+    {
+      "id": "python",
+      "name": "Python 3",
+      "package": "python",
+      "description": "RusticQ integration, updates and diagnostics helpers."
+    },
+    {
+      "id": "material-symbols",
+      "name": "Material Symbols",
+      "package": "ttf-material-symbols-variable",
+      "description": "System fallback for bar, menu and settings glyphs."
+    }
   ],
   "optional": [
-    {"id":"network", "name":"NetworkManager", "package":"networkmanager", "description":"Wi-Fi and Ethernet status and controls; service must be running."},
-    {"id":"bluetooth", "name":"Bluetooth service", "package":"bluez", "description":"Bluetooth hardware backend; bluetooth.service must be running."},
-    {"id":"bluetooth-tools", "name":"Bluetooth tools", "package":"bluez-utils", "description":"Bluetooth CLI compatibility tools."},
-    {"id":"battery", "name":"UPower", "package":"upower", "description":"Battery/power state; mainly for portable devices."},
-    {"id":"audio", "name":"PipeWire", "package":"pipewire", "description":"Audio server for volume and media components."},
-    {"id":"wireplumber", "name":"WirePlumber", "package":"wireplumber", "description":"PipeWire audio session manager."},
-    {"id":"media", "name":"Playerctl", "package":"playerctl", "description":"Media controls for compatible players."},
-    {"id":"brightness", "name":"Brightnessctl", "package":"brightnessctl", "description":"Brightness control on supported hardware."},
-    {"id":"screenshot", "name":"Grim", "package":"grim", "description":"Wayland screenshot capture."},
-    {"id":"region", "name":"Slurp", "package":"slurp", "description":"Select screen or region for capture/recording."},
-    {"id":"record", "name":"WF Recorder", "package":"wf-recorder", "description":"Wayland screen recording."},
-    {"id":"clipboard", "name":"Wayland clipboard", "package":"wl-clipboard", "description":"Clipboard interaction from optional actions."},
-    {"id":"xdg-open", "name":"XDG utilities", "package":"xdg-utils", "description":"Open files and folders from bar menus."},
-    {"id":"updates", "name":"Pacman contrib", "package":"pacman-contrib", "description":"Safe checkupdates list for Arch Updater."},
-    {"id":"polkit", "name":"PolicyKit", "package":"polkit", "description":"Polkit utilities for privileged updates; a session agent may also be required."},
-    {"id":"night", "name":"Hyprsunset", "package":"hyprsunset", "description":"Night light quick mode."},
-    {"id":"monitor", "name":"Btop", "package":"btop", "description":"External process monitor from the Shell menu."},
-    {"id":"json", "name":"JQ", "package":"jq", "description":"Compatibility with the legacy iwctl Wi-Fi helper."},
-    {"id":"sensors", "name":"Lm-sensors", "package":"lm_sensors", "description":"Additional system temperature readings."},
-    {"id":"multimedia", "name":"Qt Multimedia", "package":"qt6-multimedia", "description":"Additional audio/video Qt multimedia integration."}
+    {
+      "id": "network",
+      "name": "NetworkManager",
+      "package": "networkmanager",
+      "description": "Wi-Fi and Ethernet status and controls; service must be running."
+    },
+    {
+      "id": "wifi-qr",
+      "name": "QR Encode",
+      "package": "qrencode",
+      "description": "Secure Wi-Fi sharing QR from Advanced Wi-Fi. Optional; alternatively install python-qrcode."
+    },
+    {
+      "id": "bluetooth",
+      "name": "Bluetooth service",
+      "package": "bluez",
+      "description": "Bluetooth hardware backend; bluetooth.service must be running."
+    },
+    {
+      "id": "bluetooth-tools",
+      "name": "Bluetooth tools",
+      "package": "bluez-utils",
+      "description": "Bluetooth CLI compatibility tools."
+    },
+    {
+      "id": "battery",
+      "name": "UPower",
+      "package": "upower",
+      "description": "Battery/power state; mainly for portable devices."
+    },
+    {
+      "id": "audio",
+      "name": "PipeWire",
+      "package": "pipewire",
+      "description": "Audio server for volume and media components."
+    },
+    {
+      "id": "wireplumber",
+      "name": "WirePlumber",
+      "package": "wireplumber",
+      "description": "PipeWire audio session manager."
+    },
+    {
+      "id": "media",
+      "name": "Playerctl",
+      "package": "playerctl",
+      "description": "Media controls for compatible players."
+    },
+    {
+      "id": "brightness",
+      "name": "Brightnessctl",
+      "package": "brightnessctl",
+      "description": "Brightness control on supported hardware."
+    },
+    {
+      "id": "screenshot",
+      "name": "Grim",
+      "package": "grim",
+      "description": "Wayland screenshot capture."
+    },
+    {
+      "id": "region",
+      "name": "Slurp",
+      "package": "slurp",
+      "description": "Select screen or region for capture/recording."
+    },
+    {
+      "id": "record",
+      "name": "WF Recorder",
+      "package": "wf-recorder",
+      "description": "Wayland screen recording."
+    },
+    {
+      "id": "clipboard",
+      "name": "Wayland clipboard",
+      "package": "wl-clipboard",
+      "description": "Clipboard interaction from optional actions."
+    },
+    {
+      "id": "xdg-open",
+      "name": "XDG utilities",
+      "package": "xdg-utils",
+      "description": "Open files and folders from bar menus."
+    },
+    {
+      "id": "updates",
+      "name": "Pacman contrib",
+      "package": "pacman-contrib",
+      "description": "Safe checkupdates list for Arch Updater."
+    },
+    {
+      "id": "polkit",
+      "name": "PolicyKit",
+      "package": "polkit",
+      "description": "Polkit utilities for privileged updates; a session agent may also be required."
+    },
+    {
+      "id": "night",
+      "name": "Hyprsunset",
+      "package": "hyprsunset",
+      "description": "Night light quick mode."
+    },
+    {
+      "id": "monitor",
+      "name": "Btop",
+      "package": "btop",
+      "description": "External process monitor from the Shell menu."
+    },
+    {
+      "id": "json",
+      "name": "JQ",
+      "package": "jq",
+      "description": "Compatibility with the legacy iwctl Wi-Fi helper."
+    },
+    {
+      "id": "sensors",
+      "name": "Lm-sensors",
+      "package": "lm_sensors",
+      "description": "Additional system temperature readings."
+    },
+    {
+      "id": "multimedia",
+      "name": "Qt Multimedia",
+      "package": "qt6-multimedia",
+      "description": "Additional audio/video Qt multimedia integration."
+    },
+    {
+      "id": "hyprpicker",
+      "name": "Screen Color Picker",
+      "package": "hyprpicker",
+      "description": "Pick HEX screen color from the launcher (no network upload)."
+    },
+    {
+      "id": "ocr",
+      "name": "Tesseract OCR",
+      "package": "tesseract",
+      "description": "Local-only screenshot OCR. Also requires grim, slurp and wl-clipboard."
+    },
+    {
+      "id": "notification-utils",
+      "name": "Desktop notifications",
+      "package": "libnotify",
+      "description": "Optional success/failure notifications for screen capture tools."
+    },
+    {
+      "id": "flatpak",
+      "name": "Flatpak",
+      "package": "flatpak",
+      "description": "Search and install sandboxed applications in GUI; add Flathub remote first."
+    },
+    {
+      "id": "screen-lock",
+      "name": "Hyprlock",
+      "package": "hyprlock",
+      "description": "Optional fallback locker. RusticQ Native Lock uses Quickshell WlSessionLock/PAM instead."
+    }
   ]
 }

@@ -1,18 +1,34 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 import "../../components"
 import "../../config"
 import "../../services"
 
 // A useful RusticQ settings/view/share menu, inspired by the familiar
 // macOS menu bar. No claims of controlling another application's Edit menu.
-Item {
+// Keyboard focus belongs to this menu's PopupWindow, never the desktop bar.
+FocusScope {
     id: root
+    function focusedScreen() {
+        const focus = Hyprland.focusedMonitor;
+        if (focus) for (let i = 0; i < Quickshell.screens.length; i++)
+            if (Quickshell.screens[i].name === focus.name) return Quickshell.screens[i];
+        return Quickshell.screens.length ? Quickshell.screens[0] : null;
+    }
     property string section: "view"
     property string currentSection: section
+    property int selectedIndex: 0
+    focus: true
     onSectionChanged: currentSection = section
+    onCurrentSectionChanged: {
+        selectedIndex = 0;
+        Qt.callLater(function() { entryList.contentY = 0; });
+    }
+    onSelectedIndexChanged: Qt.callLater(ensureSelectedVisible)
     signal actionFinished()
+    signal sectionNavigated(string sectionKey)
     anchors.fill: parent
     readonly property var sections: [
         {key: "file", title: "File", enabled: SettingsStore.modeIconVisible("showMenuFile")},
@@ -28,7 +44,8 @@ Item {
         {title: "RusticQ config", desc: "Open current shell directory", icon: "\ue8b8", action: "file-config"}
     ] : currentSection === "shell" ? [
         {title: "Open terminal", desc: "Use an installed terminal emulator", icon: "\ueb8e", action: "shell-terminal"},
-        {title: "System monitor", desc: "Live CPU, GPU, RAM, disk and network", icon: "\uef43", action: "shell-monitor"}
+        {title: "System monitor", desc: "Live CPU, GPU, RAM, disk and network", icon: "\uef43", action: "shell-monitor"},
+        {title: "Power menu", desc: "Keyboard accessible system actions", icon: "\ue8ac", action: "shell-power"}
     ] : currentSection === "tools" ? [
         {title: "Settings", desc: "Personalize RusticQ", icon: "\ue8b8", action: "tools-settings"},
         {title: "Screenshot region", desc: "Capture a selected area", icon: "\ue3c2", action: "tools-region"}
@@ -52,6 +69,49 @@ Item {
         {title: "Professional", desc: "Solid desktop bar", icon: "\ue30b", action: "professional"},
         {title: "Simple", desc: "Essential actions only", icon: "\ue5d4", action: "simple"}
     ]
+    function selectSection(key) {
+        if (!sections.some(item => item.key === key)) return;
+        currentSection = key;
+        sectionNavigated(key);
+    }
+    // Left/right traverse only enabled sections; up/down traverse action rows.
+    // All four directions wrap, so a keyboard-only user can reach every item.
+    function switchSection(direction) {
+        if (!sections.length) return;
+        let current = sections.findIndex(item => item.key === currentSection);
+        if (current < 0) current = 0;
+        const next = (current + direction + sections.length) % sections.length;
+        selectSection(sections[next].key);
+    }
+    function moveSelection(direction) {
+        if (!entries.length) return;
+        selectedIndex = (selectedIndex + direction + entries.length) % entries.length;
+    }
+    function ensureSelectedVisible() {
+        if (!entryList || !entryList.visible || !entries.length) return;
+        // Each row is 54px with 6px spacing, including the long Share menu.
+        const rowTop = selectedIndex * 60;
+        const rowBottom = rowTop + 54;
+        if (rowTop < entryList.contentY) entryList.contentY = rowTop;
+        else if (rowBottom > entryList.contentY + entryList.height)
+            entryList.contentY = Math.min(Math.max(0, entryList.contentHeight - entryList.height), rowBottom - entryList.height);
+    }
+    function activateSelection() {
+        if (entries.length && selectedIndex >= 0 && selectedIndex < entries.length)
+            runAction(entries[selectedIndex].action);
+    }
+    Keys.onPressed: event => {
+        if (event.key === Qt.Key_Left) { switchSection(-1); event.accepted = true; }
+        else if (event.key === Qt.Key_Right) { switchSection(1); event.accepted = true; }
+        else if (event.key === Qt.Key_Up) { moveSelection(-1); event.accepted = true; }
+        else if (event.key === Qt.Key_Down) { moveSelection(1); event.accepted = true; }
+        else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
+            activateSelection(); event.accepted = true;
+        } else if (event.key === Qt.Key_Escape) {
+            actionFinished(); event.accepted = true;
+        }
+    }
+    Component.onCompleted: Qt.callLater(function() { root.forceActiveFocus(); })
     function runAction(action) {
         if (currentSection === "view") {
             SettingsStore.barMode = action;
@@ -60,6 +120,7 @@ Item {
             Store.showSettings(action);
         } else if (currentSection === "file" || currentSection === "shell" || currentSection === "tools") {
             if (action === "shell-monitor") Store.systemMonitorVisible = true;
+            else if (action === "shell-power") Store.togglePowerMenu(root.focusedScreen());
             else if (action === "tools-settings") Store.showSettings("bar");
             else if (action === "tools-region") Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-capture.sh"), "region"]);
             else Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-menu-action.sh"), action]);
@@ -107,12 +168,15 @@ Item {
                         font.pixelSize: Fonts.scale(11)
                         color: root.currentSection === tab.modelData.key ? Theme.accent : Theme.foreground
                     }
-                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.currentSection = tab.modelData.key }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                        onClicked: { root.selectSection(tab.modelData.key); root.forceActiveFocus(); }
+                    }
                 }
             }
         }
         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
         Flickable {
+            id: entryList
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
@@ -128,11 +192,13 @@ Item {
                     delegate: Rectangle {
                         id: choice
                         required property var modelData
+                        required property int index
+                        readonly property bool selected: root.selectedIndex === index
                         Layout.fillWidth: true
                         Layout.preferredHeight: 54
-                        color: choiceMouse.containsMouse ? Qt.alpha(Theme.accent, .16) : Theme.surface
+                        color: selected || choiceMouse.containsMouse ? Qt.alpha(Theme.accent, .16) : Theme.surface
                         radius: 11
-                        border.width: choiceMouse.containsMouse ? 1 : 0
+                        border.width: selected || choiceMouse.containsMouse ? 1 : 0
                         border.color: Qt.alpha(Theme.accent, 0.32)
                         RowLayout {
                             anchors.fill: parent
@@ -171,11 +237,20 @@ Item {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.runAction(choice.modelData.action)
+                            onEntered: root.selectedIndex = choice.index
+                            onClicked: { root.selectedIndex = choice.index; root.runAction(choice.modelData.action); }
                         }
                     }
                 }
             }
+        }
+        Text {
+            Layout.fillWidth: true
+            text: "← → category  ·  ↑ ↓ action  ·  Enter open  ·  Esc close"
+            font.pixelSize: Fonts.scale(9)
+            font.family: Fonts.poppins.name
+            color: Theme.accent
+            horizontalAlignment: Text.AlignHCenter
         }
         Text {
             Layout.fillWidth: true

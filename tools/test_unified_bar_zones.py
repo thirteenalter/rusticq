@@ -18,10 +18,10 @@ vertical=(root/'modules/main/VerticalBarContent.qml').read_text()
 for key in ['showMicrophoneStatus','showDownloadSpeed','showUploadSpeed']:
     assert key in modules, f'{key} missing in Modules'
     assert key in store, f'{key} missing from persistence'
-    assert key in barpage, f'{key} must be available in the per-layout visibility editor'
+    assert key in modules, f'{key} is controlled from Modules' 
 assert 'heading: "Extra status icons"' not in barpage
 assert 'BarAlignmentEditor' in barpage
-assert 'Icon spacing · Left / Center / Right' in barpage
+assert 'Icon spacing & drag ordering · Left / Center / Right' in barpage
 assert '"center"' in editor and 'settingsGroup' not in editor
 assert 'SettingsStore.placementFor(item.key) === side' in editor
 assert 'onBarIconMoved(key, zone)' in editor
@@ -46,14 +46,14 @@ def function_block(name):
     assert depth==0
     return store[match.start():cursor]
 
-functions=['placementFor','transferIconSpacing','setIconPlacement','resetIconPlacements','spacingGroup','spacingIcon','validSpacingItem','setGroupSpacing','setIconSpacing','iconsInZone','validateSpacingOverrides']
+functions=['normalizeBarOrder','barOrder','validateBarIconOrder','placementFor','transferIconSpacing','setIconPlacement','resetIconPlacements','spacingGroup','spacingIcon','validSpacingItem','setGroupSpacing','setIconSpacing','iconsInZone','validateSpacingOverrides']
 js='''
 const assert = require('node:assert/strict');
-const keys = ['arch','launcher','menu','workspaces','weather','time','date','bluetooth','wifi','battery','audio','task','quickModes','quickControl','mic','down','up'];
+const keys = ['arch','launcher','menu','workspaces','weather','time','date','bluetooth','wifi','battery','audio','notifications','task','quickModes','quickControl','mic','down','up'];
 const defaults = Object.fromEntries(keys.map(k=>[k,['arch','launcher','menu','workspaces'].includes(k)?'left':'right']));
 const ctx={
   barIconKeys:keys,defaultBarPlacements:defaults,
-  barIconPlacements:{},barIconPlacementsByMode:{},barSpacingOverrides:{},
+  barIconPlacements:{},barIconPlacementsByMode:{},barIconOrderByMode:{},barSpacingOverrides:{},
   spacingModes:['compact','clean-compact','separated','professional','simple'],
   spacingZones:['left','center','right'],barMode:'compact',saves:0,
   save(){this.saves++},barIconMoved(){}

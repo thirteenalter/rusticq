@@ -34,7 +34,8 @@ functions = '\n'.join(grab(name) for name in [
     'modeIconVisible', 'setModeIconVisible', 'validateVisibilityProfiles',
     'resetModeVisibility', 'useMinimalModePreset', 'copyVisibilityFromMode',
     'placementFor', 'transferIconSpacing', 'setIconPlacement',
-    'resetIconPlacements', 'validateIconPlacements', 'validateModePlacements'])
+    'resetIconPlacements', 'validateIconPlacements', 'validateModePlacements',
+    'barOrder', 'validateBarIconOrder', 'normalizeBarOrder'])
 keys = re.search(r'readonly property var barVisibilityKeys: (\[[^;]+?\])\n    //', store, re.S)
 assert keys, 'Visibility key registry not found'
 simple = re.search(r'readonly property var simpleHiddenIcons: (\[[^;]+?\])\n    property var', store, re.S)
@@ -45,13 +46,14 @@ assert placements, 'Default placement registry not found'
 js = '''const assert = require('node:assert/strict');
 const barVisibilityKeys = __KEYS__;
 const simpleHiddenIcons = __SIMPLE__;
-const barIconKeys = ['rusticq','arch','launcher','menu','workspaces','weather','time','date','bluetooth','wifi','battery','audio','task','quickModes','quickControl','mic','down','up'];
+const barIconKeys = ['rusticq','arch','launcher','menu','workspaces','weather','time','date','bluetooth','wifi','battery','audio','notifications','task','quickModes','quickControl','mic','down','up'];
 const defaultBarPlacements = {__PLACEMENTS__};
 const spacingModes = ['compact','clean-compact','separated','professional','simple'];
 const spacingZones = ['left','center','right'];
 let barMode = 'simple';
 let barIconVisibilityProfiles = {};
 let barIconPlacementsByMode = {};
+let barIconOrderByMode = {};
 let barSpacingOverrides = {simple: {right: {items: {wifi: {before: 8}}}}, professional: {right: {items: {wifi: {before: 5}}}}};
 let saved = 0;
 let barIconPlacements = {};

@@ -45,7 +45,7 @@ To test the install plan on a non-Arch machine without side effects, use `--dry-
 
 ## Optional dependencies in Settings
 
-Use **Settings → Integration → Required & optional dependencies**. Click a missing item, enter `INSTALL`, then choose **Open interactive installer**. The terminal asks for `INSTALL` again and displays the package before launching pacman. On Omarchy the updater runs first. Only packages in `config/dependencies.json` are accepted; arbitrary commands are not supported.
+Use **Settings → Integration → Required & optional dependencies**. Click a missing optional item and enter `INSTALL` to install from the GUI; for an installed optional item type `REMOVE <id>` to remove it. A graphical Polkit agent authenticates the privileged pacman operation, and the result appears directly in Settings. Core dependencies cannot be removed here. Omarchy's own guarded package hooks remain enforced. Only packages in `config/dependencies.json` are accepted; arbitrary commands are not supported.
 
 NetworkManager, BlueZ and PipeWire must have their services configured appropriately by the user or distribution. Packages are not proof a service is working.
 
@@ -99,3 +99,11 @@ This is a mutable branch and is **not pinned or checksum-authenticated** unless 
 ## Roll back a user-local source update
 
 Stop RusticQ, identify the appropriate folder under `~/.local/state/rusticq/setup-backups`, and manually move it back to `~/.local/share/rusticq/source`. This is **different from reverting permanent Omarchy integration**. Never delete the integration backup to “clean up” a regular source update.
+
+## Full pre-install Omarchy backup and safe revert
+
+When a compatible Omarchy Quattro session is detected, **Settings → Integration** saves a private snapshot of the installed Omarchy default Hyprland Lua files and the existing user `~/.config/hypr`, `~/.config/omarchy`, and `~/.config/quickshell` trees. The tree backup preserves symlinks without following them, has a bounded size, records SHA-256 per entry, and is never silently replaced on subsequent activation. Copies live in `~/.local/state/rusticq/integration/backup/`. Press **Verify backup** to check integrity.
+
+`ENABLE RUSTICQ` requires a verified complete snapshot before modifying startup. `RESTORE OMARCHY` verifies existing original snapshots, archives current managed files in `revert-history/`, then removes RusticQ's managed startup integration. It does **not** blindly restore every folder from the snapshot: unrelated changes made after activation are preserved. For an older already-active install without the new full-tree snapshot, legacy backups remain revertible and are identified as incomplete rather than manufactured from modified files. Files in `/usr/share/omarchy` remain read-only.
+
+**Protected package policy:** deleting `pacman`, `glibc`, `systemd`, `hyprland`, `quickshell`, or kernel package entries is intentionally blocked by RusticQ's GUI to protect desktop recovery. This restriction does not prevent manual system administration through the distribution's supported package tools.

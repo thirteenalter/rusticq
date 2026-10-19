@@ -11,6 +11,25 @@ Singleton {
     property bool doNotDisturb: false
     property int unread: 0
     property int sequence: 0
+    property bool groupByApp: false
+    property var expandedApps: ({})
+    function toggleGroup(app) {
+        const map = Object.assign({}, expandedApps);
+        map[app] = !map[app];
+        expandedApps = map;
+    }
+    readonly property var displayHistory: groupByApp ? groupedHistory() : history
+    function groupedHistory() {
+        const counts = {};
+        const first = [];
+        for (const note of history) {
+            const key = String(note.app || "Application");
+            counts[key] = (counts[key] || 0) + 1;
+            if (counts[key] === 1) first.push(note);
+            else if (expandedApps[key]) first.push(note);
+        }
+        return first.map(note => Object.assign({}, note, {groupCount: counts[String(note.app || "Application")] || 1}));
+    }
     property string serverState: "checking"
     property string serverOwner: "Checking notification service…"
     property string serverAdvice: ""

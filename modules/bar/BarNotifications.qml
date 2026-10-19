@@ -8,8 +8,11 @@ import "../../components"
 Rectangle {
     id: root
     Layout.fillWidth: true
+    property bool standalone: false
     property bool expanded: false
-    Layout.preferredHeight: expanded ? Math.min(540, Math.max(336, 228 + NotificationCenter.history.length * 104 + (NotificationCenter.receivesSystemNotifications ? 0 : 136))) : 68
+    Layout.preferredHeight: standalone ? 600 : expanded
+        ? Math.min(700, Math.max(440, 320 + NotificationCenter.history.length * 116
+            + (NotificationCenter.receivesSystemNotifications ? 0 : 130))) : 68
     radius: Theme.sectionRadius
     color: Qt.alpha(Theme.foreground, 0.02)
     border.color: Theme.borderaccent
@@ -25,7 +28,9 @@ Rectangle {
             title: "Notifications"
             iconName: "\ue7f4"
             expanded: root.expanded
+            collapsible: !root.standalone
             onToggleRequested: {
+                if (root.standalone) return;
                 root.expanded = !root.expanded;
                 if (root.expanded) NotificationCenter.markRead();
             }
@@ -170,6 +175,19 @@ Rectangle {
         }
 
         Rectangle {
+            visible: root.expanded
+            Layout.fillWidth: true; Layout.preferredHeight: 31; radius: 9
+            color: NotificationCenter.groupByApp ? Qt.alpha(Theme.accent, .16) : Theme.background
+            RowLayout { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10
+                Icon { icon: "\ue8ef"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
+                Text { Layout.fillWidth: true; text: NotificationCenter.groupByApp ? "Grouped by application" : "Individual notifications";
+                    color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                Text { text: "Toggle"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+            }
+            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                onClicked: NotificationCenter.groupByApp = !NotificationCenter.groupByApp }
+        }
+        Rectangle {
             visible: root.expanded && NotificationCenter.receivesSystemNotifications
             Layout.fillWidth: true
             Layout.preferredHeight: visible ? 32 : 0
@@ -194,7 +212,7 @@ Rectangle {
             Layout.fillHeight: true
             clip: true
             spacing: 10
-            model: NotificationCenter.history
+            model: NotificationCenter.displayHistory
             delegate: Rectangle {
                 id: itemRow
                 required property var modelData
@@ -241,6 +259,21 @@ Rectangle {
                                 color: Theme.foreground
                                 font.family: Fonts.poppinsSB.name
                                 textFormat: Text.PlainText
+                            }
+                            Rectangle {
+                                visible: NotificationCenter.groupByApp && itemRow.modelData.groupCount > 1
+                                Layout.preferredHeight: visible ? 22 : 0
+                                Layout.preferredWidth: 62
+                                radius: 8
+                                color: Qt.alpha(Theme.accent, .17)
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: (itemRow.modelData.groupCount || 1) + " · " +
+                                        (NotificationCenter.expandedApps[itemRow.modelData.app] ? "Hide" : "Show")
+                                    color: Theme.accent; font.pixelSize: Fonts.scale(9)
+                                }
+                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                                    onClicked: NotificationCenter.toggleGroup(itemRow.modelData.app) }
                             }
                             Rectangle {
                                 Layout.preferredHeight: 20

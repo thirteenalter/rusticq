@@ -10,7 +10,7 @@ ColumnLayout {
     spacing: 14
     SettingsSection {
         heading: "Display arrangement"
-        description: "Preview the connected monitors, expand each screen for resolution, refresh rate and scale, then Apply."
+        description: "Choose a display and change resolution, refresh rate, scale or position instantly. Keep within 15 seconds or RusticQ restores the previous layout."
         symbol: "\ue30b"
         BarMonitors { Layout.fillWidth: true }
     }

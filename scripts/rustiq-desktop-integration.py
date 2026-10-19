@@ -15,6 +15,8 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
+import time
 from pathlib import Path
 
 SENTINEL = 'RUSTICQ MANAGED RC4'
@@ -26,6 +28,8 @@ ACTION_CATALOG = [
     {"key": 'quick', "name": 'Quick Control', "category": 'Core'},
     {"key": 'ai', "name": 'AI Workspace', "category": 'Core'},
     {"key": 'monitor', "name": 'System Monitor', "category": 'Core'},
+    {"key": 'power', "name": 'Power menu', "category": 'Core'},
+    {"key": 'lock', "name": 'RusticQ lock screen', "category": 'Core'},
     {"key": 'settings-appearance', "name": 'Appearance', "category": 'Settings pages'},
     {"key": 'settings-bar', "name": 'Bar layout', "category": 'Settings pages'},
     {"key": 'settings-modules', "name": 'Modules and indicators', "category": 'Settings pages'},
@@ -79,6 +83,7 @@ ACTION_CATALOG = [
     {"key": 'item-file-config', "name": 'RusticQ config folder', "category": 'File menu'},
     {"key": 'item-shell-terminal', "name": 'Open terminal', "category": 'Shell menu'},
     {"key": 'item-shell-monitor', "name": 'System monitor', "category": 'Shell menu'},
+    {"key": 'item-shell-power', "name": 'Power menu', "category": 'Shell menu'},
     {"key": 'item-tools-settings', "name": 'Bar settings', "category": 'Tools menu'},
     {"key": 'item-tools-region', "name": 'Screenshot region', "category": 'Tools menu'},
     {"key": 'item-share-full', "name": 'Screenshot screen', "category": 'Share menu'},
@@ -218,8 +223,8 @@ def validate_key(key):
         raise ValueError('Unsupported key: use A–Z, 0–9, F1–F12, SPACE, ENTER, ESCAPE, TAB, PRINT')
     if terminal in modifiers or len(set(parts)) != len(parts):
         raise ValueError('A modifier cannot be used as the final key')
-    if terminal in ('ESCAPE', 'BACKSPACE') and parts == ['SUPER', terminal]:
-        raise ValueError('Reserved recovery shortcut. Choose a different combination.')
+    # SUPER + ESCAPE may be reassigned with explicit GUI confirmation.
+    # Source lines and all historical backups remain available for recovery.
     return ' + '.join(parts[:-1] + [terminal])
 
 
@@ -238,10 +243,15 @@ def backup(paths):
     for label, path in paths.items():
         check_file(path)
         content = read_file(path)
-        originals[label] = {'path': str(path), 'existed': path.exists(), 'sha256': digest(content), 'mode': stat.S_IMODE(path.stat().st_mode) if path.exists() else 0o600}
         orig = folder / f'{label}.original'
         if not orig.exists():
             save_atomic(orig, content)
+        # An earlier shortcut override may already have captured an older
+        # pre-RusticQ original. Its verified digest must describe *that* copy,
+        # never the newer managed contents of the live user file.
+        originals[label] = {'path': str(path), 'existed': path.exists(),
+                            'sha256': digest(read_file(orig)),
+                            'mode': stat.S_IMODE(path.stat().st_mode) if path.exists() else 0o600}
     return originals
 
 
@@ -273,6 +283,134 @@ def is_omarchy():
             and 'require("default.hypr.omarchy")' in read_file(MAIN))
 
 
+# Immutable recovery reference: snapshots are private and NEVER auto-restored
+# wholesale over unrelated user edits. Only managed MAIN/BINDINGS are reverted.
+TREE_ROOT = STATE / 'backup' / 'user-config-preinstall'
+TREE_META = STATE / 'backup' / 'user-config-index.json'
+BACKUP_CONFIG_DIRS = ('hypr', 'omarchy', 'quickshell')
+
+
+def snapshot_user_config():
+    """Atomic, bounded, symlink-preserving backup of user desktop config trees."""
+    if TREE_META.is_file():
+        return verify_user_config()
+    if META.is_file():
+        raise ValueError('Cannot capture pre-install configuration after permanent integration. Revert with existing backup first.')
+    if TREE_ROOT.exists() or TREE_ROOT.is_symlink() or TREE_META.is_symlink():
+        raise ValueError('Incomplete user configuration backup exists; refusing overwrite.')
+    target = TREE_ROOT.parent
+    target.mkdir(parents=True, exist_ok=True, mode=0o700)
+    stage = Path(tempfile.mkdtemp(prefix='.user-config-', dir=target))
+    count, total, files = 0, 0, {}
+    missing = []
+    try:
+        for section in BACKUP_CONFIG_DIRS:
+            origin = CONFIG / section
+            if origin.is_symlink():
+                raise ValueError('Top-level configuration is symlinked; cannot safely snapshot: ' + str(origin))
+            if not origin.exists():
+                missing.append(section)
+                continue
+            if not origin.is_dir():
+                raise ValueError('Expected directory: ' + str(origin))
+            for entry in sorted(origin.rglob('*')):
+                relative = Path(section) / entry.relative_to(origin)
+                if len(relative.parts) > 18:
+                    raise ValueError('Configuration directory nesting exceeds safe limit')
+                dest = stage / relative
+                if entry.is_symlink():
+                    count += 1
+                    link = str(entry.readlink())
+                    dest.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                    dest.symlink_to(link)
+                    files[relative.as_posix()] = dict(type='symlink', sha256=digest(link))
+                elif entry.is_dir():
+                    dest.mkdir(parents=True, exist_ok=True, mode=0o700)
+                elif entry.is_file():
+                    count += 1
+                    size = entry.stat().st_size
+                    total += size
+                    if size > 50_000_000 or total > 256_000_000:
+                        raise ValueError('User configuration snapshot exceeds 256 MB limit; no changes made.')
+                    dest.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                    shutil.copyfile(entry, dest, follow_symlinks=False)
+                    dest.chmod(0o600)
+                    files[relative.as_posix()] = dict(type='file', sha256=hashlib.sha256(dest.read_bytes()).hexdigest(),
+                                                     mode=stat.S_IMODE(entry.stat().st_mode))
+                else:
+                    raise ValueError('Unsupported special config entry: ' + str(entry))
+                if count > 12000:
+                    raise ValueError('User config snapshot exceeds 12000 entries')
+        stage.rename(TREE_ROOT)
+        data = dict(version=2, source_config=str(CONFIG), files=files, missing=missing,
+                    bytes=total, count=count, created_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()))
+        save_atomic(TREE_META, json.dumps(data, indent=2) + '\n', 0o600)
+        return dict(ok=True, count=count, bytes=total, missing=missing, path=str(TREE_ROOT))
+    except Exception:
+        if stage.is_dir():
+            shutil.rmtree(stage)
+        # Fail-closed; preserve a moved snapshot for inspection rather than
+        # declaring a partial copy to be a valid backup.
+        raise
+
+
+def verify_user_config():
+    if not TREE_META.is_file() or TREE_META.is_symlink() or not TREE_ROOT.is_dir() or TREE_ROOT.is_symlink():
+        raise ValueError('Full user configuration snapshot is missing or incomplete')
+    data = json.loads(TREE_META.read_text(encoding='utf-8'))
+    if data.get('version') != 2 or not isinstance(data.get('files'), dict):
+        raise ValueError('Unknown user config backup manifest')
+    for relative, record in data['files'].items():
+        path_rel = Path(relative)
+        if path_rel.is_absolute() or '..' in path_rel.parts or path_rel.parts[0] not in BACKUP_CONFIG_DIRS:
+            raise ValueError('Invalid configuration backup path: ' + relative)
+        copy = TREE_ROOT / path_rel
+        if record.get('type') == 'file':
+            if copy.is_symlink() or not copy.is_file() or hashlib.sha256(copy.read_bytes()).hexdigest() != record['sha256']:
+                raise ValueError('Config backup checksum mismatch: ' + relative)
+        elif record.get('type') == 'symlink':
+            if not copy.is_symlink() or digest(str(copy.readlink())) != record['sha256']:
+                raise ValueError('Config symlink snapshot mismatch: ' + relative)
+        else:
+            raise ValueError('Unknown backup entry type: ' + relative)
+    return dict(ok=True, count=len(data['files']), bytes=data.get('bytes', 0), missing=data.get('missing', []), path=str(TREE_ROOT))
+
+
+def verify_omarchy_backup(require_complete=True):
+    if not OMARCHY_BACKUP_META.is_file() or OMARCHY_BACKUP_META.is_symlink():
+        raise ValueError('Original Omarchy backup metadata missing')
+    data = json.loads(OMARCHY_BACKUP_META.read_text(encoding='utf-8'))
+    omarchy_folder = OMARCHY_BACKUP_META.parent / 'omarchy-default-hypr'
+    for name, expected in data.get('files', {}).items():
+        rel = Path(name)
+        if rel.is_absolute() or '..' in rel.parts:
+            raise ValueError('Invalid Omarchy backup path')
+        copy = omarchy_folder / rel
+        if not copy.is_file() or copy.is_symlink() or digest(copy.read_text(encoding='utf-8')) != expected:
+            raise ValueError('Default Omarchy snapshot checksum mismatch: ' + name)
+    for label, record in data.get('user_files', {}).items():
+        copy = OMARCHY_BACKUP_META.parent / (label + '.original')
+        if not copy.is_file() or digest(copy.read_text(encoding='utf-8')) != record.get('sha256'):
+            raise ValueError('Original startup config backup missing or damaged: ' + label)
+    full = verify_user_config() if TREE_META.is_file() else None
+    if require_complete and not full:
+        raise ValueError('Full user config snapshot not ready; cannot enable permanent integration')
+    return dict(ok=True, default_files=len(data.get('files', {})), full=bool(full), user_files=full.get('count', 0) if full else 0)
+
+
+def preserve_before_revert():
+    """Keep pre-revert managed configs, so reverting never discards edits."""
+    history = STATE / 'revert-history'
+    history.mkdir(parents=True, exist_ok=True, mode=0o700)
+    folder = Path(tempfile.mkdtemp(prefix='pre-revert-', dir=history))
+    for label, location in [('hyprland', MAIN), ('bindings', BINDINGS)]:
+        if location.is_file() and not location.is_symlink():
+            copy = folder / (label + '.lua')
+            shutil.copyfile(location, copy)
+            copy.chmod(0o600)
+    return str(folder)
+
+
 def backup_omarchy():
     """Take an immutable local snapshot. Does not change session startup."""
     if not is_omarchy():
@@ -281,8 +419,12 @@ def backup_omarchy():
         raise ValueError('Permanent mode already active, but its original backup is missing. Refusing to snapshot modified configs.')
     if OMARCHY_BACKUP_META.exists():
         info = json.loads(OMARCHY_BACKUP_META.read_text(encoding='utf-8'))
+        if not TREE_META.exists() and not META.exists():
+            snapshot_user_config()  # upgrade an earlier incomplete preinstall backup
+        verified = verify_omarchy_backup(require_complete=not META.exists())
         return {'ok': True, 'created': False, 'backup_dir': str(OMARCHY_BACKUP_META.parent),
-                'message': 'Existing automatic Omarchy backup preserved.', 'snapshot': info}
+                'message': 'Verified original Omarchy + user configuration snapshots are preserved.',
+                'verification': verified, 'snapshot': info}
     root = omarchy_root() / 'default/hypr'
     files = {}
     size = 0
@@ -312,6 +454,7 @@ def backup_omarchy():
         originals = backup({'hyprland': MAIN, 'bindings': BINDINGS,
                             'omarchy_autostart': DEFAULT_AUTOSTART,
                             'omarchy_shell': CONFIG / 'omarchy/shell.json'})
+        snapshot_user_config()
         info = {'type': 'omarchy-quattro-hypr-snapshot', 'source': str(root),
                 'files': {name: digest(read_file(path)) for name, path in files.items()},
                 'user_files': originals}
@@ -471,15 +614,13 @@ def write_shortcuts(mapping, previous_content, remaps=None):
             unbinds.append(key)
     for r in remaps.values():
         unbind(r['from'])
-        unbind(r['to'])
-        binds.append('o.bind(' + ', '.join(json.dumps(v) for v in (r['to'], r['label'], r['command'])) + ')')
+        binds.append('o.rebind(' + ', '.join(json.dumps(v) for v in (r['to'], r['label'], r['command'])) + ')')
     for act in ACTIONS:
         if act not in mapping:
             continue
         combo = mapping[act]
         command = 'quickshell ipc -p ' + shlex.quote(str(target_shell)) + ' call rusticq dispatch ' + shlex.quote(act)
-        unbind(combo)
-        binds.append('o.bind(' + json.dumps(combo) + ', ' + json.dumps('RusticQ ' + ACTIONS[act]) + ', ' + json.dumps(command) + ')')
+        binds.append('o.rebind(' + json.dumps(combo) + ', ' + json.dumps('RusticQ ' + ACTIONS[act]) + ', ' + json.dumps(command) + ')')
     lines = ['hl.unbind(' + json.dumps(k) + ')' for k in unbinds] + binds
     if lines:
         return append_block(base_content, '\n'.join(lines))
@@ -582,8 +723,7 @@ def apply_keybinding(combo, action):
     mapping = dict(old_map)
     previous_key = mapping.get(action)
     mapping[action] = key
-    if previous_key and previous_key != key and previous_key not in mapping.values():
-        new_backups.pop(previous_key, None)
+    # Keep prior binding snapshots in the audit record even after reassignment.
     updated = write_shortcuts(mapping, content)
     STATE.mkdir(parents=True, exist_ok=True, mode=0o700)
     original_backup = STATE / 'shortcut-original.txt'
@@ -630,13 +770,8 @@ def restore_shortcut(action=None):
         save_atomic(SHORTCUTS, json.dumps(changed, indent=2) + '\n')
     elif SHORTCUTS.exists():
         SHORTCUTS.unlink()
-    backups = load_shortcut_backups()
-    active_keys = set(changed.values()) | set(load_remaps().keys())
-    backups = {key: value for key, value in backups.items() if key in active_keys}
-    if backups:
-        save_atomic(SHORTCUT_BACKUPS, json.dumps(backups, indent=2) + '\n')
-    elif SHORTCUT_BACKUPS.exists():
-        SHORTCUT_BACKUPS.unlink()
+    # Preserve saved originals for historical audit/recovery even after restore.
+    # Only the active override map is removed.
     # Original default bindings are revealed again after hl.unbind is removed.
     # No user/default Lua source lines were ever rewritten.
     return {'ok': True, 'message': ('Restored ' + (removed_key or 'all shortcuts') + '. ' + result)}
@@ -673,6 +808,7 @@ def enable_permanent(token):
     if SHIM.exists() or STARTER.exists() or DATA.exists():
         raise ValueError('Previous installation files exist. Move or restore them manually before installing.')
     backup_result = backup_omarchy()
+    verify_omarchy_backup(require_complete=True)
     originals = backup_result['snapshot']['user_files']
     patched_autostart = original_autostart.replace(needle, 'hl.exec_cmd(' + json.dumps(shlex.quote(str(STARTER))) + ')', 1)
     preload = 'package.preload["default.hypr.autostart"] = function()\n  dofile(' + json.dumps(str(SHIM)) + ')\n  return true\nend'
@@ -717,6 +853,7 @@ def revert_permanent(token):
     meta = load_meta()
     if not meta:
         return {'ok': True, 'message': 'Permanent RusticQ integration is not installed.'}
+    verify_omarchy_backup(require_complete=False)  # older RC5 snapshots stay revertible
     existing = read_file(MAIN, required=True)
     if digest(existing) != meta.get('main_applied_hash'):
         # Allow external edits outside the generated block if managed content is still exact.
@@ -726,8 +863,10 @@ def revert_permanent(token):
             raise ValueError('Hyprland config changed since install. Manual merge needed; backup was preserved.')
     else:
         original = (STATE / 'backup/hyprland.original').read_text(encoding='utf-8')
+    # Preserve *current* managed configs before writing, including any
+    # personal changes since activation. Never force-restore entire user dirs.
+    history = preserve_before_revert()
     # Keep shortcut overrides independent from permanent shell integration.
-    # Rebuild managed commands against the active development copy, not DATA.
     bindings = read_file(BINDINGS)
     save_atomic(MAIN, original)
     META.unlink()
@@ -748,22 +887,40 @@ def revert_permanent(token):
                 break
         if parked is None:
             raise ValueError('Startup restored; installed shell needs manual archival before reinstall.')
-    msg = 'Omarchy startup restored for next login. Shortcut overrides kept independent; snapshots retained.'
+    msg = 'Omarchy startup restored for next login. Original backups retained; pre-revert configs saved in ' + history + '. Shortcut overrides kept independent.'
     if parked is not None:
         msg += ' Previous RusticQ install parked at ' + str(parked)
     return {'ok': True, 'message': msg}
 
 
+def backup_health():
+    # Fast read-only summary on every Settings refresh; checksum verification is
+    # mandatory before both enable and revert, not every status refresh.
+    if not OMARCHY_BACKUP_META.is_file():
+        return dict(ok=False, message='No original Omarchy snapshot yet', full=False)
+    try:
+        data = json.loads(OMARCHY_BACKUP_META.read_text(encoding='utf-8'))
+        full = TREE_META.is_file() and TREE_ROOT.is_dir()
+        tree = json.loads(TREE_META.read_text(encoding='utf-8')) if full else {}
+        return dict(ok=full, full=full, defaults=len(data.get('files', {})),
+                    user_files=tree.get('count', 0),
+                    message='Snapshot metadata ready; checksums checked on enable/revert' if full else
+                            'Legacy backup: full preinstall user-tree snapshot unavailable')
+    except (ValueError, OSError, KeyError, json.JSONDecodeError) as error:
+        return dict(ok=False, full=False, message=str(error))
+
+
+
 def status():
     manifest = load_meta()
     bindings = read_file(BINDINGS)
-    return {'ok': True, 'permanent': bool(manifest), 'shortcut_managed': START in bindings, 'shortcuts': load_shortcuts(), 'shortcut_backups': load_shortcut_backups(), 'remaps': load_remaps(), 'backup_dir': str(STATE / 'backup'), 'omarchy_backup_ready': OMARCHY_BACKUP_META.is_file(),
+    return {'ok': True, 'permanent': bool(manifest), 'shortcut_managed': START in bindings, 'shortcuts': load_shortcuts(), 'shortcut_backups': load_shortcut_backups(), 'remaps': load_remaps(), 'backup_dir': str(STATE / 'backup'), 'omarchy_backup_ready': backup_health()['ok'], 'backup_health': backup_health(),
             'installed_shell': str(DATA), 'omarchy_source': str(DEFAULT_AUTOSTART), 'compatibility': preview()}
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('operation', choices=['status', 'preview', 'bindings', 'actions', 'shortcut', 'shortcut-revert', 'remap', 'remap-revert', 'backup-omarchy', 'enable', 'revert'])
+    parser.add_argument('operation', choices=['status', 'preview', 'bindings', 'actions', 'shortcut', 'shortcut-revert', 'remap', 'remap-revert', 'backup-omarchy', 'verify-backup', 'enable', 'revert'])
     parser.add_argument('--key', default='SUPER + SHIFT + R')
     parser.add_argument('--action', default='settings', choices=list(ACTIONS))
     parser.add_argument('--all', action='store_true', help='Revert all RusticQ action shortcuts')
@@ -784,6 +941,7 @@ def main():
             'remap': lambda: remap_binding(args.file, args.line, args.source_hash, args.key),
             'remap-revert': lambda: restore_remap(args.remap_id),
             'backup-omarchy': backup_omarchy,
+            'verify-backup': lambda: dict(ok=True, verification=verify_omarchy_backup(require_complete=not META.exists()), message='Original backup integrity verified'),
             'enable': lambda: enable_permanent(args.confirm),
             'revert': lambda: revert_permanent(args.confirm)
         }[args.operation]()

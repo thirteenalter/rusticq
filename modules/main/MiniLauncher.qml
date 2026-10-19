@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import Quickshell.Widgets
 import "../../services"
 import "../../config"
@@ -17,14 +18,142 @@ Rectangle {
     property var results: []
     property var frequent: []
     property bool showAll: false
+    // Reuse the existing launcher for local tools; no independent search daemon.
+    readonly property var providerMatch: /^:(emoji|settings|wallpaper|color|ocr|files|folders|windows|workspaces|notes)(?:\s+(.*))?$/i.exec(query.trim())
+    readonly property bool toolsMode: providerMatch !== null
+    readonly property string toolName: providerMatch ? providerMatch[1].toLowerCase() : ""
+    readonly property string toolQuery: providerMatch ? (providerMatch[2] || "") : ""
+    property var toolRows: []
+    property string toolMessage: ""
+    property bool toolError: false
+    property string searchInflight: ""
+    readonly property int selectionCount: toolsMode ? toolRows.length : displayedResults.length
+    function requestToolSearch() {
+        if (!toolsMode) { toolSearchTimer.stop(); toolRows = []; return; }
+        toolMessage = "";
+        toolSearchTimer.restart();
+    }
+    Timer { id: toolSearchTimer; interval: 170; repeat: false; onTriggered: {
+        if (toolSearchProcess.running) return;
+        root.searchInflight = root.toolName + "|" + root.toolQuery;
+        toolSearchProcess.exec(["python3", Quickshell.shellPath("scripts/rusticq-launcher-tools.py"),
+                                "search", root.toolName, root.toolQuery]);
+    } }
+    Process {
+        id: toolSearchProcess
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const response = JSON.parse(this.text);
+                if (root.toolsMode && root.toolName === response.mode && root.toolQuery === response.query) {
+                    root.toolRows = response.ok === true ? (response.items || []) : [];
+                    root.selectedIndex = 0;
+                    root.toolError = response.ok !== true;
+                    root.toolMessage = response.ok === true ? "" : (response.message || "Search unavailable");
+                }
+            } catch (e) { if (root.toolsMode) { root.toolError = true; root.toolMessage = "Tool search failed: " + e; } }
+        } }
+        onExited: (code, status) => {
+            if (root.toolsMode && root.searchInflight !== root.toolName + "|" + root.toolQuery)
+                toolSearchTimer.restart();
+        }
+    }
+    Process {
+        id: toolRunProcess
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const response = JSON.parse(this.text);
+                root.toolError = response.ok !== true;
+                root.toolMessage = response.message || (root.toolError ? "Action failed" : "Done");
+                if (!root.toolError) toolDismissTimer.restart();
+            } catch (e) { root.toolError = true; root.toolMessage = "Action failed: " + e; }
+        } }
+        onExited: (code, status) => {
+            if (code !== 0 && !root.toolMessage.length) { root.toolError = true; root.toolMessage = "Tool exited with code " + code; }
+        }
+    }
+    Timer { id: toolDismissTimer; interval: 850; repeat: false; onTriggered: root.launched() }
+    function chooseTool(entry) {
+        if (!entry || toolRunProcess.running) return;
+        if (entry.action === "settings") {
+            Store.showSettings(entry.payload, Store.launcherScreen);
+            launched();
+            return;
+        }
+        if (entry.action === "file" || entry.action === "folder" ||
+            entry.action === "window" || entry.action === "workspace") {
+            // The actual open/focus operation runs independently after the layer closes.
+            Quickshell.execDetached(["python3", Quickshell.shellPath("scripts/rusticq-launcher-tools.py"),
+                                     "execute", entry.action, entry.payload]);
+            launched();
+            return;
+        }
+        if (entry.action === "ocr" || entry.action === "color") {
+            // Close the full-screen layer before capture/picker starts.
+            // An independent process finishes even when this LazyLoader unloads.
+            Quickshell.execDetached(["python3", Quickshell.shellPath("scripts/rusticq-launcher-tools.py"),
+                                     "execute-later", entry.action, entry.payload]);
+            launched();
+            return;
+        }
+        toolMessage = "Running " + entry.action + "…";
+        toolError = false;
+        toolRunProcess.exec(["python3", Quickshell.shellPath("scripts/rusticq-launcher-tools.py"),
+                             "execute", entry.action, entry.payload]);
+    }
+    // Explicit calculator mode: `=2*(3+4)`; no arbitrary Python/JS evaluation.
+    readonly property bool calculatorMode: query.trim().startsWith("=")
+    property string calculatorResult: ""
+    property string calculatorError: ""
+    property string calculatorInFlight: ""
+    function calculateLater() {
+        calculatorResult = "";
+        calculatorError = "";
+        if (calculatorMode && query.trim().length > 1) calcDebounce.restart();
+        else calcDebounce.stop();
+    }
+    Timer {
+        id: calcDebounce
+        interval: 150
+        repeat: false
+        onTriggered: {
+            if (calcProcess.running) return;
+            root.calculatorInFlight = root.query.trim().substring(1);
+            calcProcess.exec(["python3", Quickshell.shellPath("scripts/rusticq-calc.py"), root.calculatorInFlight]);
+        }
+    }
+    Process {
+        id: calcProcess
+        stdout: StdioCollector { onStreamFinished: {
+            try {
+                const response = JSON.parse(this.text);
+                if (root.calculatorMode && root.query.trim().substring(1) === response.expression) {
+                    root.calculatorResult = response.ok === true ? String(response.result) : "";
+                    root.calculatorError = response.ok === true ? "" : (response.error || "Invalid expression");
+                }
+            } catch (e) {
+                if (root.calculatorMode) root.calculatorError = "Calculator unavailable";
+            }
+        } }
+        onExited: (code, status) => {
+            if (root.calculatorMode && root.query.trim().substring(1) !== root.calculatorInFlight)
+                calcDebounce.restart();
+        }
+    }
+    function copyResult() {
+        if (!calculatorMode || calculatorResult.length === 0) return;
+        Quickshell.execDetached(["wl-copy", "--", calculatorResult]);
+    }
     property int selectedIndex: 0
     onResultsChanged: selectedIndex = 0
     function moveSelection(delta) {
-        if (!displayedResults.length) return;
-        selectedIndex = Math.max(0, Math.min(displayedResults.length - 1, selectedIndex + delta));
-        appList.positionViewAtIndex(selectedIndex, ListView.Contain);
+        if (!selectionCount) return;
+        selectedIndex = Math.max(0, Math.min(selectionCount - 1, selectedIndex + delta));
+        if (toolsMode) toolList.positionViewAtIndex(selectedIndex, ListView.Contain);
+        else appList.positionViewAtIndex(selectedIndex, ListView.Contain);
     }
     function launchSelected() {
+        if (calculatorMode) { copyResult(); return; }
+        if (toolsMode) { if (toolRows.length) chooseTool(toolRows[Math.min(selectedIndex, toolRows.length-1)]); return; }
         if (displayedResults.length) launch(displayedResults[Math.min(selectedIndex, displayedResults.length - 1)]);
     }
     readonly property bool cleanHover: SettingsStore.launcherLayoutMode === "clean-hover"
@@ -55,24 +184,29 @@ Rectangle {
     function rebuild() {
         const entries = DesktopEntries.applications.values;
         const found = [];
+        const searching = query.trim().length > 0;
         for (let i = 0; i < entries.length; i++) {
             const entry = entries[i];
-            if (entry && matches(entry)) found.push(entry);
+            if (!entry) continue;
+            const relevance = searching ? searchScore(entry, query.trim().toLowerCase()) : 1;
+            if (relevance > 0) found.push({entry: entry, score: relevance});
         }
         found.sort((a, b) => {
-            const sa = AppUsage.stats(a), sb = AppUsage.stats(b);
+            if (searching && a.score !== b.score) return b.score - a.score;
+            const sa = AppUsage.stats(a.entry), sb = AppUsage.stats(b.entry);
             if (sa.pinned !== sb.pinned) return sa.pinned ? -1 : 1;
             if (sa.count !== sb.count) return sb.count - sa.count;
             if (sa.last !== sb.last) return sb.last - sa.last;
-            return textOf(a.name).localeCompare(textOf(b.name));
+            return textOf(a.entry.name).localeCompare(textOf(b.entry.name));
         });
-        frequent = found.filter(e => {
+        const ordered = found.map(item => item.entry);
+        frequent = ordered.filter(e => {
             const st = AppUsage.stats(e);
             return st.pinned || st.count > 0;
         }).slice(0, 6);
-        results = found;
+        results = ordered;
     }
-    onQueryChanged: rebuild()
+    onQueryChanged: { rebuild(); calculateLater(); requestToolSearch(); }
     Connections {
         target: AppUsage
         function onUsageChanged() { root.rebuild(); }
@@ -82,6 +216,8 @@ Rectangle {
         root.revealPreview = false;
         root.query = "";
         root.selectedIndex = 0;
+        root.toolRows = [];
+        root.toolMessage = "";
         Qt.callLater(function() { rebuild(); searchField.forceActiveFocus(); });
     }
     Connections {
@@ -96,18 +232,51 @@ Rectangle {
     function textOf(value) {
         return value === undefined || value === null ? "" : String(value);
     }
-    function matches(entry) {
-        const q = query.trim().toLowerCase();
-        if (!q.length) return true;
-        const haystack = [
-            textOf(entry.name),
-            textOf(entry.genericName),
-            textOf(entry.comment),
-            textOf(entry.id),
-            Array.isArray(entry.keywords) ? entry.keywords.join(" ") : ""
-        ].join(" ").toLowerCase();
-        return haystack.indexOf(q) !== -1;
+    // Bounded typo tolerance: only names/words, no extra subprocess or indexer.
+    function editDistance2(a, b) {
+        if (!a || !b || Math.abs(a.length - b.length) > 2) return 3;
+        if (a === b) return 0;
+        let previous = [];
+        for (let j = 0; j <= b.length; j++) previous.push(j);
+        for (let i = 1; i <= a.length; i++) {
+            const row = [i];
+            let lowest = row[0];
+            for (let j = 1; j <= b.length; j++) {
+                const cost = a.charAt(i-1) === b.charAt(j-1) ? 0 : 1;
+                const value = Math.min(row[j-1]+1, previous[j]+1, previous[j-1]+cost);
+                row.push(value);
+                if (value < lowest) lowest = value;
+            }
+            if (lowest > 2) return 3;
+            previous = row;
+        }
+        return previous[b.length];
     }
+    function searchScore(entry, text) {
+        const q = text.trim().toLowerCase();
+        if (!q) return 1;
+        if (q.startsWith("=") || q.startsWith(":")) return 0;
+        const name = textOf(entry.name).toLowerCase();
+        const generic = textOf(entry.genericName).toLowerCase();
+        const comment = textOf(entry.comment).toLowerCase();
+        const appId = textOf(entry.id).toLowerCase();
+        const keywords = Array.isArray(entry.keywords) ? entry.keywords.join(" ").toLowerCase() : "";
+        if (name === q) return 150;
+        if (name.startsWith(q)) return 140;
+        if (name.split(/[\s\-_.,\/]+/).some(token => token.startsWith(q))) return 110;
+        if (name.includes(q)) return 90;
+        if (appId.startsWith(q)) return 80;
+        if (generic.includes(q) || keywords.includes(q)) return 65;
+        if (comment.includes(q) || appId.includes(q)) return 40;
+        if (q.length >= 4 && q.length <= 24) {
+            const words = name.split(/[\s\-_.,\/]+/).filter(token => token.length >= 3).slice(0, 8);
+            let best = 3;
+            for (const word of words) best = Math.min(best, editDistance2(word.slice(0, 24), q));
+            if (best <= 2) return 38 - best * 8;
+        }
+        return 0;
+    }
+
 
     ColumnLayout {
         anchors.fill: parent
@@ -129,7 +298,7 @@ Rectangle {
                 Layout.fillWidth: true
                 spacing: 1
                 Text { text: "App Launcher"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(15) }
-                Text { visible: !root.cleanHover; text: "Search installed applications"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                Text { visible: !root.cleanHover; text: "Apps · =math · :files · :windows · :workspaces · :notes · :emoji · :ocr"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
             }
             Text {
                 visible: !root.cleanHover
@@ -176,7 +345,7 @@ Rectangle {
                     Text {
                         visible: searchField.text.length === 0
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "Type to search apps"
+                        text: "Apps / =math / :files / :notes / :settings"
                         color: Theme.muted
                         font.family: Fonts.poppins.name
                         font.pixelSize: Fonts.scale(11)
@@ -199,6 +368,29 @@ Rectangle {
         }
 
         Rectangle {
+            visible: root.calculatorMode
+            Layout.fillWidth: true
+            Layout.preferredHeight: visible ? 56 : 0
+            radius: 11
+            color: Theme.surface
+            RowLayout {
+                anchors.fill: parent; anchors.margins: 12; spacing: 11
+                Icon { icon: "\uea5e"; color: Theme.accent; font.pixelSize: Fonts.scale(20) }
+                ColumnLayout {
+                    Layout.fillWidth: true; spacing: 3
+                    Text { text: root.calculatorResult.length ? "= " + root.calculatorResult : root.calculatorError.length ? root.calculatorError : "Try =sqrt(144) + 8"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                    Text { text: root.calculatorResult.length ? "Enter or click to copy · requires wl-copy" : "Math: +  -  *  /  ^  sqrt()  sin()  pi"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                }
+                Rectangle {
+                    visible: root.calculatorResult.length > 0
+                    Layout.preferredWidth: 62; Layout.preferredHeight: 32; radius: 8; color: Qt.alpha(Theme.accent, 0.16)
+                    Text { anchors.centerIn: parent; text: "Copy"; color: Theme.accent; font.pixelSize: Fonts.scale(11) }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.copyResult() }
+                }
+            }
+        }
+
+        Rectangle {
             Layout.fillWidth: true
             visible: root.showResults
             Layout.preferredHeight: visible ? 1 : 0
@@ -206,7 +398,7 @@ Rectangle {
         }
 
         ColumnLayout {
-            visible: !root.cleanHover && root.query.trim() === "" && root.frequent.length > 0 && SettingsStore.launcherHeight >= 470
+            visible: !root.toolsMode && !root.cleanHover && root.query.trim() === "" && root.frequent.length > 0 && SettingsStore.launcherHeight >= 470
             Layout.fillWidth: true
             spacing: 8
             RowLayout {
@@ -247,7 +439,7 @@ Rectangle {
         }
 
         RowLayout {
-            visible: !root.cleanHover
+            visible: !root.toolsMode && !root.cleanHover
             Layout.fillWidth: true
             Text { text: root.query.trim() === "" ? "All applications" : "Search results"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); Layout.fillWidth: true }
             Text { text: root.results.length + " found"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
@@ -255,10 +447,10 @@ Rectangle {
 
         ListView {
             id: appList
-            visible: root.showResults
+            visible: !root.toolsMode && root.showResults
             Layout.fillWidth: true
-            Layout.fillHeight: root.showResults
-            Layout.preferredHeight: root.showResults ? -1 : 0
+            Layout.fillHeight: !root.toolsMode && root.showResults
+            Layout.preferredHeight: !root.toolsMode && root.showResults ? -1 : 0
             clip: true
             spacing: 6
             model: root.displayedResults
@@ -275,7 +467,6 @@ Rectangle {
                 color: appRow.index === root.selectedIndex ? Qt.alpha(Theme.accent, 0.20) : appMouse.containsMouse ? Qt.alpha(Theme.accent, 0.12) : Theme.surface
                 border.width: appRow.index === root.selectedIndex ? 1 : 0
                 border.color: Theme.accent
-                border.width: 0
 
                 RowLayout {
                     anchors.fill: parent
@@ -351,8 +542,53 @@ Rectangle {
             }
         }
 
+        ListView {
+            id: toolList
+            visible: root.toolsMode
+            Layout.fillWidth: true
+            Layout.fillHeight: root.toolsMode
+            Layout.preferredHeight: root.toolsMode ? -1 : 0
+            clip: true
+            spacing: 6
+            model: root.toolRows
+            currentIndex: root.selectedIndex
+            boundsBehavior: Flickable.StopAtBounds
+            delegate: Rectangle {
+                id: toolRow
+                required property var modelData
+                required property int index
+                width: ListView.view.width
+                height: Math.max(58, SettingsStore.launcherRowHeight)
+                radius: 11
+                color: toolRow.index === root.selectedIndex ? Qt.alpha(Theme.accent, .19) : toolMouse.containsMouse ? Qt.alpha(Theme.accent,.11) : Theme.surface
+                border.width: toolRow.index === root.selectedIndex ? 1 : 0
+                border.color: Theme.accent
+                RowLayout { anchors.fill: parent; anchors.margins: 10; spacing: 10
+                    Text { text: toolRow.modelData.icon || "•"; color: Theme.accent; font.pixelSize: Fonts.scale(20); Layout.preferredWidth: 32; horizontalAlignment: Text.AlignHCenter }
+                    ColumnLayout { Layout.fillWidth: true; spacing: 3
+                        Text { text: toolRow.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); elide: Text.ElideRight; Layout.fillWidth: true }
+                        Text { text: toolRow.modelData.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); elide: Text.ElideMiddle; Layout.fillWidth: true }
+                    }
+                    Icon { icon: "\ue5cc"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
+                }
+                MouseArea { id: toolMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                    onEntered: root.selectedIndex = toolRow.index
+                    onClicked: { root.selectedIndex = toolRow.index; root.chooseTool(toolRow.modelData); }
+                }
+            }
+        }
         Text {
-            visible: !root.cleanHover || (root.query.trim().length > 0 && root.results.length === 0)
+            visible: root.toolsMode
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            text: root.toolMessage.length ? root.toolMessage : root.toolRows.length ? "↑/↓ select · Enter to run · actions are local and opt-in" : "No matching items · try :files report, :notes +task, or :windows"
+            color: root.toolError ? Theme.error : Theme.muted
+            font.family: Fonts.poppins.name
+            font.pixelSize: Fonts.scale(10)
+        }
+
+        Text {
+            visible: !root.toolsMode && (!root.cleanHover || (root.query.trim().length > 0 && root.results.length === 0))
             Layout.fillWidth: true
             text: root.results.length === 0 ? "No matching applications" : root.query.trim().length > 0 ? root.results.length + " matching apps · ↑/↓ select · Enter launch" : "Installed applications · choose to launch"
             wrapMode: Text.WordWrap

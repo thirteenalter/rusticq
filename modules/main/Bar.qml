@@ -215,6 +215,7 @@ PanelWindow {
         targetY: barWindow.miniAnchorY
         barPosition: barWindow.barPosition
         menuSection: barWindow.menuSection
+        onMenuSectionNavigated: function(sectionKey) { barWindow.menuSection = sectionKey; }
         onDismissed: barWindow.miniKind = ""
     }
 }

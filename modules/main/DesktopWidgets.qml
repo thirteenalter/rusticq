@@ -12,4 +12,7 @@ Scope {
     DesktopWidgetWindow { kind: "media"; screen: root.screen }
     DesktopWidgetWindow { kind: "weather"; screen: root.screen }
     DesktopWidgetWindow { kind: "connectivity"; screen: root.screen }
+    DesktopWidgetWindow { kind: "notes"; screen: root.screen }
+    DesktopWidgetWindow { kind: "kanban"; screen: root.screen }
+    DesktopWidgetWindow { kind: "randomImage"; screen: root.screen }
 }

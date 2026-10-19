@@ -7,6 +7,7 @@ import "modules/main"
 import "modules/bar"
 import "modules/ai"
 import "modules/settings"
+import "modules/power"
 import "services"
 
 // Satu bar untuk setiap monitor, satu sidebar sesuai monitor yang diklik.
@@ -32,6 +33,8 @@ ShellRoot {
         if (action === "bar-network") {
             Store.shortcutBarRequested(WifiService.ethernetConnected ? "ethernet" : "wifi", screenName); return;
         }
+        if (action === "power") { Store.togglePowerMenu(screen); return; }
+        if (action === "lock") { Quickshell.execDetached(["python3", Quickshell.shellPath("scripts/rusticq-native-lock.py"), "start"]); return; }
         if (action === "launcher") { Store.toggleLauncher(screen); return; }
         if (action === "quick") { Store.toggleQuick(screen); return; }
         if (action === "ai") { Store.toggleAi(screen); return; }
@@ -45,7 +48,7 @@ ShellRoot {
         }
         if (action.indexOf("popup-") === 0) {
             const popup = action.substring(6);
-            if (["wifi", "ethernet", "bluetooth", "battery", "audio", "weather", "time", "date", "task"].indexOf(popup) >= 0)
+            if (["wifi", "ethernet", "bluetooth", "battery", "audio", "weather", "time", "date", "task", "notifications"].indexOf(popup) >= 0)
                 Store.shortcutBarRequested(popup, screenName);
             return;
         }
@@ -75,6 +78,7 @@ ShellRoot {
                 Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-menu-action.sh"), id]);
             return;
         }
+        if (action === "item-shell-power") { Store.togglePowerMenu(screen); return; }
         if (action === "item-shell-monitor") { Store.monitorScreen = screen; Store.systemMonitorVisible = true; return; }
         if (action === "item-tools-settings") { Store.showSettings("bar", screen); return; }
         if (action === "item-tools-region") {
@@ -108,6 +112,8 @@ ShellRoot {
         function quick(): void { root.dispatchShortcut("quick"); }
         function ai(): void { root.dispatchShortcut("ai"); }
         function monitor(): void { root.dispatchShortcut("monitor"); }
+        function power(): void { root.dispatchShortcut("power"); }
+        function lock(): void { root.dispatchShortcut("lock"); }
         function dispatch(action: string): void { root.dispatchShortcut(action); }
     }
 
@@ -155,6 +161,12 @@ ShellRoot {
         active: Store.settingsVisible
         SettingsWindow {}
     }
+    LazyLoader {
+        active: Store.powerMenuVisible
+        PowerMenu {}
+    }
+    // Keep the QR owner alive while hidden so its cleanup process can finish.
+    WifiShareOverlay {}
     LazyLoader {
         active: Store.confirmationVisible
         PackageConfirmationWindow {}
