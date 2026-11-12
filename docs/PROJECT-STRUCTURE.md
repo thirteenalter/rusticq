@@ -5,6 +5,7 @@ quickshell/
 ├── shell.qml                    # application entry and IPC actions
 ├── README.md                    # overview + quick start
 ├── FEATURES.md                  # feature-by-feature index
+├── VERSION                      # active source release tag
 ├── AGENTS.md                    # contributor guidance
 ├── COMPAT-0.3.1.md             # Quickshell API compatibility notes
 ├── assets/                      # icons, brand artwork; local fonts optional
@@ -12,7 +13,9 @@ quickshell/
 │   ├── Config.qml, Store.qml    # shell state and global action routing
 │   ├── SettingsStore.qml        # persisted user preferences, profiles
 │   ├── Theme.qml, Fonts.qml     # visual system
-│   └── dependencies.json       # allowlisted Arch core/optional packages
+│   ├── dependencies.json       # allowlisted Arch core/optional packages
+│   ├── ReleaseInfo.qml         # shared runtime release metadata
+│   └── releases/               # per-version JSON manifests for About history
 ├── components/                  # shared QML elements and bar icons
 ├── modules/
 │   ├── bar/                     # alternate bar layouts and popups
@@ -29,6 +32,7 @@ quickshell/
 │   ├── install.sh              # opt-in source install + core packages
 │   ├── bootstrap.sh            # future HTTPS + checksum release bootstrap
 │   ├── rusticq-dependencies.py # package diagnostics + safe optional installs
+│   ├── rusticq-release.py      # local release manifest validation and catalog
 │   ├── rustiq-desktop-integration.py  # shortcut overrides + Omarchy backup/revert
 │   └── ...                     # media, screen capture, updater, diagnostics
 ├── docs/                        # installation, dependencies, troubleshooting

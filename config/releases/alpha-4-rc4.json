@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "alpha-4-rc4",
+    "name": "Alpha 4 RC4",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "Shortcut editing and reversible permanent Omarchy integration.",
+    "changes": [
+        "Managed Hyprland shortcuts with backups and restore support.",
+        "IPC actions reuse the running RusticQ instance.",
+        "Optional permanent integration applies at the next login."
+    ],
+    "notes": [
+        "changelog/ALPHA-4-RC4.md"
+    ]
+}

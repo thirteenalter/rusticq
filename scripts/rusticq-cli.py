@@ -93,11 +93,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == 'version':
-            tag = (ROOT / 'VERSION').read_text(encoding='utf8').strip()
-            if not tag or not tag.startswith('beta-'):
-                raise ValueError('Local source has no valid beta release version')
-            result = {'tag': tag, 'name': 'Beta ' + tag.removeprefix('beta-'),
-                      'source': str(ROOT), 'published_to_github': 'not_verified'}
+            release = import_from('rusticq-release.py', 'rusticq_release_cli').current_release(ROOT)
+            result = dict(release, source=str(ROOT), published_to_github='not_verified')
         elif args.command == 'status':
             doctor = import_from('rusticq-doctor.py', 'rusticq_doctor_cli')
             result = {'shell_path': str(ROOT),

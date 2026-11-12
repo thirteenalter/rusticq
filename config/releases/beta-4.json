@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "beta-4",
+    "name": "Beta 4",
+    "date": "2026-11-13",
+    "minimumQuickshell": "0.3.1",
+    "summary": "Manifest-based release information and a refreshed About page.",
+    "changes": [
+        "Release metadata and history come from each version's local manifest.",
+        "About shows the active version, compatibility, release highlights and historical notes.",
+        "Settings branding uses RusticQ consistently; release packages use the active manifest."
+    ],
+    "notes": [
+        "changelog/BETA-4.md"
+    ]
+}

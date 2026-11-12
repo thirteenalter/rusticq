@@ -309,7 +309,7 @@ def list_releases():
 
 
 def check_updates(tag='', target='dev'):
-    """Compare the selected target, never mistake a local Beta 3 for old Beta 1."""
+    """Compare the actual source version of the selected target."""
     if target not in ('dev', 'installed'):
         raise UpdateError('Unknown update target.')
     release = releases_get(tag)
@@ -625,7 +625,7 @@ def rollback(confirm, target='installed'):
 def run():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['status','check','releases','reapply-local','update-shell','rollback'])
-    parser.add_argument('--tag', default='', help='Specific published GitHub Release tag, e.g. beta-3')
+    parser.add_argument('--tag', default='', help='Specific published GitHub Release tag, e.g. beta-4')
     parser.add_argument('--confirm', default='')
     parser.add_argument('--target', choices=['installed','dev'], default='installed')
     args = parser.parse_args()

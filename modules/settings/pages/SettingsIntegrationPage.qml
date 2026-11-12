@@ -899,7 +899,7 @@ ColumnLayout {
                 }
                 color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); selectByMouse: true
                 Text { visible: parent.text.length === 0; anchors.verticalCenter: parent.verticalCenter
-                    text: "Release tag (e.g. beta-3); blank = newest published release"
+                    text: "Release tag (e.g. " + ReleaseInfo.tag + "); blank = newest published release"
                     color: Theme.muted; font.pixelSize: Fonts.scale(10) }
             }
         }

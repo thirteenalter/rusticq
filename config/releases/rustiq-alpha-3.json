@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "rustiq-alpha-3",
+    "name": "Alpha 3",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "Five bar layouts with top, bottom, left and right placement.",
+    "changes": [
+        "Persistent bar position across monitors.",
+        "Vertical rails reuse the existing indicator popups.",
+        "Popup placement follows the selected screen edge."
+    ],
+    "notes": [
+        "changelog/RUSTIQ-ALPHA-3.md"
+    ]
+}

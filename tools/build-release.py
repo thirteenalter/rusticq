@@ -6,14 +6,16 @@ No package installs, system changes, secrets, private config, or Git history.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import stat
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-SKIP_DIRS = {'.git','__pycache__','.pytest_cache','.venv','node_modules','.rusticq-patch-backup','dist'}
+SKIP_DIRS = {'.git','.aws','.codex','.agents','__pycache__','.pytest_cache','.venv','node_modules','.rusticq-patch-backup','dist'}
 PRIVATE_NAMES = {'user-settings.json','app-usage.json','.env','.env.local'}
 BINARY_FONTS = {'.ttf','.otf','.woff','.woff2'}
 FIXED_EPOCH = (2026, 1, 1, 0, 0, 0)
@@ -62,7 +64,19 @@ def write_zip(target, entries):
     return hashlib.sha256(target.read_bytes()).hexdigest()
 
 
-def build(out, previous=None, *, root=ROOT, label='rusticq-beta-3'):
+def build(out, previous=None, *, root=ROOT, label=None):
+    release = None
+    if (Path(root) / 'VERSION').exists():
+        spec = importlib.util.spec_from_file_location('rusticq_build_release', ROOT / 'scripts/rusticq-release.py')
+        metadata = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(metadata)
+        release = metadata.current_release(root)
+    if label is None:
+        if release is None:
+            raise ValueError('A source VERSION and release manifest are required for the default label')
+        label = 'rusticq-' + release['tag']
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}', label):
+        raise ValueError('Invalid release archive label')
     full = sources(root)
     base = read_previous(previous) if previous is not None else {}
     removed = sorted(set(base) - set(full))
@@ -79,6 +93,8 @@ def build(out, previous=None, *, root=ROOT, label='rusticq-beta-3'):
                 'patch_count':len(delta),'patch_paths':sorted(delta),
                 'previous_required':previous is not None,
                 'note':'Patch overlays previous source; it does not delete files.'}
+    if release is not None:
+        manifest['release'] = release
     (directory/(label+'-SHA256SUMS.txt')).write_text(f'{full_digest}  {full_zip.name}\n{patch_digest}  {patch_zip.name}\n')
     (directory/(label+'-manifest.json')).write_text(json.dumps(manifest,indent=2)+'\n')
     return manifest
@@ -88,7 +104,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out',required=True,type=Path)
     parser.add_argument('--previous',type=Path)
-    parser.add_argument('--label',default='rusticq-beta-3')
+    parser.add_argument('--label', help='Archive label (default: rusticq-<active manifest tag>)')
     args=parser.parse_args()
     print(json.dumps(build(args.out,args.previous,label=args.label),indent=2))
 

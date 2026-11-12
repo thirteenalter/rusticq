@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "alpha-4-rc3",
+    "name": "Alpha 4 RC3",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "Appearance controls, absolute bar centering and an expanded AI workspace.",
+    "changes": [
+        "Persistent typography, density and wallpaper preferences.",
+        "Absolute center positioning and a dedicated Quick Control layout.",
+        "Expandable AI workspace with in-session conversations."
+    ],
+    "notes": [
+        "changelog/ALPHA-4-RC3.md"
+    ]
+}

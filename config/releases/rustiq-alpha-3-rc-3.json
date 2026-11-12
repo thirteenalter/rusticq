@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "rustiq-alpha-3-rc-3",
+    "name": "Alpha 3 RC3",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "Hover details, live bar margins and monitor arrangement controls.",
+    "changes": [
+        "Clean Compact can reveal additional labels on hover.",
+        "Persistent per-layout margins with live previews.",
+        "Displays reads real monitor information and can export Lua rules."
+    ],
+    "notes": [
+        "changelog/RUSTIQ-ALPHA-3-RC-3.md"
+    ]
+}

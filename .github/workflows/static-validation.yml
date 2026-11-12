@@ -16,6 +16,8 @@ jobs:
         run: python3 tools/verify-static.py
       - name: New launcher providers and reproducible release tests
         run: python3 -m unittest discover -s tools -p 'test_beta2*.py' -v
+      - name: Release manifests and historical version comparisons
+        run: python3 -m unittest discover -s tools -p 'test_*versioning.py' -v
       - name: Phase 1 regression tests
         run: |
           python3 -m unittest discover -s tools -p 'test_beta1_feature_batch.py' -v

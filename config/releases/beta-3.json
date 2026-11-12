@@ -1,0 +1,18 @@
+{
+    "schemaVersion": 1,
+    "tag": "beta-3",
+    "name": "Beta 3",
+    "date": "2026-10-19",
+    "minimumQuickshell": "0.3.1",
+    "summary": "Shared source versioning and target-aware shell update comparisons.",
+    "changes": [
+        "Shared release information for the Settings header, footer and About.",
+        "Local source versions take precedence over stale updater state.",
+        "Older beta releases are identified as downgrades."
+    ],
+    "notes": [
+        "changelog/BETA-3.md",
+        "docs/COMPOSITOR-STUDIO-BETA-3.md",
+        "docs/SWAYBG-STARTUP-RESTORE-BETA3.md"
+    ]
+}

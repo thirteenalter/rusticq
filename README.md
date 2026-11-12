@@ -2,7 +2,7 @@
   <img src="assets/rusticq-about-lockup.png" alt="RusticQ logo" width="390" />
 
   # RusticQ
-  **A modular Quickshell desktop for Hyprland · Beta 3**
+  **A modular Quickshell desktop for Hyprland · Beta 4**
 
   A configurable Wayland bar, launcher, widgets, dock, shortcuts, and system settings.
 
@@ -11,7 +11,7 @@
 
 ## Overview
 
-RusticQ is a user-space desktop shell configuration built with **Quickshell/QML**, for **Hyprland on Arch Linux**, including compatible **Omarchy Quattro** installations. It does not replace your window manager. The current **Beta 3** source retains **Quickshell 0.3.1** compatibility as a minimum; real compositor testing is still required.
+RusticQ is a user-space desktop shell configuration built with **Quickshell/QML**, for **Hyprland on Arch Linux**, including compatible **Omarchy Quattro** installations. It does not replace your window manager. The current **Beta 4** source retains **Quickshell 0.3.1** compatibility as a minimum; real compositor testing is still required.
 
 - **Bar:** Compact, Clean Compact, Separated, Professional and Simple layouts, Top/Bottom/Left/Right placement, per-layout icon visibility, icon order/placement and spacing.
 - **Launcher & workspaces:** app search, launcher on the focused monitor, workspace navigation and assignable shortcuts.
@@ -34,13 +34,20 @@ calendar. Choose a preset or enter a custom, case-sensitive Qt format; for examp
 the format field to save. Both items have live previews, retain their existing
 popup actions and module visibility, and wrap long labels on vertical bars.
 
-## Current source release — Beta 3 (`beta-3`)
+## Current source release — Beta 4 (`beta-4`)
 
-RusticQ's local source version is now **Beta 3**. The version is published in
-`VERSION` (CLI and updater) and `config/ReleaseInfo.qml` (QML UI), and both
-values are checked by automated tests. Beta 3 keeps all accumulated Beta 1
-features and hotfixes, including Native Polkit, System OSD, wallpaper low-memory
-mode, desktop widgets, shell updates and Save/Load User Settings.
+RusticQ's local source version is **Beta 4**. `VERSION` selects
+`config/releases/beta-4.json`, the shared manifest for the version name, tag,
+date, Quickshell requirement and release highlights. Settings → About now
+includes version history from each documented release's manifest and links to
+its original notes. The CLI and release builder use the same metadata; archive
+names default to `rusticq-beta-4`. Settings branding consistently uses RusticQ.
+See [release versioning](docs/RELEASE-VERSIONING.md) and the
+[Beta 4 changelog](changelog/BETA-4.md).
+
+Beta 4 retains the existing features and hotfixes, including Native Polkit,
+System OSD, wallpaper low-memory mode, desktop widgets, shell updates and
+Save/Load User Settings.
 
 This **does not publish a GitHub Release or modify any running/installed shell**.
 GitHub beta tags from older releases remain available for explicitly confirmed
@@ -130,7 +137,7 @@ See [`changelog/BETA1-POWER-OVERLAY-PACKAGE-SEARCH-HOTFIX.md`](changelog/BETA1-P
 
 ## Quick start
 
-### 1. Try Beta 1 without installing anything
+### 1. Try Beta 4 without installing anything
 
 A working Hyprland/Wayland session and Quickshell are required:
 
@@ -167,7 +174,7 @@ Open **Settings → Integration → Required & optional dependencies**, select a
 
 ## One-line installation from GitHub
 
-After merging this Beta 1 release into `thirteenalter/rusticq` **main**, the canonical installer URL is:
+After merging the source into `thirteenalter/rusticq` **main**, the canonical installer URL is:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/thirteenalter/rusticq/refs/heads/main/scripts/install.sh | bash

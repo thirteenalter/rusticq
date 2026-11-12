@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Beta 3 versioning and downgraded-release protection, fully offline."""
+"""Source version parity and historical beta downgrade protection, fully offline."""
 import importlib.util
 from pathlib import Path
 import json
@@ -23,23 +23,24 @@ def load_updater():
 class Versioning(unittest.TestCase):
     def test_version_metadata_ui_and_docs(self):
         tag=(ROOT/'VERSION').read_text().strip()
-        self.assertEqual(tag,'beta-3')
+        release=json.loads((ROOT/'config/releases'/f'{tag}.json').read_text())
+        self.assertEqual(release['tag'],tag)
         meta=(ROOT/'config/ReleaseInfo.qml').read_text()
-        self.assertIn('readonly property string tag: "'+tag+'"',meta)
-        self.assertIn('readonly property string displayName: "Beta 3"',meta)
+        self.assertIn('readonly property string tag: current.tag',meta)
+        self.assertIn('readonly property string displayName: current.name',meta)
         self.assertIn('singleton ReleaseInfo 1.0 ReleaseInfo.qml',(ROOT/'config/qmldir').read_text())
         for name in ('modules/settings/SettingsWindow.qml','modules/settings/pages/SettingsAboutPage.qml'):
             content=(ROOT/name).read_text()
             self.assertIn('ReleaseInfo.displayName',content)
             self.assertNotRegex(content,r'BETA 1|Beta 1')
-        self.assertIn('Beta 3',(ROOT/'README.md').read_text().split('## Beta 1')[0])
-        self.assertTrue((ROOT/'changelog/BETA-3.md').is_file())
+        self.assertIn(release['name'],(ROOT/'README.md').read_text().split('## Beta 1')[0])
+        self.assertTrue((ROOT/release['notes'][0]).is_file())
 
     def test_cli_version_is_local_and_not_published_claim(self):
-        process=subprocess.run([sys.executable,str(ROOT/'scripts/rusticq-cli.py'),'version'],capture_output=True,text=True,timeout=10)
+        process=subprocess.run([sys.executable,'-B',str(ROOT/'scripts/rusticq-cli.py'),'version'],capture_output=True,text=True,timeout=10)
         self.assertEqual(process.returncode,0,process.stderr)
         result=json.loads(process.stdout)
-        self.assertEqual(result['result']['tag'],'beta-3')
+        self.assertEqual(result['result']['tag'],(ROOT/'VERSION').read_text().strip())
         self.assertEqual(result['result']['published_to_github'],'not_verified')
 
     def test_local_source_version_and_target_specific_comparison(self):
@@ -53,10 +54,10 @@ class Versioning(unittest.TestCase):
             (dev/'shell.qml').write_text('ShellRoot {}')
             (permanent/'shell.qml').write_text('ShellRoot {}')
             state=base/'state.json'; sd=base/'state'
-            with patch.object(m,'LOCAL',dev),patch.object(m,'SHELL',permanent),patch.object(m,'STATE_FILE',state),patch.object(m,'STATE_DIR',sd):
+            with patch.object(m,'LOCAL',dev),patch.object(m,'SHELL',permanent),patch.object(m,'STATE_FILE',state),patch.object(m,'STATE_DIR',sd),patch.object(m,'MANIFEST',base/'missing-integration.json'):
                 status=m.current_status()
                 self.assertEqual(status['dev_tag'],'beta-3')
-                self.assertEqual(status['source_version'],'beta-3')
+                self.assertEqual(status['source_version'],(ROOT/'VERSION').read_text().strip())
                 self.assertFalse(status['installed'])
                 self.assertEqual(m.effective_version('installed'),'beta-2')
                 self.assertEqual(m.version_relation('beta-1','beta-3'),-1)

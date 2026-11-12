@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "rustiq-alpha-3-rc-2",
+    "name": "Alpha 3 RC2",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "Opaque popup content and more configurable bar modules.",
+    "changes": [
+        "Consistent popup backgrounds with transparent outer corners.",
+        "Clean Compact detail options and independent module visibility.",
+        "Expanded Settings and optional desktop menu categories."
+    ],
+    "notes": [
+        "changelog/RUSTIQ-ALPHA-3-RC-2.md"
+    ]
+}

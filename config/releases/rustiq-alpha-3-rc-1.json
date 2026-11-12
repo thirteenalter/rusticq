@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "rustiq-alpha-3-rc-1",
+    "name": "Alpha 3 RC1",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "Reduced bar gaps and an optional desktop menu bar.",
+    "changes": [
+        "Compact outer gaps for horizontal bars and side rails.",
+        "Optional desktop menu actions.",
+        "Existing bar modes, typography and theme tokens are retained."
+    ],
+    "notes": [
+        "changelog/RUSTIQ-ALPHA-3-RC-1.md"
+    ]
+}

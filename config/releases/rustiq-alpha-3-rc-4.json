@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "rustiq-alpha-3-rc-4",
+    "name": "Alpha 3 RC4",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "Notifications, task view, settings search, desktop widgets and a dock.",
+    "changes": [
+        "Notification center with history and Do Not Disturb.",
+        "Read-only system task view and monitor geometry readback.",
+        "Searchable Settings, desktop widgets and an optional dock."
+    ],
+    "notes": [
+        "changelog/RUSTIQ-ALPHA-3-RC-4.md"
+    ]
+}

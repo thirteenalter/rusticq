@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "alpha-4",
+    "name": "Alpha 4",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "Desktop shell refinements following the Alpha 4 candidate cycle.",
+    "changes": [
+        "Consolidated changelogs and an updated project overview.",
+        "Optional running applications in the dock.",
+        "Persistent Quick Control ordering and shared notification headers."
+    ],
+    "notes": [
+        "changelog/ALPHA-4.md"
+    ]
+}

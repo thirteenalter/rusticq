@@ -47,7 +47,7 @@ FloatingWindow {
         {key:"shortcuts", label:"Shortcuts", symbol:"\ue312", detail:"Edit and restore keybindings"},
         {key:"integration", label:"Integration", symbol:"\ue8b8", detail:"Dependencies & permanent shell"},
         {key:"ai", label:"AI Providers", symbol:"\uf371", detail:"Cloud assistant"},
-        {key:"about", label:"About", symbol:"\ue88e", detail:"Project information"}
+        {key:"about", label:"About", symbol:"\ue88e", detail:"Version and release history"}
     ]
     readonly property var systemPages: ["system", "wifi", "bluetooth", "audio", "power", "display", "compositor", "os", "hardware", "apps", "storage", "updates", "shortcuts"]
     readonly property var activePage: pages.find(p => p.key === Store.settingsTab) || pages[0]
@@ -92,7 +92,7 @@ FloatingWindow {
         {tab:"integration", title:"Required and optional dependencies", hint:"Packages install python quickshell Material Symbols WiFi Bluetooth screen recording screenshot arch"},
         {tab:"integration", title:"Make RusticQ Permanent", hint:"Omarchy shell replacement backup enable revert startup persistent"},
         {tab:"ai", title:"AI provider setup", hint:"OpenAI Anthropic Claude Gemini API key"},
-        {tab:"about", title:"About RusticQ", hint:"Version Quickshell"}
+        {tab:"about", title:"About RusticQ", hint:"Version release history changelog beta alpha Quickshell"}
     ]
     readonly property var matched: searchItems.filter(item => (item.title + " " + item.hint + " " + item.tab).toLowerCase().indexOf(query.toLowerCase().trim()) !== -1)
     function navigate(tab) {
@@ -157,7 +157,7 @@ FloatingWindow {
                             }
                             Item { Layout.fillHeight: true }
                             Text { text: Theme.useAether ? "AETHER SYNC" : "RUSTICQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(15) }
-                            Text { text: "RUSTIQ DESKTOP  ·  " + ReleaseInfo.displayName.toUpperCase(); color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                            Text { text: "RUSTICQ DESKTOP  ·  " + ReleaseInfo.displayName.toUpperCase(); color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
                         }
                     }
                     RowLayout {
@@ -235,7 +235,7 @@ FloatingWindow {
                     }
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     Text {
-                        text: "RUSTIQ · " + ReleaseInfo.displayName.toUpperCase() + "\nQuickshell " + ReleaseInfo.requiredQuickshell
+                        text: "RUSTICQ · " + ReleaseInfo.displayName.toUpperCase() + "\nQuickshell " + ReleaseInfo.requiredQuickshell + "+"
                         Layout.fillWidth: true
                         color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                     }
@@ -254,7 +254,7 @@ FloatingWindow {
                         anchors.rightMargin: openDeviceWindow.visible ? openDeviceWindow.width + 12 : 0
                         spacing: 3
                         Text { Layout.fillWidth: true; text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(22); elide: Text.ElideRight }
-                        Text { Layout.fillWidth: true; text: "RUSTIQ / " + ReleaseInfo.displayName.toUpperCase() + " · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); elide: Text.ElideRight }
+                        Text { Layout.fillWidth: true; text: "RUSTICQ / " + ReleaseInfo.displayName.toUpperCase() + " · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); elide: Text.ElideRight }
                     }
                     MouseArea {
                         anchors.fill: parent

@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "rustiq-alpha-1",
+    "name": "Alpha 1",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "RusticQ branding, shared information segments and indicator widgets.",
+    "changes": [
+        "Consistent Material Symbols icons and Poppins typography.",
+        "Separate clock, calendar and weather popups.",
+        "Shared visual rhythm for date, time, weather and system indicators."
+    ],
+    "notes": [
+        "changelog/RUSTIQ-ALPHA-1.md"
+    ]
+}

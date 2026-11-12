@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "alpha-4-rc-1",
+    "name": "Alpha 4 RC1",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "System information, hardware, packages, storage and Arch Updater pages.",
+    "changes": [
+        "Separate Settings categories for operating system and hardware information.",
+        "Installed application inventory and storage diagnostics.",
+        "Explicit update checks and confirmed package upgrades."
+    ],
+    "notes": [
+        "changelog/ALPHA-4-RC-1.md"
+    ]
+}

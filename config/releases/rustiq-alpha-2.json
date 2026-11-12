@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "rustiq-alpha-2",
+    "name": "Alpha 2",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "Standalone indicator widgets with stable expanded content.",
+    "changes": [
+        "Wi-Fi, Bluetooth and battery mini popups keep their content visible.",
+        "Quick Control retains collapsible sections.",
+        "Shared Quick Control header and trigger icon."
+    ],
+    "notes": [
+        "changelog/RUSTIQ-ALPHA-2.md"
+    ]
+}

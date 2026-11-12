@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "tag": "alpha-4-rc2",
+    "name": "Alpha 4 RC2",
+    "date": null,
+    "minimumQuickshell": "0.3.1",
+    "summary": "Additional status indicators and improved notification spacing.",
+    "changes": [
+        "Optional microphone, download and upload indicators.",
+        "Left, center and right placement controls.",
+        "Improved Quick Control notification previews."
+    ],
+    "notes": [
+        "changelog/ALPHA-4-RC2.md"
+    ]
+}
