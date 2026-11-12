@@ -22,6 +22,7 @@ The machine-readable source of truth is [`config/dependencies.json`](../config/d
 | Bluetooth | `bluez`, `bluez-utils` | Bluetooth service and hardware required. |
 | Battery | `upower` | Not meaningful on many desktops. |
 | Audio | `pipewire`, `wireplumber` | Existing desktop audio session may already provide these. |
+| Application audio meters | `pipewire-audio` (`pw-cat`) | Fallback for unnamed stream channels on Quickshell 0.3.1; samples stay in memory. |
 | Media keys | `playerctl` | App must support MPRIS. |
 | Brightness | `brightnessctl` | Supported sysfs/hardware permissions required. |
 | Screenshots | `grim`, `slurp` | Region selection uses Slurp. |

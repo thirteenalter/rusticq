@@ -66,7 +66,8 @@ Item {
                     readonly property bool isVisibleCard: modelData !== "notifications" || SettingsStore.showNotifications
                     readonly property real openedHeight: {
                         const widget = cardLoader.item;
-                        if (modelData === "wifi") return widget && widget.expanded ? Math.max(310, Math.min(480, root.height * 0.47)) : 64;
+                        if (modelData === "wifi") return widget && widget.expanded
+                            ? (widget.advancedOpen ? Math.max(310, widget.implicitHeight) : Math.max(310, Math.min(480, root.height * 0.47))) : 64;
                         if (modelData === "bluetooth") return widget && widget.expanded ? 336 : 68;
                         if (modelData === "battery") return widget && widget.expanded ? 366 : 68;
                         if (modelData === "notifications") return widget && widget.expanded ? Math.min(610, Math.max(445, 310 + NotificationCenter.history.length * 112 + (NotificationCenter.receivesSystemNotifications ? 0 : 130))) : 66;

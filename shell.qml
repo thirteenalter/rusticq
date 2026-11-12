@@ -49,10 +49,10 @@ ShellRoot {
         if (action === "quick") { Store.toggleQuick(screen); return; }
         if (action === "ai") { Store.toggleAi(screen); return; }
         if (action === "monitor") { Store.monitorScreen = screen; Store.systemMonitorVisible = !Store.systemMonitorVisible; return; }
-        if (action === "settings") { Store.showSettings("appearance", screen); return; }
+        if (action === "settings") { Store.showSettings("home", screen); return; }
         if (action.indexOf("settings-") === 0) {
             const tab = action.substring(9);
-            if (["appearance", "bar", "modules", "widgets", "dock", "launcher", "display", "os", "hardware", "apps", "storage", "updates", "shortcuts", "integration", "ai", "about"].indexOf(tab) >= 0)
+            if (["home", "ui", "system", "wifi", "bluetooth", "audio", "power", "appearance", "bar", "modules", "widgets", "notes", "dock", "launcher", "display", "compositor", "os", "hardware", "apps", "storage", "updates", "shortcuts", "integration", "ai", "about"].indexOf(tab) >= 0)
                 Store.showSettings(tab, screen);
             return;
         }
@@ -90,7 +90,7 @@ ShellRoot {
         }
         if (action === "item-shell-power") { Store.togglePowerMenu(screen); return; }
         if (action === "item-shell-monitor") { Store.monitorScreen = screen; Store.systemMonitorVisible = true; return; }
-        if (action === "item-tools-settings") { Store.showSettings("bar", screen); return; }
+        if (action === "item-tools-settings") { Store.showSettings("home", screen); return; }
         if (action === "item-tools-region") {
             Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-capture.sh"), "region"]); return;
         }
@@ -117,6 +117,7 @@ ShellRoot {
     // Keep older, saved RC4 shortcuts functioning alongside v3's dispatch action.
     IpcHandler {
         target: "rusticq"
+        function reload(): bool { ShellReload.requestReload(); return true; }
         function settings(): void { root.dispatchShortcut("settings"); }
         function launcher(): void { root.dispatchShortcut("launcher"); }
         function quick(): void { root.dispatchShortcut("quick"); }
@@ -140,24 +141,29 @@ ShellRoot {
         BarRecoveryHandle { required property var modelData; screen: modelData }
     }
 
-    // Wallpaper restore is opt-in, once per shell, and never silently stops
-    // another running wallpaper service. Same managed process reused on reload.
+    // Recover the saved wallpaper after each login, independently of which
+    // RusticQ source tree is running (DEV or installed shell). The CLI profile
+    // is stored in ~/.config/rusticq, not in the ephemeral Wayland runtime dir.
     Process {
         id: wallpaperStartup
         stdout: StdioCollector { onStreamFinished: {
             try {
                 const result = JSON.parse(this.text.trim());
-                if (!result.ok) console.warn("Wallpaper: " + result.message);
+                if (!result.ok) console.warn("Wallpaper startup: " + result.message);
             } catch(e) { console.warn("Wallpaper restore response invalid: " + String(e)); }
         } }
     }
     Timer {
-        interval: 1400; repeat: false; running: true
+        interval: 1900; repeat: false; running: true
         onTriggered: {
-            if (!SettingsStore.wallpaperAutoRestore || SettingsStore.wallpaperBackend !== "swaybg" || !SettingsStore.wallpaperPath.length) return;
-            const args = ["python3", Quickshell.shellPath("scripts/rusticq-wallpaper.py"), SettingsStore.wallpaperPath,
-                          "--backend", "swaybg", "--mode", SettingsStore.wallpaperFitMode];
-            if (SettingsStore.wallpaperReplaceOnRestore) args.push("--replace-conflicts");
+            const args = ["python3", Quickshell.shellPath("scripts/rusticq-wallpaper.py"), "--restore"];
+            // Migrate an explicitly enabled pre-patch SettingsStore preference
+            // on the first startup. New configs use the shared profile instead.
+            if (SettingsStore.wallpaperAutoRestore && SettingsStore.wallpaperBackend === "swaybg"
+                    && SettingsStore.wallpaperPath.length) {
+                args.push(SettingsStore.wallpaperPath, "--mode", SettingsStore.wallpaperFitMode);
+                if (SettingsStore.wallpaperReplaceOnRestore) args.push("--replace-conflicts");
+            }
             wallpaperStartup.exec(args);
         }
     }
@@ -212,6 +218,10 @@ ShellRoot {
     LazyLoader {
         active: Store.settingsVisible
         SettingsWindow {}
+    }
+    LazyLoader {
+        active: Store.deviceSettingsVisible
+        DeviceSettingsWindow {}
     }
     LazyLoader {
         active: Store.powerMenuVisible

@@ -6,6 +6,8 @@ import Quickshell.Io
 // Small persistent, non-secret UI settings. Never store API keys here.
 Singleton {
     id: root
+    property bool settingsLoaded: false
+    property string settingsSnapshot: ""
     property string accentName: "orange"
     // Explicit opt-in: keep original Gruvbox when Aether is unavailable.
     property string colorSource: "gruvbox"
@@ -602,6 +604,33 @@ Singleton {
     property bool showArch: true
     property bool showTime: true
     property bool showDate: true
+    // Clock/calendar presentation is independent of all other bar icons.
+    property string clockDisplayMode: "auto" // auto | icon | text | both
+    property string calendarDisplayMode: "auto"
+    property string clockFormat: "HH:mm"
+    property string calendarFormat: "ddd, dd MMM"
+    property string clockLocale: "system"
+    property bool clockLowercase: false
+    function validClockFormat(value) {
+        return typeof value === "string" && value.trim().length > 0 && value.length <= 120 &&
+            !new RegExp("[\\x00-\\x1f\\x7f]").test(value);
+    }
+    function setClockFormat(key, value) {
+        if (["clockFormat", "calendarFormat"].indexOf(key) < 0 || !validClockFormat(value)) return false;
+        root[key] = value.trim();
+        save();
+        return true;
+    }
+    function formatClock(date, pattern) {
+        const locale = clockLocale === "system" ? Qt.locale() : Qt.locale(clockLocale);
+        const text = date.toLocaleString(locale, pattern);
+        return clockLowercase ? text.toLocaleLowerCase() : text;
+    }
+    function clockFormatHasSeconds(pattern) {
+        // Ignore quoted literal text (and escaped apostrophes) in Qt formats.
+        const tokens = pattern.replace(new RegExp("'(?:[^']|'')*'", "g"), "");
+        return new RegExp("[sz]").test(tokens);
+    }
     property bool showWifi: true
     property bool showBluetooth: true
     property bool showBattery: true
@@ -632,10 +661,23 @@ Singleton {
         id: settingsFile
         path: Qt.resolvedUrl("../user-settings.json")
         blockLoading: true
+        watchChanges: true
+        onFileChanged: settingsFile.reload()
+        onLoaded: {
+            const text = settingsFile.text();
+            if (!root.settingsLoaded || text === root.settingsSnapshot) return;
+            try {
+                const data = JSON.parse(text);
+                if (!data || typeof data !== "object" || Array.isArray(data)) return;
+                root.settingsSnapshot = text;
+                ShellReload.requestReload();
+            } catch (e) { console.warn("Settings: ignored invalid external JSON"); }
+        }
     }
     Component.onCompleted: {
         try {
-            const data = JSON.parse(settingsFile.text());
+            settingsSnapshot = settingsFile.text();
+            const data = JSON.parse(settingsSnapshot);
             if (["aether", "gruvbox"].indexOf(data.colorSource) !== -1) colorSource = data.colorSource;
             if (["orange", "green", "blue", "purple"].indexOf(data.accentName) !== -1)
                 accentName = data.accentName;
@@ -702,6 +744,12 @@ Singleton {
                 launcherLayoutMode = data.launcherLayoutMode;
             if (["plain", "filled"].indexOf(data.quickControlButtonStyle) !== -1)
                 quickControlButtonStyle = data.quickControlButtonStyle;
+            for (const key of ["clockDisplayMode", "calendarDisplayMode"])
+                if (["auto", "icon", "text", "both"].indexOf(data[key]) >= 0) root[key] = data[key];
+            for (const key of ["clockFormat", "calendarFormat"])
+                if (validClockFormat(data[key])) root[key] = data[key].trim();
+            if (["system", "id_ID", "en_US"].indexOf(data.clockLocale) >= 0) clockLocale = data.clockLocale;
+            if (typeof data.clockLowercase === "boolean") clockLowercase = data.clockLowercase;
             for (const key of ["launcherWidth", "launcherHeight", "launcherIconSize", "launcherRowHeight", "launcherFavoriteColumns"])
                 if (Number.isInteger(data[key])) updateLauncherSize(key, data[key], false);
             if (data.widgetWorkspaceScopes && typeof data.widgetWorkspaceScopes === "object" &&
@@ -785,9 +833,12 @@ Singleton {
         } catch (e) {
             console.warn("Settings: defaults in use (user-settings.json): " + e);
         }
+        settingsLoaded = true;
     }
     function save() {
-        settingsFile.setText(JSON.stringify({
+        // An external import wins over stale in-memory edits during reload.
+        if (ShellReload.pending) return;
+        const text = JSON.stringify({
             accentName: accentName,
             colorSource: colorSource,
             barMode: barMode,
@@ -864,6 +915,12 @@ Singleton {
             showArch: showArch,
             showTime: showTime,
             showDate: showDate,
+            clockDisplayMode: clockDisplayMode,
+            calendarDisplayMode: calendarDisplayMode,
+            clockFormat: clockFormat,
+            calendarFormat: calendarFormat,
+            clockLocale: clockLocale,
+            clockLowercase: clockLowercase,
             showWifi: showWifi,
             showBluetooth: showBluetooth,
             showBattery: showBattery,
@@ -886,6 +943,8 @@ Singleton {
             showUploadSpeed: showUploadSpeed,
             aiProvider: aiProvider,
             aiModel: aiModel
-        }, null, 2) + "\n");
+        }, null, 2) + "\n";
+        settingsSnapshot = text;
+        settingsFile.setText(text);
     }
 }

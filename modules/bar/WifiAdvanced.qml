@@ -24,6 +24,10 @@ ColumnLayout {
     property real lastTx: -1
     property double lastSample: 0
     readonly property string helper: Quickshell.shellPath("scripts/rusticq-wifi-advanced.py")
+    function sectionOffset(section) {
+        const item = section === "dns" ? dnsHeading : sharingHeading;
+        return item.mapToItem(root, 0, 0).y;
+    }
     function prettyRate(n) {
         if (n < 1024) return Math.round(n) + " B/s";
         if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB/s";
@@ -122,6 +126,7 @@ ColumnLayout {
     }
     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
     RowLayout {
+        id: sharingHeading
         Layout.fillWidth: true; spacing: 7
         Text { Layout.fillWidth: true; text: "Wi-Fi sharing"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
         Rectangle { Layout.preferredWidth: 105; Layout.preferredHeight: 31; radius: 9; color: Theme.surface
@@ -137,7 +142,7 @@ ColumnLayout {
     Text { Layout.fillWidth: true; text: "Opens a full-screen QR overlay on this monitor. Automatically hidden and erased after 45 seconds.";
         wrapMode: Text.WordWrap; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
-    Text { Layout.fillWidth: true; text: "DNS settings"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+    Text { id: dnsHeading; Layout.fillWidth: true; text: "DNS settings"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
     Rectangle {
         Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9; color: Theme.surface
         TextInput { id: dnsField; anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10

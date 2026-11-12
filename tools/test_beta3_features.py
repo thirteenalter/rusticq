@@ -135,9 +135,12 @@ class Beta3FeatureTests(unittest.TestCase):
 
     def test_qml_reuses_existing_services(self):
         qml = (ROOT / 'modules/main/MiniAudio.qml').read_text()
-        self.assertIn('root.playbackStreams', qml)
-        self.assertIn('PwObjectTracker { objects: root.advancedOpen ?', qml)
-        self.assertIn('appStream.audioNode.audio.volume = value', qml)
+        self.assertIn('ApplicationAudioMixer {', qml)
+        self.assertIn('ApplicationAudioMixer {', (ROOT / 'modules/bar/BarAdvanced.qml').read_text())
+        mixer = (ROOT / 'components/ApplicationAudioMixer.qml').read_text()
+        self.assertIn('root.playbackStreams', mixer)
+        self.assertIn('PwObjectTracker { objects: root.visible ? root.streamCandidates', mixer)
+        self.assertIn('appStream.audioNode.audio.volume = value', mixer)
         notice = (ROOT / 'services/NotificationCenter.qml').read_text()
         self.assertIn('readonly property var displayHistory:', notice)
         self.assertIn('function groupedHistory()', notice)

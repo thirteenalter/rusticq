@@ -140,7 +140,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: { root.hostWindow.closeMini(); Store.showSettings("appearance", root.hostWindow.screen); }
+                onClicked: { root.hostWindow.closeMini(); Store.showSettings("home", root.hostWindow.screen); }
             }
         }
     }
@@ -222,6 +222,7 @@ Item {
         id: timePart
         Clock {
             id: zoneTime
+            vertical: root.vertical
             showDate: false
             showTime: true
             showDetails: root.showDetails && !root.vertical
@@ -232,6 +233,7 @@ Item {
         id: datePart
         Clock {
             id: zoneDate
+            vertical: root.vertical
             showDate: true
             showTime: false
             showDetails: root.showDetails && !root.vertical

@@ -120,11 +120,26 @@ Flickable {
                 id: audioInner
                 anchors.fill: parent; anchors.margins: 14
                 spacing: 9
-                SectionHeader {
-                    title: "Audio"
-                    iconName: "\ue050"
-                    expanded: root.audioExpanded
-                    onToggleRequested: root.audioExpanded = !root.audioExpanded
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 36
+                    Layout.maximumHeight: 36
+                    SectionHeader {
+                        Layout.fillWidth: true
+                        title: "Audio"
+                        iconName: "\ue050"
+                        expanded: root.audioExpanded
+                        onToggleRequested: root.audioExpanded = !root.audioExpanded
+                    }
+                    DeviceSettingsButton {
+                        kind: "audio"
+                        section: "applications"
+                        label: "Open audio fullscreen"
+                        symbol: "\ue5d0"
+                        iconOnly: true
+                        fullscreen: true
+                        targetScreen: Store.sidebarScreen
+                    }
                 }
                 ColumnLayout {
                     visible: root.audioExpanded
@@ -153,6 +168,7 @@ Flickable {
                         adjustable: root.sink && root.sink.audio
                         onUserChanged: (next) => { if (root.sink && root.sink.audio) root.sink.audio.volume = next; }
                     }
+                    ApplicationAudioMixer { Layout.fillWidth: true }
                     RowLayout {
                         Layout.fillWidth: true
                         Icon {
@@ -367,7 +383,7 @@ Flickable {
             }
             MouseArea {
                 anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                onClicked: Store.showSettings("appearance")
+                onClicked: Store.showSettings("home")
             }
         }
     }

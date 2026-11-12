@@ -19,6 +19,112 @@ import time
 ALLOWED_SUFFIXES = {'.jpg', '.jpeg', '.png', '.webp', '.bmp'}
 WALLPAPER_PROCESS_NAMES = {'swaybg', 'hyprpaper', 'swww-daemon', 'awww-daemon'}
 BACKENDS = ('swaybg', 'hyprpaper', 'awww', 'swww')
+RESTORE_PROFILE_VERSION = 1
+
+
+def restore_profile_path():
+    config = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config')))
+    return config / 'rusticq' / 'wallpaper-restore.json'
+
+
+def save_restore_profile(profile):
+    """Portable across ~/dev/quickshell and the permanent installed shell."""
+    target = restore_profile_path()
+    directory = target.parent
+    if directory.is_symlink() or (directory.exists() and not directory.is_dir()):
+        raise ValueError('Unsafe RusticQ wallpaper settings directory')
+    directory.mkdir(parents=True, mode=0o700, exist_ok=True)
+    if directory.stat().st_uid != os.getuid():
+        raise ValueError('Wallpaper settings directory belongs to another user')
+    directory.chmod(0o700)
+    if target.is_symlink():
+        raise ValueError('Wallpaper restore file cannot be a symlink')
+    fd, tmp = tempfile.mkstemp(dir=directory, prefix='.wallpaper-restore-')
+    try:
+        with os.fdopen(fd, 'w') as handle:
+            os.fchmod(handle.fileno(), 0o600)
+            json.dump(profile, handle, indent=2)
+            handle.write('\n')
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp, target)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
+def read_restore_profile():
+    path = restore_profile_path()
+    if path.is_symlink():
+        raise ValueError('Wallpaper restore file cannot be a symlink')
+    try:
+        profile = json.loads(path.read_text(encoding='utf-8'))
+    except FileNotFoundError:
+        return {}
+    except (OSError, UnicodeError, ValueError) as exc:
+        raise ValueError('Wallpaper restore profile is invalid: ' + str(exc)) from exc
+    if not isinstance(profile, dict) or profile.get('version') != RESTORE_PROFILE_VERSION:
+        raise ValueError('Unrecognized wallpaper restore profile version')
+    if profile.get('backend') != 'swaybg' or not isinstance(profile.get('enabled'), bool):
+        raise ValueError('Wallpaper restore profile has invalid backend or enabled value')
+    if profile.get('mode') not in ('fill', 'fit', 'stretch', 'center', 'tile'):
+        raise ValueError('Wallpaper restore profile has invalid scaling mode')
+    if not isinstance(profile.get('image'), str) or not isinstance(profile.get('replace_conflicts', False), bool):
+        raise ValueError('Wallpaper restore profile has invalid image or replacement preference')
+    return profile
+
+
+def configure_restore(enabled, image='', mode='fill', replace_conflicts=False):
+    if not enabled:
+        old = read_restore_profile()
+        if old:
+            old['enabled'] = False
+            save_restore_profile(old)
+        return {'ok': True, 'message': 'Automatic swaybg wallpaper restore disabled.', 'auto_restore': False}
+    if mode not in ('fill', 'fit', 'stretch', 'center', 'tile'):
+        raise ValueError('Unsupported wallpaper scaling mode')
+    resolved = validate_image(image)
+    save_restore_profile(dict(version=RESTORE_PROFILE_VERSION, enabled=True, backend='swaybg',
+                              image=str(resolved), mode=mode, output='*',
+                              replace_conflicts=bool(replace_conflicts)))
+    return {'ok': True, 'message': 'Wallpaper saved for both monitors on next RusticQ startup.',
+            'auto_restore': True, 'image': str(resolved)}
+
+
+def restore_wallpaper(legacy_image='', legacy_mode='fill', legacy_replace=False):
+    """Called once by the shell on startup, including pre-patch preference migration."""
+    profile = read_restore_profile()
+    if not profile and legacy_image:
+        # Legacy SettingsStore already opted in to restore; migrate exactly that
+        # saved selection once into the cross-installation profile.
+        configure_restore(True, legacy_image, legacy_mode, legacy_replace)
+        profile = read_restore_profile()
+    if not profile or not profile['enabled']:
+        return {'ok': True, 'message': 'No swaybg startup wallpaper enabled.', 'skipped': True}
+    try:
+        image = validate_image(profile['image'])
+        result = apply_swaybg(image, profile['mode'], profile.get('output', '*'),
+                              profile.get('replace_conflicts', False))
+        return dict(result, auto_restore=True)
+    except (OSError, RuntimeError, ValueError) as error:
+        return {'ok': False, 'message': 'Startup wallpaper failed: ' + str(error),
+                'backend': 'swaybg', 'auto_restore': True}
+
+
+def unconfigured_swaybg(entry):
+    """Only a same-session, user-owned swaybg with literally no appearance args.
+
+    Example: uwsm-app -- swaybg, which logs 'Could not find config for output'.
+    Never classify swaybg with explicit -i, --image, -c, or --color as broken.
+    """
+    if entry.get('name') != 'swaybg' or not matches_wayland_session(entry.get('pid')):
+        return False
+    try:
+        cmd = (Path('/proc') / str(entry['pid']) / 'cmdline').read_bytes().split(b'\0')
+        args = [os.fsdecode(v) for v in cmd if v]
+        return len(args) == 1 and Path(args[0]).name == 'swaybg'
+    except (OSError, ValueError, TypeError):
+        return False
 
 
 def emit(ok, message, backend='', **additional):
@@ -163,14 +269,19 @@ def apply_swaybg(image, mode='fill', output='*', replace_conflicts=False):
         is_owned = is_our_swaybg(owned_pid, previous.get('start', ''))
         running = live_wallpaper_processes()
         conflicts = [entry for entry in running if not (is_owned and entry['pid'] == owned_pid)]
+        # The exact bare command `uwsm-app -- swaybg` paints nothing, but still
+        # holds an inactive wallpaper process. Only retire that verified broken
+        # same-session process after the configured replacement has started.
+        bare_conflicts = [entry for entry in conflicts if unconfigured_swaybg(entry)]
+        active_conflicts = [entry for entry in conflicts if entry not in bare_conflicts]
         # Never terminate a process from a different Wayland session.
-        if is_owned and not conflicts and previous.get('image') == str(image) and previous.get('mode') == mode and previous.get('output') == output:
+        if is_owned and not active_conflicts and not bare_conflicts and previous.get('image') == str(image) and previous.get('mode') == mode and previous.get('output') == output:
             return {'ok': True, 'message': 'Low Memory wallpaper already active; no extra daemon started.',
                     'backend': 'swaybg', 'pid': owned_pid, 'reused': True}
-        if conflicts and replace_conflicts and any(not matches_wayland_session(x['pid']) for x in conflicts):
+        if active_conflicts and replace_conflicts and any(not matches_wayland_session(x['pid']) for x in active_conflicts):
             raise RuntimeError('Wallpaper processes on another Wayland session cannot be replaced safely.')
-        if conflicts and not replace_conflicts:
-            names = ', '.join(sorted(set(x['name'] for x in conflicts)))
+        if active_conflicts and not replace_conflicts:
+            names = ', '.join(sorted(set(x['name'] for x in active_conflicts)))
             raise RuntimeError('Another wallpaper backend is running (' + names + '). Enable "Replace wallpaper process" in Settings to switch explicitly; RusticQ will not stop it silently.')
         argv = ['swaybg', '-o', output, '-i', str(image), '-m', mode]
         process = subprocess.Popen(argv, stdin=subprocess.DEVNULL,
@@ -197,18 +308,24 @@ def apply_swaybg(image, mode='fill', output='*', replace_conflicts=False):
                     (folder / 'managed.json').unlink(missing_ok=True)
                 raise
             stopped = []
-            if replace_conflicts:
-                for conflict in conflicts:
+            if replace_conflicts or bare_conflicts:
+                for conflict in (conflicts if replace_conflicts else bare_conflicts):
                     p = Path('/proc') / str(conflict['pid'])
                     try:
                         if (conflict.get('start') and proc_start(conflict['pid']) == conflict['start']
                                 and p.stat().st_uid == os.getuid()
                                 and (p / 'comm').read_text().strip() == conflict['name']):
+                            # Even a previously recognized broken bare swaybg
+                            # must still be bare and on this display at kill time.
+                            if conflict in bare_conflicts and not unconfigured_swaybg(conflict):
+                                continue
+                            if not matches_wayland_session(conflict['pid']):
+                                continue
                             os.kill(conflict['pid'], signal.SIGTERM)
                             stopped.append(conflict['name'])
                     except (OSError, ProcessLookupError):
                         pass
-            return {'ok': True, 'message': 'Low Memory wallpaper applied using one managed swaybg process.' +
+            return {'ok': True, 'message': 'Low Memory wallpaper applied on every output using one configured swaybg process.' +
                     (' Previous wallpaper process stopped: ' + ', '.join(stopped) + '.' if stopped else ''),
                     'backend': 'swaybg', 'pid': process.pid, 'reused': False, 'stopped': stopped}
         except Exception:
@@ -223,14 +340,18 @@ def status():
     state = read_state(folder)
     pid = state.get('pid', -1)
     owned = is_our_swaybg(pid, state.get('start', ''))
+    profile = read_restore_profile()
     return {'ok': True, 'backend': state.get('backend', '') if owned else '',
+            'restore_enabled': bool(profile.get('enabled', False)),
+            'restore_image': profile.get('image', ''),
+            'restore_profile': str(restore_profile_path()),
             'managed_active': owned, 'managed_pid': pid if owned else None,
             'running': live_wallpaper_processes(),
             'installed': {name: bool(shutil.which(name)) for name in BACKENDS},
             'message': 'Wallpaper process inventory (current Wayland session only).'}
 
 
-def apply(path, backend, mode='fill', output='*', replace_conflicts=False):
+def apply(path, backend, mode='fill', output='*', replace_conflicts=False, remember=False, remember_replace=False):
     try:
         image = validate_image(path)
         candidates = ['swaybg', 'awww', 'hyprpaper', 'swww'] if backend == 'auto' else [backend]
@@ -238,7 +359,17 @@ def apply(path, backend, mode='fill', output='*', replace_conflicts=False):
             if b == 'swaybg':
                 if backend == 'auto' and not shutil.which('swaybg'):
                     continue
-                return emit(**apply_swaybg(image, mode, output, replace_conflicts))
+                result = apply_swaybg(image, mode, output, replace_conflicts)
+                if remember:
+                    # Successful Apply explicitly opts into next-login restore.
+                    # Never persist a broken image or a failed new process.
+                    try:
+                        configure_restore(True, str(image), mode, remember_replace)
+                        result['auto_restore'] = True
+                    except (OSError, ValueError) as profile_error:
+                        result['auto_restore'] = False
+                        result['message'] += ' WARNING: startup restore not saved: ' + str(profile_error)
+                return emit(**result)
             if b not in BACKENDS or not shutil.which(b):
                 if backend != 'auto':
                     return emit(False, b + ' is not installed', b)
@@ -261,6 +392,9 @@ def apply(path, backend, mode='fill', output='*', replace_conflicts=False):
                     if is_our_swaybg(previous.get('pid', -1), previous.get('start', '')):
                         stop_owned(previous['pid'], previous['start'])
                         (state_folder / 'managed.json').unlink(missing_ok=True)
+                if remember:
+                    # Switching away from swaybg must not resurrect it on login.
+                    configure_restore(False)
                 return emit(True, 'Wallpaper applied using ' + b + '. Aether palette unchanged.', b)
             if backend != 'auto':
                 return emit(False, info or b + ' is unavailable', b)
@@ -273,6 +407,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('path', nargs='?')
     parser.add_argument('--status', action='store_true', help='Read-only wallpaper backend diagnostics')
+    parser.add_argument('--restore', action='store_true', help='Restore the saved wallpaper after login')
+    parser.add_argument('--remember', action='store_true', help='Remember a successful Apply for next login')
+    parser.add_argument('--remember-replace', action='store_true', help='Remember explicit permission to replace wallpaper providers at next login')
+    parser.add_argument('--configure-restore', choices=('on', 'off'), help='Enable or disable automatic wallpaper restore')
     parser.add_argument('--backend', choices=['auto', *BACKENDS], default='swaybg')
     parser.add_argument('--mode', choices=['fill', 'fit', 'stretch', 'center', 'tile'], default='fill')
     parser.add_argument('--output', default='*')
@@ -284,9 +422,23 @@ def main():
             return 0
         except (OSError, RuntimeError, ValueError) as exc:
             return emit(False, str(exc))
+    if args.restore:
+        try:
+            result = restore_wallpaper(args.path or '', args.mode, args.replace_conflicts)
+            return emit(**result)
+        except (OSError, ValueError) as error:
+            return emit(False, 'Startup wallpaper settings invalid: ' + str(error))
+    if args.configure_restore:
+        try:
+            result = configure_restore(args.configure_restore == 'on', args.path or '', args.mode,
+                                       args.remember_replace)
+            return emit(**result)
+        except (OSError, ValueError) as error:
+            return emit(False, str(error))
     if not args.path:
-        return emit(False, 'Choose a wallpaper image before applying.')
-    return apply(args.path, args.backend, args.mode, args.output, args.replace_conflicts)
+        return emit(False, 'Choose a wallpaper image first; bare swaybg cannot paint a background.')
+    return apply(args.path, args.backend, args.mode, args.output, args.replace_conflicts,
+                 args.remember, args.remember_replace)
 
 
 if __name__ == '__main__':

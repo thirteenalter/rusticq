@@ -72,6 +72,13 @@ PopupWindow {
     onMenuSectionChanged: if (visible && kind === "menu") Qt.callLater(focusMenu)
     color: "transparent"
 
+    Connections {
+        target: Store
+        function onDeviceSettingsRequested() {
+            if (popup.visible) popup.dismissed();
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
         radius: Theme.sectionRadius
@@ -102,9 +109,9 @@ PopupWindow {
         onShareQrRequested: (screen, ssid) => popup.beginWifiQr(screen, ssid)
     } }
     Component { id: ethernetComponent; MiniEthernetInfo {} }
-    Component { id: bluetoothComponent; BarBluetooth { standalone: true } }
-    Component { id: batteryComponent; BarBattery { standalone: true } }
-    Component { id: audioComponent; MiniAudio {} }
+    Component { id: bluetoothComponent; BarBluetooth { standalone: true; targetScreen: popup.hostWindow ? popup.hostWindow.screen : null } }
+    Component { id: batteryComponent; BarBattery { standalone: true; targetScreen: popup.hostWindow ? popup.hostWindow.screen : null } }
+    Component { id: audioComponent; MiniAudio { targetScreen: popup.hostWindow ? popup.hostWindow.screen : null } }
     Component { id: notificationsComponent; BarNotifications { standalone: true; expanded: true } }
     Component { id: weatherComponent; MiniWeather {} }
     Component { id: timeComponent; MiniTime {} }

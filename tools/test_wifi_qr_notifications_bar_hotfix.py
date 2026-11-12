@@ -22,12 +22,14 @@ def extract(js, name):
     raise AssertionError('Unbalanced: '+name)
 
 class CombinedHotfixTests(unittest.TestCase):
-    def test_wifi_scanned_networks_expand_not_advanced_scroll(self):
+    def test_wifi_scanned_networks_expand_and_advanced_has_its_own_page(self):
         wifi=read('modules/bar/BarWifi.qml')
         self.assertIn('listHeightLimit',wifi)
-        self.assertIn(': 300',wifi)
+        self.assertIn('listHeightLimit: 300',wifi)
         self.assertIn('count * 70 + 8',wifi)
-        self.assertNotIn('Flickable {',wifi)
+        self.assertEqual(wifi.count('Flickable {'), 1)
+        self.assertIn('visible: wifiWidget.contentOpen && !wifiWidget.advancedOpen',wifi)
+        self.assertIn('contentHeight: advancedPage.implicitHeight',wifi)
         self.assertIn('Layout.preferredHeight: visible ? implicitHeight : 0',wifi)
         popup=read('modules/main/IndicatorPopup.qml')
         self.assertIn('hostWindow.screen.height - 95',popup)
@@ -71,7 +73,7 @@ class CombinedHotfixTests(unittest.TestCase):
         s=read('config/SettingsStore.qml')
         fn='\n'.join(extract(s,name) for name in ('validateBarIconOrder','normalizeBarOrder','validateBarIconOrders','barOrder'))
         # Use a previously saved 18-icon order with an unrelated swapped tile.
-        keys=["rusticq", "arch", "launcher", "menu", "workspaces", "weather", "time", "date", "bluetooth", "wifi", "battery", "audio", "notifications", "task", "quickModes", "quickControl", "mic", "down", "up"]
+        keys=["rusticq", "arch", "launcher", "menu", "workspaces", "weather", "time", "date", "bluetooth", "wifi", "battery", "audio", "notifications", "barToggle", "task", "quickModes", "quickControl", "mic", "down", "up"]
         code='''const assert=require('node:assert/strict');
 const barIconKeys=KEYS;
 const spacingModes=['compact','simple','clean-compact','separated','professional'];

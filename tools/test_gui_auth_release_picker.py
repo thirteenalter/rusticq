@@ -110,9 +110,9 @@ class GithubVersionPicker(unittest.TestCase):
                       'releaseVersionsList','root.selectShellRelease(releaseEntry.modelData.tag)',
                       'BETA / RISK', 'shellReleaseMetadataMatches',
                       'shellUpdateRiskAccepted', 'Refresh versions',
-                      'root.shellFetchVersions()', 'DANGER: this release'):
+                      'root.shellFetchVersions()', 'DANGER:'):
             self.assertIn(token,page, token)
-        self.assertIn('root.shellUpdateConfirm === updateConfirmColumn.phrase',page)
+        self.assertIn('enabled: root.shellInstallReady',page)
         self.assertIn('(!shellReleaseTag.length || shellUpdateStatus.release.tag === shellReleaseTag)',page)
 
 if __name__ == '__main__': unittest.main()

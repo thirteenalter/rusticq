@@ -28,6 +28,12 @@ ColumnLayout {
     property bool shellUpdateBusy: false
     property string shellUpdateAction: ""
     property string shellUpdateConfirm: ""
+    property bool shellFetchInstallPending: false
+    property bool shellCheckSucceeded: false
+    property string shellCheckedTarget: ""
+    property var shellUpdateResult: ({})
+    property bool shellUpdateRefreshPending: false
+    property int shellMetadataRevision: 0
     property string shellReleaseTag: ""
     property var shellReleaseOptions: []
     property bool shellReleasesBusy: false
@@ -84,23 +90,69 @@ ColumnLayout {
         onTriggered: { root.shellFetchVersions(); root.shellUpdateCheck(); }
     }
     function shellUpdateRefresh() {
-        if (!shellUpdateStatusProc.running) shellUpdateStatusProc.exec(["python3", shellUpdateHelper, "status"]);
+        if (shellUpdateStatusProc.running) {
+            shellUpdateRefreshPending = true;
+            return;
+        }
+        shellUpdateRefreshPending = false;
+        shellUpdateStatusProc.metadataRevision = shellMetadataRevision;
+        shellUpdateStatusProc.exec(["python3", shellUpdateHelper, "status"]);
     }
     function shellUpdateCheck() {
         if (shellUpdateBusy || shellUpdateCheckBusy || shellUpdateCheckProc.running) return;
         shellUpdateCheckBusy = true;
+        shellCheckSucceeded = false;
+        shellCheckedTarget = shellUpdateTarget;
         shellUpdateMessage = "Checking GitHub Releases…";
         const cmd = ["python3", shellUpdateHelper, "check", "--target", shellUpdateTarget];
         if (shellReleaseTag.trim().length > 0) cmd.push("--tag", shellReleaseTag.trim());
         shellUpdateCheckProc.exec(cmd);
     }
+    function shellFetchAndInstall() {
+        if (!shellUpdateTargetReady || shellUpdateBusy || shellUpdateCheckBusy || shellUpdateCheckProc.running) return;
+        shellFetchInstallPending = true;
+        shellUpdateRiskAccepted = false;
+        shellUpdateAction = "";
+        shellUpdateConfirm = "";
+        shellUpdateCheck();
+    }
+    function shellCompleteFetchInstall(code) {
+        if (!shellFetchInstallPending) return;
+        shellFetchInstallPending = false;
+        if (code !== 0 || !shellCheckSucceeded || shellCheckedTarget !== shellUpdateTarget ||
+            !shellReleaseMetadataMatches || !shellVersionAvailable || !shellUpdateTargetReady) return;
+        // Pin the checked tag so "newest" cannot change between fetch and install.
+        shellReleaseTag = shellUpdateStatus.release.tag;
+        shellUpdateAction = "update-shell";
+        if (shellVersionDanger) {
+            shellUpdateMessage = "Release ready. Review the version risk below, then choose Install update.";
+            return;
+        }
+        shellUpdateConfirm = "UPDATE SHELL";
+        shellUpdateApply();
+    }
+    readonly property bool shellInstallReady: !shellUpdateBusy && !shellUpdateCheckBusy && !ShellReload.updating && !ShellReload.pending &&
+        (shellUpdateAction === "reapply-local" ? !!shellUpdateStatus.installed && !!shellUpdateStatus.dev_ready :
+         shellUpdateAction === "update-shell" ? shellUpdateTargetReady && shellReleaseMetadataMatches && shellVersionAvailable &&
+             (!shellVersionDanger || shellUpdateRiskAccepted) :
+         shellUpdateAction === "rollback" && shellUpdateTargetReady && shellUpdateTargetBackups > 0 && shellUpdateConfirm === "ROLLBACK SHELL")
+    function shellInstallSelected() {
+        if (!shellInstallReady) return;
+        if (shellUpdateAction === "update-shell") shellReleaseTag = shellUpdateStatus.release.tag;
+        if (shellUpdateAction !== "rollback")
+            shellUpdateConfirm = shellUpdateAction === "reapply-local" ? "REAPPLY LOCAL" : "UPDATE SHELL";
+        shellUpdateApply();
+    }
     function shellUpdateApply() {
-        if (shellUpdateBusy || shellUpdateAction.length === 0 || shellUpdateActionProc.running) return;
+        if (shellUpdateBusy || ShellReload.updating || ShellReload.pending || shellUpdateAction.length === 0 || shellUpdateActionProc.running) return;
         const phrase = shellUpdateAction === "reapply-local" ? "REAPPLY LOCAL" :
                        shellUpdateAction === "rollback" ? "ROLLBACK SHELL" : "UPDATE SHELL";
         if (shellUpdateConfirm !== phrase) return;
         if (shellUpdateAction === "update-shell" && (!shellReleaseMetadataMatches || !shellVersionAvailable || (shellVersionDanger && !shellUpdateRiskAccepted))) return;
         shellUpdateBusy = true;
+        shellUpdateResult = ({});
+        SettingsStore.save();
+        ShellReload.beginUpdate();
         shellUpdateMessage = "Preparing a verified shell update…";
         const cmd = ["python3", shellUpdateHelper, shellUpdateAction, "--confirm", phrase, "--target", shellUpdateTarget];
         if (shellUpdateAction === "update-shell" && shellReleaseTag.trim().length > 0)
@@ -116,10 +168,19 @@ ColumnLayout {
     }
     Process {
         id: shellUpdateStatusProc
+        property int metadataRevision: 0
+        onExited: (code, status) => {
+            if (root.shellUpdateRefreshPending) Qt.callLater(root.shellUpdateRefresh);
+        }
         stdout: StdioCollector { onStreamFinished: {
             try {
                 const result = JSON.parse(this.text);
                 if (result.ok === true) {
+                    if (shellUpdateStatusProc.metadataRevision !== root.shellMetadataRevision) {
+                        result.release = root.shellUpdateStatus.release;
+                        result.checked_tag = root.shellUpdateStatus.checked_tag;
+                        result.update_available = root.shellUpdateStatus.update_available;
+                    }
                     root.shellUpdateStatus = result;
                     if (!root.shellUpdateCheckedOnce && !root.shellUpdateBusy && !root.shellUpdateCheckBusy) {
                         root.shellUpdateCheckedOnce = true;
@@ -135,23 +196,34 @@ ColumnLayout {
             try {
                 const result = JSON.parse(this.text);
                 root.shellUpdateOk = result.ok === true;
+                root.shellCheckSucceeded = result.ok === true && !!result.release && !!result.release.tag;
                 root.shellUpdateMessage = result.message || "No GitHub Release result";
-                if (result.release) root.shellUpdateStatus = Object.assign({}, root.shellUpdateStatus, {release:result.release, checked_tag:result.release.tag, update_available:result.update_available});
-            } catch (e) { root.shellUpdateOk = false; root.shellUpdateMessage = "GitHub response error: " + e; }
+                if (result.release) {
+                    root.shellMetadataRevision++;
+                    root.shellUpdateStatus = Object.assign({}, root.shellUpdateStatus, {release:result.release, checked_tag:result.release.tag, update_available:result.update_available});
+                }
+            } catch (e) { root.shellCheckSucceeded = false; root.shellUpdateOk = false; root.shellUpdateMessage = "GitHub response error: " + e; }
         } }
-        onExited: (code, status) => { root.shellUpdateCheckBusy = false; root.shellUpdateRefresh(); }
+        onExited: (code, status) => {
+            root.shellUpdateCheckBusy = false;
+            root.shellCompleteFetchInstall(code);
+            root.shellUpdateRefresh();
+        }
     }
     Process {
         id: shellUpdateActionProc
         stdout: StdioCollector { onStreamFinished: {
             try {
                 const result = JSON.parse(this.text);
+                root.shellUpdateResult = result;
                 root.shellUpdateOk = result.ok === true;
                 root.shellUpdateMessage = result.message || "Shell updater did not return a message";
             } catch (e) { root.shellUpdateOk = false; root.shellUpdateMessage = "Shell update returned unreadable output: " + e; }
         } }
         onExited: (code, status) => {
             root.shellUpdateBusy = false;
+            ShellReload.finishUpdate(code === 0 && root.shellUpdateResult.ok === true,
+                root.shellUpdateResult.installed_path || (root.shellUpdateTarget === "dev" ? root.shellUpdateStatus.local_path : root.shellUpdateStatus.installed_path));
             root.shellUpdateConfirm = "";
             root.shellUpdateAction = "";
             root.shellUpdateRefresh();
@@ -208,10 +280,12 @@ ColumnLayout {
     property string settingsImportConfirmation: ""
     function settingsTransfer(action) {
         if (settingsTransferBusy || settingsTransferProc.running) return;
+        if (action === "import" && (ShellReload.updating || ShellReload.pending)) return;
         if (action === "import" && (!settingsPreviewReady || settingsImportConfirmation !== "IMPORT SETTINGS")) return;
         settingsTransferAction = action;
         settingsTransferMessage = action === "export" ? "Saving settings…" : action === "inspect" ? "Inspecting JSON file…" : "Creating safety snapshot and importing…";
         settingsTransferBusy = true;
+        if (action === "import") ShellReload.beginUpdate();
         const cmd = ["python3", guardHelper, action];
         if (action !== "export") cmd.push("--path", settingsImportPath.trim());
         if (action === "import") cmd.push("--confirm", "IMPORT SETTINGS", "--sha256", settingsImportPreview.sha256);
@@ -247,6 +321,8 @@ ColumnLayout {
         } }
         onExited: (code, status) => {
             root.settingsTransferBusy = false;
+            if (root.settingsTransferAction === "import")
+                ShellReload.finishUpdate(code === 0 && root.settingsTransferOk, Quickshell.shellDir);
             if (code !== 0 && root.settingsTransferMessage.indexOf("…") >= 0) {
                 root.settingsTransferOk = false;
                 root.settingsTransferMessage = "Settings operation exited with code " + code + ".";
@@ -271,6 +347,10 @@ ColumnLayout {
         } }
     }
     Component.onCompleted: { refresh(); refreshDependencies(); refreshSafeTools(); shellUpdateRefresh(); shellFetchVersions(); }
+    Component.onDestruction: {
+        if (shellUpdateBusy || (settingsTransferBusy && settingsTransferAction === "import"))
+            ShellReload.finishUpdate(false, "");
+    }
     function refreshSafeTools() {
         if (!doctorProc.running) doctorProc.exec(["python3", doctorHelper, "status", "--json"]);
         if (!guardStatusProc.running) guardStatusProc.exec(["python3", guardHelper, "status"]);
@@ -464,7 +544,7 @@ ColumnLayout {
             }
         }
         Text { visible: root.guardMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.guardMessage; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "For explicit restore: rusticq config list settings, then rusticq config restore settings SNAPSHOT_ID --confirm RESTORE. Restart the shell after restoring."; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "For explicit restore: rusticq config list settings, then rusticq config restore settings SNAPSHOT_ID --confirm RESTORE. Valid restored settings reload automatically."; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
     }
 
     SettingsSection {
@@ -472,7 +552,7 @@ ColumnLayout {
         description: "Transfer RusticQ appearance, bar, wallpaper, widgets, dock and shortcut UI preferences to another install. Does not export API keys, app usage, or Omarchy system configuration."
         symbol: "\ue8b8"
         Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: "Source: user-settings.json of this running RusticQ. Save creates a portable JSON in ~/Documents/RusticQ-Settings. Loading creates an automatic recovery snapshot and requires a RusticQ restart."
+             text: "Source: user-settings.json of this running RusticQ. Save creates a portable JSON in ~/Documents/RusticQ-Settings. Loading creates a recovery snapshot and automatically reloads the new configuration."
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
         RowLayout { Layout.fillWidth: true; spacing: 8
             Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10
@@ -532,7 +612,7 @@ ColumnLayout {
             text: root.settingsTransferMessage
             color: root.settingsTransferOk ? Theme.accent : Theme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
         Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: "After Load, restart RusticQ to apply imported settings. Do not change other settings before restarting: the running instance may otherwise overwrite imported values."
+            text: "After Load succeeds, RusticQ reloads automatically and applies the imported settings."
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
     }
 
@@ -694,7 +774,7 @@ ColumnLayout {
         description: "Automatically checks official GitHub Releases. Update ~/dev/quickshell even after restoring Omarchy, or update a permanently installed shell. Each target has separate rollback backups."
         symbol: "\ue869"
         Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: "Local source: " + ReleaseInfo.tag + " · Auto fetch checks GitHub on Settings load and hourly while open. Download/install requires confirmation; local version does not imply GitHub publication."
+            text: "Local source: " + ReleaseInfo.tag + " · Automatic checks only fetch release information. Use Install update to review a release, or Fetch & install to check and install in one step."
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
         RowLayout { Layout.fillWidth: true; spacing: 8
             Repeater { model: ["dev", "installed"]
@@ -707,7 +787,7 @@ ColumnLayout {
                         color: root.shellUpdateTarget === modelData ? Theme.background : Theme.foreground
                         font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                        enabled: !root.shellUpdateBusy
+                        enabled: !root.shellUpdateBusy && !root.shellUpdateCheckBusy
                         onClicked: {
                             root.shellUpdateTarget = modelData;
                             root.shellUpdateAction = "";
@@ -756,6 +836,18 @@ ColumnLayout {
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: root.shellUpdateCheck() }
             }
+            Rectangle {
+                objectName: "shell-fetch-install"
+                Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
+                color: root.shellUpdateTargetReady && !root.shellUpdateBusy && !root.shellUpdateCheckBusy ? Qt.alpha(Theme.accent, .16) : Theme.borderaccent
+                Text { anchors.centerIn: parent; text: root.shellFetchInstallPending ? "Fetching…" : "Fetch & install"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: root.shellUpdateTargetReady && !root.shellUpdateBusy && !root.shellUpdateCheckBusy
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: root.shellFetchAndInstall()
+                }
+            }
         }
         RowLayout { Layout.fillWidth: true; spacing: 8
             Text { Layout.fillWidth: true; text: "Available GitHub versions"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
@@ -798,6 +890,7 @@ ColumnLayout {
         }
         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10; color: Theme.background
             TextInput { id: updateTagInput; anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10
+                enabled: !root.shellUpdateBusy && !root.shellUpdateCheckBusy
                 verticalAlignment: TextInput.AlignVCenter; text: root.shellReleaseTag; onTextEdited: {
                     root.shellReleaseTag = text;
                     root.shellUpdateRiskAccepted = false;
@@ -826,7 +919,8 @@ ColumnLayout {
         RowLayout { Layout.fillWidth: true; spacing: 8
             Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10
                 color: root.shellUpdateTargetReady && root.shellReleaseMetadataMatches && root.shellVersionAvailable ? Theme.accent : Theme.borderaccent
-                Text { anchors.centerIn: parent; text: "Update Shell (GitHub)"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                objectName: "shell-review-install"
+                Text { anchors.centerIn: parent; text: "Install update"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
                 MouseArea { anchors.fill: parent; enabled: root.shellUpdateTargetReady && root.shellReleaseMetadataMatches && root.shellVersionAvailable && !root.shellUpdateBusy && !root.shellUpdateCheckBusy
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: { root.shellUpdateAction = "update-shell"; root.shellUpdateConfirm = ""; } }
@@ -842,7 +936,8 @@ ColumnLayout {
             readonly property string phrase: root.shellUpdateAction === "reapply-local" ? "REAPPLY LOCAL" :
                     root.shellUpdateAction === "rollback" ? "ROLLBACK SHELL" : "UPDATE SHELL"
             Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
-                text: "Confirm " + parent.phrase + " → " + (root.shellUpdateTarget === "dev" ? "~/dev/quickshell" : "~/.local/share/rusticq/shell") + ". Original files and user settings are preserved for rollback. GitHub source ZIPs have no independent published SHA-256. Restart the active shell manually."
+                text: (root.shellUpdateAction === "reapply-local" ? "Install local source" : root.shellUpdateAction === "rollback" ? "Restore previous shell" : "Install " + root.shellUpdateStatus.release.tag) + " → " +
+                    (root.shellUpdateTarget === "dev" ? "~/dev/quickshell" : "~/.local/share/rusticq/shell") + ". Original files and user settings are preserved for rollback. The updated shell reloads automatically after installation."
                 color: Theme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
             RowLayout { visible: root.shellUpdateAction === "update-shell" && root.shellVersionDanger; Layout.fillWidth: true; spacing: 9
                 Rectangle { Layout.preferredWidth: 27; Layout.preferredHeight: 27; radius: 7
@@ -855,7 +950,7 @@ ColumnLayout {
                 Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "I understand the risks of installing a pre-release version and may need to roll back.";
                     color: Theme.warning; font.pixelSize: Fonts.scale(10) }
             }
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10; color: Theme.background
+            Rectangle { visible: root.shellUpdateAction === "rollback"; Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10; color: Theme.background
                 TextInput { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10; verticalAlignment: TextInput.AlignVCenter
                     text: root.shellUpdateConfirm; onTextEdited: root.shellUpdateConfirm = text; selectByMouse: true
                     color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
@@ -869,20 +964,22 @@ ColumnLayout {
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { root.shellUpdateAction = ""; root.shellUpdateConfirm = ""; } }
                 }
                 Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
-                    color: root.shellUpdateConfirm === updateConfirmColumn.phrase && !root.shellUpdateBusy &&
-                        (root.shellUpdateAction !== "update-shell" || !root.shellVersionDanger || root.shellUpdateRiskAccepted) ? Theme.accent : Theme.borderaccent
-                    Text { anchors.centerIn: parent; text: root.shellUpdateBusy ? "Installing…" : "Confirm & install"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
-                    MouseArea { anchors.fill: parent; enabled: root.shellUpdateConfirm === updateConfirmColumn.phrase && !root.shellUpdateBusy &&
-                        (root.shellUpdateAction !== "update-shell" || !root.shellVersionDanger || root.shellUpdateRiskAccepted)
-                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor; onClicked: root.shellUpdateApply() }
+                    objectName: "shell-install-selected"
+                    color: root.shellInstallReady ? Theme.accent : Theme.borderaccent
+                    Text { anchors.centerIn: parent; text: root.shellUpdateBusy ? "Installing…" : root.shellUpdateAction === "reapply-local" ? "Install local" : root.shellUpdateAction === "rollback" ? "Confirm rollback" : "Install update"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    MouseArea { anchors.fill: parent; enabled: root.shellInstallReady
+                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor; onClicked: root.shellInstallSelected() }
                 }
             }
         }
         Text { visible: root.shellUpdateMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: root.shellUpdateMessage; color: root.shellUpdateOk ? Theme.success : Theme.warning
             font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+        Text { visible: ShellReload.message.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap
+            text: ShellReload.message; color: ShellReload.reloadFailed ? Theme.warning : Theme.success
+            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
         Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: "GitHub → DEV updates ~/dev/quickshell and works even after Restore Omarchy. Reapply Local → Permanent copies DEV to ~/.local/share/rusticq/shell. Rollback acts on the SELECTED target only. No system packages or Omarchy defaults are changed."
+            text: "Choose PERMANENT to install GitHub updates into the installed shell. DEV updates ~/dev/quickshell; then Reapply Local → Install local copies it to PERMANENT. Fetch & install follows the selected target. Rollback acts on that target only."
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
     }
 
@@ -1040,7 +1137,7 @@ ColumnLayout {
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
         }
         Text {
-            visible: !root.info.permanent && root.info.reinstall && root.info.reinstall.stale_files && root.info.reinstall.stale_files.length > 0
+            visible: !root.info.permanent && !!root.info.reinstall && !!root.info.reinstall.stale_files && root.info.reinstall.stale_files.length > 0
             Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: root.info.reinstall ? root.info.reinstall.message : ""
             color: Theme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)

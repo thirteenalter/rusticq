@@ -10,6 +10,58 @@ Singleton {
 
     property string fallbackDevice: "No Wi-Fi adapter"
 
+    // One shared request survives closing a popup or switching monitors.
+    property bool hiddenConnecting: false
+    property bool hiddenFailed: false
+    property string hiddenMessage: ""
+    property string hiddenPayload: ""
+
+    function connectHidden(ssid, security, password) {
+        if (hiddenConnecting) return false;
+        hiddenFailed = false;
+        hiddenMessage = "";
+        if (!wifiDevice || !Networking.wifiEnabled || !Networking.wifiHardwareEnabled) {
+            hiddenFailed = true;
+            hiddenMessage = "Enable an available Wi-Fi adapter first";
+            return false;
+        }
+        hiddenPayload = JSON.stringify({ssid: ssid, security: security,
+                                       password: password, interface: wifiDevice.name});
+        hiddenConnecting = true;
+        hiddenRequest.running = true;
+        return true;
+    }
+
+    Process {
+        id: hiddenRequest
+        command: ["python3", Quickshell.shellPath("scripts/rusticq-wifi-hidden.py")]
+        stdinEnabled: true
+        onStarted: {
+            write(wifi.hiddenPayload + "\n");
+            wifi.hiddenPayload = "";
+        }
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const result = JSON.parse(this.text.trim());
+                    wifi.hiddenFailed = !result.ok;
+                    wifi.hiddenMessage = result.message || "Hidden Wi-Fi request failed";
+                } catch (e) {
+                    wifi.hiddenFailed = true;
+                    wifi.hiddenMessage = "Could not read the hidden Wi-Fi connection result";
+                }
+            }
+        }
+        onExited: (code, status) => {
+            wifi.hiddenPayload = "";
+            wifi.hiddenConnecting = false;
+            if (code !== 0 && !wifi.hiddenMessage) {
+                wifi.hiddenFailed = true;
+                wifi.hiddenMessage = "Could not connect to hidden Wi-Fi";
+            }
+        }
+    }
+
     // ============================================================
     // Native Quickshell WiFi Objects (NetworkManager backend)
     // ============================================================

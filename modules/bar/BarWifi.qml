@@ -18,17 +18,16 @@ Rectangle {
 
     property bool expanded: true
     property bool standalone: false
+    property bool fullSettings: false
+    property bool showAdvancedNavigation: true
     property bool advancedOpen: false
+    property bool hiddenOpen: false
     property var popupScreen: null
     signal shareQrRequested(var screen, string ssid)
-    // Keep room for a scanned AP list; network entries alone are scrollable.
-    readonly property real listHeightLimit: advancedOpen
-        ? Math.max(84, Math.min(218, (popupScreen ? popupScreen.height : 900) - advancedContent.implicitHeight - 256))
-        : 300
+    readonly property real listHeightLimit: 300
     readonly property bool contentOpen: standalone || expanded
-    // Standalone popup height follows the real controls. The Wi-Fi network
-    // list may scroll for dozens of APs, but Advanced Wi-Fi never clips.
-    implicitHeight: standalone ? wifiContent.implicitHeight + 2 * Theme.sectionPadding : 0
+    // Normal and Advanced are separate pages. Only the active page scrolls.
+    implicitHeight: standalone || advancedOpen ? wifiContent.implicitHeight + 2 * Theme.sectionPadding : 0
 
     WifiManager { id: manager }
 
@@ -39,11 +38,37 @@ Rectangle {
     property string errorText: ""
 
     function resetState() {
+        hiddenOpen = false;
         activeNetwork = null;
         passwordNetwork = null;
         passwordText = "";
         errorNetwork = null;
         errorText = "";
+    }
+
+    onContentOpenChanged: if (!contentOpen) {
+        advancedOpen = false;
+        resetState();
+    }
+    onVisibleChanged: if (!visible) {
+        advancedOpen = false;
+        resetState();
+    }
+
+    function showAdvanced() {
+        resetState();
+        advancedOpen = true;
+    }
+
+    function sectionOffset(section) {
+        if (section === "dns" || section === "sharing")
+            return advancedContent.sectionOffset(section) + advancedContent.mapToItem(wifiWidget, 0, 0).y;
+        return 0;
+    }
+
+    function showNetworks() {
+        resetState();
+        advancedOpen = false;
     }
 
     function connectSelected(network) {
@@ -98,16 +123,33 @@ Rectangle {
         anchors.margins: Theme.sectionPadding
         spacing: 12
 
-        SectionHeader {
+        RowLayout {
             Layout.fillWidth: true
-            title: "Wi-Fi"
-            iconName: "\ue63e"
-            expanded: wifiWidget.contentOpen
-            collapsible: !wifiWidget.standalone
-            onToggleRequested: if (!wifiWidget.standalone) wifiWidget.expanded = !wifiWidget.expanded
+            Layout.preferredHeight: 36
+            Layout.maximumHeight: 36
+            spacing: 8
+            SectionHeader {
+                Layout.fillWidth: true
+                title: wifiWidget.advancedOpen ? "Advanced Wi-Fi" : "Wi-Fi"
+                iconName: "\ue63e"
+                expanded: wifiWidget.contentOpen
+                collapsible: !wifiWidget.standalone
+                onToggleRequested: if (!wifiWidget.standalone) wifiWidget.expanded = !wifiWidget.expanded
+            }
+            DeviceSettingsButton {
+                objectName: "wifiFullscreenButton"
+                visible: !wifiWidget.fullSettings
+                kind: "wifi"
+                section: "details"
+                label: "Open Wi-Fi fullscreen"
+                symbol: "\ue5d0"
+                iconOnly: true
+                fullscreen: true
+                targetScreen: wifiWidget.popupScreen || Store.sidebarScreen
+            }
         }
         RowLayout {
-            visible: wifiWidget.contentOpen
+            visible: wifiWidget.contentOpen && !wifiWidget.advancedOpen
             Layout.fillWidth: true
             Layout.preferredHeight: 32
             spacing: 8
@@ -139,7 +181,7 @@ Rectangle {
             }
         }
         RowLayout {
-            visible: wifiWidget.contentOpen
+            visible: wifiWidget.contentOpen && !wifiWidget.advancedOpen
             Layout.fillWidth: true
             Text {
                 Layout.fillWidth: true
@@ -155,38 +197,92 @@ Rectangle {
             }
         }
 
-        RowLayout {
-            visible: wifiWidget.standalone && wifiWidget.contentOpen
+        Rectangle {
+            objectName: "wifiAdvancedNavigation"
+            visible: wifiWidget.contentOpen && wifiWidget.showAdvancedNavigation
             Layout.fillWidth: true
-            spacing: 8
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 34
-                radius: Theme.rowRadius
-                color: wifiWidget.advancedOpen ? Qt.alpha(Theme.accent, .16) : Theme.surface
-                RowLayout { anchors.centerIn: parent; spacing: 7
-                    Icon { icon: "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
-                    Text { text: wifiWidget.advancedOpen ? "Hide advanced Wi-Fi" : "Advanced Wi-Fi · QR, speed, DNS";
-                        color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
-                }
-                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: wifiWidget.advancedOpen = !wifiWidget.advancedOpen }
+            Layout.preferredHeight: 34
+            radius: Theme.rowRadius
+            color: Theme.surface
+            activeFocusOnTab: true
+            Accessible.role: Accessible.Button
+            Accessible.name: wifiWidget.advancedOpen ? "Back to Wi-Fi" : "Advanced Wi-Fi"
+            function navigate() {
+                if (wifiWidget.advancedOpen) wifiWidget.showNetworks();
+                else wifiWidget.showAdvanced();
             }
+            Accessible.onPressAction: navigate()
+            Keys.onReturnPressed: navigate()
+            Keys.onSpacePressed: navigate()
+            RowLayout { anchors.centerIn: parent; spacing: 7
+                Icon { icon: wifiWidget.advancedOpen ? "\ue5c4" : "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
+                Text { text: wifiWidget.advancedOpen ? "Back to Wi-Fi" : "Advanced Wi-Fi";
+                    color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+            }
+            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: parent.navigate() }
         }
-        // No nested Flickable: Advanced grows to its actual implicit height.
-        // PopupWindow derives its height from this card instead of reserving a
-        // fixed 760px window with a separately scrolling 335px inner viewport.
-        WifiAdvanced {
-            id: advancedContent
-            visible: wifiWidget.standalone && wifiWidget.contentOpen && wifiWidget.advancedOpen
+
+        Flickable {
+            id: advancedViewport
+            objectName: "wifiAdvancedPage"
+            visible: wifiWidget.contentOpen && wifiWidget.advancedOpen
             Layout.fillWidth: true
             Layout.preferredHeight: visible ? implicitHeight : 0
-            targetScreen: wifiWidget.popupScreen
-            onShareQrRequested: (screen, ssid) => wifiWidget.shareQrRequested(screen, ssid)
+            implicitHeight: wifiWidget.standalone && !wifiWidget.fullSettings
+                ? Math.min(advancedPage.implicitHeight, Math.max(120,
+                    (wifiWidget.popupScreen ? wifiWidget.popupScreen.height : 995)
+                    - 95 - 2 * Theme.sectionPadding - 70 - 2 * wifiContent.spacing))
+                : advancedPage.implicitHeight
+            contentWidth: width
+            contentHeight: advancedPage.implicitHeight
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            ColumnLayout {
+                id: advancedPage
+                width: advancedViewport.width
+                spacing: Theme.sectionGap
+                Rectangle {
+                    objectName: "addHiddenWifiButton"
+                    visible: !wifiWidget.hiddenOpen
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 36
+                    radius: Theme.rowRadius
+                    color: Qt.alpha(Theme.accent, 0.16)
+                    enabled: manager.wifiEnabled && manager.wifiHardwareEnabled && manager.wifiDevice !== null
+                    opacity: enabled ? 1 : 0.45
+                    activeFocusOnTab: true
+                    Accessible.role: Accessible.Button
+                    Accessible.name: "Add hidden Wi-Fi"
+                    Accessible.onPressAction: wifiWidget.hiddenOpen = true
+                    Keys.onReturnPressed: wifiWidget.hiddenOpen = true
+                    Keys.onSpacePressed: wifiWidget.hiddenOpen = true
+                    RowLayout { anchors.centerIn: parent; spacing: 7
+                        Icon { icon: "\ue145"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
+                        Text { text: "Add hidden Wi-Fi"; color: Theme.accent;
+                            font.family: Fonts.poppinsSB.name; font.pixelSize: Theme.helperTextSize }
+                    }
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: wifiWidget.hiddenOpen = true }
+                }
+                WifiHiddenNetwork {
+                    objectName: "hiddenWifiForm"
+                    visible: wifiWidget.hiddenOpen
+                    Layout.fillWidth: true
+                    onCloseRequested: wifiWidget.hiddenOpen = false
+                }
+                WifiAdvanced {
+                    id: advancedContent
+                    visible: !wifiWidget.hiddenOpen
+                    Layout.fillWidth: true
+                    targetScreen: wifiWidget.popupScreen
+                    onShareQrRequested: (screen, ssid) => wifiWidget.shareQrRequested(screen, ssid)
+                }
+            }
         }
 
         ListView {
             id: wifiList
-            visible: wifiWidget.contentOpen
+            objectName: "wifiNetworkList"
+            visible: wifiWidget.contentOpen && !wifiWidget.advancedOpen
             Layout.fillWidth: true
             Layout.fillHeight: !wifiWidget.standalone
             Layout.preferredHeight: wifiWidget.standalone

@@ -121,6 +121,13 @@ ColumnLayout {
     }
 
     SettingsSection {
+        heading: "Clock & calendar"
+        description: "Choose each item's icon, text and date format. Follow layout uses the bar's label setting; the other styles apply in every layout."
+        symbol: "\ue8b5"
+        ClockSettingsEditor { Layout.fillWidth: true }
+    }
+
+    SettingsSection {
         visible: SettingsStore.barMode === "clean-compact"
         heading: "Clean Compact labels"
         description: "Battery and volume percentages remain visible in all modes."

@@ -47,6 +47,48 @@ Singleton {
     property var aiScreen: null
     property var settingsScreen: null
     property bool settingsVisible: false
+    property bool deviceSettingsVisible: false
+    property bool deviceSettingsPending: false
+    property bool deviceSettingsFullscreen: true
+    property string deviceSettingsKind: "wifi"
+    property string deviceSettingsSection: "details"
+    property var deviceSettingsScreen: null
+    // Anchored popups release their focus grab before a toplevel opens.
+    signal deviceSettingsRequested()
+    readonly property var deviceSections: ({
+        wifi: ["networks", "hidden", "details", "dns", "sharing"],
+        audio: ["applications", "output", "microphone"],
+        bluetooth: ["devices"],
+        power: ["status"]
+    })
+    function openDeviceSettings(kind, screen, section, fullscreen) {
+        const sections = deviceSections[kind];
+        if (!sections) return;
+        deviceSettingsKind = kind;
+        deviceSettingsSection = sections.indexOf(section) >= 0 ? section : sections[0];
+        deviceSettingsFullscreen = fullscreen !== false;
+        deviceSettingsScreen = screen || sidebarScreen || settingsScreen
+            || (Quickshell.screens.length ? Quickshell.screens[0] : null);
+        sidebarVisible = false;
+        launcherVisible = false;
+        aiVisible = false;
+        deviceSettingsPending = true;
+        deviceSettingsRequested();
+        deviceSettingsDelay.restart();
+    }
+    function closeDeviceSettings() {
+        deviceSettingsDelay.stop();
+        deviceSettingsPending = false;
+        deviceSettingsVisible = false;
+    }
+    Timer {
+        id: deviceSettingsDelay
+        interval: 260
+        onTriggered: {
+            root.deviceSettingsPending = false;
+            root.deviceSettingsVisible = true;
+        }
+    }
     property bool launcherVisible: false
     property var launcherScreen: null
     property bool powerMenuVisible: false
@@ -79,7 +121,7 @@ Singleton {
     property var monitorScreen: null
     property bool systemMonitorVisible: false
     signal notesChanged()
-    property string settingsTab: "appearance"
+    property string settingsTab: "home"
     // The confirmation is a separate overlay window, never an inline Settings card.
     signal packageOperationConfirmed(string action, string packageName, string provider)
     // Human approval is a distinct, non-privileged layer. Actual credentials
@@ -199,7 +241,7 @@ Singleton {
     }
     function showSettings(tab, screen) {
         if (screen) settingsScreen = screen;
-        if (tab) settingsTab = tab;
+        settingsTab = tab || "home";
         settingsVisible = true;
         launcherVisible = false;
         sidebarVisible = false;

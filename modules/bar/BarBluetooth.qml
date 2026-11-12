@@ -11,6 +11,8 @@ Rectangle {
     Layout.fillWidth: true
     property bool expanded: false
     property bool standalone: false
+    property bool showSettingsButton: true
+    property var targetScreen: null
     readonly property bool contentOpen: standalone || expanded
     readonly property var adapter: Native.Bluetooth.defaultAdapter
     Layout.preferredHeight: contentOpen ? 336 : 68
@@ -24,13 +26,30 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: Theme.sectionPadding
         spacing: 12
-        SectionHeader {
+        RowLayout {
             Layout.fillWidth: true
-            title: "Bluetooth"
-            iconName: "\ue1a7"
-            expanded: root.contentOpen
-            collapsible: !root.standalone
-            onToggleRequested: if (!root.standalone) root.expanded = !root.expanded
+            Layout.preferredHeight: 36
+            Layout.maximumHeight: 36
+            spacing: 8
+            SectionHeader {
+                Layout.fillWidth: true
+                title: "Bluetooth"
+                iconName: "\ue1a7"
+                expanded: root.contentOpen
+                collapsible: !root.standalone
+                onToggleRequested: if (!root.standalone) root.expanded = !root.expanded
+            }
+            DeviceSettingsButton {
+                objectName: "bluetoothFullscreenButton"
+                visible: root.showSettingsButton
+                kind: "bluetooth"
+                section: "devices"
+                label: "Open Bluetooth fullscreen"
+                symbol: "\ue5d0"
+                iconOnly: true
+                fullscreen: true
+                targetScreen: root.targetScreen
+            }
         }
 
         Flickable {

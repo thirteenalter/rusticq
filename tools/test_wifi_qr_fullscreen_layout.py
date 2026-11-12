@@ -6,11 +6,14 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 
 class WifiOverlayLayoutTests(unittest.TestCase):
-    def test_advanced_is_not_clipped_or_nest_scrolled(self):
+    def test_advanced_switches_page_and_fits_screen(self):
         bar = (ROOT / 'modules/bar/BarWifi.qml').read_text()
         self.assertNotIn('Layout.preferredHeight: visible ? 335 : 0', bar)
-        self.assertNotIn('Flickable {', bar)
-        self.assertIn('implicitHeight: standalone ? wifiContent.implicitHeight', bar)
+        self.assertEqual(bar.count('Flickable {'), 1)
+        self.assertIn('contentHeight: advancedPage.implicitHeight', bar)
+        self.assertIn('visible: wifiWidget.contentOpen && !wifiWidget.advancedOpen', bar)
+        self.assertIn('visible: wifiWidget.contentOpen && wifiWidget.advancedOpen', bar)
+        self.assertIn('implicitHeight: standalone || advancedOpen ? wifiContent.implicitHeight', bar)
         self.assertIn('Layout.preferredHeight: visible ? implicitHeight : 0', bar)
         self.assertIn('Layout.preferredHeight: wifiWidget.standalone', bar)
         popup = (ROOT / 'modules/main/IndicatorPopup.qml').read_text()

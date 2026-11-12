@@ -306,9 +306,50 @@ ColumnLayout {
                         const outcome = JSON.parse(this.text.trim());
                         wallpaperFeedback.text = outcome.message;
                         wallpaperFeedback.color = outcome.ok ? Theme.success : Theme.error;
+                        if (outcome.ok && outcome.backend) {
+                            // A successful Apply is remembered across reboot and
+                            // across development/permanent shell installations.
+                            SettingsStore.wallpaperAutoRestore = outcome.auto_restore === true;
+                            SettingsStore.save();
+                        }
                     } catch(e) { wallpaperFeedback.text = "Wallpaper command did not return a valid result."; wallpaperFeedback.color = Theme.error; }
                 }
             }
+        }
+        property bool requestedAutoRestore: false
+        property bool requestedReplaceRestore: false
+        function saveRestoreChoice(enabled, replace) {
+            if (restoreConfigProc.running) return;
+            if (enabled && SettingsStore.wallpaperBackend !== "swaybg") {
+                wallpaperFeedback.text = "Choose swaybg before enabling automatic swaybg restore.";
+                wallpaperFeedback.color = Theme.error;
+                return;
+            }
+            requestedAutoRestore = enabled;
+            requestedReplaceRestore = replace;
+            const args = ["python3", Quickshell.shellPath("scripts/rusticq-wallpaper.py"),
+                          SettingsStore.wallpaperPath, "--configure-restore", enabled ? "on" : "off",
+                          "--mode", SettingsStore.wallpaperFitMode];
+            if (replace) args.push("--remember-replace");
+            restoreConfigProc.exec(args);
+        }
+        Process {
+            id: restoreConfigProc
+            stdout: StdioCollector { onStreamFinished: {
+                try {
+                    const outcome = JSON.parse(this.text.trim());
+                    wallpaperFeedback.text = outcome.message;
+                    wallpaperFeedback.color = outcome.ok ? Theme.success : Theme.error;
+                    if (outcome.ok) {
+                        SettingsStore.wallpaperAutoRestore = wallpaperSection.requestedAutoRestore;
+                        SettingsStore.wallpaperReplaceOnRestore = wallpaperSection.requestedReplaceRestore;
+                        SettingsStore.save();
+                    }
+                } catch (e) {
+                    wallpaperFeedback.text = "Cannot update startup wallpaper: " + String(e);
+                    wallpaperFeedback.color = Theme.error;
+                }
+            } }
         }
         Process {
             id: wallpaperPicker
@@ -398,6 +439,9 @@ ColumnLayout {
                     const args = ["python3", Quickshell.shellPath("scripts/rusticq-wallpaper.py"), SettingsStore.wallpaperPath,
                                   "--backend", SettingsStore.wallpaperBackend, "--mode", SettingsStore.wallpaperFitMode];
                     if (wallpaperSection.wallpaperReplaceConflicts) args.push("--replace-conflicts");
+                    // Remember only after successful Apply, never an invalid path.
+                    args.push("--remember");
+                    if (SettingsStore.wallpaperReplaceOnRestore) args.push("--remember-replace");
                     wallpaperSection.wallpaperReplaceConflicts = false;
                     wallpaperProcess.exec(args);
                 }
@@ -423,9 +467,11 @@ ColumnLayout {
         RowLayout { Layout.fillWidth: true; spacing: 8
             Rectangle { Layout.preferredWidth: 25; Layout.preferredHeight: 25; radius: 6
                 color: SettingsStore.wallpaperAutoRestore ? Theme.accent : Theme.surface
-                MouseArea { anchors.fill: parent; onClicked: { SettingsStore.wallpaperAutoRestore = !SettingsStore.wallpaperAutoRestore; SettingsStore.save(); } }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor;
+                    onClicked: wallpaperSection.saveRestoreChoice(!SettingsStore.wallpaperAutoRestore,
+                                                                   SettingsStore.wallpaperReplaceOnRestore) }
             }
-            Text { Layout.fillWidth: true; text: "Restore swaybg wallpaper on RusticQ startup (opt-in)"; wrapMode: Text.WordWrap
+            Text { Layout.fillWidth: true; text: "Restore swaybg automatically after login (enabled after Apply)"; wrapMode: Text.WordWrap
                 color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
         }
         RowLayout { Layout.fillWidth: true; spacing: 8
@@ -439,8 +485,9 @@ ColumnLayout {
         RowLayout { Layout.fillWidth: true; spacing: 8
             Rectangle { Layout.preferredWidth: 25; Layout.preferredHeight: 25; radius: 6
                 color: SettingsStore.wallpaperReplaceOnRestore ? Theme.accent : Theme.surface
-                MouseArea { anchors.fill: parent
-                    onClicked: { SettingsStore.wallpaperReplaceOnRestore = !SettingsStore.wallpaperReplaceOnRestore; SettingsStore.save(); } }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                    onClicked: wallpaperSection.saveRestoreChoice(SettingsStore.wallpaperAutoRestore,
+                                                                   !SettingsStore.wallpaperReplaceOnRestore) }
             }
             Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
                 text: "Allow replacing an existing Omarchy wallpaper process on startup (explicit opt-in)"
@@ -476,7 +523,7 @@ ColumnLayout {
         Text {
             id: wallpaperFeedback
             Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: "Swaybg Low Memory works on Wayland; install swaybg first. Use explicit replace only if switching away from an existing wallpaper provider."
+            text: "Choose an image, then Apply. RusticQ remembers swaybg across logout/reboot for all monitors. Do not autostart bare 'swaybg' without -i image; this backend supplies the image itself."
             color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
         }
     }

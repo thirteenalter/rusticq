@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Ensure only RusticQ Settings opens as a compact floating Hyprland window.
+"""Arrange RusticQ Settings or Device settings as a floating Hyprland window.
 
-This runs once each time Settings is opened. It does not install compositor
+This runs when a window opens outside fullscreen. It does not install compositor
 rules or alter other windows. After launch users can freely move/resize it.
 """
 import json
@@ -9,8 +9,10 @@ import re
 import shutil
 import subprocess
 import time
+import argparse
 
 TITLE = "RusticQ · Settings"
+DEVICE_TITLE = "RusticQ · Device settings"
 ADDRESS = re.compile(r"0x[0-9a-fA-F]{4,16}\Z")
 DEFAULT_WIDTH = 1100
 DEFAULT_HEIGHT = 760
@@ -18,14 +20,15 @@ DEFAULT_HEIGHT = 760
 
 def target_size(client):
     """Clamp preferred floating size to this window's actual monitor."""
+    preferred_width, preferred_height = (720, 680) if client.get("title") == DEVICE_TITLE else (DEFAULT_WIDTH, DEFAULT_HEIGHT)
     try:
         result = subprocess.run(["hyprctl", "-j", "monitors"],
                                 capture_output=True, text=True, timeout=3)
         if result.returncode != 0:
-            return DEFAULT_WIDTH, DEFAULT_HEIGHT
+            return preferred_width, preferred_height
         monitors = json.loads(result.stdout)
         if not isinstance(monitors, list):
-            return DEFAULT_WIDTH, DEFAULT_HEIGHT
+            return preferred_width, preferred_height
         for monitor in monitors:
             if not isinstance(monitor, dict):
                 continue
@@ -43,21 +46,21 @@ def target_size(client):
             # Hyprland reports physical pixels; window geometry is logical.
             logical_width = int(width / scale)
             logical_height = int(height / scale)
-            return (max(600, min(DEFAULT_WIDTH, logical_width - 64)),
-                    max(480, min(DEFAULT_HEIGHT, logical_height - 88)))
+            return (max(600, min(preferred_width, logical_width - 64)),
+                    max(480, min(preferred_height, logical_height - 88)))
     except (OSError, subprocess.TimeoutExpired, ValueError, json.JSONDecodeError):
         pass
-    return DEFAULT_WIDTH, DEFAULT_HEIGHT
+    return preferred_width, preferred_height
 
 
-def find_settings_window(clients):
+def find_settings_window(clients, title=TITLE):
     if not isinstance(clients, list):
         return None
     for client in clients:
         if not isinstance(client, dict):
             continue
         address = client.get("address", "")
-        if client.get("title") == TITLE and isinstance(address, str) and ADDRESS.fullmatch(address):
+        if client.get("title") == title and isinstance(address, str) and ADDRESS.fullmatch(address):
             return client
     return None
 
@@ -106,6 +109,9 @@ def ensure_float(client):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--device-settings', action='store_true')
+    options = parser.parse_args()
     if not shutil.which("hyprctl"):
         return 0
     for _ in range(8):
@@ -113,7 +119,7 @@ def main():
             result = subprocess.run(["hyprctl", "-j", "clients"],
                                     capture_output=True, text=True, timeout=3)
             if result.returncode == 0:
-                client = find_settings_window(json.loads(result.stdout))
+                client = find_settings_window(json.loads(result.stdout), DEVICE_TITLE if options.device_settings else TITLE)
                 if client:
                     return 0 if ensure_float(client) else 1
         except (OSError, subprocess.TimeoutExpired, ValueError, json.JSONDecodeError):

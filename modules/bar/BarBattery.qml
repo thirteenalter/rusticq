@@ -11,6 +11,8 @@ Rectangle {
     Layout.fillWidth: true
     property bool expanded: false
     property bool standalone: false
+    property bool showSettingsButton: true
+    property var targetScreen: null
     readonly property bool contentOpen: standalone || expanded
     Layout.preferredHeight: contentOpen ? 366 : 68
     radius: Theme.sectionRadius
@@ -24,13 +26,30 @@ Rectangle {
         anchors.margins: Theme.sectionPadding
         spacing: 12
 
-        SectionHeader {
+        RowLayout {
             Layout.fillWidth: true
-            title: "Battery"
-            iconName: BatteryService.icon
-            expanded: root.contentOpen
-            collapsible: !root.standalone
-            onToggleRequested: if (!root.standalone) root.expanded = !root.expanded
+            Layout.preferredHeight: 36
+            Layout.maximumHeight: 36
+            spacing: 8
+            SectionHeader {
+                Layout.fillWidth: true
+                title: "Battery"
+                iconName: BatteryService.icon
+                expanded: root.contentOpen
+                collapsible: !root.standalone
+                onToggleRequested: if (!root.standalone) root.expanded = !root.expanded
+            }
+            DeviceSettingsButton {
+                objectName: "powerFullscreenButton"
+                visible: root.showSettingsButton
+                kind: "power"
+                section: "status"
+                label: "Open battery settings fullscreen"
+                symbol: "\ue5d0"
+                iconOnly: true
+                fullscreen: true
+                targetScreen: root.targetScreen
+            }
         }
 
         Flickable {

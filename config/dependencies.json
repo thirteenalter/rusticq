@@ -71,6 +71,12 @@
       "description": "PipeWire audio session manager."
     },
     {
+      "id": "audio-meter",
+      "name": "Application audio meters",
+      "package": "pipewire-audio",
+      "description": "pw-cat provides in-memory audio meters for streams with unnamed channels on Quickshell 0.3.1."
+    },
+    {
       "id": "media",
       "name": "Playerctl",
       "package": "playerctl",

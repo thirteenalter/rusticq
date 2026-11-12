@@ -21,6 +21,19 @@ RusticQ is a user-space desktop shell configuration built with **Quickshell/QML*
 
 Detailed module and feature inventory: **[FEATURES.md](FEATURES.md)**.
 
+**Full Settings:** Edit → Full settings opens an overview with **All / UI / System**
+navigation. System settings now includes Wi-Fi, Bluetooth, audio and battery.
+Wi-Fi → Advanced provides hidden-network setup and a Back button; Advanced Audio
+shows application volumes and live meters. See [Wi-Fi, audio and settings](docs/WIFI-AUDIO-SETTINGS.md).
+
+**Clock & calendar:** Settings → Bar → Clock & calendar provides independent
+**Follow layout / Icon only / Text only / Icon + text** styles for the clock and
+calendar. Choose a preset or enter a custom, case-sensitive Qt format; for example,
+`HH:mm dddd, d MMMM yyyy` with **Indonesia** and **Lowercase day & month** displays
+`20:30 jumat, 13 november 2026`. `HH:mm:ss` adds live seconds. Press Enter or leave
+the format field to save. Both items have live previews, retain their existing
+popup actions and module visibility, and wrap long labels on vertical bars.
+
 ## Current source release — Beta 3 (`beta-3`)
 
 RusticQ's local source version is now **Beta 3**. The version is published in
@@ -283,12 +296,14 @@ The Beta 1 source archive remains the canonical foundation. Wallpaper can use **
 
 ### Updating an installed RusticQ shell
 
-**Settings → Integration → Shell Updates** supports confirmed **Reapply Local**
-from `~/dev/quickshell`, GitHub Release **Check / Update Shell** with verified
-full ZIP assets, and **Rollback Shell**. It preserves the old shell at
+**Settings → Integration → Shell Updates** supports **Reapply Local → Install
+local** from `~/dev/quickshell`, GitHub Release **Check GitHub → Install update**,
+**Fetch & install** in one step, and **Rollback Shell**. Select **PERMANENT** to
+update the installed shell, or **DEV** to update the development source.
+Beta releases and downgrades retain their risk review. It preserves the old shell at
 `~/.local/share/rusticq/shell-before-update-*` and existing user settings.
 These shell updates are **separate from Omarchy/pacman upgrades** and take
-effect in a newly started Quickshell session. See
+effect through an automatic reload of the updated running shell. See
 [docs/SHELL-UPDATES.md](docs/SHELL-UPDATES.md).
 
 ### System OSD — volume, brightness and touchpad
@@ -301,5 +316,20 @@ Settings → Integration → **User settings · Save / Load** can export your
 current `user-settings.json` as a portable JSON file and import an existing
 export or plain legacy settings file. Imports require validation, a typed
 confirmation and an automatic original-configuration snapshot before applying.
-**Restart RusticQ after importing.** See
+**RusticQ reloads automatically after importing.** See
 [User Settings Transfer](docs/USER-SETTINGS-TRANSFER.md).
+
+### Beta 3 Compositor Studio — graphical Hyprland/Niri configuration
+
+Settings → **Compositor** now detects Hyprland versus Niri and exposes
+carefully gated graphical autostart and layout controls. Hyprland Omarchy
+Quattro supports managed Lua autostart, input, appearance and monitor profiles;
+Niri supports KDL autostart and gaps, with unsupported settings visibly
+read-only. Every edit requires a diff preview, a fingerprint, a private backup,
+validator checks, and rollback on failure. No Omarchy `/usr/share/` files are
+modified. For scope, CLI usage and limitations see
+[docs/COMPOSITOR-STUDIO-BETA-3.md](docs/COMPOSITOR-STUDIO-BETA-3.md).
+
+### Beta 3 swaybg startup restoration
+
+After successfully applying a swaybg wallpaper in Settings → Appearance, RusticQ now saves a cross-installation profile under `~/.config/rusticq/wallpaper-restore.json` and restores it on login for all outputs. Running bare `uwsm-app -- swaybg` without `-i IMAGE` does not configure a wallpaper. See [docs/SWAYBG-STARTUP-RESTORE-BETA3.md](docs/SWAYBG-STARTUP-RESTORE-BETA3.md).

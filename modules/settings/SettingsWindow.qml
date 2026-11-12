@@ -23,6 +23,13 @@ FloatingWindow {
     color: Theme.background
     property string query: ""
     readonly property var pages: [
+        {key:"home", label:"Settings", symbol:"\ue8b8", detail:"All desktop and system settings"},
+        {key:"ui", label:"UI settings", symbol:"\ue40a", detail:"Personalize the RusticQ interface"},
+        {key:"system", label:"System settings", symbol:"\ue8b8", detail:"Connections, devices and Linux"},
+        {key:"wifi", label:"Wi-Fi", symbol:"\ue63e", detail:"Networks, hidden Wi-Fi, QR and DNS"},
+        {key:"bluetooth", label:"Bluetooth", symbol:"\ue1a7", detail:"Pair and connect wireless devices"},
+        {key:"audio", label:"Audio", symbol:"\ue050", detail:"Speakers, microphones and application mixer"},
+        {key:"power", label:"Battery & power", symbol:"\uf304", detail:"Battery status and power profiles"},
         {key:"appearance", label:"Appearance", symbol:"\ue40a", detail:"Themes & palette"},
         {key:"bar", label:"Bar", symbol:"\ue30b", detail:"Layout & margins"},
         {key:"modules", label:"Modules", symbol:"\ue429", detail:"Indicators & menus"},
@@ -31,6 +38,7 @@ FloatingWindow {
         {key:"dock", label:"Dock", symbol:"\ue8b8", detail:"Apps & auto-hide"},
         {key:"launcher", label:"App Launcher", symbol:"\ue8b6", detail:"Window & icon size"},
         {key:"display", label:"Displays", symbol:"\ue30b", detail:"Monitor arrangement"},
+        {key:"compositor", label:"Compositor", symbol:"\ue8b8", detail:"Hyprland / Niri graphical config"},
         {key:"os", label:"OS information", symbol:"\ue88e", detail:"Linux & session"},
         {key:"hardware", label:"Hardware", symbol:"\ue322", detail:"CPU, GPU & RAM"},
         {key:"apps", label:"Installed apps", symbol:"\ue5c3", detail:"Package inventory"},
@@ -41,8 +49,20 @@ FloatingWindow {
         {key:"ai", label:"AI Providers", symbol:"\uf371", detail:"Cloud assistant"},
         {key:"about", label:"About", symbol:"\ue88e", detail:"Project information"}
     ]
+    readonly property var systemPages: ["system", "wifi", "bluetooth", "audio", "power", "display", "compositor", "os", "hardware", "apps", "storage", "updates", "shortcuts"]
     readonly property var activePage: pages.find(p => p.key === Store.settingsTab) || pages[0]
+    readonly property string settingsGroup: activePage.key === "home" ? "home"
+        : systemPages.indexOf(activePage.key) >= 0 ? "system" : "ui"
+    readonly property var navigationPages: pages.filter(page => ["home", "ui", "system"].indexOf(page.key) < 0
+        && (settingsGroup === "home" || (systemPages.indexOf(page.key) >= 0 ? "system" : "ui") === settingsGroup))
     readonly property var searchItems: [
+        {tab:"home", title:"Full settings", hint:"All UI and system settings home overview"},
+        {tab:"ui", title:"UI settings", hint:"Personalize RusticQ appearance bar dock widgets"},
+        {tab:"system", title:"System settings", hint:"Wi-Fi Bluetooth audio battery displays Linux devices"},
+        {tab:"wifi", title:"Wi-Fi settings", hint:"Wireless networks scan connect disconnect forget hidden SSID password DNS QR"},
+        {tab:"bluetooth", title:"Bluetooth settings", hint:"Wireless devices scan pair connect disconnect BlueZ adapter"},
+        {tab:"audio", title:"Audio settings and application mixer", hint:"Speaker microphone audio bus per-app volume mute live level meter PipeWire"},
+        {tab:"power", title:"Battery and power", hint:"Charge energy power profiles performance balanced saver"},
         {tab:"appearance", title:"Color theme and accent", hint:"Aether Gruvbox theme palette"},
         {tab:"appearance", title:"Wallpaper settings", hint:"Wallpaper swww awww hyprpaper image path"},
         {tab:"appearance", title:"RusticQ Lock Screen", hint:"Hyprlock PAM password clock secure wallpaper lock screen"},
@@ -62,6 +82,7 @@ FloatingWindow {
         {tab:"dock", title:"Custom dock", hint:"Apps Auto-hide Files Browser"},
         {tab:"launcher", title:"App launcher dimensions", hint:"Window width height icon size favorites columns row height"},
         {tab:"display", title:"Monitor configuration", hint:"Resolution Refresh rate Scale Position"},
+        {tab:"compositor", title:"Compositor studio", hint:"Hyprland Niri autostart gaps rounding input keyboard touchpad monitors graphical configuration preview backup rollback"},
         {tab:"os", title:"Operating system information", hint:"Linux kernel distro hostname uptime session"},
         {tab:"hardware", title:"Hardware details", hint:"CPU GPU PCI motherboard RAM BIOS sensors"},
         {tab:"apps", title:"Installed applications", hint:"Pacman package list foreign explicit AUR install uninstall graphical application remove risk warning"},
@@ -75,7 +96,7 @@ FloatingWindow {
     ]
     readonly property var matched: searchItems.filter(item => (item.title + " " + item.hint + " " + item.tab).toLowerCase().indexOf(query.toLowerCase().trim()) !== -1)
     function navigate(tab) {
-        Store.settingsTab = tab;
+        Store.settingsTab = pages.some(page => page.key === tab) ? tab : "home";
         root.query = "";
         searchField.text = "";
         contentView.contentY = 0;
@@ -140,8 +161,32 @@ FloatingWindow {
                         }
                     }
                     RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 5
+                        Repeater {
+                            model: [{key:"home", label:"All"}, {key:"ui", label:"UI"}, {key:"system", label:"System"}]
+                            delegate: Rectangle {
+                                id: groupChoice
+                                required property var modelData
+                                objectName: "settingsGroup_" + modelData.key
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 34
+                                radius: Theme.rowRadius
+                                color: root.settingsGroup === modelData.key ? Qt.alpha(Theme.accent, 0.18) : Theme.surface
+                                activeFocusOnTab: true
+                                Accessible.role: Accessible.Button
+                                Accessible.name: modelData.label + " settings"
+                                Accessible.onPressAction: root.navigate(modelData.key)
+                                Keys.onReturnPressed: root.navigate(modelData.key)
+                                Keys.onSpacePressed: root.navigate(modelData.key)
+                                Text { anchors.centerIn: parent; text: groupChoice.modelData.label; color: root.settingsGroup === groupChoice.modelData.key ? Theme.accent : Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.navigate(groupChoice.modelData.key) }
+                            }
+                        }
+                    }
+                    RowLayout {
                         Layout.fillWidth: true; Layout.preferredHeight: 25
-                        Text { text: "S E T T I N G S"; font.family: Fonts.poppinsSB.name; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
+                        Text { text: root.settingsGroup === "system" ? "S Y S T E M" : root.settingsGroup === "ui" ? "U I  S E T T I N G S" : "A L L  S E T T I N G S"; font.family: Fonts.poppinsSB.name; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
                     }
                     Flickable {
@@ -158,7 +203,7 @@ FloatingWindow {
                             width: navigationScroll.width
                             spacing: 5
                     Repeater {
-                        model: root.pages
+                        model: root.navigationPages
                         delegate: Rectangle {
                             id: navRow
                             required property var modelData
@@ -206,14 +251,29 @@ FloatingWindow {
                     Layout.preferredHeight: 56
                     ColumnLayout {
                         anchors.fill: parent
+                        anchors.rightMargin: openDeviceWindow.visible ? openDeviceWindow.width + 12 : 0
                         spacing: 3
-                        Text { text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(22) }
-                        Text { text: "RUSTIQ / " + ReleaseInfo.displayName.toUpperCase() + " · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        Text { Layout.fillWidth: true; text: root.activePage.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(22); elide: Text.ElideRight }
+                        Text { Layout.fillWidth: true; text: "RUSTIQ / " + ReleaseInfo.displayName.toUpperCase() + " · " + root.activePage.detail; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); elide: Text.ElideRight }
                     }
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.SizeAllCursor
                         onPressed: root.startSystemMove()
+                    }
+                    DeviceSettingsButton {
+                        id: openDeviceWindow
+                        objectName: "openFloatingDeviceSettings"
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: ["wifi", "bluetooth", "audio", "power"].indexOf(root.activePage.key) >= 0
+                        kind: root.activePage.key
+                        section: kind === "wifi" ? "details" : kind === "audio" ? "applications" : ""
+                        label: "Open fullscreen"
+                        iconOnly: true
+                        fullscreen: true
+                        symbol: "\ue5d0"
+                        targetScreen: root.screen
                     }
                 }
                 Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
@@ -260,7 +320,12 @@ FloatingWindow {
                     Loader {
                         id: pageLoader
                         width: contentView.width
-                        sourceComponent: Store.settingsTab === "appearance" ? appearancePage :
+                        sourceComponent: Store.settingsTab === "home" || Store.settingsTab === "ui" || Store.settingsTab === "system" ? homePage :
+                            Store.settingsTab === "wifi" ? wifiPage :
+                            Store.settingsTab === "bluetooth" ? bluetoothPage :
+                            Store.settingsTab === "audio" ? audioPage :
+                            Store.settingsTab === "power" ? powerPage :
+                            Store.settingsTab === "appearance" ? appearancePage :
                             Store.settingsTab === "bar" ? barPage :
                             Store.settingsTab === "modules" ? modulesPage :
                             Store.settingsTab === "widgets" ? widgetsPage :
@@ -268,6 +333,7 @@ FloatingWindow {
                             Store.settingsTab === "dock" ? dockPage :
                             Store.settingsTab === "launcher" ? launcherPage :
                             Store.settingsTab === "display" ? displayPage :
+                            Store.settingsTab === "compositor" ? compositorPage :
                             Store.settingsTab === "os" ? osPage :
                             Store.settingsTab === "hardware" ? hardwarePage :
                             Store.settingsTab === "apps" ? appsPage :
@@ -275,7 +341,8 @@ FloatingWindow {
                             Store.settingsTab === "updates" ? updatesPage :
                             Store.settingsTab === "shortcuts" ? shortcutsPage :
                             Store.settingsTab === "integration" ? integrationPage :
-                            Store.settingsTab === "ai" ? aiPage : aboutPage
+                            Store.settingsTab === "ai" ? aiPage :
+                            Store.settingsTab === "about" ? aboutPage : homePage
                     }
                 }
                 ListView {
@@ -305,11 +372,21 @@ FloatingWindow {
                 RowLayout {
                     Layout.fillWidth: true; Layout.preferredHeight: 18
                     Icon { icon: "\ue5ca"; font.pixelSize: Fonts.scale(15); color: Theme.success }
-                    Text { text: "Changes saved automatically · API keys remain in Linux keyring"; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                    Text { text: root.settingsGroup === "system" ? "Device changes use the system's network, Bluetooth and audio services" : "Interface changes save automatically · API keys remain in Linux keyring"; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); elide: Text.ElideRight }
                 }
             }
         }
     }
+    Component { id: homePage; SettingsHomePage {
+        group: root.settingsGroup
+        catalog: root.pages
+        systemPages: root.systemPages
+        onNavigateRequested: tab => root.navigate(tab)
+    } }
+    Component { id: wifiPage; SettingsWifiPage {} }
+    Component { id: bluetoothPage; SettingsBluetoothPage {} }
+    Component { id: audioPage; SettingsAudioPage {} }
+    Component { id: powerPage; SettingsPowerPage {} }
     Component { id: appearancePage; SettingsAppearancePage {} }
     Component { id: barPage; SettingsBarPage {} }
     Component { id: modulesPage; SettingsModulesPage {} }
@@ -318,6 +395,7 @@ FloatingWindow {
     Component { id: dockPage; SettingsDockPage {} }
     Component { id: launcherPage; SettingsLauncherPage {} }
     Component { id: displayPage; SettingsDisplaysPage {} }
+    Component { id: compositorPage; SettingsCompositorPage {} }
     Component { id: osPage; SettingsOSPage {} }
     Component { id: hardwarePage; SettingsHardwarePage {} }
     Component { id: appsPage; SettingsAppsPage {} }

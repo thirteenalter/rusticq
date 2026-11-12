@@ -47,6 +47,13 @@ EMOJI = [
     ('⚙️', 'settings gear'), ('📁', 'folder files'), ('📝', 'notes memo'),
 ]
 SETTINGS = [
+    ('home','Full Settings','All desktop UI and system settings'),
+    ('ui','UI Settings','Customize the RusticQ interface'),
+    ('system','System Settings','Connections, sound and devices'),
+    ('wifi','Wi-Fi','Wireless networks, hidden SSID, QR and DNS'),
+    ('bluetooth','Bluetooth','Scan, pair and connect wireless devices'),
+    ('audio','Audio','Speakers, microphone, application mixer and live meters'),
+    ('power','Battery & Power','Charge status and power profiles'),
     ('appearance','Appearance','Theme, fonts, accents'),
     ('bar','Bar','Layouts, alignment and spacing'),
     ('modules','Modules','Per-layout icon visibility'),
@@ -55,6 +62,7 @@ SETTINGS = [
     ('notes','Notes & Kanban','Local todo lists and task board'),
     ('launcher','App Launcher','Search, favorites and sizing'),
     ('display','Displays','Resolution, refresh rate and scaling'),
+    ('compositor','Compositor','Hyprland and Niri configuration'),
     ('os','OS information','Operating system details'),
     ('hardware','Hardware','CPU, GPU and sensors'),
     ('apps','Installed Apps','Manage desktop applications'),

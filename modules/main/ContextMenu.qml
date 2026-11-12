@@ -47,12 +47,12 @@ FocusScope {
         {title: "System monitor", desc: "Live CPU, GPU, RAM, disk and network", icon: "\uef43", action: "shell-monitor"},
         {title: "Power menu", desc: "Keyboard accessible system actions", icon: "\ue8ac", action: "shell-power"}
     ] : currentSection === "tools" ? [
-        {title: "Settings", desc: "Personalize RusticQ", icon: "\ue8b8", action: "tools-settings"},
+        {title: "Full settings", desc: "UI, connections, sound and system", icon: "\ue8b8", action: "tools-settings"},
         {title: "Screenshot region", desc: "Capture a selected area", icon: "\ue3c2", action: "tools-region"}
     ] : currentSection === "edit" ? [
-        { title: "Appearance settings", desc: "Themes and Aether source", icon: "\ue40a", action: "appearance" },
-        { title: "Bar settings", desc: "Position, modules and menus", icon: "\ue8b8", action: "bar" },
-        { title: "AI settings", desc: "Choose cloud provider", icon: "\uea4a", action: "ai" }
+        { title: "Full settings", desc: "All desktop and system preferences", icon: "\ue8b8", action: "home" },
+        { title: "UI settings", desc: "Appearance, bar, dock and widgets", icon: "\ue40a", action: "ui" },
+        { title: "System settings", desc: "Wi-Fi, Bluetooth, audio and devices", icon: "\ue30b", action: "system" }
     ] : currentSection === "share" ? [
         { title: "Screenshot screen", desc: "Save PNG in Pictures/Screenshots", icon: "\ue3af", action: "full" },
         { title: "Screenshot region", desc: "Select area using slurp", icon: "\ue3c2", action: "region" },
@@ -117,11 +117,11 @@ FocusScope {
             SettingsStore.barMode = action;
             SettingsStore.save();
         } else if (currentSection === "edit") {
-            Store.showSettings(action);
+            Store.showSettings(action, root.focusedScreen());
         } else if (currentSection === "file" || currentSection === "shell" || currentSection === "tools") {
             if (action === "shell-monitor") Store.systemMonitorVisible = true;
             else if (action === "shell-power") Store.togglePowerMenu(root.focusedScreen());
-            else if (action === "tools-settings") Store.showSettings("bar");
+            else if (action === "tools-settings") Store.showSettings("home", root.focusedScreen());
             else if (action === "tools-region") Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-capture.sh"), "region"]);
             else Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-menu-action.sh"), action]);
         } else if (currentSection === "share" && ["start-screen", "start-region", "start-audio", "stop", "portal-check", "record-folder"].indexOf(action) !== -1) {

@@ -18,10 +18,10 @@ create a duplicate preference store.
    `user-settings.json`. This creates a separate timestamped recovery snapshot
    *before* any change and checks the file's SHA-256 again, rejecting it if the
    file changed after preview.
-5. **Restart the active RusticQ/Quickshell instance** after a successful import.
-   The running QML singleton has cached preferences; a file import does **not**
-   hot-reload every setting. Avoid changing any settings before restarting,
-   because that could save old in-memory values over the newly imported file.
+5. After a successful import, **RusticQ reloads automatically in the same
+   process** and reads the new preferences. Valid external replacements of
+   `user-settings.json` also reload automatically. Ordinary settings edits
+   apply live and save without reloading. Invalid external JSON is ignored.
 
 ### What's included?
 
@@ -58,6 +58,8 @@ python3 scripts/rusticq-config-guard.py import --path ~/Documents/RusticQ-Settin
 ```
 
 The backend also accepts a plain legacy `user-settings.json` as an input.
+When the active shell already uses this reload-enabled configuration, CLI
+imports are detected by its settings watcher as well.
 Portable exports are JSON wrappers with format `rusticq-user-settings`, version
 `1`, and a `settings` object. Unexpected future wrapper versions are rejected.
 Files larger than 2 MB, malformed JSON, symlinked input/target, non-finite JSON

@@ -8,14 +8,16 @@ class IntegrationUI(unittest.TestCase):
     def test_shell_update_controls_are_wired(self):
         page=(ROOT/'modules/settings/pages/SettingsIntegrationPage.qml').read_text()
         script=(ROOT/'scripts/rusticq-shell-updates.py').read_text()
-        for part in ('Shell Updates', 'Reapply Local', 'Check GitHub', 'Update Shell (GitHub)',
+        for part in ('Shell Updates', 'Reapply Local', 'Check GitHub', 'Install update', 'Install local', 'Fetch & install',
                      'Rollback Shell', 'shellUpdateApply()', 'shellUpdateRefresh()', 'shellUpdateCheck()',
                      'REAPPLY LOCAL', 'UPDATE SHELL', 'ROLLBACK SHELL', 'shellUpdatePoll'):
             self.assertIn(part, page,part)
         for command in ('check', 'status', 'reapply-local', 'update-shell', 'rollback'):
             self.assertIn("'"+command+"'",script)
         self.assertIn('shellUpdateStatusProc',page)
-        self.assertIn('root.shellUpdateConfirm === updateConfirmColumn.phrase',page)
+        self.assertIn('enabled: root.shellInstallReady',page)
+        self.assertIn('shellCompleteFetchInstall(code)',page)
+        self.assertIn('shellCheckedTarget !== shellUpdateTarget',page)
         self.assertIn('if (!root.shellUpdateCheckedOnce',page)
         self.assertIn('property string shellUpdateTarget: "dev"',page)
         self.assertIn('shellUpdateTargetBackups',page)
