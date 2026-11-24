@@ -4,8 +4,8 @@ import "../config"
 Rectangle {
     id: root
     property var targetScreen: null
-    implicitWidth: 40
-    implicitHeight: 24
+    implicitWidth: Math.max(40, Theme.barSymbolSize + 12)
+    implicitHeight: Math.max(24, Theme.barSymbolSize + 8)
     color: Store.sidebarVisible && Store.sidebarScreen === targetScreen
            ? Qt.alpha(Theme.accent, 0.25) : Theme.borderaccent
     radius: height / 2
@@ -13,7 +13,7 @@ Rectangle {
     Icon {
         anchors.centerIn: parent
         icon: "\ue69b" // stat_minus_1
-        font.pixelSize: Fonts.scale(18)
+        font.pixelSize: Theme.barSymbolSize
         color: Theme.foreground
     }
 

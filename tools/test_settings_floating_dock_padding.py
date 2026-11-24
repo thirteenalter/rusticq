@@ -76,10 +76,10 @@ def test_device_window_uses_separate_exact_title():
 def test_device_window_size_fits_its_monitor():
     monitors = [{'id': 2, 'width': 1920, 'height': 1080, 'scale': 1}]
     with patch.object(helper.subprocess, 'run', return_value=Mock(returncode=0, stdout=json.dumps(monitors))):
-        assert helper.target_size({'title': helper.DEVICE_TITLE, 'monitor': 2}) == (720, 680)
+        assert helper.target_size({'title': helper.DEVICE_TITLE, 'monitor': 2}) == (720, 580)
         monitors[0]['scale'] = 1.5
         with patch.object(helper.subprocess, 'run', return_value=Mock(returncode=0, stdout=json.dumps(monitors))):
-            assert helper.target_size({'title': helper.DEVICE_TITLE, 'monitor': 2}) == (720, 632)
+            assert helper.target_size({'title': helper.DEVICE_TITLE, 'monitor': 2}) == (720, 580)
 
 
 def test_settings_outer_geometry():

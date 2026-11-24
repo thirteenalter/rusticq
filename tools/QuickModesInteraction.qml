@@ -29,6 +29,8 @@ Item {
         function cleanupTestCase() { console.log("INTERACTION RESULTS " + qtest_results.passCount + " passed, " + qtest_results.failCount + " failed"); }
         function cleanup() { console.log("TEST " + qtest_results.functionName + " failed=" + qtest_results.failed); }
         function init() {
+            SettingsStore.barIconVisibilityProfiles = ({});
+            SettingsStore.setGroupSpacing("right", 12, false);
             SettingsStore.showQuickModes = true;
             SettingsStore.quickModesAutoHide = true;
             SettingsStore.showKeepAwake = true;
@@ -42,7 +44,7 @@ Item {
             mouseMove(group, -300, 70);
             group.focus = false;
             group.revealed = false;
-            wait(30);
+            wait(Theme.motionEnterDuration + 30);
         }
         function descendants(item) {
             let result = [item];
@@ -51,7 +53,7 @@ Item {
         }
         function test_clean_indicator_colors_and_spacing() {
             const units = descendants(indicators).filter(item => item.iconSlotWidth !== undefined);
-            compare(units.length, 3);
+            compare(units.length, 4);
             const icons = units.map(item => descendants(item).find(child => child.icon !== undefined));
             for (const icon of icons) {
                 compare(icon.width, 18);
@@ -105,6 +107,7 @@ Item {
             const right = group.x + group.width;
             mouseMove(group, group.width + 4, 12);
             tryCompare(group, "expanded", true);
+            wait(Theme.motionEnterDuration + 30);
             verify(group.width > 28);
             compare(group.x + group.width, right);
             mouseMove(group, 14, 12);
@@ -114,11 +117,12 @@ Item {
             wait(150);
             compare(group.expanded, true);
             tryCompare(group, "expanded", false, 1000);
+            wait(Theme.motionExitDuration + Theme.motionEnterDuration);
             compare(group.width, 28);
         }
         function test_click_toggles_mode_without_closing() {
             group.reveal();
-            wait(30);
+            wait(Theme.motionEnterDuration + 30);
             mouseClick(group, 14, 12);
             compare(QuickModesService.keepAwake, true);
             compare(group.expanded, true);
@@ -128,6 +132,7 @@ Item {
         function test_visible_modules_and_autohide_setting() {
             SettingsStore.quickModesAutoHide = false;
             tryCompare(group, "expanded", true);
+            wait(Theme.motionEnterDuration + 30);
             tryVerify(() => group.width > 28);
             const width = group.width;
             SettingsStore.showSilent = false;

@@ -5,8 +5,8 @@ import "../config"
 Rectangle {
     id: root
     property bool backgroundEnabled: true
-    implicitWidth: 24
-    implicitHeight: 24
+    implicitWidth: Math.max(24, Theme.barSymbolSize + 8)
+    implicitHeight: implicitWidth
     radius: 8
     color: backgroundEnabled ? Theme.surface : "transparent"
     border.width: backgroundEnabled ? 1 : 0
@@ -14,7 +14,7 @@ Rectangle {
     Icon {
         anchors.centerIn: parent
         icon: "\uf371" // terminal
-        font.pixelSize: Fonts.scale(17)
+        font.pixelSize: Theme.barSymbolSize
         color: Theme.accent
     }
 }

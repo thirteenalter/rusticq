@@ -6,9 +6,10 @@ import "../config"
 Item {
     id: root
     property bool vertical: false
+    property int verticalControlSize: 40
     signal menuRequested(string section, var sourceItem)
-    implicitWidth: vertical ? 40 : menuRow.implicitWidth
-    implicitHeight: vertical ? 36 : 28
+    implicitWidth: vertical ? verticalControlSize : menuRow.implicitWidth
+    implicitHeight: vertical ? verticalControlSize : 28
 
     RowLayout {
         id: menuRow
@@ -61,7 +62,7 @@ Item {
         color: verticalMouse.containsMouse ? Theme.surface : "transparent"
         border.width: verticalMouse.containsMouse ? 1 : 0
         border.color: Qt.alpha(Theme.accent, 0.28)
-        Icon { anchors.centerIn: parent; icon: "\ue5d2"; font.pixelSize: Fonts.scale(20); color: Theme.accent }
+        Icon { anchors.centerIn: parent; icon: "\ue5d2"; font.pixelSize: Theme.barSymbolSize; color: Theme.accent }
         MouseArea {
             id: verticalMouse
             anchors.fill: parent

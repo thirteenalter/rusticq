@@ -121,7 +121,7 @@ ColumnLayout {
                 height: parent.height
                 radius: 4
                 color: Theme.accent
-                Behavior on width { NumberAnimation { duration: 140 } }
+                Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
             }
         }
         RowLayout {

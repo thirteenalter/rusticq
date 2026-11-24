@@ -8,7 +8,9 @@ import "../../components"
 FloatingWindow {
     id: root
     screen: Store.shortcutConfirmScreen
-    visible: Store.shortcutConfirmVisible
+    readonly property bool presented: motion.presented
+    visible: presented
+    SurfaceMotion { id: motion; shown: Store.shortcutConfirmVisible; target: root.contentItem; closedScale: 0.995 }
     title: "RusticQ · Shortcut Backup Confirmation"
     implicitWidth: 550
     implicitHeight: 418

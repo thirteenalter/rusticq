@@ -22,7 +22,7 @@ Item {
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: WeatherService.refresh() }
             }
         }
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+        Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
         Text {
             text: WeatherService.temperature || "--°"
             font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(35); color: Theme.foreground

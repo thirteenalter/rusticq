@@ -54,6 +54,11 @@ Singleton {
     readonly property color error: useAether ? (aetherPalette.color1 || "#fb4934") : "#fb4934"
     readonly property color warning: useAether ? (aetherPalette.color3 || "#fabd2f") : "#fabd2f"
     readonly property color success: useAether ? (aetherPalette.color2 || "#b8bb26") : "#b8bb26"
+    readonly property color info: useAether ? (aetherPalette.color4 || "#83a598") : "#83a598"
+    function calendarCategoryColor(category) {
+        return category === "birthday" ? warning : category === "work" ? success
+            : category === "holiday" ? info : accent;
+    }
     readonly property color trsp: "transparent"
 
     readonly property int sectionPadding: SettingsStore.uiDensity === "compact" ? 12 : 16
@@ -64,15 +69,24 @@ Singleton {
     readonly property int sectionTitleSize: 15
     readonly property int controlTextSize: 12
     readonly property int helperTextSize: 10
+    // Shared motion timing; SurfaceMotion supplies the selected surface style.
+    readonly property bool motionEnabled: SettingsStore.animationsEnabled
+    readonly property int motionFastDuration: motionEnabled ? 120 : 0
+    readonly property int motionEnterDuration: motionEnabled ? 220 : 0
+    readonly property int motionExitDuration: motionEnabled ? 160 : 0
+    readonly property int motionDistance: 22
     // RusticQ alpha-1: one visual rhythm for clock, date, weather and system.
     readonly property int barTextSize: 12
-    readonly property int barSymbolSize: 16
-    readonly property int barIconSlotSize: 18
+    readonly property int barSymbolSize: SettingsStore.barIconSize
+    readonly property int barIconSlotSize: Math.max(18, barSymbolSize + 2)
     readonly property int barIconTextGap: 6
     readonly property int barInfoGap: 12
     // Alpha 3: shared spacing rhythm, including edge-positioned bars.
     readonly property int barEdgeGap: 4
     readonly property int barGroupGap: 9
     readonly property int barControlGap: 8
-    readonly property int verticalBarWidth: 60
+    readonly property int verticalBarWidth: Math.max(60, barRailItemSize + 20)
+    readonly property int barRailItemSize: Math.max(32, barSymbolSize + 12)
+    readonly property int barRailGroupPadding: 4
+    readonly property int barRailZoneGap: 12
 }

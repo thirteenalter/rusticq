@@ -46,6 +46,7 @@ ColumnLayout {
                 onClicked: Store.osdControlRequested("preview") }
         }
     }
+    RecordingIndicatorSettings {}
     SettingsSection {
         heading: "Memory optimization"
         description: "Optional: unload the hidden AI window. Chat context stays in its service, but closing AI can interrupt a pending reply."
@@ -187,7 +188,7 @@ ColumnLayout {
             model: [
                 {label:"Show quick modes",desc:"Master toggle",key:"showQuickModes",icon:"\ue429"},
                 {label:"Auto-hide quick modes",desc:"Reveal the shortcuts on hover",key:"quickModesAutoHide",icon:"\ue8f4"},
-                {label:"Keep Awake",desc:"Prevent sleep",key:"showKeepAwake",icon:"\ue541"},
+                {label:"Keep Awake",desc:"Prevent idle lock and automatic sleep",key:"showKeepAwake",icon:"\ue541"},
                 {label:"Silent",desc:"Do Not Disturb",key:"showSilent",icon:"\ue7f6"},
                 {label:"Gaming Mode",desc:"Performance power profile",key:"showGamingMode",icon:"\ue30f"},
                 {label:"Night Mode",desc:"Warm screen temperature",key:"showNightMode",icon:"\ue51c"},
@@ -196,4 +197,5 @@ ColumnLayout {
             delegate: SettingsToggle { perBarMode: modelData.key !== "showNotifications" && modelData.key !== "quickModesAutoHide" }
         }
     }
+    NightLightSettings {}
 }

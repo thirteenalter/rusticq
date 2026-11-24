@@ -25,7 +25,7 @@ Pill {
             Layout.rightMargin: SettingsStore.spacingIcon("right", "bluetooth", "after")
             visible: SettingsStore.showBluetooth
             forceDetails: root.cleanStyle && root.showDetails
-            iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
+            iconSlotWidth: Theme.barIconSlotSize
             cleanStyle: root.cleanStyle
             onActivated: root.notify("bluetooth", btIndicator)
         }
@@ -35,7 +35,7 @@ Pill {
             Layout.rightMargin: SettingsStore.spacingIcon("right", "wifi", "after")
             visible: SettingsStore.showWifi
             forceDetails: root.cleanStyle && root.showDetails
-            iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
+            iconSlotWidth: Theme.barIconSlotSize
             cleanStyle: root.cleanStyle
             onActivated: root.notify("wifi", wifiIndicator)
         }
@@ -44,7 +44,7 @@ Pill {
             Layout.leftMargin: SettingsStore.spacingIcon("right", "battery", "before")
             Layout.rightMargin: SettingsStore.spacingIcon("right", "battery", "after")
             visible: SettingsStore.showBattery
-            iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
+            iconSlotWidth: Theme.barIconSlotSize
             cleanStyle: root.cleanStyle
             onActivated: root.notify("battery", batteryIndicator)
         }
@@ -53,7 +53,7 @@ Pill {
             Layout.leftMargin: SettingsStore.spacingIcon("right", "audio", "before")
             Layout.rightMargin: SettingsStore.spacingIcon("right", "audio", "after")
             visible: SettingsStore.showAudio
-            iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
+            iconSlotWidth: Theme.barIconSlotSize
             cleanStyle: root.cleanStyle
             onActivated: root.notify("audio", audioIndicator)
         }

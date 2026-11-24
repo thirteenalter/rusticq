@@ -72,6 +72,17 @@ ColumnLayout {
                                     }
                                 }
                             }
+    SettingsSection {
+        heading: "Animations"
+        description: "Soft fades, short slides and smooth controls. Turn off for instant changes."
+        symbol: "\ue9d9"
+        SettingsToggle {
+            objectName: "interfaceAnimationsToggle"
+            modelData: ({key: "animationsEnabled", label: "Interface animations",
+                desc: "Popups, panels, launcher, dock and controls", icon: "\ue9d9"})
+        }
+        MotionStylePicker {}
+    }
                             Text { text: "Color source"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
                             Text {
                                 Layout.fillWidth: true
@@ -624,10 +635,6 @@ ColumnLayout {
                                 anchors.verticalCenter: miniAvatar.verticalCenter; spacing: 1
                                 Text { text: "Welcome back"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(9) }
                                 Text { text: "Linux account"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(8) }
-                            }
-                            Rectangle {
-                                anchors.left: parent.left; anchors.right: parent.right
-                                y: 36; height: 1; color: Theme.borderaccent
                             }
                             Rectangle {
                                 y: 44; width: parent.width; height: 24; radius: 7

@@ -49,7 +49,7 @@ Singleton {
     property bool settingsVisible: false
     property bool deviceSettingsVisible: false
     property bool deviceSettingsPending: false
-    property bool deviceSettingsFullscreen: true
+    property bool deviceSettingsFullscreen: false
     property string deviceSettingsKind: "wifi"
     property string deviceSettingsSection: "details"
     property var deviceSettingsScreen: null
@@ -66,7 +66,7 @@ Singleton {
         if (!sections) return;
         deviceSettingsKind = kind;
         deviceSettingsSection = sections.indexOf(section) >= 0 ? section : sections[0];
-        deviceSettingsFullscreen = fullscreen !== false;
+        deviceSettingsFullscreen = false;
         deviceSettingsScreen = screen || sidebarScreen || settingsScreen
             || (Quickshell.screens.length ? Quickshell.screens[0] : null);
         sidebarVisible = false;
@@ -120,6 +120,120 @@ Singleton {
     property bool taskViewVisible: false
     property var monitorScreen: null
     property bool systemMonitorVisible: false
+    // One session timer shared by every clock popup, including unloaded ones.
+    property string clockTimerState: "idle"
+    property int clockTimerDurationSeconds: 300
+    property double clockTimerRemainingMs: 300000
+    property double clockTimerDeadline: 0
+    readonly property int clockTimerRemainingSeconds: Math.max(0, Math.ceil(clockTimerRemainingMs / 1000))
+    signal clockTimerCompleted(int durationSeconds)
+    signal clockAlarmCompleted()
+    signal clockSoundRequested(bool alarm)
+    signal clockSoundStopped()
+    property string clockAlertKind: ""
+    property int clockAlertSequence: 0
+    property string clockSoundError: ""
+    property bool clockSoundPlaying: false
+    property double clockAlarmSnoozeUntil: 0
+    readonly property string clockAlarmTime: String(SettingsStore.clockAlarmHour).padStart(2, "0")
+        + ":" + String(SettingsStore.clockAlarmMinute).padStart(2, "0")
+
+    function beginClockAlert(kind) {
+        clockAlertKind = kind;
+        clockAlertSequence++;
+        if (SettingsStore.clockSoundEnabled) clockSoundRequested(kind === "alarm");
+    }
+    function dismissClockAlert() {
+        clockAlertKind = "";
+        clockSoundStopped();
+    }
+    function snoozeClockAlarm() {
+        if (clockAlertKind !== "alarm") return;
+        clockAlarmSnoozeUntil = Date.now() + 300000;
+        dismissClockAlert();
+    }
+    function cancelClockAlarm() {
+        clockAlarmSnoozeUntil = 0;
+        SettingsStore.disableClockAlarm();
+        if (clockAlertKind === "alarm") dismissClockAlert();
+    }
+    function updateClockAlarm() {
+        const now = Date.now();
+        const snoozed = clockAlarmSnoozeUntil > 0 && now >= clockAlarmSnoozeUntil;
+        const scheduled = SettingsStore.clockAlarmEnabled && SettingsStore.clockAlarmNextAt > 0
+            && now >= SettingsStore.clockAlarmNextAt;
+        if (!snoozed && !scheduled) return;
+        clockAlarmSnoozeUntil = 0;
+        if (scheduled) {
+            // Advance before emitting so repeated ticks/reloads never ring twice.
+            if (SettingsStore.clockAlarmDaily) SettingsStore.clockAlarmNextAt = SettingsStore.nextClockAlarm(now);
+            else {
+                SettingsStore.clockAlarmEnabled = false;
+                SettingsStore.clockAlarmNextAt = 0;
+            }
+            SettingsStore.save();
+        }
+        beginClockAlert("alarm");
+        clockAlarmCompleted();
+    }
+    Timer {
+        interval: 1000
+        repeat: true
+        running: SettingsStore.clockAlarmEnabled || root.clockAlarmSnoozeUntil > 0
+        onTriggered: root.updateClockAlarm()
+    }
+
+    function formatClockTimer(seconds) {
+        const value = Math.max(0, Math.floor(Number(seconds) || 0));
+        const hours = Math.floor(value / 3600);
+        const minutes = Math.floor(value / 60) % 60;
+        return String(hours).padStart(2, "0") + ":" + String(minutes).padStart(2, "0")
+            + ":" + String(value % 60).padStart(2, "0");
+    }
+    function setClockTimerDuration(seconds) {
+        if (clockTimerState === "running" || clockTimerState === "paused"
+                || typeof seconds !== "number" || !isFinite(seconds)
+                || Math.floor(seconds) !== seconds || seconds < 1 || seconds > 86399) return false;
+        clockTimerDurationSeconds = seconds;
+        resetClockTimer();
+        return true;
+    }
+    function startClockTimer() {
+        if (clockTimerState === "running") return;
+        if (clockAlertKind === "timer") dismissClockAlert();
+        if (clockTimerState !== "paused") clockTimerRemainingMs = clockTimerDurationSeconds * 1000;
+        clockTimerDeadline = Date.now() + clockTimerRemainingMs;
+        clockTimerState = "running";
+    }
+    function updateClockTimer() {
+        if (clockTimerState !== "running") return;
+        // Recompute from the deadline so delayed frames and suspend do not drift.
+        clockTimerRemainingMs = Math.max(0, clockTimerDeadline - Date.now());
+        if (clockTimerRemainingMs > 0) return;
+        clockTimerState = "finished";
+        clockTimerDeadline = 0;
+        beginClockAlert("timer");
+        clockTimerCompleted(clockTimerDurationSeconds);
+    }
+    function pauseClockTimer() {
+        updateClockTimer();
+        if (clockTimerState !== "running") return;
+        clockTimerState = "paused";
+        clockTimerDeadline = 0;
+    }
+    function resetClockTimer() {
+        if (clockAlertKind === "timer") dismissClockAlert();
+        clockTimerState = "idle";
+        clockTimerDeadline = 0;
+        clockTimerRemainingMs = clockTimerDurationSeconds * 1000;
+    }
+    Timer {
+        interval: 250
+        repeat: true
+        running: root.clockTimerState === "running"
+        onTriggered: root.updateClockTimer()
+    }
+
     signal notesChanged()
     property string settingsTab: "home"
     // The confirmation is a separate overlay window, never an inline Settings card.

@@ -11,20 +11,23 @@ Item {
     id: root
     required property var hostWindow
     property string zone: "left"
+    property bool active: true
     property bool vertical: false
     property bool compact: false
     property bool clean: false
     property bool separated: false
     property bool professional: false
     property bool simple: false
-    property int controlHeight: 24
+    property int controlHeight: Math.max(24, Theme.barSymbolSize + 8)
     property bool hovered: zoneHover.hovered
     readonly property bool showDetails: !clean || SettingsStore.cleanRightMode === "details" ||
         (SettingsStore.cleanRightMode === "hover" && hovered)
-    readonly property var keys: SettingsStore.iconsInZone(zone)
+    readonly property int railItemSize: Theme.barRailItemSize
+    readonly property int railPadding: separated ? Theme.barRailGroupPadding : 0
+    readonly property var keys: active ? SettingsStore.iconsInZone(zone) : []
     readonly property var activeKeys: keys.filter(k => isEnabled(k))
-    implicitWidth: activeKeys.length ? (vertical ? verticalColumn.implicitWidth + 8 : horizontalRow.implicitWidth + 10) : 0
-    implicitHeight: activeKeys.length ? (vertical ? verticalColumn.implicitHeight : Math.max(controlHeight + (separated ? 8 : 0), horizontalRow.implicitHeight + (separated ? 8 : 0))) : 0
+    implicitWidth: activeKeys.length ? (vertical ? railItemSize + railPadding * 2 : horizontalRow.implicitWidth + 10) : 0
+    implicitHeight: activeKeys.length ? (vertical ? verticalColumn.implicitHeight + railPadding * 2 : Math.max(controlHeight + (separated ? 8 : 0), horizontalRow.implicitHeight + (separated ? 8 : 0))) : 0
     HoverHandler { id: zoneHover }
     Rectangle {
         visible: root.separated && root.activeKeys.length > 0
@@ -100,6 +103,9 @@ Item {
             model: root.vertical ? [] : root.activeKeys
             delegate: Loader {
                 id: itemLoader
+                HoverHandler { id: tileHover }
+                scale: tileHover.hovered ? 1.04 : 1
+                Behavior on scale { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                 required property string modelData
                 sourceComponent: root.componentFor(modelData)
                 Layout.alignment: Qt.AlignVCenter
@@ -118,13 +124,16 @@ Item {
         Repeater {
             model: root.vertical ? root.activeKeys : []
             delegate: Loader {
+                objectName: "bar-rail-item-" + modelData
                 required property string modelData
                 sourceComponent: root.componentFor(modelData)
                 Layout.alignment: Qt.AlignHCenter
                 Layout.topMargin: SettingsStore.spacingIcon(root.zone, modelData, "before")
                 Layout.bottomMargin: SettingsStore.spacingIcon(root.zone, modelData, "after")
-                Layout.preferredWidth: item ? item.implicitWidth : 0
-                Layout.preferredHeight: item ? item.implicitHeight : 0
+                Layout.preferredWidth: root.railItemSize
+                Layout.minimumWidth: root.railItemSize
+                Layout.maximumWidth: root.railItemSize
+                Layout.preferredHeight: item ? Math.max(root.railItemSize, item.implicitHeight) : root.railItemSize
             }
         }
     }
@@ -132,11 +141,11 @@ Item {
     Component {
         id: rusticqPart
         Rectangle {
-            implicitWidth: root.vertical ? 32 : root.compact ? 29 : 34
+            implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : root.compact ? 29 : 34)
             implicitHeight: root.controlHeight
             radius: height / 2
             color: root.clean ? "transparent" : Theme.borderaccent
-            RusticQIcon { anchors.centerIn: parent; iconSize: 18 }
+            RusticQIcon { anchors.centerIn: parent; iconSize: Theme.barSymbolSize }
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
@@ -147,6 +156,8 @@ Item {
     Component {
         id: archPart
         Arch {
+            implicitWidth: root.vertical ? root.railItemSize : Math.max(24, Theme.barSymbolSize + 8)
+            implicitHeight: root.vertical ? root.railItemSize : Math.max(24, Theme.barSymbolSize + 8)
             backgroundEnabled: !root.clean
             MouseArea {
                 anchors.fill: parent
@@ -158,11 +169,11 @@ Item {
     Component {
         id: launcherPart
         Rectangle {
-            implicitWidth: root.vertical ? 32 : root.compact ? 29 : 34
+            implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : root.compact ? 29 : 34)
             implicitHeight: root.controlHeight
             radius: height / 2
             color: root.clean ? "transparent" : Theme.borderaccent
-            Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: Fonts.scale(18); color: Theme.accent }
+            Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: Theme.barSymbolSize; color: Theme.accent }
             MouseArea {
                 anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                 onClicked: { root.hostWindow.closeMini(); Store.toggleLauncher(root.hostWindow.screen); }
@@ -173,6 +184,7 @@ Item {
         id: menuPart
         ContextMenuBar {
             vertical: root.vertical
+            verticalControlSize: root.railItemSize
             onMenuRequested: (section, item) => root.hostWindow.openMenu(section, item)
         }
     }
@@ -185,11 +197,12 @@ Item {
                 id: workspaceHorizontal
                 visible: !root.vertical
                 backgroundEnabled: !root.clean
-                buttonSize: root.compact ? root.controlHeight : 23
+                buttonSize: Math.max(Theme.barSymbolSize + 8, root.compact ? root.controlHeight : 23)
             }
             ColumnLayout {
                 id: verticalWorkspaces
                 visible: root.vertical
+                anchors.horizontalCenter: parent.horizontalCenter
                 spacing: 3
                 Repeater {
                     model: 6
@@ -198,9 +211,9 @@ Item {
                         required property int index
                         readonly property int workspaceId: index + 1
                         readonly property bool focused: Hyprland.focusedWorkspace && Hyprland.focusedWorkspace.id === workspaceId
-                        Layout.preferredWidth: 30; Layout.preferredHeight: 27
-                        radius: 8; color: focused ? Theme.accent : Theme.surface
-                        Text { anchors.centerIn: parent; text: String(cell.workspaceId); color: cell.focused ? Theme.background : Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                        Layout.preferredWidth: root.railItemSize; Layout.preferredHeight: root.railItemSize
+                        radius: 8; color: root.clean ? "transparent" : focused ? Theme.accent : Theme.surface
+                        Text { anchors.centerIn: parent; text: String(cell.workspaceId); color: cell.focused ? (root.clean ? Theme.accent : Theme.background) : Theme.foreground; font.pixelSize: Fonts.scale(10) }
                         MouseArea {
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                             onClicked: Hyprland.dispatch(Hyprland.usingLua ? 'hl.dsp.focus({ workspace = "' + cell.workspaceId + '" })' : 'workspace ' + cell.workspaceId)
@@ -223,6 +236,7 @@ Item {
         Clock {
             id: zoneTime
             vertical: root.vertical
+            verticalContentWidth: root.railItemSize
             showDate: false
             showTime: true
             showDetails: root.showDetails && !root.vertical
@@ -234,6 +248,7 @@ Item {
         Clock {
             id: zoneDate
             vertical: root.vertical
+            verticalContentWidth: root.railItemSize
             showDate: true
             showTime: false
             showDetails: root.showDetails && !root.vertical
@@ -246,7 +261,7 @@ Item {
             id: bluetoothZoneIcon
             cleanStyle: root.clean || root.vertical
             forceDetails: root.clean && root.showDetails && !root.vertical
-            iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
+            iconSlotWidth: Theme.barIconSlotSize
             onActivated: root.popup("bluetooth", bluetoothZoneIcon)
         }
     }
@@ -256,7 +271,7 @@ Item {
             id: wifiZoneIcon
             cleanStyle: root.clean || root.vertical
             forceDetails: root.clean && root.showDetails && !root.vertical
-            iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
+            iconSlotWidth: Theme.barIconSlotSize
             onActivated: root.popup(WifiService.ethernetConnected ? "ethernet" : "wifi", wifiZoneIcon)
         }
     }
@@ -266,7 +281,7 @@ Item {
             id: batteryZoneIcon
             cleanStyle: root.clean || root.vertical
             showValue: !root.vertical
-            iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
+            iconSlotWidth: Theme.barIconSlotSize
             onActivated: root.popup("battery", batteryZoneIcon)
         }
     }
@@ -276,14 +291,14 @@ Item {
             id: audioZoneIcon
             cleanStyle: root.clean || root.vertical
             showValue: !root.vertical
-            iconSlotWidth: root.compact ? Theme.barIconSlotSize : 14
+            iconSlotWidth: Theme.barIconSlotSize
             onActivated: root.popup("audio", audioZoneIcon)
         }
     }
     Component {
         id: notificationsPart
         Rectangle {
-            implicitWidth: root.vertical ? 32 : root.compact ? 29 : 32
+            implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : root.compact ? 29 : 32)
             implicitHeight: root.controlHeight
             radius: height / 2
             color: root.clean ? "transparent" : Theme.borderaccent
@@ -291,7 +306,7 @@ Item {
                 anchors.centerIn: parent
                 icon: NotificationCenter.doNotDisturb ? "\ue7f6" : "\ue7f4"
                 color: NotificationCenter.unread > 0 ? Theme.accent : Theme.foreground
-                font.pixelSize: Fonts.scale(17)
+                font.pixelSize: Theme.barSymbolSize
             }
             Rectangle {
                 visible: NotificationCenter.unread > 0
@@ -309,7 +324,7 @@ Item {
     Component {
         id: barTogglePart
         Rectangle {
-            implicitWidth: root.vertical ? 32 : 30
+            implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : 30)
             implicitHeight: root.controlHeight
             radius: height / 2
             color: root.clean ? "transparent" : Theme.borderaccent
@@ -317,7 +332,7 @@ Item {
                 anchors.centerIn: parent
                 icon: "\ue5cd"
                 color: Theme.foreground
-                font.pixelSize: Fonts.scale(17)
+                font.pixelSize: Theme.barSymbolSize
             }
             MouseArea {
                 anchors.fill: parent
@@ -329,17 +344,19 @@ Item {
     Component {
         id: taskPart
         Rectangle {
-            implicitWidth: root.vertical ? 32 : root.compact ? 29 : 34
+            implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : root.compact ? 29 : 34)
             implicitHeight: root.controlHeight
             radius: height / 2
             color: root.clean ? "transparent" : Theme.borderaccent
-            Icon { anchors.centerIn: parent; icon: "\ue322"; font.pixelSize: Fonts.scale(18); color: Theme.accent }
+            Icon { anchors.centerIn: parent; icon: "\ue322"; font.pixelSize: Theme.barSymbolSize; color: Theme.accent }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup("task", parent) }
         }
     }
     Component {
         id: quickModesPart
         QuickModes {
+            vertical: root.vertical
+            expandUp: root.vertical && root.zone === "right"
             targetScreen: root.hostWindow.screen
             backgroundEnabled: !root.clean
             controlHeight: root.controlHeight
@@ -349,7 +366,7 @@ Item {
         id: controlPart
         Rectangle {
             readonly property bool filledStyle: SettingsStore.quickControlButtonStyle === "filled"
-            implicitWidth: root.vertical ? 32 : root.compact ? 32 : 40
+            implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : root.compact ? 32 : 40)
             implicitHeight: root.controlHeight
             radius: height / 2
             color: filledStyle ? Theme.borderaccent : "transparent"

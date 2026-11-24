@@ -14,6 +14,18 @@ Rectangle {
     color: mouse.containsMouse ? Qt.alpha(Theme.accent, .075) : Theme.surface
     border.width: 1
     border.color: mouse.containsMouse ? Qt.alpha(Theme.accent, .3) : Qt.alpha(Theme.foreground, .045)
+    Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+    activeFocusOnTab: true
+    Accessible.role: Accessible.CheckBox
+    Accessible.name: modelData.label
+    Accessible.checked: checked
+    Accessible.onPressAction: toggle()
+    Keys.onSpacePressed: toggle()
+    Keys.onReturnPressed: toggle()
+    function toggle() {
+        if (perBarMode) SettingsStore.setModeIconVisible(modelData.key, !checked);
+        else { SettingsStore[modelData.key] = !checked; SettingsStore.save(); }
+    }
     RowLayout {
         anchors.fill: parent
         anchors.margins: 12
@@ -37,7 +49,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 x: root.checked ? parent.width - width - 3 : 3
                 color: root.checked ? Theme.background : Theme.muted
-                Behavior on x { NumberAnimation { duration: 110 } }
+                Behavior on x { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
             }
         }
     }
@@ -47,8 +59,8 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            if (root.perBarMode) SettingsStore.setModeIconVisible(root.modelData.key, !root.checked);
-            else { SettingsStore[root.modelData.key] = !root.checked; SettingsStore.save(); }
+            root.forceActiveFocus();
+            root.toggle();
         }
     }
 }

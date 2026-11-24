@@ -8,7 +8,11 @@
     "changes": [
         "Release metadata and history come from each version's local manifest.",
         "About shows the active version, compatibility, release highlights and historical notes.",
-        "Settings branding uses RusticQ consistently; release packages use the active manifest."
+        "Settings branding uses RusticQ consistently; release packages use the active manifest.",
+        "Time → Advanced opens a shared countdown timer with custom duration, presets, pause, resume, reset and completion notifications.",
+        "Calendar dates support local notes, categories, colored markers and a compact Add/Edit action.",
+        "Decorative divider lines are replaced by spacing while important borders remain; device settings use a compact floating window.",
+        "Active RusticQ recordings show a customizable blinking red dot with corner, size and inset controls in Modules settings."
     ],
     "notes": [
         "changelog/BETA-4.md"

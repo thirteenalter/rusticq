@@ -7,10 +7,11 @@ Rectangle {
 
     property string text: ""
 
-    visible: TooltipService.visible
+    visible: motion.presented
+    SurfaceMotion { id: motion; shown: TooltipService.visible; target: root; edge: "top"; closedScale: 1 }
 
     x: TooltipService.x
-    y: TooltipService.y
+    y: TooltipService.y + motion.offsetY
 
     z: 99999
 
@@ -18,7 +19,6 @@ Rectangle {
 
     color: Theme.surface
 
-    opacity: visible ? 1 : 0
 
     implicitWidth: label.implicitWidth + 16
     implicitHeight: label.implicitHeight + 10
@@ -33,9 +33,4 @@ Rectangle {
         text: root.text
     }
 
-    Behavior on opacity {
-        NumberAnimation {
-            duration: 120
-        }
-    }
 }

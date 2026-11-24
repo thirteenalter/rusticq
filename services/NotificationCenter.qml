@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Io
+import "../config"
 
 Singleton {
     id: root
@@ -115,6 +116,108 @@ Singleton {
         }
     }
 
+    function clockFinished(alarm, duration) {
+        const entry = {
+            serial: ++sequence,
+            id: -1,
+            app: "RusticQ",
+            appInitials: "RQ",
+            appIcon: "",
+            title: alarm ? "Alarm · " + Store.clockAlarmTime : "Timer finished",
+            body: alarm ? "Your alarm is ringing." : "Your " + duration + " timer is complete.",
+            when: Qt.formatTime(new Date(), "HH:mm"),
+            image: "",
+            urgency: 1,
+            kind: "generic",
+            glyph: alarm ? "\ue855" : "\ue425",
+            tag: alarm ? "Alarm" : "Timer",
+            clockSequence: Store.clockAlertSequence,
+            actions: alarm ? [{text: "Stop", sourceIndex: 0}, {text: "Snooze 5 min", sourceIndex: 1}]
+                : [{text: "Stop", sourceIndex: 0}],
+            reference: null
+        };
+        history = [entry].concat(history).slice(0, 40);
+        unread = Math.min(40, unread + 1);
+        if (!doNotDisturb) {
+            toast = entry;
+            toastTimer.restart();
+        }
+    }
+
+    Connections {
+        target: Store
+        function onClockTimerCompleted(durationSeconds) {
+            root.clockFinished(false, Store.formatClockTimer(durationSeconds));
+        }
+        function onClockAlarmCompleted() { root.clockFinished(true, ""); }
+        function onClockSoundRequested(alarm) { root.playClockSound(alarm ? "alarm" : "timer"); }
+        function onClockSoundStopped() { root.stopClockSound(); }
+    }
+    property string pendingClockSound: ""
+    property int clockSoundGeneration: 0
+    property bool clockSoundActive: false
+    property bool clockSoundStopping: false
+    function playClockSound(kind) {
+        clockSoundGeneration++;
+        Store.clockSoundError = "";
+        if (clockSoundActive) {
+            pendingClockSound = kind;
+            clockSoundStopping = true;
+            Store.clockSoundPlaying = false;
+            clockSound.running = false;
+        } else {
+            clockSoundActive = true;
+            clockSoundStopping = false;
+            Store.clockSoundPlaying = true;
+            const command = ["python3", Quickshell.shellPath("scripts/rusticq-clock-sound.py"), kind,
+                "--sound", SettingsStore.clockSound, "--volume", String(SettingsStore.clockSoundVolume)];
+            if (SettingsStore.clockSound === "custom") command.push("--file", SettingsStore.clockSoundFile);
+            if (SettingsStore.clockSoundLoop) command.push("--loop");
+            clockSound.exec(command);
+        }
+    }
+    function stopClockSound() {
+        clockSoundGeneration++;
+        pendingClockSound = "";
+        clockSoundStopping = true;
+        Store.clockSoundPlaying = false;
+        clockSound.running = false;
+    }
+    Connections {
+        target: SettingsStore
+        function onClockSoundEnabledChanged() { if (!SettingsStore.clockSoundEnabled) root.stopClockSound(); }
+        function onClockSoundChanged() { root.restartClockSound(); }
+        function onClockSoundFileChanged() { root.restartClockSound(); }
+        function onClockSoundVolumeChanged() { root.restartClockSound(); }
+        function onClockSoundLoopChanged() { root.restartClockSound(); }
+    }
+    function restartClockSound() {
+        if (clockSoundActive && SettingsStore.clockSoundEnabled)
+            root.playClockSound(Store.clockAlertKind === "alarm" ? "alarm" : "timer");
+    }
+    Process {
+        id: clockSound
+        stdout: StdioCollector {
+            onStreamFinished: if (text.trim()) Store.clockSoundError = text.trim().slice(0, 200)
+        }
+        onExited: (code, status) => {
+            const stopped = root.clockSoundStopping;
+            root.clockSoundActive = false;
+            root.clockSoundStopping = false;
+            Store.clockSoundPlaying = false;
+            if (code !== 0 && !stopped && !Store.clockSoundError && !root.pendingClockSound)
+                Store.clockSoundError = "Clock sound could not be played. Check the audio output.";
+            if (root.pendingClockSound) {
+                const kind = root.pendingClockSound;
+                const generation = root.clockSoundGeneration;
+                root.pendingClockSound = "";
+                Qt.callLater(function() {
+                    if (SettingsStore.clockSoundEnabled && generation === root.clockSoundGeneration) root.playClockSound(kind);
+                });
+            }
+        }
+    }
+
     Process {
         id: doctor
         stdout: StdioCollector {
@@ -146,10 +249,18 @@ Singleton {
         toast = null;
     }
 
-    // Only invoke actions actually supplied by the D-Bus sender.
-    // Never infer a screenshot file path or synthesize shell commands.
+    // Clock actions are local and scoped to the current alert. System actions
+    // are only those actually supplied by the D-Bus sender.
     function invokeAction(serial, index) {
         const item = history.find(e => e.serial === serial);
+        if (item && item.clockSequence !== undefined) {
+            if (item.clockSequence !== Store.clockAlertSequence || !Store.clockAlertKind) return;
+            if (index === 0) Store.dismissClockAlert();
+            else if (index === 1 && Store.clockAlertKind === "alarm") Store.snoozeClockAlarm();
+            else return;
+            hideToast();
+            return;
+        }
         if (!item || !item.reference || index < 0) return;
         try {
             const acts = item.reference.actions;

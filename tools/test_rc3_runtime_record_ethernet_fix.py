@@ -25,6 +25,9 @@ def check_recorder():
         path = Path(temp)
         mockbin = path / 'bin'
         mockbin.mkdir()
+        notifier = mockbin / 'notify-send'
+        notifier.write_text('#!/bin/sh\nexit 0\n')
+        notifier.chmod(0o755)
         slurp = mockbin / 'slurp'
         slurp.write_text('#!/bin/sh\nprintf "0,0 1280x720\\n"\n')
         slurp.chmod(0o755)

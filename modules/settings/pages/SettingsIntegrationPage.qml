@@ -1046,7 +1046,7 @@ ColumnLayout {
                         width: parent.width * Math.max(0, Math.min(100, root.integrationInfo.percent || 0)) / 100
                         height: parent.height; radius: 4
                         color: root.integrationInfo.state === "failed" || root.integrationInfo.state === "incomplete" ? Theme.warning : Theme.accent
-                        Behavior on width { NumberAnimation { duration: 150 } }
+                        Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                     }
                 }
                 Text {
@@ -1093,7 +1093,7 @@ ColumnLayout {
                             Text { Layout.fillWidth: true; text: modelData.path || ""; wrapMode: Text.WrapAnywhere; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                         }
                         Text { Layout.fillWidth: true; text: modelData.detail || ""; wrapMode: Text.WordWrap; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
-                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                        Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
                     }
                 }
                 Text { visible: !root.showFileReport; text: "File locations hidden. Select Show paths to inspect all managed paths."; color: Theme.muted; font.pixelSize: Fonts.scale(10) }

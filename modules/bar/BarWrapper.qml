@@ -12,7 +12,10 @@ PanelWindow {
     anchors.right: true
     anchors.bottom: false
     exclusionMode: ExclusionMode.Ignore
-    focusable: true
+    focusable: Store.sidebarVisible
+    readonly property bool presented: motion.presented
+    visible: presented
+    SurfaceMotion { id: motion; shown: Store.sidebarVisible; target: sidebarSurface; edge: "right" }
 
     margins.right: 10
     margins.top: 50
@@ -23,13 +26,15 @@ PanelWindow {
                                              Math.min(780, quickCards.preferredContentHeight + 119)))
 
     HyprlandFocusGrab {
-        active: true
+        active: Store.sidebarVisible
         windows: [sideWindow]
         onCleared: Store.sidebarVisible = false
     }
 
     Rectangle {
+        id: sidebarSurface
         anchors.fill: parent
+        transform: Translate { x: motion.offsetX; y: motion.offsetY }
         color: Theme.background
         radius: 20
         border.width: 1

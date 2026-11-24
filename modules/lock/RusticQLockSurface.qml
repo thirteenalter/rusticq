@@ -208,11 +208,7 @@ WlSessionLockSurface {
                         }
                     }
 
-                    Rectangle {
-                        width: parent.width
-                        height: 1
-                        color: Theme.borderaccent
-                    }
+                    Item { width: parent.width; height: Theme.sectionGap }
 
                     Column {
                         width: parent.width

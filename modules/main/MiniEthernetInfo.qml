@@ -31,7 +31,7 @@ Rectangle {
             }
             Icon { icon: "\ue5ca"; color: Theme.accent; font.pixelSize: 19 }
         }
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+        Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
         Text {
             Layout.fillWidth: true
             text: "A wired network connection is active. This bar shortcut shows Ethernet information instead of Wi-Fi settings."

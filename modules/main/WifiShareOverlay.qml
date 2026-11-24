@@ -14,12 +14,14 @@ import "../../components"
 PanelWindow {
     id: root
     screen: Store.wifiQrScreen
-    visible: Store.wifiQrVisible
+    readonly property bool presented: motion.presented
+    visible: presented
+    SurfaceMotion { id: motion; shown: Store.wifiQrVisible; target: card }
     color: "transparent"
     anchors { top: true; bottom: true; left: true; right: true }
     WlrLayershell.layer: WlrLayer.Overlay
     exclusionMode: ExclusionMode.Ignore
-    focusable: true
+    focusable: Store.wifiQrVisible
 
     readonly property string helper: Quickshell.shellPath("scripts/rusticq-wifi-advanced.py")
     property string qrUrl: ""
@@ -29,7 +31,11 @@ PanelWindow {
     property bool retryPending: false
     property int secondsRemaining: 45
     readonly property bool busy: qrCreate.running
-    Component.onCompleted: if (!root.visible) root.clearQr()
+    Component.onCompleted: syncVisibility()
+    Connections {
+        target: Store
+        function onWifiQrVisibleChanged() { root.syncVisibility(); }
+    }
 
     function close() { Store.closeWifiQr(); }
     function clearQr() {
@@ -53,8 +59,8 @@ PanelWindow {
         if (!qrClear.running) qrCreate.exec(["python3", helper, "qr"]);
         else retryPending = true;
     }
-    onVisibleChanged: {
-        if (visible) {
+    function syncVisibility() {
+        if (Store.wifiQrVisible) {
             resetAndGenerate();
             focusDelay.restart();
         } else {
@@ -69,17 +75,17 @@ PanelWindow {
 
     // Delay focus grab until the PopupWindow that launched this overlay has
     // actually disappeared. Do not grab during the popup's focus transition.
-    Timer { id: focusDelay; interval: 180; onTriggered: if (root.visible) keyboard.forceActiveFocus() }
+    Timer { id: focusDelay; interval: 180; onTriggered: if (Store.wifiQrVisible) keyboard.forceActiveFocus() }
     HyprlandFocusGrab {
-        active: root.visible && !focusDelay.running
+        active: Store.wifiQrVisible && !focusDelay.running
         windows: [root]
-        onCleared: if (root.visible && !focusDelay.running) root.close()
+        onCleared: if (Store.wifiQrVisible && !focusDelay.running) root.close()
     }
     Timer {
         id: expiry
         interval: 1000
         repeat: true
-        running: root.visible && root.qrReady
+        running: Store.wifiQrVisible && root.qrReady
         onTriggered: {
             root.secondsRemaining -= 1;
             if (root.secondsRemaining <= 0) root.close();
@@ -91,18 +97,18 @@ PanelWindow {
             onStreamFinished: {
                 try {
                     const data = JSON.parse(this.text.trim());
-                    if (!root.visible) return;
+                    if (!Store.wifiQrVisible) return;
                     if (!data.ok || !data.path) throw Error(data.message || "Cannot generate QR code");
                     root.qrUrl = "file://" + data.path;
                     root.qrReady = true;
                     root.secondsRemaining = 45;
                 } catch (e) {
-                    if (root.visible) root.errorMessage = String(e);
+                    if (Store.wifiQrVisible) root.errorMessage = String(e);
                 }
             }
         }
         onExited: (code, status) => {
-            if (root.cleanupPending || !root.visible) {
+            if (root.cleanupPending || !Store.wifiQrVisible) {
                 root.cleanupPending = false;
                 Qt.callLater(function() { root.clearQr(); });
             } else if (code !== 0 && !root.errorMessage && !root.qrReady) {
@@ -114,7 +120,7 @@ PanelWindow {
         id: qrClear
         command: ["python3", root.helper, "qr-clear"]
         onExited: (code, status) => {
-            if (root.retryPending && root.visible && !qrCreate.running) {
+            if (root.retryPending && Store.wifiQrVisible && !qrCreate.running) {
                 root.retryPending = false;
                 qrCreate.exec(["python3", root.helper, "qr"]);
             }
@@ -124,17 +130,20 @@ PanelWindow {
     FocusScope {
         id: keyboard
         anchors.fill: parent
+        enabled: Store.wifiQrVisible
         focus: true
         Keys.onEscapePressed: root.close()
         Keys.onReturnPressed: root.close()
         Keys.onEnterPressed: root.close()
         Rectangle {
             anchors.fill: parent
+            opacity: motion.progress
             color: Qt.alpha("#07090b", 0.60)
             MouseArea { anchors.fill: parent; onClicked: root.close() }
         }
         Rectangle {
             id: card
+            transform: Translate { x: motion.offsetX; y: motion.offsetY }
             width: Math.min(448, Math.max(290, parent.width - 32))
             height: content.implicitHeight + 42
             anchors.centerIn: parent
@@ -167,7 +176,7 @@ PanelWindow {
                     }
                     Text { text: root.qrReady ? root.secondsRemaining + "s" : ""; color: Theme.accent; font.pixelSize: Fonts.scale(12) }
                 }
-                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 5
                     Text { text: "CONNECTED NETWORK"; color: Theme.muted; font.pixelSize: Fonts.scale(9) }

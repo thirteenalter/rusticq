@@ -11,6 +11,7 @@ Pill {
     property bool showDetails: true
     property bool useBarSpacing: false
     property bool vertical: false
+    property int verticalContentWidth: Theme.verticalBarWidth - 16
     readonly property string timeDisplayMode: SettingsStore.clockDisplayMode
     readonly property string dateDisplayMode: SettingsStore.calendarDisplayMode
     readonly property bool timeHasCaption: timeDisplayMode === "text" || timeDisplayMode === "both" || (timeDisplayMode === "auto" && showDetails)
@@ -38,7 +39,7 @@ Pill {
             showSymbol: root.showIcon && root.timeDisplayMode !== "text"
             showCaption: root.timeHasCaption
             stacked: root.vertical
-            captionMaximumWidth: root.vertical ? Theme.verticalBarWidth - 30 : 420
+            captionMaximumWidth: root.vertical ? Math.max(12, root.verticalContentWidth - 14) : 420
             symbol: "\ue8b5"  // schedule, Material Symbols Rounded
             caption: SettingsStore.formatClock(clock.date, SettingsStore.clockFormat)
             onActivated: {
@@ -53,7 +54,7 @@ Pill {
             showSymbol: root.showIcon && root.dateDisplayMode !== "text"
             showCaption: root.dateHasCaption
             stacked: root.vertical
-            captionMaximumWidth: root.vertical ? Theme.verticalBarWidth - 30 : 420
+            captionMaximumWidth: root.vertical ? Math.max(12, root.verticalContentWidth - 14) : 420
             visible: root.showDate
             symbol: "\uebcc"  // calendar_month
             caption: SettingsStore.formatClock(clock.date, SettingsStore.calendarFormat)

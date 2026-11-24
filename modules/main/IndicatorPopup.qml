@@ -11,29 +11,33 @@ PopupWindow {
     id: popup
     required property var hostWindow
     property string kind: ""
+    property string retainedKind: ""
+    readonly property string contentKind: kind || retainedKind
     property string menuSection: "view"
-    readonly property bool singleSystem: kind === "wifi" || kind === "ethernet" || kind === "bluetooth" || kind === "battery" || kind === "audio" || kind === "notifications"
+    readonly property bool singleSystem: contentKind === "wifi" || contentKind === "ethernet" || contentKind === "bluetooth" || contentKind === "battery" || contentKind === "audio" || contentKind === "notifications"
     property real targetX: 0
     property real targetY: 0
     property string barPosition: "top"
     signal dismissed()
     signal menuSectionNavigated(string sectionKey)
-    implicitWidth: kind === "task" ? 480 : kind === "notifications" ? 405 : kind === "menu" ? 358 : 368
+    implicitWidth: contentKind === "task" ? 480 : contentKind === "notifications" ? 405 : contentKind === "menu" ? 358 : 368
     // Wi-Fi popup fits content, including *all* Advanced controls, without a
     // second nested scroll viewport or an artificially tall empty footer.
-    implicitHeight: kind === "task" ? 585 : kind === "wifi"
+    implicitHeight: contentKind === "task" ? 585 : contentKind === "wifi"
                     ? Math.min(hostWindow && hostWindow.screen ? Math.max(240, hostWindow.screen.height - 95) : 900,
                                Math.max(265, widgetLoader.item ? widgetLoader.item.implicitHeight : 405))
-                    : kind === "notifications" ? Math.min(hostWindow && hostWindow.screen ? Math.max(360, hostWindow.screen.height - 92) : 670, 620)
-                    : kind === "ethernet" ? 260 : kind === "bluetooth" ? 375 : kind === "battery" ? 405 :
-                    kind === "weather" ? 262 : kind === "date" ? 370 : kind === "time" ? 198 : kind === "menu" ? (menuSection === "share" ? 530 : 345) : kind === "audio" ? Math.min(620, Math.max(140, (widgetLoader.item ? widgetLoader.item.implicitHeight : 180))) : 190
+                    : contentKind === "notifications" ? Math.min(hostWindow && hostWindow.screen ? Math.max(360, hostWindow.screen.height - 92) : 670, 620)
+                    : contentKind === "time" || contentKind === "date" ? Math.min(hostWindow && hostWindow.screen ? Math.max(180, hostWindow.screen.height - 95) : 700,
+                                                 Math.max(198, widgetLoader.item ? widgetLoader.item.implicitHeight + 16 : 450))
+                    : contentKind === "ethernet" ? 260 : contentKind === "bluetooth" ? 375 : contentKind === "battery" ? 405 :
+                    contentKind === "weather" ? 262 : contentKind === "menu" ? (menuSection === "share" ? 530 : 345) : contentKind === "audio" ? Math.min(620, Math.max(140, (widgetLoader.item ? widgetLoader.item.implicitHeight : 180))) : 190
     anchor.window: hostWindow
     anchor.edges: barPosition === "bottom" ? (Edges.Bottom | Edges.Left) : (Edges.Top | Edges.Left)
     anchor.gravity: barPosition === "bottom" ? (Edges.Top | Edges.Right)
         : barPosition === "right" ? (Edges.Bottom | Edges.Left) : (Edges.Bottom | Edges.Right)
     // All Edit / View / Share / Shell menus share one aligned left-edge anchor.
     anchor.rect.x: barPosition === "left" ? hostWindow.width + 8 : barPosition === "right" ? -8
-        : kind === "menu" ? 14
+        : contentKind === "menu" ? 14
         : Math.max(8, Math.min(Math.max(8, hostWindow.width - implicitWidth - 8), targetX - implicitWidth / 2))
     anchor.rect.y: barPosition === "top" ? hostWindow.barHeight + 8
         : barPosition === "bottom" ? -1
@@ -41,9 +45,21 @@ PopupWindow {
     onTargetXChanged: if (visible) anchor.updateAnchor()
     onTargetYChanged: if (visible) anchor.updateAnchor()
     onBarPositionChanged: if (visible) anchor.updateAnchor()
-    grabFocus: true
-    visible: false
-    onKindChanged: visible = kind !== ""
+    onImplicitHeightChanged: if (visible) anchor.updateAnchor()
+    grabFocus: kind !== ""
+    readonly property bool presented: motion.presented
+    visible: presented
+    onKindChanged: if (kind !== "") {
+        retainedKind = kind;
+        motion.replay();
+    }
+    SurfaceMotion {
+        id: motion
+        shown: popup.kind !== ""
+        target: popupSurface
+        edge: popup.barPosition
+        style: SettingsStore.barAnimationStyle
+    }
     function focusMenu() {
         if (visible && kind === "menu" && widgetLoader.item && widgetLoader.item.forceActiveFocus)
             widgetLoader.item.forceActiveFocus();
@@ -80,7 +96,9 @@ PopupWindow {
     }
 
     Rectangle {
+        id: popupSurface
         anchors.fill: parent
+        transform: Translate { x: motion.offsetX; y: motion.offsetY }
         radius: Theme.sectionRadius
         color: Theme.background
         border.width: popup.singleSystem ? 0 : 1
@@ -90,15 +108,15 @@ PopupWindow {
             onLoaded: if (popup.kind === "menu") Qt.callLater(popup.focusMenu)
             anchors.fill: parent
             anchors.margins: popup.singleSystem ? 0 : 8
-            sourceComponent: popup.kind === "task" ? taskComponent : popup.kind === "wifi" ? wifiComponent :
-                                 popup.kind === "ethernet" ? ethernetComponent : popup.kind === "bluetooth" ? bluetoothComponent :
-                                 popup.kind === "battery" ? batteryComponent :
-                                 popup.kind === "audio" ? audioComponent :
-                                 popup.kind === "notifications" ? notificationsComponent :
-                                 popup.kind === "weather" ? weatherComponent :
-                                 popup.kind === "time" ? timeComponent :
-                                 popup.kind === "date" ? dateComponent :
-                                 popup.kind === "menu" ? menuComponent : null
+            sourceComponent: popup.contentKind === "task" ? taskComponent : popup.contentKind === "wifi" ? wifiComponent :
+                                 popup.contentKind === "ethernet" ? ethernetComponent : popup.contentKind === "bluetooth" ? bluetoothComponent :
+                                 popup.contentKind === "battery" ? batteryComponent :
+                                 popup.contentKind === "audio" ? audioComponent :
+                                 popup.contentKind === "notifications" ? notificationsComponent :
+                                 popup.contentKind === "weather" ? weatherComponent :
+                                 popup.contentKind === "time" ? timeComponent :
+                                 popup.contentKind === "date" ? dateComponent :
+                                 popup.contentKind === "menu" ? menuComponent : null
         }
     }
 

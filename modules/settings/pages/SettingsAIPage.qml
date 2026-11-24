@@ -200,7 +200,7 @@ Process {
                                 font.pixelSize: Fonts.scale(11)
                                 font.family: Fonts.poppins.name
                             }
-                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                            Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
                             Text {
                                 Layout.fillWidth: true
                                 text: "Use an API key for in-shell chat. Website login is separate: it opens your provider in a browser and does not authorize the shell."

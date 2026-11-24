@@ -58,10 +58,10 @@ Rectangle {
                 visible: !root.fullSettings
                 kind: "audio"
                 section: "applications"
-                label: "Open audio fullscreen"
-                symbol: "\ue5d0"
+                label: "Open audio settings"
+                symbol: "\ue8b8"
                 iconOnly: true
-                fullscreen: true
+                fullscreen: false
                 targetScreen: root.targetScreen || Store.sidebarScreen
             }
         }
@@ -87,9 +87,9 @@ Rectangle {
             }
         }
         ColumnLayout { visible: root.detailsOpen; Layout.fillWidth: true; spacing: 10
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+            Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
             ApplicationAudioMixer { id: applicationMixer; Layout.fillWidth: true }
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+            Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
             RowLayout { Layout.fillWidth: true;spacing:8
                 id: outputControls
                 Text { text: "Output level · live";color:Theme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11);Layout.fillWidth:true }
@@ -97,7 +97,7 @@ Rectangle {
             }
             Rectangle { Layout.fillWidth: true;Layout.preferredHeight:10;radius:5;color:Theme.surface
                 Rectangle { height:parent.height;width:parent.width*Math.min(1,Math.max(0,outputPeak.peak||0));radius:5;color:Theme.accent
-                    Behavior on width { NumberAnimation { duration:85 } }
+                    Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                 }
             }
             Rectangle { Layout.fillWidth:true;Layout.preferredHeight:34;radius:9;color:Theme.surface
@@ -124,7 +124,7 @@ Rectangle {
             }
             Rectangle { Layout.fillWidth:true;Layout.preferredHeight:10;radius:5;color:Theme.surface
                 Rectangle { height:parent.height;width:parent.width*Math.min(1,Math.max(0,microphonePeak.peak||0));radius:5;color:Theme.accent
-                    Behavior on width { NumberAnimation { duration:85 } }
+                    Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                 }
             }
             Text { text:"Speak into the selected microphone. Levels update live and are not recorded.";color:Theme.muted;font.pixelSize:Fonts.scale(9);wrapMode:Text.WordWrap;Layout.fillWidth:true }
@@ -139,7 +139,7 @@ Rectangle {
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Pipewire.preferredDefaultAudioSink = output.modelData }
                 }
             }
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+            Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
             Text { text: "Input device · microphone"; color: Theme.muted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
             Text { visible: root.inputDevices.length === 0; text: "No microphone available"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
             Repeater { model: root.inputDevices

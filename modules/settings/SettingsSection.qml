@@ -12,18 +12,18 @@ Rectangle {
     property string description: ""
     property string symbol: "\ue8b8"
     Layout.fillWidth: true
-    implicitHeight: content.implicitHeight + 30
-    radius: 15
+    implicitHeight: content.implicitHeight + Theme.sectionPadding * 2
+    radius: Theme.sectionRadius
     color: Theme.surface
     border.width: 1
     border.color: Theme.borderaccent
 
     ColumnLayout {
         id: content
-        x: 15
-        y: 15
-        width: Math.max(0, section.width - 30)
-        spacing: 11
+        x: Theme.sectionPadding
+        y: Theme.sectionPadding
+        width: Math.max(0, section.width - Theme.sectionPadding * 2)
+        spacing: Theme.sectionGap
         RowLayout {
             visible: section.heading.length > 0
             Layout.fillWidth: true

@@ -232,9 +232,18 @@ PanelWindow {
                                 readonly property int day: index - ((new Date(clock.date.getFullYear(), clock.date.getMonth(), 1).getDay() + 6) % 7) + 1
                                 readonly property bool validDay: day >= 1 && day <= new Date(clock.date.getFullYear(),clock.date.getMonth()+1,0).getDate()
                                 readonly property bool isToday: validDay && day === clock.date.getDate()
+                                readonly property var dateNote: validDay ? SettingsStore.calendarNote(SettingsStore.calendarDateKey(
+                                    new Date(clock.date.getFullYear(), clock.date.getMonth(), day))) : null
                                 Layout.fillWidth: true; Layout.preferredHeight: 24; radius: 7
                                 color: isToday ? Theme.accent : "transparent"
                                 Text { anchors.centerIn: parent; text: dayChip.validDay ? String(dayChip.day) : ""; color: dayChip.isToday ? Theme.background : Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                                Rectangle {
+                                    visible: dayChip.dateNote !== null
+                                    width: 3; height: 3; radius: 2
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    anchors.bottom: parent.bottom; anchors.bottomMargin: 1
+                                    color: dayChip.isToday ? Theme.background : Theme.calendarCategoryColor(dayChip.dateNote ? dayChip.dateNote.category : "event")
+                                }
                             }
                         }
                     }

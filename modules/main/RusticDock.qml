@@ -9,7 +9,8 @@ import "../../components"
 // Optional dock. Running apps are real Hyprland GUI windows (not /proc tasks).
 PanelWindow {
     id: dock
-    visible: SettingsStore.showDock
+    visible: motion.presented
+    SurfaceMotion { id: motion; shown: SettingsStore.showDock; target: dock.contentItem; edge: "bottom"; closedScale: 1 }
     anchors { bottom: true; left: true }
     exclusionMode: ExclusionMode.Ignore
     margins.bottom: SettingsStore.barPosition === "bottom" ? 54 : 8
@@ -55,6 +56,8 @@ PanelWindow {
     }
     implicitWidth: expanded ? Math.min(dock.screen ? Math.max(82, dock.screen.width - 24) : 860, Math.max(82, desiredDockWidth)) : 82
     implicitHeight: expanded ? 94 : 18
+    Behavior on implicitWidth { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionEnterDuration; easing.type: Easing.OutCubic } }
+    Behavior on implicitHeight { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionEnterDuration; easing.type: Easing.OutCubic } }
     color: "transparent"
     onVisibleChanged: if (visible) {
         expanded = !SettingsStore.dockAutoHide;
@@ -72,10 +75,14 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
+        clip: true
+        transform: Translate { x: motion.offsetX; y: motion.offsetY }
         radius: dock.expanded ? 22 : 9
         color: dock.expanded ? Qt.alpha(Theme.background, 0.97) : Qt.alpha(Theme.accent, 0.72)
         border.width: dock.expanded ? 1 : 0
         border.color: Theme.borderaccent
+        Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+        Behavior on radius { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionEnterDuration; easing.type: Easing.OutCubic } }
         HoverHandler {
             onHoveredChanged: {
                 if (hovered) { hideLater.stop(); dock.expanded = true; }
@@ -120,6 +127,9 @@ PanelWindow {
                                 Layout.preferredWidth: 46; Layout.preferredHeight: 46
                                 radius: 14
                                 color: mouse.containsMouse ? Qt.alpha(Theme.accent, .18) : Theme.surface
+                                scale: mouse.pressed ? 0.96 : mouse.containsMouse ? 1.04 : 1
+                                Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+                                Behavior on scale { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                                 RusticQIcon { anchors.centerIn: parent; iconSize: 23; visible: app.modelData.label === "Settings" }
                                 Icon { anchors.centerIn: parent; visible: app.modelData.label !== "Settings"; icon: app.modelData.icon; color: Theme.accent; font.pixelSize: Fonts.scale(23) }
                                 MouseArea {
@@ -137,7 +147,7 @@ PanelWindow {
                             Text { text: app.modelData.label; Layout.alignment: Qt.AlignHCenter; font.pixelSize: Fonts.scale(9); color: Theme.muted; font.family: Fonts.poppins.name }
                         }
                     }
-                    Rectangle { visible: SettingsStore.dockRunningApps && dock.runningCount > 0; Layout.preferredWidth: visible ? 1 : 0; Layout.preferredHeight: 36; color: Theme.borderaccent }
+                    Item { visible: SettingsStore.dockRunningApps && dock.runningCount > 0; Layout.preferredWidth: visible ? Theme.sectionGap : 0; Layout.preferredHeight: 36 }
                     Repeater {
                         model: SettingsStore.dockRunningApps ? dock.runningApps : []
                         delegate: ColumnLayout {
@@ -154,6 +164,9 @@ PanelWindow {
                                 Layout.preferredWidth: 46; Layout.preferredHeight: 46
                                 radius: 14
                                 color: activeArea.containsMouse ? Qt.alpha(Theme.accent, .20) : Theme.surface
+                                scale: activeArea.pressed ? 0.96 : activeArea.containsMouse ? 1.04 : 1
+                                Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+                                Behavior on scale { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                                 border.width: runningApp.modelData.active ? 1 : 0
                                 border.color: Theme.accent
                                 IconImage {

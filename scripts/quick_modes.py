@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Small, checked adapters for notification DND and hyprsunset. No shell eval."""
+"""Checked hyprsunset adapter. Silent is handled by RusticQ's native DND."""
 import argparse
 import json
 import re
 import shutil
 import subprocess
+import time
 
 
 def run(args, timeout=5):
@@ -23,11 +24,6 @@ def temperature():
 
 def probe(key):
     try:
-        if key == "silent":
-            value = run(["omarchy", "shell", "notifications", "dndState"])
-            if value not in ("on", "off"):
-                raise RuntimeError("Notification service did not return its DND state")
-            return {"available": True, "active": value == "on", "detail": "Do Not Disturb"}
         if key != "night":
             raise ValueError("Unknown mode")
         if not shutil.which("hyprctl") or not shutil.which("hyprsunset"):
@@ -35,54 +31,62 @@ def probe(key):
         try:
             temp = temperature()
         except (RuntimeError, subprocess.TimeoutExpired):
-            # Omarchy can start hyprsunset on demand; no start happens during a probe.
-            if not shutil.which("omarchy-toggle-nightlight"):
-                raise RuntimeError("Start hyprsunset to use Night mode")
-            return {"available": True, "active": False, "detail": "Start night light (4000 K)"}
-        return {"available": True, "active": temp < 6000, "detail": f"Screen temperature: {temp} K"}
+            # Only an explicit set may start the daemon; status stays read-only.
+            return {"available": True, "active": False, "temperature": None,
+                    "detail": "Night Light is ready to start"}
+        return {"available": True, "active": temp < 6500, "temperature": temp,
+                "detail": f"Screen temperature: {temp} K"}
     except (OSError, RuntimeError, subprocess.TimeoutExpired) as exc:
         return {"available": False, "active": False, "detail": str(exc)}
 
 
-def set_mode(key, enabled):
-    if key not in ("silent", "night") or type(enabled) is not bool:
+def set_mode(key, enabled, kelvin=4000):
+    if key != "night" or type(enabled) is not bool:
         raise ValueError("Invalid mode or state")
+    if type(kelvin) is not int or not 2000 <= kelvin <= 6000:
+        raise ValueError("Night Light temperature must be between 2000 and 6000 K")
     before = probe(key)
     if not before["available"]:
         raise RuntimeError(before["detail"])
-    if before["active"] == enabled:
+    target = kelvin if enabled else 6500
+    if before.get("temperature") == target or (not enabled and before.get("temperature") is None):
         return
-    if key == "silent":
-        run(["omarchy", "shell", "notifications", "setDnd", "on" if enabled else "off"])
-    else:
+    if before.get("temperature") is None:
+        # Do not toggle Omarchy's fixed 4000 K mode or write its configuration.
+        command = ["hyprsunset", "--temperature", str(target)]
+        if shutil.which("uwsm-app"):
+            command = ["uwsm-app", "--"] + command
+        subprocess.Popen(command, stdin=subprocess.DEVNULL,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    # A newly started daemon can overwrite its first IPC value during startup.
+    for _ in range(12):
         try:
-            temperature()
+            run(["hyprctl", "hyprsunset", "temperature", str(target)])
+            time.sleep(.15)
+            if temperature() == target:
+                return
         except (RuntimeError, subprocess.TimeoutExpired):
-            run(["omarchy", "toggle", "nightlight"], timeout=10)
-        run(["hyprctl", "hyprsunset", "temperature", "4000" if enabled else "6500"])
-        if (temperature() < 6000) != enabled:
-            raise RuntimeError("Night mode did not reach the requested temperature")
-    after = probe(key)
-    if not after["available"] or after["active"] != enabled:
-        raise RuntimeError(f"{key.capitalize()} did not reach the requested state")
+            time.sleep(.1)
+    raise RuntimeError("Night Light did not reach the requested temperature")
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("action", choices=("status", "set"))
-    parser.add_argument("mode", nargs="?", choices=("silent", "night"))
+    parser.add_argument("mode", nargs="?", choices=("night",))
     parser.add_argument("state", nargs="?", choices=("on", "off"))
+    parser.add_argument("--temperature", type=int, default=4000)
     args = parser.parse_args()
     if args.action == "set" and (args.mode is None or args.state is None):
         parser.error("set requires a mode and on/off")
     error = ""
     try:
         if args.action == "set":
-            set_mode(args.mode, args.state == "on")
+            set_mode(args.mode, args.state == "on", args.temperature)
     except (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired) as exc:
         error = str(exc)
     print(json.dumps({"ok": not error, "error": error,
-                      "states": {key: probe(key) for key in ("silent", "night")}}))
+                      "states": {"night": probe("night")}}))
     return int(bool(error))
 
 

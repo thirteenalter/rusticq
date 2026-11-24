@@ -11,7 +11,9 @@ import "pages"
 // Internal cards retain the RusticQ design system, while the outer canvas is square.
 FloatingWindow {
     id: root
-    visible: Store.settingsVisible
+    readonly property bool presented: motion.presented
+    visible: presented
+    SurfaceMotion { id: motion; shown: Store.settingsVisible; target: root.contentItem; closedScale: 0.995 }
     screen: Store.settingsScreen
     title: "RusticQ · Settings"
     // v5: roomy 1100 × 760 settings window, clamped to active monitor bounds.
@@ -30,6 +32,7 @@ FloatingWindow {
         {key:"bluetooth", label:"Bluetooth", symbol:"\ue1a7", detail:"Pair and connect wireless devices"},
         {key:"audio", label:"Audio", symbol:"\ue050", detail:"Speakers, microphones and application mixer"},
         {key:"power", label:"Battery & power", symbol:"\uf304", detail:"Battery status and power profiles"},
+        {key:"clock", label:"Clock", symbol:"\ue8b5", detail:"Alarms, timer sounds and clock format"},
         {key:"appearance", label:"Appearance", symbol:"\ue40a", detail:"Themes & palette"},
         {key:"bar", label:"Bar", symbol:"\ue30b", detail:"Layout & margins"},
         {key:"modules", label:"Modules", symbol:"\ue429", detail:"Indicators & menus"},
@@ -49,7 +52,7 @@ FloatingWindow {
         {key:"ai", label:"AI Providers", symbol:"\uf371", detail:"Cloud assistant"},
         {key:"about", label:"About", symbol:"\ue88e", detail:"Version and release history"}
     ]
-    readonly property var systemPages: ["system", "wifi", "bluetooth", "audio", "power", "display", "compositor", "os", "hardware", "apps", "storage", "updates", "shortcuts"]
+    readonly property var systemPages: ["system", "wifi", "bluetooth", "audio", "power", "clock", "display", "compositor", "os", "hardware", "apps", "storage", "updates", "shortcuts"]
     readonly property var activePage: pages.find(p => p.key === Store.settingsTab) || pages[0]
     readonly property string settingsGroup: activePage.key === "home" ? "home"
         : systemPages.indexOf(activePage.key) >= 0 ? "system" : "ui"
@@ -63,11 +66,15 @@ FloatingWindow {
         {tab:"bluetooth", title:"Bluetooth settings", hint:"Wireless devices scan pair connect disconnect BlueZ adapter"},
         {tab:"audio", title:"Audio settings and application mixer", hint:"Speaker microphone audio bus per-app volume mute live level meter PipeWire"},
         {tab:"power", title:"Battery and power", hint:"Charge energy power profiles performance balanced saver"},
+        {tab:"clock", title:"Clock, alarms and timer sound", hint:"Alarm daily repeat snooze loop sound audio file volume 125 percent calendar format"},
         {tab:"appearance", title:"Color theme and accent", hint:"Aether Gruvbox theme palette"},
         {tab:"appearance", title:"Wallpaper settings", hint:"Wallpaper swww awww hyprpaper image path"},
         {tab:"appearance", title:"RusticQ Lock Screen", hint:"Hyprlock PAM password clock secure wallpaper lock screen"},
         {tab:"appearance", title:"Typography and density", hint:"Font family size text compact comfortable"},
+        {tab:"appearance", title:"Interface animations", hint:"Motion smooth fade slide popup panel on off"},
         {tab:"bar", title:"Bar position", hint:"Top Bottom Left Right"},
+        {tab:"bar", title:"Bar animation style", hint:"Float Fade Slide Zoom Spring motion preview"},
+        {tab:"bar", title:"Bar icon size in pixels", hint:"Icon symbol size 12 32 px slider exact input"},
         {tab:"bar", title:"Absolute center positioning", hint:"Centered icons screen middle offset"},
         {tab:"bar", title:"Bar layout and Clean Compact", hint:"Professional Compact Separated Simple Hover"},
         {tab:"bar", title:"Realtime margin editor", hint:"Spacing Edge Margin Slider"},
@@ -77,6 +84,7 @@ FloatingWindow {
         {tab:"modules", title:"Independent icon profiles per layout", hint:"Simple Compact Clean Compact Separated Professional icon visibility per mode presets minimal"},
         {tab:"modules", title:"App launcher and status modules", hint:"Icons Wifi Bluetooth Battery Audio Weather Clock"},
         {tab:"modules", title:"Menu bar and quick modes", hint:"Edit View Share File Shell Tools Night Silent"},
+        {tab:"modules", title:"Recording indicator", hint:"Screen recording red dot blink position corner size margin inset"},
         {tab:"widgets", title:"Desktop widgets", hint:"Calendar Clock CPU RAM Music Media Now Playing Weather Connectivity Battery"},
         {tab:"notes", title:"Notes and Kanban", hint:"todo list writing memo private local tasks columns doing done"},
         {tab:"dock", title:"Custom dock", hint:"Apps Auto-hide Files Browser"},
@@ -123,6 +131,7 @@ FloatingWindow {
 
     Item {
         anchors.fill: parent
+        transform: Translate { x: motion.offsetX; y: motion.offsetY }
         // No extra outside border or radius; Hyprland handles the window shape.
         RowLayout {
             anchors.fill: parent
@@ -187,7 +196,7 @@ FloatingWindow {
                     RowLayout {
                         Layout.fillWidth: true; Layout.preferredHeight: 25
                         Text { text: root.settingsGroup === "system" ? "S Y S T E M" : root.settingsGroup === "ui" ? "U I  S E T T I N G S" : "A L L  S E T T I N G S"; font.family: Fonts.poppinsSB.name; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
-                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                        Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
                     }
                     Flickable {
                         id: navigationScroll
@@ -233,7 +242,7 @@ FloatingWindow {
                     }
                         }
                     }
-                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                    Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
                     Text {
                         text: "RUSTICQ · " + ReleaseInfo.displayName.toUpperCase() + "\nQuickshell " + ReleaseInfo.requiredQuickshell + "+"
                         Layout.fillWidth: true
@@ -269,14 +278,14 @@ FloatingWindow {
                         visible: ["wifi", "bluetooth", "audio", "power"].indexOf(root.activePage.key) >= 0
                         kind: root.activePage.key
                         section: kind === "wifi" ? "details" : kind === "audio" ? "applications" : ""
-                        label: "Open fullscreen"
+                        label: "Open device settings"
                         iconOnly: true
-                        fullscreen: true
-                        symbol: "\ue5d0"
+                        fullscreen: false
+                        symbol: "\ue8b8"
                         targetScreen: root.screen
                     }
                 }
-                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
                 Rectangle {
                     Layout.fillWidth: true; Layout.preferredHeight: 43
                     radius: 12; color: Theme.surface
@@ -319,12 +328,15 @@ FloatingWindow {
                     onVisibleChanged: if (visible) contentY = 0
                     Loader {
                         id: pageLoader
+                        onLoaded: pageMotion.replay()
+                        SurfaceMotion { id: pageMotion; shown: Store.settingsVisible; target: pageLoader.item; closedScale: 1 }
                         width: contentView.width
                         sourceComponent: Store.settingsTab === "home" || Store.settingsTab === "ui" || Store.settingsTab === "system" ? homePage :
                             Store.settingsTab === "wifi" ? wifiPage :
                             Store.settingsTab === "bluetooth" ? bluetoothPage :
                             Store.settingsTab === "audio" ? audioPage :
                             Store.settingsTab === "power" ? powerPage :
+                            Store.settingsTab === "clock" ? clockPage :
                             Store.settingsTab === "appearance" ? appearancePage :
                             Store.settingsTab === "bar" ? barPage :
                             Store.settingsTab === "modules" ? modulesPage :
@@ -387,6 +399,7 @@ FloatingWindow {
     Component { id: bluetoothPage; SettingsBluetoothPage {} }
     Component { id: audioPage; SettingsAudioPage {} }
     Component { id: powerPage; SettingsPowerPage {} }
+    Component { id: clockPage; SettingsClockPage {} }
     Component { id: appearancePage; SettingsAppearancePage {} }
     Component { id: barPage; SettingsBarPage {} }
     Component { id: modulesPage; SettingsModulesPage {} }

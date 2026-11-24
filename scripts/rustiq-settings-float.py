@@ -20,7 +20,7 @@ DEFAULT_HEIGHT = 760
 
 def target_size(client):
     """Clamp preferred floating size to this window's actual monitor."""
-    preferred_width, preferred_height = (720, 680) if client.get("title") == DEVICE_TITLE else (DEFAULT_WIDTH, DEFAULT_HEIGHT)
+    preferred_width, preferred_height = (720, 580) if client.get("title") == DEVICE_TITLE else (DEFAULT_WIDTH, DEFAULT_HEIGHT)
     try:
         result = subprocess.run(["hyprctl", "-j", "monitors"],
                                 capture_output=True, text=True, timeout=3)
@@ -47,7 +47,7 @@ def target_size(client):
             logical_width = int(width / scale)
             logical_height = int(height / scale)
             return (max(600, min(preferred_width, logical_width - 64)),
-                    max(480, min(preferred_height, logical_height - 88)))
+                    max(420 if client.get("title") == DEVICE_TITLE else 480, min(preferred_height, logical_height - 88)))
     except (OSError, subprocess.TimeoutExpired, ValueError, json.JSONDecodeError):
         pass
     return preferred_width, preferred_height

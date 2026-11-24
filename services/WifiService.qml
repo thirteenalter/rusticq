@@ -100,6 +100,24 @@ Singleton {
         return null;
     }
 
+    // Connectivity is host-wide. Do not attribute a wired/tethered portal to
+    // a private Wi-Fi connection when both links are active.
+    readonly property bool portalDetected: Networking.canCheckConnectivity && Networking.connectivityCheckEnabled
+        && Networking.connectivity === NetworkConnectivity.Portal && !ethernetConnected && !tethering
+
+    // Open hotspots get a manual retry even without connectivity checking.
+    // Secured or Unknown networks need an actual portal detection first.
+    readonly property bool portalAvailable: wifiDevice !== null && connectedNetwork !== null
+        && Networking.wifiEnabled && Networking.wifiHardwareEnabled
+        && (connectedNetwork.security === WifiSecurityType.Open || portalDetected)
+
+    function openPortal() {
+        if (!portalAvailable) return false;
+        // Plain HTTP lets the hotspot redirect the browser to its sign-in page.
+        // Opening the browser does not mean portal authentication succeeded.
+        return Qt.openUrlExternally("http://neverssl.com/");
+    }
+
     // ============================================================
     // Public API (sama persis dengan kode lama agar UI tidak rusak)
     // ============================================================

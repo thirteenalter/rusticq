@@ -9,8 +9,26 @@ import "../../components"
 // One visible OSD per shell, even on multi-monitor layouts.
 PanelWindow {
     id: root
-    visible: SettingsStore.osdEnabled && Store.osdVisible && root.screen !== null && Store.osdScreen !== null
-             && Store.osdScreen.name === root.screen.name
+    property bool requested: false
+    function syncRequested() {
+        requested = SettingsStore.osdEnabled && Store.osdVisible && root.screen !== null && Store.osdScreen !== null
+            && Store.osdScreen.name === root.screen.name;
+    }
+    // Native window mapping can update screen synchronously. Read it after
+    // that update rather than from a visibility binding that remaps the window.
+    Component.onCompleted: Qt.callLater(syncRequested)
+    onScreenChanged: Qt.callLater(syncRequested)
+    Connections {
+        target: Store
+        function onOsdVisibleChanged() { Qt.callLater(root.syncRequested); }
+        function onOsdScreenChanged() { Qt.callLater(root.syncRequested); }
+    }
+    Connections {
+        target: SettingsStore
+        function onOsdEnabledChanged() { Qt.callLater(root.syncRequested); }
+    }
+    visible: motion.presented
+    SurfaceMotion { id: motion; shown: root.requested; target: osdSurface; edge: "bottom" }
     color: "transparent"
     focusable: false
     exclusionMode: ExclusionMode.Ignore
@@ -30,7 +48,9 @@ PanelWindow {
         return "\ue000";
     }
     Rectangle {
+        id: osdSurface
         anchors.fill: parent
+        transform: Translate { x: motion.offsetX; y: motion.offsetY }
         radius: 18
         color: Theme.background
         border.width: 1
@@ -62,7 +82,7 @@ PanelWindow {
                             height: parent.height
                             width: parent.width * (Store.osdMuted ? 0 : Store.osdPercent) / 100
                             radius: 3; color: Theme.accent
-                            Behavior on width { NumberAnimation { duration: 105 } }
+                            Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                         }
                     }
                     Text { text: Store.osdMuted ? "MUTE" : Store.osdPercent + "%"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }

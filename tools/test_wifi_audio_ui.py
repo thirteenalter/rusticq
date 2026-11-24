@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offscreen Wi-Fi navigation and application audio controls with fake devices."""
+"""Offscreen connectivity search, Wi-Fi navigation and audio with fake devices."""
 import json
 import argparse
 import os
@@ -26,10 +26,33 @@ def main():
         (target / 'tests').mkdir()
         shutil.copyfile(ROOT / 'tools/WifiAudioInteraction.qml', target / 'tests/Interaction.qml')
         interaction = target / 'tests/Interaction.qml'
-        interaction.write_text(interaction.read_text().replace('import "../services"', 'import "../services"\nimport "../fixtures"', 1))
+        interaction.write_text(interaction.read_text().replace('import "../services"', 'import "../services"\nimport "../fixtures"\nimport "../fixtures" as Fixtures', 1))
         (target / 'user-settings.json').write_text('{}')
         (target / 'fixtures').mkdir()
-        (target / 'fixtures/qmldir').write_text('singleton Pipewire 1.0 Pipewire.qml\nPwObjectTracker 1.0 PwObjectTracker.qml\nPwNodePeakMonitor 1.0 PwNodePeakMonitor.qml\nsingleton PwAudioChannel 1.0 PwAudioChannel.qml\n')
+        (target / 'fixtures/qmldir').write_text('singleton Pipewire 1.0 Pipewire.qml\nPwObjectTracker 1.0 PwObjectTracker.qml\nPwNodePeakMonitor 1.0 PwNodePeakMonitor.qml\nsingleton PwAudioChannel 1.0 PwAudioChannel.qml\nsingleton WifiFixture 1.0 WifiFixture.qml\nsingleton Bluetooth 1.0 Bluetooth.qml\n')
+        (target / 'fixtures/WifiFixture.qml').write_text('''pragma Singleton
+import QtQuick
+QtObject {
+    property QtObject adapter: QtObject {
+        property string name: "wlan0"
+        property QtObject networks: QtObject { property var values: [] }
+    }
+    property var device: adapter
+}
+''')
+        (target / 'fixtures/Bluetooth.qml').write_text('''pragma Singleton
+import QtQuick
+QtObject {
+    property QtObject adapter: QtObject {
+        property bool enabled: true
+        property bool discovering: false
+        property QtObject devices: QtObject { property var values: [] }
+    }
+    property var defaultAdapter: adapter
+}
+''')
+        bluetooth = target / 'modules/bar/BarBluetooth.qml'
+        bluetooth.write_text(bluetooth.read_text().replace('import Quickshell.Bluetooth as Native', 'import "../../fixtures" as Native'))
         (target / 'fixtures/Pipewire.qml').write_text('''pragma Singleton
 import QtQuick
 QtObject {
@@ -49,9 +72,20 @@ QtObject {
         audio.write_text(audio.read_text().replace('import Quickshell.Services.Pipewire', 'import "../../fixtures"'))
         (target / 'services/WifiService.qml').write_text('''pragma Singleton
 import QtQuick
+import Quickshell.Networking
 QtObject {
     property var wifiDevice: ({name: "wlan0"})
     property bool enabled: true
+    property var connectedNetwork: null
+    property bool portalDetected: false
+    readonly property bool portalAvailable: enabled && wifiDevice !== null && connectedNetwork !== null
+        && (connectedNetwork.security === WifiSecurityType.Open || portalDetected)
+    property bool portalLaunchSucceeds: true
+    property int portalCalls: 0
+    function openPortal() {
+        if (!portalAvailable) return false;
+        portalCalls++; return portalLaunchSucceeds;
+    }
     property bool hiddenConnecting: false
     property bool hiddenFailed: false
     property string hiddenMessage: ""
@@ -65,14 +99,20 @@ QtObject {
 }
 ''')
         (target / 'services/WifiManager.qml').write_text('''import QtQuick
+import "../fixtures"
 QtObject {
-    property var wifiDevice: ({name: "wlan0", networks: []})
+    property var wifiDevice: WifiFixture.device
     property bool wifiEnabled: true
     property bool wifiHardwareEnabled: true
     property bool scanning: false
     property var processingNetwork: null
     function toggleScan() {}
     function toggleWifi() {}
+    function signalIcon(strength) { return ""; }
+    function stateText(network) { return network.connected ? "Connected" : "Available"; }
+    function clearProcessing(network) { processingNetwork = null; }
+    function connectNetwork(network) { network.connect(); }
+    function disconnectNetwork(network) { network.connected = false; }
 }
 ''')
         (target / 'scripts').mkdir()
@@ -96,7 +136,7 @@ ShellRoot { Window { visible: true; width: 780; height: 900; Interaction {} } }
         print(output, end='')
         summary = re.search(r'WIFI AUDIO RESULTS (\d+) passed, (\d+) failed', output)
         errors = re.search(r'(Binding loop|TypeError:|ReferenceError:|Error loading configuration)', output)
-        return int(bool(result.returncode or not summary or int(summary[1]) < 12 or int(summary[2]) or errors))
+        return int(bool(result.returncode or not summary or int(summary[1]) < 16 or int(summary[2]) or errors))
 
 
 if __name__ == '__main__':

@@ -184,7 +184,7 @@ ColumnLayout {
                         height: parent.height
                         radius: parent.radius
                         color: Theme.accent
-                        Behavior on width { NumberAnimation { duration: 85 } }
+                        Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                     }
                 }
             }

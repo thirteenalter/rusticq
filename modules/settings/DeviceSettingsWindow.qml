@@ -9,13 +9,17 @@ import "pages"
 
 FloatingWindow {
     id: root
-    visible: Store.deviceSettingsVisible
+    readonly property bool presented: motion.presented
+    visible: presented
+    SurfaceMotion { id: motion; shown: Store.deviceSettingsVisible; target: root.contentItem; closedScale: 0.995 }
     screen: Store.deviceSettingsScreen
     title: "RusticQ · Device settings"
     implicitWidth: Math.max(600, Math.min(720, screen ? screen.width - 64 : 720))
-    implicitHeight: Math.max(480, Math.min(680, screen ? screen.height - 88 : 680))
-    minimumSize: Qt.size(600, 480)
-    fullscreen: Store.deviceSettingsFullscreen
+    implicitHeight: Math.max(420, Math.min(580, screen ? screen.height - 88 : 580))
+    minimumSize: Qt.size(600, 420)
+    maximumSize: Qt.size(Math.min(840, screen ? screen.width - 32 : 840), Math.min(620, screen ? screen.height - 64 : 620))
+    maximized: false
+    fullscreen: false
     color: Theme.background
     property bool syncingPage: false
     property string loadedKind: ""
@@ -57,12 +61,13 @@ FloatingWindow {
             page.hiddenOpen = Store.deviceSettingsSection === "hidden";
         }
         syncingPage = false;
-        Qt.callLater(scrollToSection);
+        sectionScrollDelay.restart();
     }
     function syncWifiSelection() {
         if (syncingPage || loadedKind !== "wifi" || !pageLoader.item) return;
         const page = pageLoader.item;
-        const next = !page.advancedOpen ? "networks" : page.hiddenOpen ? "hidden" : "details";
+        const next = !page.advancedOpen ? "networks" : page.hiddenOpen ? "hidden"
+            : ["details", "dns", "sharing"].indexOf(Store.deviceSettingsSection) >= 0 ? Store.deviceSettingsSection : "details";
         if (next !== Store.deviceSettingsSection) Store.deviceSettingsSection = next;
     }
     function close() { Store.closeDeviceSettings(); }
@@ -85,6 +90,11 @@ FloatingWindow {
         function onHiddenOpenChanged() { root.syncWifiSelection(); }
     }
     Timer {
+        id: sectionScrollDelay
+        interval: 30
+        onTriggered: root.scrollToSection()
+    }
+    Timer {
         id: floatDelay
         interval: 320
         onTriggered: if (root.visible && !root.fullscreen && !floatHelper.running) floatHelper.running = true
@@ -96,6 +106,7 @@ FloatingWindow {
 
     ColumnLayout {
         anchors.fill: parent
+        transform: Translate { x: motion.offsetX; y: motion.offsetY }
         anchors.margins: Theme.sectionPadding
         spacing: Theme.sectionGap
         RowLayout {
@@ -114,20 +125,6 @@ FloatingWindow {
                     Text { text: "Advanced controls"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Theme.helperTextSize }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.SizeAllCursor; onPressed: root.startSystemMove() }
-            }
-            Rectangle {
-                objectName: "toggleDeviceFullscreen"
-                Layout.preferredWidth: 32; Layout.preferredHeight: 32
-                radius: Theme.rowRadius; color: Theme.surface
-                activeFocusOnTab: true
-                Accessible.role: Accessible.Button
-                Accessible.name: root.fullscreen ? "Exit fullscreen" : "Enter fullscreen"
-                function toggle() { Store.deviceSettingsFullscreen = !root.fullscreen; }
-                Accessible.onPressAction: toggle()
-                Keys.onReturnPressed: toggle()
-                Keys.onSpacePressed: toggle()
-                Icon { anchors.centerIn: parent; icon: root.fullscreen ? "\ue5d1" : "\ue5d0"; color: Theme.foreground; font.pixelSize: Fonts.scale(18) }
-                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: parent.toggle() }
             }
             Rectangle {
                 objectName: "closeDeviceSettings"
@@ -200,6 +197,8 @@ FloatingWindow {
             clip: true
             contentWidth: width
             contentHeight: pageLoader.item ? pageLoader.item.implicitHeight : 0
+            onContentHeightChanged: if (root.visible) sectionScrollDelay.restart()
+            onHeightChanged: if (root.visible) sectionScrollDelay.restart()
             boundsBehavior: Flickable.StopAtBounds
             ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
             Loader {
@@ -210,7 +209,8 @@ FloatingWindow {
                 sourceComponent: Store.deviceSettingsKind === "wifi" ? wifiPage
                     : Store.deviceSettingsKind === "audio" ? audioPage
                     : Store.deviceSettingsKind === "bluetooth" ? bluetoothPage : powerPage
-                onLoaded: { root.loadedKind = Store.deviceSettingsKind; root.syncPage(); }
+                SurfaceMotion { id: pageMotion; shown: Store.deviceSettingsVisible; target: pageLoader.item; closedScale: 1 }
+                onLoaded: { root.loadedKind = Store.deviceSettingsKind; root.syncPage(); pageMotion.replay(); }
             }
         }
         RowLayout {

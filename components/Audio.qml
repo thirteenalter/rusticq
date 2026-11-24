@@ -6,7 +6,7 @@ import "../config"
 Item {
     id: root
     signal activated()
-    property int iconSlotWidth: 14
+    property int iconSlotWidth: Theme.barIconSlotSize
     property bool cleanStyle: false
     property bool showValue: true
     readonly property var sink: Pipewire.defaultAudioSink

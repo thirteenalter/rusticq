@@ -12,7 +12,10 @@ Rectangle {
     Layout.preferredWidth: implicitWidth
     Layout.preferredHeight: implicitHeight
     radius: 10
-    color: Theme.surface
+    color: pointer.containsMouse ? Qt.alpha(Theme.accent, 0.12) : Theme.surface
+    scale: pointer.pressed ? 0.98 : 1
+    Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+    Behavior on scale { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
     opacity: enabled ? 1 : 0.45
     activeFocusOnTab: true
     Accessible.role: Accessible.Button
@@ -33,7 +36,9 @@ Rectangle {
         }
     }
     MouseArea {
+        id: pointer
         anchors.fill: parent
+        hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: root.clicked()
     }

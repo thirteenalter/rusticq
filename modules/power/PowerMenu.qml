@@ -12,12 +12,14 @@ import "../../components"
 PanelWindow {
     id: root
     screen: Store.powerScreen
-    visible: Store.powerMenuVisible
+    readonly property bool presented: motion.presented
+    visible: presented
+    SurfaceMotion { id: motion; shown: Store.powerMenuVisible; target: menuCard }
     color: "transparent"
     anchors { top: true; bottom: true; left: true; right: true }
     WlrLayershell.layer: WlrLayer.Overlay
     exclusionMode: ExclusionMode.Ignore
-    focusable: true
+    focusable: Store.powerMenuVisible
     property int selectedIndex: 0
     property string confirmation: ""
     property string errorMessage: ""
@@ -57,7 +59,7 @@ PanelWindow {
         Qt.callLater(function() { keyboard.forceActiveFocus(); });
     }
     HyprlandFocusGrab {
-        active: root.visible
+        active: Store.powerMenuVisible
         windows: [root]
         onCleared: root.close()
     }
@@ -75,6 +77,7 @@ PanelWindow {
     FocusScope {
         id: keyboard
         anchors.fill: parent
+        enabled: Store.powerMenuVisible
         focus: true
         Keys.onPressed: event => {
             if (event.key === Qt.Key_Escape) { root.close(); event.accepted = true; }
@@ -93,6 +96,7 @@ PanelWindow {
         }
         Rectangle {
             anchors.fill: parent
+            opacity: motion.progress
             color: Qt.alpha("#07090b", 0.60)
             MouseArea { anchors.fill: parent; onClicked: root.close() }
         }
@@ -106,10 +110,7 @@ PanelWindow {
             color: Theme.background
             border.color: Theme.borderaccent
             border.width: 1
-            scale: root.visible ? 1 : .96
-            opacity: root.visible ? 1 : 0
-            Behavior on scale { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
-            Behavior on opacity { NumberAnimation { duration: 140 } }
+            transform: Translate { x: motion.offsetX; y: motion.offsetY }
             ColumnLayout {
                 id: menuContent
                 anchors.top: parent.top
@@ -153,7 +154,7 @@ PanelWindow {
                         }
                     }
                 }
-                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
                 Repeater {
                     model: root.actions
                     delegate: Rectangle {
@@ -216,7 +217,7 @@ PanelWindow {
                         }
                     }
                 }
-                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+                Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
                 Text {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap
                     text: root.errorMessage.length ? root.errorMessage : "↑ ↓ move · 1–6 quick select · Enter confirm · Esc close"

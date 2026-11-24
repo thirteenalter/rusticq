@@ -9,7 +9,9 @@ import "../../components"
 // GPU and I/O unavailable states are explicit, not fabricated.
 FloatingWindow {
     id: monitorWindow
-    visible: Store.systemMonitorVisible
+    readonly property bool presented: motion.presented
+    visible: presented
+    SurfaceMotion { id: motion; shown: Store.systemMonitorVisible; target: monitorWindow.contentItem; closedScale: 0.995 }
     screen: Store.monitorScreen
     title: "RusticQ · System Monitor"
     // Closing the floating window from the compositor must also reset its
@@ -25,6 +27,7 @@ FloatingWindow {
 
     ColumnLayout {
         anchors.fill: parent
+        transform: Translate { x: motion.offsetX; y: motion.offsetY }
         anchors.margins: 18
         spacing: 12
 

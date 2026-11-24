@@ -80,7 +80,7 @@ ColumnLayout {
             if (code !== 0 && !root.message) { root.failed = true; root.message = "Network request failed"; }
         }
     }
-    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+    Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
     RowLayout {
         Layout.fillWidth: true; spacing: 8
         Icon { icon: "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
@@ -98,7 +98,6 @@ ColumnLayout {
                 Text { text: "↓ Download"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
                 Text { text: root.prettyRate(root.downRate); color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
             }
-            Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: Theme.borderaccent }
             ColumnLayout { Layout.fillWidth: true; spacing: 3
                 Text { text: "↑ Upload"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
                 Text { text: root.prettyRate(root.upRate); color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
@@ -124,7 +123,7 @@ ColumnLayout {
             }
         }
     }
-    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+    Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
     RowLayout {
         id: sharingHeading
         Layout.fillWidth: true; spacing: 7
@@ -141,7 +140,7 @@ ColumnLayout {
     }
     Text { Layout.fillWidth: true; text: "Opens a full-screen QR overlay on this monitor. Automatically hidden and erased after 45 seconds.";
         wrapMode: Text.WordWrap; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
-    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+    Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
     Text { id: dnsHeading; Layout.fillWidth: true; text: "DNS settings"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
     Rectangle {
         Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9; color: Theme.surface

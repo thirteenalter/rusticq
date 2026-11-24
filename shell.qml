@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import "config"
+import "components"
 import "modules/main"
 import "modules/bar"
 import "modules/ai"
@@ -52,7 +53,7 @@ ShellRoot {
         if (action === "settings") { Store.showSettings("home", screen); return; }
         if (action.indexOf("settings-") === 0) {
             const tab = action.substring(9);
-            if (["home", "ui", "system", "wifi", "bluetooth", "audio", "power", "appearance", "bar", "modules", "widgets", "notes", "dock", "launcher", "display", "compositor", "os", "hardware", "apps", "storage", "updates", "shortcuts", "integration", "ai", "about"].indexOf(tab) >= 0)
+            if (["home", "ui", "system", "wifi", "bluetooth", "audio", "power", "clock", "appearance", "bar", "modules", "widgets", "notes", "dock", "launcher", "display", "compositor", "os", "hardware", "apps", "storage", "updates", "shortcuts", "integration", "ai", "about"].indexOf(tab) >= 0)
                 Store.showSettings(tab, screen);
             return;
         }
@@ -181,6 +182,12 @@ ShellRoot {
 
     // One server for the whole shell. Toast is rendered once, independent of monitors.
     NotificationToasts {}
+    KeepAwakeSurface {}
+
+    Variants {
+        model: Quickshell.screens
+        RecordingIndicator { required property var modelData; screen: modelData }
+    }
 
     Variants {
         model: Quickshell.screens
@@ -190,16 +197,16 @@ ShellRoot {
         model: Quickshell.screens
         RusticDock { required property var modelData; screen: modelData }
     }
-    LazyLoader {
-        active: Store.launcherVisible
+    MotionLoader {
+        shown: Store.launcherVisible
         LauncherOverlay { screen: Store.launcherScreen }
     }
-    LazyLoader {
-        active: Store.taskViewVisible
+    MotionLoader {
+        shown: Store.taskViewVisible
         TaskViewWindow {}
     }
-    LazyLoader {
-        active: Store.systemMonitorVisible
+    MotionLoader {
+        shown: Store.systemMonitorVisible
         SystemMonitorWindow {}
     }
 
@@ -207,24 +214,24 @@ ShellRoot {
     // and avoid interrupting its in-flight cloud request on presentation changes.
     // Optional: unload only the hidden AI window, not chat/session services.
     // Opt-in because closing it can cancel active replies or unsent drafts.
-    LazyLoader {
-        active: !SettingsStore.lowMemoryShellMode || Store.aiVisible
+    MotionLoader {
+        shown: Store.aiVisible
+        keepLoaded: !SettingsStore.lowMemoryShellMode
         AiWrapper {
-            visible: Store.aiVisible
             screen: Store.aiScreen
         }
     }
 
-    LazyLoader {
-        active: Store.settingsVisible
+    MotionLoader {
+        shown: Store.settingsVisible
         SettingsWindow {}
     }
-    LazyLoader {
-        active: Store.deviceSettingsVisible
+    MotionLoader {
+        shown: Store.deviceSettingsVisible
         DeviceSettingsWindow {}
     }
-    LazyLoader {
-        active: Store.powerMenuVisible
+    MotionLoader {
+        shown: Store.powerMenuVisible
         PowerMenu {}
     }
     // Keep the QR owner alive while hidden so its cleanup process can finish.
@@ -234,14 +241,14 @@ ShellRoot {
     PackageConfirmationWindow {}
     // No fake intermediate authorization overlay. Package confirmation goes
     // directly to the real, independent Polkit agent above.
-    LazyLoader {
-        active: Store.shortcutConfirmVisible
+    MotionLoader {
+        shown: Store.shortcutConfirmVisible
         ShortcutBackupConfirmationWindow {}
     }
 
 
-    LazyLoader {
-        active: Store.sidebarVisible
+    MotionLoader {
+        shown: Store.sidebarVisible
         BarWrapper {
             screen: Store.sidebarScreen
         }

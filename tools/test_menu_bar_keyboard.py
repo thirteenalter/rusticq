@@ -31,7 +31,7 @@ def function_source(name):
 
 class KeyboardMenuTests(unittest.TestCase):
     def test_popup_keyboard_focus_is_gated_by_menu_kind(self):
-        self.assertIn('grabFocus: true', POPUP)
+        self.assertIn('grabFocus: kind !== ""', POPUP)
         self.assertIn('kind === "menu"', POPUP)
         self.assertIn('widgetLoader.item.forceActiveFocus()', POPUP)
         self.assertIn('onLoaded: if (popup.kind === "menu")', POPUP)

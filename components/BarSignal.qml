@@ -17,7 +17,7 @@ Item {
         spacing: 5
         Icon {
             icon: root.kind === "mic" ? (root.muted ? "\ue02b" : "\ue029") : root.kind === "down" ? "\ue5db" : "\ue5d8"
-            font.pixelSize: Fonts.scale(17)
+            font.pixelSize: Theme.barSymbolSize
             color: root.kind === "mic" && root.muted ? Theme.muted : Theme.accent
         }
         Text {

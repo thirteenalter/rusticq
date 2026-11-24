@@ -6,25 +6,61 @@ customization, and system/device controls. Bar remains a dedicated UI page.
 Search works across both groups; the launcher also accepts `:settings wifi`,
 `:settings bluetooth`, and `:settings audio`.
 
-## Fullscreen and floating device settings
+## Compact floating device settings
 
 The normal Wi-Fi and Audio **Advanced** buttons still expand their existing
-in-panel settings. A separate Material fullscreen icon (`\ue5d0`) in the Wi-Fi,
+in-panel settings. A separate settings icon (`\ue8b8`) in the Wi-Fi,
 audio, Bluetooth and battery headers opens the selected device's settings in a
-fullscreen window on that monitor. System Settings pages have the same icon.
-The anchored popup closes before the fullscreen window opens.
+compact floating window on that monitor. System Settings pages have the same icon.
+The anchored popup closes before the device window opens. The preferred size is
+720×580, with a maximum of 840×620 clamped to the monitor. Longer content scrolls
+inside the window; device settings have no fullscreen toggle.
 
 Wi-Fi has dedicated Networks, Add Wi-Fi, Details, DNS and QR sharing buttons.
 Audio has Applications, Speakers and Microphone buttons. Buttons for sections
 already on screen keep those controls visible; longer pages scroll to the
 requested section. Back returns to the main section, then closes the window.
-The exit-fullscreen icon changes it to a movable, resizable floating window;
-the fullscreen icon restores fullscreen. This window remains separate from the
+The window remains movable and resizable within those bounds, separate from the
 full Settings overview and shares the existing device services.
 
 System settings includes Wi-Fi, Bluetooth, audio, battery/power, displays,
 compositor settings, OS/hardware information, installed applications, storage,
 updates and shortcuts. These pages reuse the existing desktop services.
+
+## Search Wi-Fi and Bluetooth by name
+
+The Wi-Fi network list and Bluetooth device list have a search field beside
+**Scan** in the popup, Quick Control and Settings. Type any part of a network
+or device name; matching ignores case and leading/trailing spaces in the query.
+Bluetooth devices without a name can be found by their displayed address.
+Results follow new scan discoveries and name changes while searching.
+
+Use the **×** button or Esc while typing to clear the search and show the full
+list again. No results shows a message; disabled or missing adapters retain
+their device status. Search clears when the card closes or its adapter changes
+or is disabled. The query belongs to that card and is not saved.
+
+## Public Wi-Fi login portal
+
+For a connected open Wi-Fi network or a detected captive portal, **Login portal**
+appears beside **Advanced Wi-Fi** (or **Back to Wi-Fi**) in the popup, Quick Control
+and Wi-Fi settings. Press it
+to reopen the public network's sign-in page when a login session expires.
+It stays hidden on ordinary private Wi-Fi. Open networks retain the manual action
+when automatic portal detection is disabled. Secured networks and networks with
+unknown security show it only when NetworkManager reports a portal and no wired
+or USB-tethered connection is active, since the native portal status covers the
+whole computer. Wi-Fi being off, disconnected or removed also hides the button.
+
+The portal status uses the existing native
+[Quickshell 0.3.1 connectivity API](https://quickshell.org/docs/v0.3.1/types/Quickshell.Networking/Networking/).
+RusticQ does not enable connectivity checking or add background polling.
+
+The button asks the default browser to open `http://neverssl.com/`, allowing the
+hotspot to redirect the HTTP request to its login page. Complete the login in the
+browser. If the hotspot does not redirect, use its provided login address. The
+button leaves the Wi-Fi connection and saved profile in place. A browser launch
+failure shows a retryable error with the address to open manually.
 
 ## Hidden Wi-Fi
 

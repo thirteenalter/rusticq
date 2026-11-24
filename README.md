@@ -21,10 +21,35 @@ RusticQ is a user-space desktop shell configuration built with **Quickshell/QML*
 
 Detailed module and feature inventory: **[FEATURES.md](FEATURES.md)**.
 
+**Bar padding:** **Settings → Bar → Bar padding editor** provides live
+Top/Bottom/Left/Right inner padding from **0–32 px**, saved independently for
+each layout, with **Reset mode**. Outer margins and icon gaps remain separate
+controls. Horizontal bars grow in height; left/right sidebars grow in width
+without squeezing their controls. Vertical bars use consistent 32 px control
+slots, inset Separated cards, a centered middle group where space permits and
+scrolling on short screens. Quick Modes expands vertically inside a sidebar,
+upward in its bottom group to keep the trigger in place when space permits.
+
 **Full Settings:** Edit → Full settings opens an overview with **All / UI / System**
 navigation. System settings now includes Wi-Fi, Bluetooth, audio and battery.
 Wi-Fi → Advanced provides hidden-network setup and a Back button; Advanced Audio
 shows application volumes and live meters. See [Wi-Fi, audio and settings](docs/WIFI-AUDIO-SETTINGS.md).
+
+**Animations:** **Settings → Appearance → Animations → Interface animations**
+turns shell motion on or off and saves the preference. Enabled by default,
+short cubic fades, slides and subtle scaling animate bar popups, Quick Control,
+AI, launcher, settings, power menu, QR overlay, notifications, OSD and dock.
+Choose **Float / Fade / Slide / Zoom / Spring** and use **Preview animation**.
+**Settings → Bar → Bar animations** sets a separate style for the bar and its
+popups. Controls, search results, accordion sizes and Quick Modes share the same timing.
+Turning it off settles active surface transitions immediately; opening and
+closing become instant. QR contents still clear as soon as closing is requested.
+
+**Bar icon size:** **Settings → Bar → Bar icon size** accepts an exact **12–32 px**
+value or a slider in 1 px steps, with a **Reset** to 16 px. The setting applies
+live across all five layouts, all four edges and monitors. Icon slots, controls
+and vertical rails grow to fit. Sizes are Qt logical pixels and independent of
+the text scale; normal display scaling still applies.
 
 **Clock & calendar:** Settings → Bar → Clock & calendar provides independent
 **Follow layout / Icon only / Text only / Icon + text** styles for the clock and
@@ -33,6 +58,48 @@ calendar. Choose a preset or enter a custom, case-sensitive Qt format; for examp
 `20:30 jumat, 13 november 2026`. `HH:mm:ss` adds live seconds. Press Enter or leave
 the format field to save. Both items have live previews, retain their existing
 popup actions and module visibility, and wrap long labels on vertical bars.
+
+**Clock timer:** click the bar clock, then **Advanced**, to open the timer. Choose a 1/5/15/25
+minute preset or enter hours, minutes and seconds, then **Start**. Pause, resume
+or reset from any monitor. The countdown continues when the popup is closed and
+posts a RusticQ notification and plays a sound when finished. **Stop** ends the
+sound. Timers belong to the current shell session and reset if the shell restarts.
+
+**Clock alarm & sound:** the clock popup's **Alarm** button sets a local 24-hour
+alarm, once or every day, with **Stop** and **Snooze 5 min** when it rings. Alarm
+settings survive restarts; snooze belongs to the current session. RusticQ must be
+running, and alarms cannot wake a sleeping computer. Overdue alarms catch up once
+after resume. In **Settings → System → Clock**, the separate **Timer & alarm sound**
+section offers Chime/Bell/Digital, a local WAV/OGG/FLAC/MP3 file, play once or loop
+until stopped, a sound test and independent **0–125%** volume (default 125%).
+Playback uses `pw-play` or `paplay`; missing files/devices show an error while
+visual alerts remain available. Clock sounds are independent of Silent/DND;
+DND suppresses toasts, and system mute still applies.
+
+**Quick Modes:** Silent uses RusticQ's own notification DND. Keep Awake holds
+system idle/sleep and Wayland idle inhibitors until disabled or the shell exits,
+including while the bar is hidden. Gaming uses an available Performance power
+profile and restores the previous profile; unsupported hardware is shown as
+unavailable. **Settings → Modules → Night Light** adjusts the temperature from
+**2000 K** (more yellow) to **6000 K** (less yellow), with presets. The preference
+applies while enabled and is saved for the next use while off.
+
+**Recording indicator:** recordings started through RusticQ show a blinking red
+dot near the top-right corner of every display, even when the bar is hidden.
+Open **Settings → Modules → Recording indicator** to choose a corner, adjust
+dot size and horizontal/vertical insets, or use a steady light. Preferences are
+saved locally. The overlay does not take focus or intercept clicks.
+
+**Calendar activities:** select a date, then **Add activity** in the compact
+agenda row below the month. A dedicated editor collects the title,
+Event/Birthday/Work/Holiday category and optional details. Saved activities
+appear as an agenda card. Marked days show a colored dot in the popup and desktop calendar.
+Use **Edit** or **Delete** to change a note. Data is local, saved in
+`user-settings.json` and shared across monitors.
+
+Decorative section dividers use spacing; card boundaries and input focus remain
+visible. Device settings open in a compact floating window (720×580 by default,
+up to 840×620, clamped to the monitor) with internal scrolling.
 
 ## Current source release — Beta 4 (`beta-4`)
 

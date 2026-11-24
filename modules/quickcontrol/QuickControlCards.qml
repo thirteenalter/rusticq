@@ -77,6 +77,7 @@ Item {
                     readonly property bool highlighted: Store.quickReorderMode && root.dragSelection === index
                     Layout.fillWidth: true
                     Layout.preferredHeight: isVisibleCard ? openedHeight : 0
+                    Behavior on Layout.preferredHeight { enabled: Theme.motionEnabled && !Store.quickReorderMode; NumberAnimation { duration: Theme.motionEnterDuration; easing.type: Easing.OutCubic } }
                     visible: isVisibleCard
                     property real startY: 0
                     Loader {

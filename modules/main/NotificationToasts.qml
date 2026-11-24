@@ -9,7 +9,25 @@ import "../../components"
 // Height comes from the laid-out content, not a fixed screen-space guess.
 PanelWindow {
     id: toastWindow
-    readonly property var notice: NotificationCenter.toast
+    property var retainedNotice: null
+    readonly property var notice: NotificationCenter.toast || retainedNotice
+    SurfaceMotion {
+        id: motion
+        shown: SettingsStore.showNotifications && NotificationCenter.toast !== null
+        target: toastSurface
+        edge: "right"
+        onPresentedChanged: if (!presented) toastWindow.retainedNotice = null
+    }
+    Connections {
+        target: NotificationCenter
+        function onToastChanged() {
+            if (NotificationCenter.toast) {
+                toastWindow.retainedNotice = NotificationCenter.toast;
+                motion.replay();
+            }
+        }
+    }
+    Component.onCompleted: if (NotificationCenter.toast) retainedNotice = NotificationCenter.toast
     readonly property bool hasImage: notice !== null && String(notice.image || "").length > 0
     readonly property int actionCount: notice && notice.actions ? Math.min(2, notice.actions.length) : 0
     readonly property string appIconSource: {
@@ -21,7 +39,7 @@ PanelWindow {
         return Quickshell.iconPath(iconName, true);
     }
 
-    visible: SettingsStore.showNotifications && notice !== null
+    visible: motion.presented
     anchors { top: true; right: true }
     exclusionMode: ExclusionMode.Ignore
     margins { top: 54; right: 16 }
@@ -30,7 +48,9 @@ PanelWindow {
     color: "transparent"
 
     Rectangle {
+        id: toastSurface
         anchors.fill: parent
+        transform: Translate { x: motion.offsetX; y: motion.offsetY }
         radius: 19
         color: Theme.background
         border.width: 1

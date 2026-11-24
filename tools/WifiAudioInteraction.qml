@@ -1,6 +1,8 @@
 import QtQuick
+import QtQuick.Window
 import QtTest
 import Quickshell
+import Quickshell.Networking
 import "../modules/bar"
 import "../components"
 import "../services"
@@ -22,7 +24,52 @@ Item {
     SettingsWindow { id: settings }
     DeviceSettingsWindow { id: devices }
     MiniAudio { id: compactAudio; x: 390; y: 450; width: 350; height: implicitHeight }
+    BarBluetooth { id: bluetoothCard; visible: false; x: 390; y: 450; width: 368; height: 336; standalone: true }
     SignalSpy { id: deviceRequests; target: Store; signalName: "deviceSettingsRequested" }
+    QtObject {
+        id: officeNetwork
+        property string name: "Office Wi-Fi"
+        property bool connected: false
+        property bool known: true
+        property int security: WifiSecurityType.Wpa2Psk
+        property int state: 0
+        property real signalStrength: 0.8
+        property int connectCalls: 0
+        signal connectionFailed(int reason)
+        function connect() { connectCalls++; }
+    }
+    QtObject {
+        id: guestNetwork
+        property string name: "Guest lounge"
+        property bool connected: false
+        property bool known: false
+        property int security: WifiSecurityType.Open
+        property int state: 0
+        property real signalStrength: 0.6
+        signal connectionFailed(int reason)
+    }
+    QtObject {
+        id: headphones
+        property string name: "Studio Headphones"
+        property string address: "11:22:33:44:55:66"
+        property bool connected: false
+        property bool paired: false
+        property bool pairing: false
+        property bool batteryAvailable: false
+        property real battery: 0
+        property int pairCalls: 0
+        function pair() { pairCalls++; }
+    }
+    QtObject {
+        id: keyboard
+        property string name: "Desk Keyboard"
+        property string address: "AA:BB:CC:DD:EE:FF"
+        property bool connected: false
+        property bool paired: true
+        property bool pairing: false
+        property bool batteryAvailable: false
+        property real battery: 0
+    }
     QtObject {
         id: playback
         property var audio: QtObject { property real volume: 0.4; property bool muted: false; property var channels: [1, 2] }
@@ -78,7 +125,24 @@ Item {
             WifiService.hiddenMessage = "";
             WifiService.hiddenFailed = false;
             WifiService.enabled = true;
+            WifiService.wifiDevice = {name: "wlan0"};
+            WifiService.connectedNetwork = null;
+            WifiService.portalDetected = false;
+            WifiService.portalCalls = 0;
+            WifiService.portalLaunchSucceeds = true;
+            wifiCard.showAdvancedNavigation = true;
             WifiService.calls = 0;
+            Fixtures.WifiFixture.device = Fixtures.WifiFixture.adapter;
+            Fixtures.WifiFixture.adapter.networks.values = [];
+            Fixtures.Bluetooth.defaultAdapter = Fixtures.Bluetooth.adapter;
+            Fixtures.Bluetooth.adapter.enabled = true;
+            Fixtures.Bluetooth.adapter.devices.values = [];
+            bluetoothCard.visible = false;
+            compactAudio.visible = true;
+            officeNetwork.connectCalls = 0;
+            guestNetwork.name = "Guest lounge";
+            headphones.pairCalls = 0;
+            keyboard.name = "Desk Keyboard";
             Pipewire.nodes.values = [];
             mixer.visible = true;
             playback.audio.volume = 0.4;
@@ -111,6 +175,75 @@ Item {
             verify(!page.visible);
             verify(!add.visible);
             verify(!wifiCard.hiddenOpen);
+        }
+        function test_wifi_name_search_live_results_clear_and_connect() {
+            const search = named("wifiNameSearch");
+            const list = named("wifiNetworkList");
+            Fixtures.WifiFixture.adapter.networks.values = [officeNetwork, guestNetwork];
+            tryCompare(list, "count", 2);
+            const input = childrenOf(search).find(item => item.objectName === "nameSearchInput");
+            input.forceActiveFocus();
+            input.insert(0, "  oFFICE  ");
+            tryCompare(list, "count", 1);
+            tryVerify(() => list.itemAtIndex(0) !== null);
+            const row = list.itemAtIndex(0);
+            compare(row.network, officeNetwork);
+            guestNetwork.name = "Office guest";
+            tryCompare(list, "count", 2);
+            compare(list.itemAtIndex(0), row);
+            guestNetwork.name = "Guest lounge";
+            tryCompare(list, "count", 1);
+            wifiCard.connectSelected(list.itemAtIndex(0).network);
+            compare(officeNetwork.connectCalls, 1);
+            search.text = "no-such-network";
+            tryCompare(list, "count", 0);
+            tryVerify(() => childrenOf(wifiCard).some(item => item.visible && item.text === "No matching networks"));
+            waitForRendering(wifiCard);
+            mouseClick(childrenOf(search).find(item => item.objectName === "clearNameSearch"));
+            compare(search.text, "");
+            tryCompare(list, "count", 2);
+            search.text = "guest";
+            Fixtures.WifiFixture.adapter.networks.values = [officeNetwork];
+            tryCompare(list, "count", 0);
+            Fixtures.WifiFixture.device = null;
+            tryCompare(search, "enabled", false);
+            compare(search.text, "");
+        }
+        function test_bluetooth_name_search_live_results_clear_and_pair() {
+            compactAudio.visible = false;
+            bluetoothCard.visible = true;
+            Fixtures.Bluetooth.adapter.devices.values = [headphones, keyboard];
+            const search = childrenOf(bluetoothCard).find(item => item.objectName === "bluetoothNameSearch");
+            const list = childrenOf(bluetoothCard).find(item => item.objectName === "bluetoothDeviceList");
+            tryCompare(list, "count", 2);
+            const input = childrenOf(search).find(item => item.objectName === "nameSearchInput");
+            input.forceActiveFocus();
+            input.insert(0, "  HEAD  ");
+            tryCompare(list, "count", 1);
+            const row = list.itemAt(0);
+            compare(row.device, headphones);
+            keyboard.name = "Head keyboard";
+            tryCompare(list, "count", 2);
+            compare(list.itemAt(0), row);
+            const pair = childrenOf(row).find(item => item.cursorShape === Qt.PointingHandCursor);
+            waitForRendering(bluetoothCard);
+            mouseClick(pair);
+            compare(headphones.pairCalls, 1);
+            search.text = "no-such-device";
+            tryCompare(list, "count", 0);
+            tryVerify(() => childrenOf(bluetoothCard).some(item => item.visible && item.text
+                && item.text.startsWith("No matching devices")));
+            waitForRendering(bluetoothCard);
+            mouseClick(childrenOf(search).find(item => item.objectName === "clearNameSearch"));
+            tryCompare(list, "count", 2);
+            compare(search.text, "");
+            search.text = "head";
+            Fixtures.Bluetooth.adapter.enabled = false;
+            tryCompare(list, "count", 0);
+            compare(search.text, "");
+            compare(search.enabled, false);
+            Fixtures.Bluetooth.defaultAdapter = null;
+            compare(search.enabled, false);
         }
         function test_hidden_validation_submit_and_clear_on_back() {
             wifiCard.showAdvanced();
@@ -148,6 +281,73 @@ Item {
             form.submit();
             compare(WifiService.calls, 1);
             compare(named("hiddenConnectButton").enabled, false);
+        }
+        function test_portal_reopen_and_adapter_removal() {
+            const button = named("wifiPortalButton");
+            verify(!button.visible);
+            wifiCard.openPortal();
+            compare(WifiService.portalCalls, 0);
+            for (const security of [WifiSecurityType.WpaPsk, WifiSecurityType.Wpa2Psk,
+                                    WifiSecurityType.Sae, WifiSecurityType.Unknown]) {
+                WifiService.connectedNetwork = {name: "Private Wi-Fi", security: security};
+                verify(!button.visible);
+                wifiCard.openPortal();
+            }
+            compare(WifiService.portalCalls, 0);
+            for (const security of [WifiSecurityType.Open, WifiSecurityType.Wpa2Psk, WifiSecurityType.Unknown]) {
+                WifiService.portalDetected = security !== WifiSecurityType.Open;
+                WifiService.connectedNetwork = {name: "Public hotspot", security: security};
+                tryCompare(button, "visible", true);
+                mouseClick(button);
+            }
+            compare(WifiService.portalCalls, 3);
+            wifiCard.showAdvanced();
+            verify(button.visible);
+            waitForRendering(wifiCard);
+            wifiCard.Window.window.requestActivate();
+            button.forceActiveFocus();
+            tryCompare(button, "activeFocus", true);
+            keyClick(Qt.Key_Space);
+            compare(WifiService.portalCalls, 4);
+            verify(button.x + button.width <= wifiCard.width);
+            verify(named("wifiAdvancedNavigation").width > 120);
+            const folder = Quickshell.env("RUSTICQ_UI_CAPTURE_DIR");
+            if (folder && folder.length) grabImage(wifiCard).save(folder + "/wifi-portal.png");
+            WifiService.enabled = false;
+            tryCompare(button, "visible", false);
+            WifiService.enabled = true;
+            tryCompare(button, "visible", true);
+            WifiService.wifiDevice = null;
+            tryCompare(button, "visible", false);
+            wifiCard.openPortal();
+            compare(WifiService.portalCalls, 4);
+        }
+        function test_portal_browser_error_retry_and_navigation() {
+            WifiService.connectedNetwork = {name: "Public hotspot", security: WifiSecurityType.Open};
+            const button = named("wifiPortalButton");
+            const error = named("wifiPortalError");
+            tryCompare(button, "visible", true);
+            WifiService.portalLaunchSucceeds = false;
+            mouseClick(button);
+            tryCompare(error, "visible", true);
+            verify(error.text.includes("http://neverssl.com/"));
+            WifiService.portalLaunchSucceeds = true;
+            mouseClick(button);
+            tryCompare(error, "visible", false);
+            compare(WifiService.portalCalls, 2);
+            // The device window hides Advanced navigation; portal stays usable.
+            wifiCard.showAdvancedNavigation = false;
+            verify(button.visible);
+            mouseClick(button);
+            compare(WifiService.portalCalls, 3);
+            WifiService.portalLaunchSucceeds = false;
+            mouseClick(button);
+            verify(error.visible);
+            WifiService.connectedNetwork = null;
+            tryCompare(button, "visible", false);
+            compare(wifiCard.portalError, "");
+            wifiCard.openPortal();
+            compare(WifiService.portalCalls, 4);
         }
         function test_audio_playback_filter_names_volume_and_mute() {
             Pipewire.nodes.values = [speaker, microphone, playback];
@@ -201,7 +401,7 @@ Item {
             const folder = Quickshell.env("RUSTICQ_UI_CAPTURE_DIR");
             if (folder && folder.length) grabImage(devices.contentItem).save(folder + "/" + name + ".png");
         }
-        function test_wifi_fullscreen_icon_and_feature_buttons() {
+        function test_wifi_compact_window_and_feature_buttons() {
             wifiCard.popupScreen = null;
             Store.sidebarVisible = true;
             mouseClick(named("wifiFullscreenButton"));
@@ -210,7 +410,10 @@ Item {
             compare(Store.sidebarVisible, false);
             compare(deviceRequests.count, 1);
             tryCompare(Store, "deviceSettingsVisible", true);
-            tryCompare(devices, "fullscreen", true);
+            tryCompare(devices, "fullscreen", false);
+            verify(devices.height <= 620);
+            verify(devices.maximumSize.height <= 620);
+            compare(deviceNamed("toggleDeviceFullscreen"), undefined);
             tryCompare(devices, "loadedKind", "wifi");
             waitForRendering(devices.contentItem);
             const loader = deviceNamed("deviceSettingsPageLoader");
@@ -229,20 +432,21 @@ Item {
             compare(form.password, "");
             wait(40);
             const wifiScroll = deviceNamed("deviceSettingsScroll");
-            if (wifiScroll.contentHeight > wifiScroll.height) verify(wifiScroll.contentY > 0);
+            if (wifiScroll.contentHeight > wifiScroll.height) tryVerify(() => wifiScroll.contentY > 0, 1000);
             mouseClick(deviceNamed("deviceSettingsBack"));
             tryCompare(Store, "deviceSettingsSection", "networks");
             compare(loader.item.advancedOpen, false);
             mouseClick(deviceNamed("closeDeviceSettings"));
             tryCompare(Store, "deviceSettingsVisible", false);
         }
-        function test_audio_fullscreen_icon_and_jumps_to_sections() {
+        function test_audio_compact_window_and_jumps_to_sections() {
             const button = childrenOf(compactAudio).find(item => item.objectName === "audioFullscreenButton");
             mouseClick(button);
             tryCompare(Store, "deviceSettingsVisible", true);
             compare(Store.deviceSettingsKind, "audio");
             compare(compactAudio.advancedOpen, false);
-            tryCompare(devices, "fullscreen", true);
+            tryCompare(devices, "fullscreen", false);
+            verify(devices.height <= 620);
             tryCompare(devices, "loadedKind", "audio");
             waitForRendering(devices.contentItem);
             mouseClick(deviceNamed("deviceFeature_output"));
@@ -256,8 +460,6 @@ Item {
             tryCompare(Store, "deviceSettingsSection", "microphone");
             wait(40);
             verify(scroll.contentY >= outputY);
-            mouseClick(deviceNamed("toggleDeviceFullscreen"));
-            tryCompare(devices, "fullscreen", false);
             mouseClick(deviceNamed("deviceCategory_bluetooth"));
             tryCompare(devices, "loadedKind", "bluetooth");
             mouseClick(deviceNamed("deviceCategory_power"));

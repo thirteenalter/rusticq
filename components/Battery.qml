@@ -6,7 +6,7 @@ import "../services"
 Item {
     id: root
     signal activated()
-    property int iconSlotWidth: 14
+    property int iconSlotWidth: Theme.barIconSlotSize
     property bool cleanStyle: false
     property bool showValue: true
     readonly property color statusColor: BatteryService.percentage <= 15 && !BatteryService.charging

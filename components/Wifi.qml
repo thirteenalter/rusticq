@@ -6,7 +6,7 @@ import "../services"
 Item {
     id: root
     signal activated()
-    property int iconSlotWidth: 14
+    property int iconSlotWidth: Theme.barIconSlotSize
     property bool cleanStyle: false
     property bool forceDetails: false
     readonly property color statusColor: WifiService.ethernetConnected ? Theme.foreground :

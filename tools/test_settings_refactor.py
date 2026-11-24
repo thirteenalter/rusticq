@@ -11,7 +11,7 @@ def source(path):
     return p.read_text()
 
 section = source('modules/settings/SettingsSection.qml')
-assert 'implicitHeight: content.implicitHeight + 30' in section
+assert 'implicitHeight: content.implicitHeight + Theme.sectionPadding * 2' in section
 assert 'default property alias controls: content.data' in section
 win = source('modules/settings/SettingsWindow.qml')
 assert 'contentHeight: pageLoader.item ? pageLoader.item.implicitHeight + 16 : 0' in win
@@ -35,8 +35,8 @@ assert 'Math.min(SettingsStore.launcherWidth,' in overlay  # configurable launch
 assert 'Store.launcherVisible' in overlay
 assert 'WlrLayer.Overlay' in overlay
 launcher=source('modules/main/MiniLauncher.qml')
-assert 'DesktopEntries.applications' in launcher and 'results = found' in launcher
-assert 'onQueryChanged: rebuild()' in launcher
+assert 'DesktopEntries.applications' in launcher and 'results = ordered' in launcher
+assert re.search(r'onQueryChanged:\s*\{[^}]*rebuild\(\)', launcher)
 assert 'root.results' in launcher
 shell=source('shell.qml')
 assert 'LauncherOverlay { screen: Store.launcherScreen }' in shell

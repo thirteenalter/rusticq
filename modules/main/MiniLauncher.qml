@@ -390,11 +390,10 @@ Rectangle {
             }
         }
 
-        Rectangle {
+        Item {
             Layout.fillWidth: true
             visible: root.showResults
-            Layout.preferredHeight: visible ? 1 : 0
-            color: Theme.borderaccent
+            Layout.preferredHeight: visible ? Theme.sectionGap : 0
         }
 
         ColumnLayout {

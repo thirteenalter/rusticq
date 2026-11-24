@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Bluetooth as Native
 import "../../config"
 import "../../components"
@@ -15,12 +16,21 @@ Rectangle {
     property var targetScreen: null
     readonly property bool contentOpen: standalone || expanded
     readonly property var adapter: Native.Bluetooth.defaultAdapter
+    readonly property var availableDevices: adapter && adapter.enabled ? adapter.devices.values : []
     Layout.preferredHeight: contentOpen ? 336 : 68
     radius: Theme.sectionRadius
     color: Qt.alpha(Theme.foreground, 0.02)
     border.width: 1
     border.color: Theme.borderaccent
     clip: true
+
+    onContentOpenChanged: if (!contentOpen) bluetoothSearch.text = ""
+    onVisibleChanged: if (!visible) bluetoothSearch.text = ""
+    onAdapterChanged: bluetoothSearch.text = ""
+    Connections {
+        target: root.adapter
+        function onEnabledChanged() { if (!root.adapter.enabled) bluetoothSearch.text = ""; }
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -44,10 +54,10 @@ Rectangle {
                 visible: root.showSettingsButton
                 kind: "bluetooth"
                 section: "devices"
-                label: "Open Bluetooth fullscreen"
-                symbol: "\ue5d0"
+                label: "Open Bluetooth settings"
+                symbol: "\ue8b8"
                 iconOnly: true
-                fullscreen: true
+                fullscreen: false
                 targetScreen: root.targetScreen
             }
         }
@@ -88,7 +98,7 @@ Rectangle {
                         x: root.adapter && root.adapter.enabled ? parent.width - width - 2 : 2
                         anchors.verticalCenter: parent.verticalCenter
                         color: Theme.foreground
-                        Behavior on x { NumberAnimation { duration: 140 } }
+                        Behavior on x { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -101,12 +111,13 @@ Rectangle {
 
             RowLayout {
                 Layout.fillWidth: true
-                Text {
-                    text: "Devices"
+                NameSearchField {
+                    id: bluetoothSearch
+                    objectName: "bluetoothNameSearch"
                     Layout.fillWidth: true
-                    color: Theme.foreground
-                    font.family: Fonts.poppinsSB.name
-                    font.pixelSize: Fonts.scale(12)
+                    placeholder: "Search Bluetooth by name"
+                    enabled: root.adapter !== null && root.adapter.enabled
+                    onTextChanged: bluetoothScroll.contentY = 0
                 }
                 ScanButton {
                     enabled: root.adapter !== null && root.adapter.enabled
@@ -116,7 +127,15 @@ Rectangle {
             }
 
             Repeater {
-                model: root.adapter && root.adapter.enabled ? root.adapter.devices : null
+                id: deviceList
+                objectName: "bluetoothDeviceList"
+                model: ScriptModel {
+                    comparisonMode: ObjectComparison.Identity
+                    values: {
+                        const query = bluetoothSearch.query;
+                        return root.availableDevices.filter(device => (device.name || device.address || "").toLowerCase().includes(query));
+                    }
+                }
                 delegate: Rectangle {
                     id: deviceRow
                     required property var modelData
@@ -185,9 +204,11 @@ Rectangle {
 
             Text {
                 Layout.fillWidth: true
-                visible: !root.adapter || !root.adapter.enabled || root.adapter.devices.values.length === 0
+                visible: deviceList.count === 0
                 text: !root.adapter ? "No adapter found. Check BlueZ and rfkill." :
                       !root.adapter.enabled ? "Turn Bluetooth on to discover devices." :
+                      bluetoothSearch.query.length > 0 && root.availableDevices.length > 0
+                          ? "No matching devices. Try another name or clear the search." :
                       root.adapter.discovering ? "Scanning for nearby devices…" : "No devices found. Select Scan."
                 color: Theme.muted
                 wrapMode: Text.WordWrap

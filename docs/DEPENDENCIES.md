@@ -23,6 +23,7 @@ The machine-readable source of truth is [`config/dependencies.json`](../config/d
 | Battery | `upower` | Not meaningful on many desktops. |
 | Audio | `pipewire`, `wireplumber` | Existing desktop audio session may already provide these. |
 | Application audio meters | `pipewire-audio` (`pw-cat`) | Fallback for unnamed stream channels on Quickshell 0.3.1; samples stay in memory. |
+| Clock timer/alarm sounds | `pipewire-audio` (`pw-play`) or PulseAudio's `paplay` | Local files and synthesized presets, loop/stop and per-stream volume up to 125%; no system volume changes. |
 | Media keys | `playerctl` | App must support MPRIS. |
 | Brightness | `brightnessctl` | Supported sysfs/hardware permissions required. |
 | Screenshots | `grim`, `slurp` | Region selection uses Slurp. |

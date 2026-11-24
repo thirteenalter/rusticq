@@ -12,6 +12,9 @@ import "../../services"
 // never a Hyprland tiled application or an expanding text input.
 PanelWindow {
     id: panel
+    readonly property bool presented: motion.presented
+    visible: presented
+    SurfaceMotion { id: motion; shown: Store.aiVisible; target: aiSurface; edge: panel.fullMode ? "center" : "left" }
     readonly property bool fullMode: Store.aiFullMode
     anchors { top: true; left: true; bottom: true; right: panel.fullMode }
     margins { left: panel.fullMode ? 0 : 10; top: panel.fullMode ? 0 : 50; bottom: panel.fullMode ? 0 : 50; right: 0 }
@@ -19,12 +22,12 @@ PanelWindow {
     color: "transparent"
     aboveWindows: true
     exclusionMode: ExclusionMode.Ignore
-    focusable: true
+    focusable: Store.aiVisible
     WlrLayershell.layer: panel.fullMode ? WlrLayer.Overlay : WlrLayer.Top
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
     HyprlandFocusGrab {
-        active: panel.visible && !panel.fullMode
+        active: Store.aiVisible && !panel.fullMode
         windows: [panel]
         onCleared: Store.aiVisible = false
     }
@@ -89,7 +92,9 @@ PanelWindow {
     }
 
     Rectangle {
+        id: aiSurface
         anchors.fill: parent
+        transform: Translate { x: motion.offsetX; y: motion.offsetY }
         color: Theme.background
         radius: panel.fullMode ? 0 : Theme.sectionRadius
         border.width: panel.fullMode ? 0 : 1
@@ -150,7 +155,7 @@ PanelWindow {
                     Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Session history stays in memory · Requests go to your selected provider."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                 }
             }
-            Rectangle { visible: panel.fullMode; Layout.preferredWidth: panel.fullMode ? 1 : 0; Layout.fillHeight: true; color: Theme.borderaccent }
+            Item { visible: panel.fullMode; Layout.preferredWidth: panel.fullMode ? Theme.sectionGap : 0; Layout.fillHeight: true }
 
             Item {
                 id: conversationPane
@@ -207,7 +212,7 @@ PanelWindow {
                             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { panel.modelPickerOpen = !panel.modelPickerOpen; panel.providerPickerOpen = false; } }
                         }
                     }
-                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; Layout.maximumHeight: 1; color: Theme.borderaccent }
+                    Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
                     Item {
                         Layout.fillWidth: true; Layout.fillHeight: true; Layout.minimumHeight: 0
                         clip: true

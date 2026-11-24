@@ -24,6 +24,7 @@ Item {
             height: parent.height
             radius: 4
             color: root.adjustable ? Theme.accent : Theme.muted
+            Behavior on width { enabled: Theme.motionEnabled && !pointer.pressed; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
         }
     }
     Rectangle {
@@ -31,8 +32,12 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 15; height: 15; radius: 8
         color: Theme.foreground
+        scale: pointer.pressed ? 1.12 : 1
+        Behavior on x { enabled: Theme.motionEnabled && !pointer.pressed; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
+        Behavior on scale { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
     }
     MouseArea {
+        id: pointer
         anchors.fill: parent
         enabled: root.adjustable
         cursorShape: Qt.PointingHandCursor

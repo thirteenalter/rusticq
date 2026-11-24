@@ -10,7 +10,9 @@ import "../../components"
 FloatingWindow {
     id: root
     screen: Store.confirmationScreen
-    visible: Store.confirmationVisible
+    readonly property bool presented: motion.presented
+    visible: presented
+    SurfaceMotion { id: motion; shown: Store.confirmationVisible; target: root.contentItem; closedScale: 0.995 }
     title: "RusticQ · Package Confirmation"
     implicitWidth: 510
     implicitHeight: (removing ? 418 : 370) + (Store.confirmationProvider === "yay" ? 36 : 0)

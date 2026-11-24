@@ -44,10 +44,10 @@ Rectangle {
                 visible: root.showSettingsButton
                 kind: "power"
                 section: "status"
-                label: "Open battery settings fullscreen"
-                symbol: "\ue5d0"
+                label: "Open battery settings"
+                symbol: "\ue8b8"
                 iconOnly: true
-                fullscreen: true
+                fullscreen: false
                 targetScreen: root.targetScreen
             }
         }

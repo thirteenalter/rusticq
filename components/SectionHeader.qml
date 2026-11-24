@@ -38,7 +38,7 @@ Item {
             font.pixelSize: Fonts.scale(21)
             Layout.preferredWidth: 23
             rotation: root.expanded ? 180 : 0
-            Behavior on rotation { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+            Behavior on rotation { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
         }
     }
     MouseArea {

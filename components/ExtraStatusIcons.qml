@@ -33,7 +33,7 @@ Pill {
                 spacing: 5
                 Icon {
                     icon: QuickModesService.active("mic") ? "\ue02b" : "\ue029"
-                    font.pixelSize: compact ? 16 : 17
+                    font.pixelSize: Theme.barSymbolSize
                     color: QuickModesService.active("mic") ? Theme.warning : Theme.foreground
                 }
                 Text {
@@ -59,7 +59,7 @@ Pill {
             RowLayout {
                 id: downRow
                 spacing: 5
-                Icon { icon: "\ue5db"; font.pixelSize: compact ? 16 : 17; color: Theme.accent }
+                Icon { icon: "\ue5db"; font.pixelSize: Theme.barSymbolSize; color: Theme.accent }
                 Text {
                     visible: root.showDetails
                     text: SystemMetrics.speed(SystemMetrics.rxPerSec)
@@ -77,7 +77,7 @@ Pill {
             RowLayout {
                 id: upRow
                 spacing: 5
-                Icon { icon: "\ue5d8"; font.pixelSize: compact ? 16 : 17; color: Theme.accent }
+                Icon { icon: "\ue5d8"; font.pixelSize: Theme.barSymbolSize; color: Theme.accent }
                 Text {
                     visible: root.showDetails
                     text: SystemMetrics.speed(SystemMetrics.txPerSec)

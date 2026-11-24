@@ -54,6 +54,7 @@ SETTINGS = [
     ('bluetooth','Bluetooth','Scan, pair and connect wireless devices'),
     ('audio','Audio','Speakers, microphone, application mixer and live meters'),
     ('power','Battery & Power','Charge status and power profiles'),
+    ('clock','Clock','Alarms, timer sounds, repeat, volume and clock format'),
     ('appearance','Appearance','Theme, fonts, accents'),
     ('bar','Bar','Layouts, alignment and spacing'),
     ('modules','Modules','Per-layout icon visibility'),

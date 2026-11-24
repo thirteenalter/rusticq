@@ -33,6 +33,13 @@ ColumnLayout {
                color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap }
     }
     SettingsSection {
+        heading: "Bar animations"
+        description: "Choose a separate style for the bar and its popups. Float combines fading and sliding; Spring adds a soft settle. The global switch is in Appearance."
+        symbol: "\ue9d9"
+        MotionStylePicker { settingKey: "barAnimationStyle" }
+    }
+    BarIconSizeEditor {}
+    SettingsSection {
         heading: "Bar position"
         description: "Choose an edge. Left and Right use a vertical rail."
         symbol: "\ue30b"
@@ -119,6 +126,8 @@ ColumnLayout {
             }
         }
     }
+
+    BarPaddingEditor {}
 
     SettingsSection {
         heading: "Clock & calendar"

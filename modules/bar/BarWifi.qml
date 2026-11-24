@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Networking
 import "../../config"
 import "../../components"
@@ -30,12 +31,15 @@ Rectangle {
     implicitHeight: standalone || advancedOpen ? wifiContent.implicitHeight + 2 * Theme.sectionPadding : 0
 
     WifiManager { id: manager }
+    readonly property var availableNetworks: manager.wifiDevice && manager.wifiEnabled && manager.wifiHardwareEnabled
+        ? manager.wifiDevice.networks.values : []
 
     property var activeNetwork: null
     property var passwordNetwork: null
     property string passwordText: ""
     property var errorNetwork: null
     property string errorText: ""
+    property string portalError: ""
 
     function resetState() {
         hiddenOpen = false;
@@ -44,15 +48,18 @@ Rectangle {
         passwordText = "";
         errorNetwork = null;
         errorText = "";
+        portalError = "";
     }
 
     onContentOpenChanged: if (!contentOpen) {
         advancedOpen = false;
         resetState();
+        wifiSearch.text = "";
     }
     onVisibleChanged: if (!visible) {
         advancedOpen = false;
         resetState();
+        wifiSearch.text = "";
     }
 
     function showAdvanced() {
@@ -107,13 +114,34 @@ Rectangle {
         passwordNetwork = null;
     }
 
+    function openPortal() {
+        if (!WifiService.portalAvailable) return;
+        portalError = WifiService.openPortal() ? ""
+            : "Could not open the browser. Open http://neverssl.com/ to sign in to public Wi-Fi.";
+    }
+
+    Connections {
+        target: WifiService
+        function onConnectedNetworkChanged() { wifiWidget.portalError = ""; }
+    }
+
     Connections {
         target: manager
         function onWifiEnabledChanged() {
-            if (!manager.wifiEnabled) wifiWidget.resetState();
+            if (!manager.wifiEnabled) {
+                wifiWidget.resetState();
+                wifiSearch.text = "";
+            }
+        }
+        function onWifiHardwareEnabledChanged() {
+            if (!manager.wifiHardwareEnabled) {
+                wifiWidget.resetState();
+                wifiSearch.text = "";
+            }
         }
         function onWifiDeviceChanged() {
             wifiWidget.resetState();
+            wifiSearch.text = "";
         }
     }
 
@@ -141,10 +169,10 @@ Rectangle {
                 visible: !wifiWidget.fullSettings
                 kind: "wifi"
                 section: "details"
-                label: "Open Wi-Fi fullscreen"
-                symbol: "\ue5d0"
+                label: "Open Wi-Fi settings"
+                symbol: "\ue8b8"
                 iconOnly: true
-                fullscreen: true
+                fullscreen: false
                 targetScreen: wifiWidget.popupScreen || Store.sidebarScreen
             }
         }
@@ -170,7 +198,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     x: manager.wifiEnabled ? parent.width - width - 2 : 2
                     color: Theme.foreground
-                    Behavior on x { NumberAnimation { duration: 140 } }
+                    Behavior on x { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                 }
                 MouseArea {
                     anchors.fill: parent
@@ -183,12 +211,18 @@ Rectangle {
         RowLayout {
             visible: wifiWidget.contentOpen && !wifiWidget.advancedOpen
             Layout.fillWidth: true
-            Text {
+            NameSearchField {
+                id: wifiSearch
+                objectName: "wifiNameSearch"
                 Layout.fillWidth: true
-                text: "Networks"
-                color: Theme.foreground
-                font.family: Fonts.poppinsSB.name
-                font.pixelSize: Theme.controlTextSize
+                placeholder: "Search Wi-Fi by name"
+                enabled: manager.wifiEnabled && manager.wifiHardwareEnabled && manager.wifiDevice !== null
+                onTextChanged: {
+                    wifiWidget.activeNetwork = null;
+                    wifiWidget.passwordNetwork = null;
+                    wifiWidget.passwordText = "";
+                    Qt.callLater(function() { wifiList.positionViewAtBeginning(); });
+                }
             }
             ScanButton {
                 enabled: manager.wifiEnabled && manager.wifiHardwareEnabled && manager.wifiDevice !== null
@@ -197,29 +231,55 @@ Rectangle {
             }
         }
 
-        Rectangle {
-            objectName: "wifiAdvancedNavigation"
-            visible: wifiWidget.contentOpen && wifiWidget.showAdvancedNavigation
+        RowLayout {
+            visible: wifiWidget.contentOpen && (wifiWidget.showAdvancedNavigation || WifiService.portalAvailable)
             Layout.fillWidth: true
             Layout.preferredHeight: 34
-            radius: Theme.rowRadius
-            color: Theme.surface
-            activeFocusOnTab: true
-            Accessible.role: Accessible.Button
-            Accessible.name: wifiWidget.advancedOpen ? "Back to Wi-Fi" : "Advanced Wi-Fi"
-            function navigate() {
-                if (wifiWidget.advancedOpen) wifiWidget.showNetworks();
-                else wifiWidget.showAdvanced();
+            spacing: 8
+            Rectangle {
+                objectName: "wifiAdvancedNavigation"
+                visible: wifiWidget.showAdvancedNavigation
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius: Theme.rowRadius
+                color: Theme.surface
+                activeFocusOnTab: true
+                Accessible.role: Accessible.Button
+                Accessible.name: wifiWidget.advancedOpen ? "Back to Wi-Fi" : "Advanced Wi-Fi"
+                function navigate() {
+                    if (wifiWidget.advancedOpen) wifiWidget.showNetworks();
+                    else wifiWidget.showAdvanced();
+                }
+                Accessible.onPressAction: navigate()
+                Keys.onReturnPressed: navigate()
+                Keys.onSpacePressed: navigate()
+                RowLayout { anchors.centerIn: parent; spacing: 7
+                    Icon { icon: wifiWidget.advancedOpen ? "\ue5c4" : "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
+                    Text { text: wifiWidget.advancedOpen ? "Back to Wi-Fi" : "Advanced Wi-Fi";
+                        color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: parent.navigate() }
             }
-            Accessible.onPressAction: navigate()
-            Keys.onReturnPressed: navigate()
-            Keys.onSpacePressed: navigate()
-            RowLayout { anchors.centerIn: parent; spacing: 7
-                Icon { icon: wifiWidget.advancedOpen ? "\ue5c4" : "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
-                Text { text: wifiWidget.advancedOpen ? "Back to Wi-Fi" : "Advanced Wi-Fi";
-                    color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+            ActionButton {
+                objectName: "wifiPortalButton"
+                visible: WifiService.portalAvailable
+                enabled: WifiService.portalAvailable
+                Layout.fillWidth: !wifiWidget.showAdvancedNavigation
+                Layout.fillHeight: true
+                label: "Login portal"
+                symbol: "\ue89e"
+                onClicked: wifiWidget.openPortal()
             }
-            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: parent.navigate() }
+        }
+        Text {
+            objectName: "wifiPortalError"
+            visible: wifiWidget.contentOpen && WifiService.portalAvailable && wifiWidget.portalError.length > 0
+            Layout.fillWidth: true
+            text: wifiWidget.portalError
+            wrapMode: Text.WordWrap
+            color: Theme.error
+            font.family: Fonts.poppins.name
+            font.pixelSize: Theme.helperTextSize
         }
 
         Flickable {
@@ -290,7 +350,25 @@ Rectangle {
                                         Math.max(84, contentHeight + 4, Math.min(300, count * 70 + 8))) : -1
             clip: true
             spacing: 8
-            model: manager.wifiDevice ? manager.wifiDevice.networks : null
+            model: ScriptModel {
+                comparisonMode: ObjectComparison.Identity
+                values: {
+                    const query = wifiSearch.query;
+                    return wifiWidget.availableNetworks.filter(network => (network.name || "").toLowerCase().includes(query));
+                }
+            }
+            add: Transition {
+                enabled: Theme.motionEnabled
+                NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.motionEnterDuration; easing.type: Easing.OutCubic }
+            }
+            remove: Transition {
+                enabled: Theme.motionEnabled
+                NumberAnimation { properties: "opacity"; to: 0; duration: Theme.motionExitDuration; easing.type: Easing.OutCubic }
+            }
+            displaced: Transition {
+                enabled: Theme.motionEnabled
+                NumberAnimation { properties: "x,y"; duration: Theme.motionEnterDuration; easing.type: Easing.OutCubic }
+            }
 
             delegate: Rectangle {
                 id: networkItem
@@ -552,6 +630,7 @@ Rectangle {
 
             Column {
                 anchors.centerIn: parent
+                width: parent.width
                 visible: wifiList.count === 0
                 spacing: 8
                 Icon {
@@ -561,17 +640,27 @@ Rectangle {
                     color: Theme.muted
                 }
                 Text {
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
                     text: !manager.wifiDevice ? "No Wi-Fi adapter found" :
                           !manager.wifiHardwareEnabled ? "Wi-Fi hardware disabled" :
-                          !manager.wifiEnabled ? "Wi-Fi is off" : "No networks found"
+                          !manager.wifiEnabled ? "Wi-Fi is off" :
+                          wifiSearch.query.length > 0 && wifiWidget.availableNetworks.length > 0
+                              ? "No matching networks" : "No networks found"
                     color: Theme.muted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Theme.controlTextSize
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: manager.wifiEnabled && manager.wifiDevice !== null
-                    text: manager.scanning ? "Scanning for networks…" : "Select Scan to find networks"
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    visible: manager.wifiEnabled && manager.wifiHardwareEnabled && manager.wifiDevice !== null
+                    text: wifiSearch.query.length > 0 && wifiWidget.availableNetworks.length > 0
+                          ? "Try another name or clear the search" :
+                          manager.scanning ? "Scanning for networks…" : "Select Scan to find networks"
                     color: Theme.muted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Theme.helperTextSize

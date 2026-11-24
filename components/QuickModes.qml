@@ -6,11 +6,24 @@ import "../services"
 
 FocusScope {
     id: root
+    clip: true
+    Behavior on implicitWidth { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionEnterDuration; easing.type: Easing.OutCubic } }
+    // Keep the vertical trigger fixed under the pointer; animate its contents
+    // rather than reflowing the bottom-anchored rail on every animation frame.
+    Behavior on implicitHeight { enabled: Theme.motionEnabled && !root.vertical; NumberAnimation { duration: Theme.motionEnterDuration; easing.type: Easing.OutCubic } }
     property var targetScreen: null
     property bool backgroundEnabled: true
-    property int controlHeight: 24
+    property bool vertical: false
+    property bool expandUp: false
+    property int controlHeight: Math.max(24, Theme.barSymbolSize + 8)
     property bool revealed: false
     property var hoveredButton: null
+    property var retainedTooltipAnchor: null
+    property string retainedTooltipHint: ""
+    onHoveredButtonChanged: if (hoveredButton) {
+        retainedTooltipAnchor = hoveredButton;
+        retainedTooltipHint = hoveredButton.hint;
+    }
     readonly property bool expanded: !SettingsStore.quickModesAutoHide || revealed || activeFocus
     readonly property var modes: [
         { key: "awake", title: "Keep Awake", icon: "\ue541", show: SettingsStore.modeIconVisible("showKeepAwake") },
@@ -20,8 +33,9 @@ FocusScope {
         { key: "mic", title: "Mute Microphone", icon: "\ue02b", show: SettingsStore.modeIconVisible("showMicMute") }
     ].filter(mode => mode.show)
     readonly property bool hasModules: modes.length > 0
-    implicitWidth: 28 + (expanded && hasModules ? modeButtons.implicitWidth + 8 : 0)
-    implicitHeight: controlHeight
+    readonly property int buttonWidth: vertical ? controlHeight : Math.max(28, Theme.barSymbolSize + 12)
+    implicitWidth: vertical ? buttonWidth : buttonWidth + (expanded && hasModules ? modeButtons.implicitWidth + 8 : 0)
+    implicitHeight: vertical && expanded && hasModules ? controlHeight + modeButtons.implicitHeight + 8 : controlHeight
 
     Connections {
         target: Store
@@ -67,13 +81,22 @@ FocusScope {
         radius: height / 2
         color: root.backgroundEnabled ? Theme.borderaccent : "transparent"
     }
-    RowLayout {
+    GridLayout {
         id: modeButtons
-        anchors.right: trigger.left
-        anchors.rightMargin: 8
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 4
-        visible: root.expanded
+        anchors.right: root.vertical ? undefined : trigger.left
+        anchors.rightMargin: root.vertical ? 0 : 8
+        anchors.top: root.vertical && !root.expandUp ? trigger.bottom : undefined
+        anchors.topMargin: root.vertical && !root.expandUp ? 8 : 0
+        anchors.bottom: root.vertical && root.expandUp ? trigger.top : undefined
+        anchors.bottomMargin: root.vertical && root.expandUp ? 8 : 0
+        anchors.horizontalCenter: root.vertical ? parent.horizontalCenter : undefined
+        anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
+        columns: root.vertical ? 1 : Math.max(1, root.modes.length)
+        rowSpacing: 4
+        columnSpacing: 4
+        visible: gridMotion.presented
+        transform: Translate { x: gridMotion.offsetX; y: gridMotion.offsetY }
+        SurfaceMotion { id: gridMotion; shown: root.expanded; target: parent; edge: root.vertical ? (root.expandUp ? "bottom" : "top") : "right"; closedScale: 1 }
         Repeater {
             model: root.modes
             delegate: Rectangle {
@@ -81,15 +104,17 @@ FocusScope {
                 required property var modelData
                 readonly property bool on: QuickModesService.active(modelData.key)
                 readonly property bool available: QuickModesService.available(modelData.key)
-                readonly property bool pending: QuickModesService.busy && (modelData.key === "silent" || modelData.key === "night")
+                readonly property bool pending: (QuickModesService.busy && modelData.key === "night")
+                    || (QuickModesService.gamingPending && modelData.key === "gaming")
                 readonly property string hint: modelData.title + " · " + (available ? (on ? "On" : "Off") : "Unavailable")
                     + "\n" + QuickModesService.detail(modelData.key)
-                Layout.preferredWidth: 28
+                Layout.preferredWidth: root.buttonWidth
                 Layout.preferredHeight: root.controlHeight
                 activeFocusOnTab: true
                 radius: height / 2
                 color: root.backgroundEnabled && (on || buttonMouse.containsMouse || activeFocus)
                     ? Qt.alpha(Theme.accent, 0.18) : "transparent"
+                Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
                 Accessible.role: Accessible.CheckBox
                 Accessible.name: modelData.title
                 Accessible.checked: on
@@ -99,14 +124,14 @@ FocusScope {
                 Keys.onReturnPressed: if (available && !pending) QuickModesService.toggle(modelData.key)
                 Rectangle {
                     anchors.centerIn: parent
-                    width: 20
-                    height: 20
+                    width: Math.max(20, Theme.barSymbolSize + 4)
+                    height: width
                     radius: 10
                     color: modeButton.on ? Qt.alpha(Theme.accent, 0.16) : "transparent"
                     Icon {
                         anchors.centerIn: parent
                         icon: modeButton.modelData.icon
-                        font.pixelSize: Fonts.scale(16)
+                        font.pixelSize: Theme.barSymbolSize
                         color: modeButton.on || modeButton.activeFocus ? Theme.accent : Theme.foreground
                         opacity: modeButton.available && !modeButton.pending ? 1 : 0.4
                     }
@@ -125,9 +150,12 @@ FocusScope {
     }
     Rectangle {
         id: trigger
+        objectName: "quick-modes-trigger"
         anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        width: 28
+        anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
+        anchors.top: root.vertical && !root.expandUp ? parent.top : undefined
+        anchors.bottom: root.vertical && root.expandUp ? parent.bottom : undefined
+        width: root.buttonWidth
         height: root.controlHeight
         color: "transparent"
         activeFocusOnTab: true
@@ -139,7 +167,7 @@ FocusScope {
         Icon {
             anchors.centerIn: parent
             icon: "\ue429"
-            font.pixelSize: Fonts.scale(18)
+            font.pixelSize: Theme.barSymbolSize
             color: QuickModesService.anyActive || root.expanded ? Theme.accent : Theme.foreground
         }
         MouseArea {
@@ -151,13 +179,15 @@ FocusScope {
         }
     }
     PopupWindow {
-        anchor.item: root.hoveredButton || trigger
+        anchor.item: root.retainedTooltipAnchor || trigger
         anchor.rect.y: root.controlHeight + 8
-        visible: root.visible && root.expanded && root.hoveredButton !== null
+        visible: tooltipMotion.presented
+        SurfaceMotion { id: tooltipMotion; shown: root.visible && root.expanded && root.hoveredButton !== null; target: tooltipSurface; edge: "top"; closedScale: 1 }
         implicitWidth: 260
         implicitHeight: tooltipText.implicitHeight + 20
         color: "transparent"
         Rectangle {
+            id: tooltipSurface
             anchors.fill: parent
             radius: 10
             color: Theme.background
@@ -166,7 +196,7 @@ FocusScope {
                 id: tooltipText
                 x: 10; y: 10
                 width: 240
-                text: (root.hoveredButton ? root.hoveredButton.hint : "")
+                text: (root.hoveredButton ? root.hoveredButton.hint : root.retainedTooltipHint)
                     + (QuickModesService.error ? "\n" + QuickModesService.error : "")
                 wrapMode: Text.WordWrap
                 textFormat: Text.PlainText

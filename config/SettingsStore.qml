@@ -37,6 +37,23 @@ Singleton {
     property string uiCustomFont: ""
     property real uiFontScale: 1.0
     property string uiDensity: "comfortable"
+    property bool animationsEnabled: true
+    property string animationStyle: "float"
+    property string barAnimationStyle: "float"
+    readonly property var animationStyles: ["float", "fade", "slide", "zoom", "spring"]
+    function setAnimationStyle(key, value) {
+        if (["animationStyle", "barAnimationStyle"].indexOf(key) < 0 || animationStyles.indexOf(value) < 0) return false;
+        root[key] = value;
+        save();
+        return true;
+    }
+    property int barIconSize: 16
+    function setBarIconSize(value, persist) {
+        if (!Number.isFinite(value)) return false;
+        barIconSize = Math.max(12, Math.min(32, Math.round(value)));
+        if (persist !== false) save();
+        return true;
+    }
     // Desktop-level presets intentionally do not force privileged power profiles,
     // lock/idle settings, wallpaper services, or third-party theme agents.
     property string desktopProfile: "custom"
@@ -80,6 +97,30 @@ Singleton {
     property string wallpaperBackend: "swaybg" // Only fresh settings; saved backend is retained.
     property bool lowMemoryShellMode: false
     property bool osdEnabled: true
+    property bool recordingIndicatorEnabled: true
+    property bool recordingIndicatorBlink: true
+    property string recordingIndicatorCorner: "top-right"
+    property int recordingIndicatorSize: 12
+    property int recordingIndicatorOffsetX: 24
+    property int recordingIndicatorOffsetY: 64
+    readonly property var recordingIndicatorCorners: ["top-right", "top-left", "bottom-right", "bottom-left"]
+    function setRecordingIndicatorCorner(corner) {
+        if (recordingIndicatorCorners.indexOf(corner) < 0) return false;
+        recordingIndicatorCorner = corner;
+        save();
+        return true;
+    }
+    function updateRecordingIndicator(key, value, persist) {
+        const limits = {
+            recordingIndicatorSize: [8, 24],
+            recordingIndicatorOffsetX: [0, 200],
+            recordingIndicatorOffsetY: [0, 200]
+        };
+        if (!Object.prototype.hasOwnProperty.call(limits, key) || !Number.isFinite(value)) return false;
+        root[key] = Math.max(limits[key][0], Math.min(limits[key][1], Math.round(value)));
+        if (persist !== false) save();
+        return true;
+    }
     property bool wallpaperAutoRestore: false
     property bool wallpaperReplaceOnRestore: false
     property string wallpaperFitMode: "fill"
@@ -242,6 +283,51 @@ Singleton {
     property string cleanRightMode: "details"
     // Per-mode edge margins. Empty means keep the original mode defaults.
     property var marginOverrides: ({})
+    property var barPaddingOverrides: ({})
+    readonly property var barPaddingDefaults: ({
+        compact: {horizontal: {top: 2, bottom: 2, left: 4, right: 4}, vertical: {top: 8, bottom: 8, left: 10, right: 10}},
+        "clean-compact": {horizontal: {top: 2, bottom: 2, left: 4, right: 4}, vertical: {top: 8, bottom: 8, left: 6, right: 6}},
+        separated: {horizontal: {top: 0, bottom: 0, left: 4, right: 4}, vertical: {top: 8, bottom: 8, left: 10, right: 10}},
+        professional: {horizontal: {top: 6, bottom: 6, left: 14, right: 14}, vertical: {top: 12, bottom: 12, left: 14, right: 14}},
+        simple: {horizontal: {top: 3, bottom: 3, left: 4, right: 4}, vertical: {top: 8, bottom: 8, left: 8, right: 8}}
+    })
+    function paddingFor(edge) {
+        if (["top", "bottom", "left", "right"].indexOf(edge) < 0) return 0;
+        const value = (barPaddingOverrides[barMode] || {})[edge];
+        if (Number.isInteger(value)) return value;
+        const orientation = barPosition === "left" || barPosition === "right" ? "vertical" : "horizontal";
+        return barPaddingDefaults[barMode][orientation][edge];
+    }
+    function setBarPadding(edge, value, persist) {
+        if (["top", "bottom", "left", "right"].indexOf(edge) < 0 || !Number.isFinite(value)) return false;
+        const all = Object.assign({}, barPaddingOverrides);
+        const current = Object.assign({}, all[barMode] || {});
+        current[edge] = Math.max(0, Math.min(32, Math.round(value)));
+        all[barMode] = current;
+        barPaddingOverrides = all;
+        if (persist !== false) save();
+        return true;
+    }
+    function resetBarPadding() {
+        const all = Object.assign({}, barPaddingOverrides);
+        delete all[barMode];
+        barPaddingOverrides = all;
+        save();
+    }
+    function validateBarPadding(raw) {
+        const clean = {};
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) return clean;
+        for (const mode of spacingModes) {
+            const values = raw[mode];
+            if (!values || typeof values !== "object" || Array.isArray(values)) continue;
+            const record = {};
+            for (const edge of ["top", "bottom", "left", "right"])
+                if (Number.isInteger(values[edge]) && values[edge] >= 0 && values[edge] <= 32)
+                    record[edge] = values[edge];
+            clean[mode] = record;
+        }
+        return clean;
+    }
     function marginFor(edge, fallback) {
         const mode = marginOverrides[barMode] || {};
         return typeof mode[edge] === "number" ? mode[edge] : fallback;
@@ -611,6 +697,114 @@ Singleton {
     property string calendarFormat: "ddd, dd MMM"
     property string clockLocale: "system"
     property bool clockLowercase: false
+    property bool clockSoundEnabled: true
+    property bool clockSoundLoop: true
+    property int clockSoundVolume: 125
+    property string clockSound: "chime"
+    property string clockSoundFile: ""
+    readonly property var clockSounds: ["chime", "bell", "digital", "custom"]
+    function setClockSoundVolume(value) {
+        if (!Number.isInteger(value) || value < 0 || value > 125) return false;
+        clockSoundVolume = value;
+        save();
+        return true;
+    }
+    function validClockSoundFile(path) {
+        return typeof path === "string" && path.startsWith("/") && path.length <= 2048
+            && !new RegExp("[\\x00-\\x1f\\x7f]").test(path)
+            && new RegExp("\\.(wav|ogg|flac|mp3)$", "i").test(path);
+    }
+    function setClockSound(sound, path) {
+        if (clockSounds.indexOf(sound) < 0 || (sound === "custom" && !validClockSoundFile(path))) return false;
+        if (sound === "custom") clockSoundFile = path;
+        clockSound = sound;
+        save();
+        return true;
+    }
+    property int clockAlarmHour: 7
+    property int clockAlarmMinute: 0
+    property bool clockAlarmDaily: false
+    property bool clockAlarmEnabled: false
+    property double clockAlarmNextAt: 0
+    property int nightLightTemperature: 4000
+    function setNightLightTemperature(value) {
+        if (!Number.isInteger(value) || value < 2000 || value > 6000) return false;
+        nightLightTemperature = value;
+        save();
+        return true;
+    }
+    function nextClockAlarm(now) {
+        const date = new Date(now);
+        date.setHours(clockAlarmHour, clockAlarmMinute, 0, 0);
+        if (date.getTime() <= now) date.setDate(date.getDate() + 1);
+        return date.getTime();
+    }
+    function setClockAlarm(hour, minute, daily) {
+        if (!Number.isInteger(hour) || hour < 0 || hour > 23
+                || !Number.isInteger(minute) || minute < 0 || minute > 59
+                || typeof daily !== "boolean") return false;
+        clockAlarmHour = hour;
+        clockAlarmMinute = minute;
+        clockAlarmDaily = daily;
+        clockAlarmNextAt = nextClockAlarm(Date.now());
+        clockAlarmEnabled = true;
+        save();
+        return true;
+    }
+    function disableClockAlarm() {
+        clockAlarmEnabled = false;
+        clockAlarmNextAt = 0;
+        save();
+    }
+    // Local annotations use calendar dates, never UTC timestamps.
+    property var calendarNotes: ({})
+    readonly property var calendarCategories: ["event", "birthday", "work", "holiday"]
+    function calendarDateKey(date) { return Qt.formatDate(date, "yyyy-MM-dd"); }
+    function validCalendarDate(key) {
+        if (typeof key !== "string") return false;
+        const match = new RegExp("^([0-9]{4})-([0-9]{2})-([0-9]{2})$").exec(key);
+        if (!match || Number(match[1]) < 1000) return false;
+        const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        return date.getFullYear() === Number(match[1]) && date.getMonth() + 1 === Number(match[2])
+            && date.getDate() === Number(match[3]);
+    }
+    function normalizeCalendarNotes(value) {
+        const clean = {};
+        if (!value || typeof value !== "object" || Array.isArray(value)) return clean;
+        for (const key of Object.keys(value).slice(0, 3660)) {
+            const note = value[key];
+            if (!validCalendarDate(key) || !note || typeof note !== "object" || Array.isArray(note)
+                    || typeof note.title !== "string" || !note.title.trim() || note.title.length > 120
+                    || new RegExp("[\\x00-\\x1f\\x7f]").test(note.title)) continue;
+            clean[key] = {
+                title: note.title.trim(),
+                category: calendarCategories.indexOf(note.category) >= 0 ? note.category : "event",
+                notes: typeof note.notes === "string" ? note.notes.replace(new RegExp("\\x00", "g"), "").slice(0, 1000) : ""
+            };
+        }
+        return clean;
+    }
+    function calendarNote(key) { return calendarNotes[key] || null; }
+    function setCalendarNote(key, title, category, notes) {
+        if (!validCalendarDate(key) || typeof title !== "string" || !title.trim() || title.length > 120
+                || new RegExp("[\\x00-\\x1f\\x7f]").test(title)
+                || calendarCategories.indexOf(category) < 0 || typeof notes !== "string"
+                || notes.length > 1000 || notes.indexOf("\0") >= 0
+                || (!calendarNotes[key] && Object.keys(calendarNotes).length >= 3660)) return false;
+        const next = Object.assign({}, calendarNotes);
+        next[key] = {title: title.trim(), category: category, notes: notes};
+        calendarNotes = next;
+        save();
+        return true;
+    }
+    function removeCalendarNote(key) {
+        if (!validCalendarDate(key) || !calendarNotes[key]) return false;
+        const next = Object.assign({}, calendarNotes);
+        delete next[key];
+        calendarNotes = next;
+        save();
+        return true;
+    }
     function validClockFormat(value) {
         return typeof value === "string" && value.trim().length > 0 && value.length <= 120 &&
             !new RegExp("[\\x00-\\x1f\\x7f]").test(value);
@@ -689,6 +883,10 @@ Singleton {
             if (typeof data.uiCustomFont === "string" && data.uiCustomFont.length < 140) uiCustomFont = data.uiCustomFont;
             if (typeof data.uiFontScale === "number" && data.uiFontScale >= 0.85 && data.uiFontScale <= 1.2) uiFontScale = data.uiFontScale;
             if (["compact", "comfortable"].indexOf(data.uiDensity) >= 0) uiDensity = data.uiDensity;
+            if (typeof data.animationsEnabled === "boolean") animationsEnabled = data.animationsEnabled;
+            for (const key of ["animationStyle", "barAnimationStyle"])
+                if (animationStyles.indexOf(data[key]) >= 0) root[key] = data[key];
+            if (Number.isInteger(data.barIconSize) && data.barIconSize >= 12 && data.barIconSize <= 32) barIconSize = data.barIconSize;
             if (typeof data.wallpaperPath === "string" && data.wallpaperPath.length < 1024) wallpaperPath = data.wallpaperPath;
             if (["auto", "swww", "awww", "hyprpaper", "swaybg"].indexOf(data.wallpaperBackend) >= 0) wallpaperBackend = data.wallpaperBackend;
             if (["fill", "fit", "stretch", "center", "tile"].indexOf(data.wallpaperFitMode) >= 0) wallpaperFitMode = data.wallpaperFitMode;
@@ -696,6 +894,12 @@ Singleton {
             if (typeof data.wallpaperReplaceOnRestore === "boolean") wallpaperReplaceOnRestore = data.wallpaperReplaceOnRestore;
             if (typeof data.lowMemoryShellMode === "boolean") lowMemoryShellMode = data.lowMemoryShellMode;
             if (typeof data.osdEnabled === "boolean") osdEnabled = data.osdEnabled;
+            for (const key of ["recordingIndicatorEnabled", "recordingIndicatorBlink"])
+                if (typeof data[key] === "boolean") root[key] = data[key];
+            if (recordingIndicatorCorners.indexOf(data.recordingIndicatorCorner) >= 0)
+                recordingIndicatorCorner = data.recordingIndicatorCorner;
+            for (const key of ["recordingIndicatorSize", "recordingIndicatorOffsetX", "recordingIndicatorOffsetY"])
+                if (Number.isInteger(data[key])) updateRecordingIndicator(key, data[key], false);
             if (typeof data.barVisible === "boolean") barVisible = data.barVisible;
             if (typeof data.barAutoHide === "boolean") barAutoHide = data.barAutoHide;
             if (typeof data.showBarRecoveryHandle === "boolean") showBarRecoveryHandle = data.showBarRecoveryHandle;
@@ -717,6 +921,7 @@ Singleton {
                 }
                 marginOverrides = validated;
             }
+            barPaddingOverrides = validateBarPadding(data.barPaddingOverrides);
             barSpacingOverrides = validateSpacingOverrides(data.barSpacingOverrides);
             barIconOrderByMode = validateBarIconOrders(data.barIconOrderByMode);
             barIconPlacements = validateIconPlacements(data.barIconPlacements);
@@ -750,6 +955,26 @@ Singleton {
                 if (validClockFormat(data[key])) root[key] = data[key].trim();
             if (["system", "id_ID", "en_US"].indexOf(data.clockLocale) >= 0) clockLocale = data.clockLocale;
             if (typeof data.clockLowercase === "boolean") clockLowercase = data.clockLowercase;
+            if (typeof data.clockSoundEnabled === "boolean") clockSoundEnabled = data.clockSoundEnabled;
+            if (typeof data.clockSoundLoop === "boolean") clockSoundLoop = data.clockSoundLoop;
+            if (Number.isInteger(data.clockSoundVolume) && data.clockSoundVolume >= 0 && data.clockSoundVolume <= 125)
+                clockSoundVolume = data.clockSoundVolume;
+            if (validClockSoundFile(data.clockSoundFile)) clockSoundFile = data.clockSoundFile;
+            if (clockSounds.indexOf(data.clockSound) >= 0 && (data.clockSound !== "custom" || clockSoundFile))
+                clockSound = data.clockSound;
+            if (Number.isInteger(data.clockAlarmHour) && data.clockAlarmHour >= 0 && data.clockAlarmHour <= 23)
+                clockAlarmHour = data.clockAlarmHour;
+            if (Number.isInteger(data.clockAlarmMinute) && data.clockAlarmMinute >= 0 && data.clockAlarmMinute <= 59)
+                clockAlarmMinute = data.clockAlarmMinute;
+            if (typeof data.clockAlarmDaily === "boolean") clockAlarmDaily = data.clockAlarmDaily;
+            if (data.clockAlarmEnabled === true && Number.isFinite(data.clockAlarmNextAt)
+                    && data.clockAlarmNextAt > 0 && data.clockAlarmNextAt <= Date.now() + 172800000) {
+                clockAlarmNextAt = data.clockAlarmNextAt;
+                clockAlarmEnabled = true;
+            }
+            if (Number.isInteger(data.nightLightTemperature) && data.nightLightTemperature >= 2000 && data.nightLightTemperature <= 6000)
+                nightLightTemperature = data.nightLightTemperature;
+            calendarNotes = normalizeCalendarNotes(data.calendarNotes);
             for (const key of ["launcherWidth", "launcherHeight", "launcherIconSize", "launcherRowHeight", "launcherFavoriteColumns"])
                 if (Number.isInteger(data[key])) updateLauncherSize(key, data[key], false);
             if (data.widgetWorkspaceScopes && typeof data.widgetWorkspaceScopes === "object" &&
@@ -849,6 +1074,10 @@ Singleton {
             uiCustomFont: uiCustomFont,
             uiFontScale: uiFontScale,
             uiDensity: uiDensity,
+            animationsEnabled: animationsEnabled,
+            animationStyle: animationStyle,
+            barAnimationStyle: barAnimationStyle,
+            barIconSize: barIconSize,
             desktopProfile: desktopProfile,
             desktopProfilePrevious: desktopProfilePrevious,
             wallpaperPath: wallpaperPath,
@@ -858,6 +1087,12 @@ Singleton {
             wallpaperReplaceOnRestore: wallpaperReplaceOnRestore,
             lowMemoryShellMode: lowMemoryShellMode,
             osdEnabled: osdEnabled,
+            recordingIndicatorEnabled: recordingIndicatorEnabled,
+            recordingIndicatorBlink: recordingIndicatorBlink,
+            recordingIndicatorCorner: recordingIndicatorCorner,
+            recordingIndicatorSize: recordingIndicatorSize,
+            recordingIndicatorOffsetX: recordingIndicatorOffsetX,
+            recordingIndicatorOffsetY: recordingIndicatorOffsetY,
             barVisible: barVisible,
             barAutoHide: barAutoHide,
             showBarRecoveryHandle: showBarRecoveryHandle,
@@ -907,6 +1142,7 @@ Singleton {
             cleanRightDetails: cleanRightMode === "details", // older clients
             cleanRightMode: cleanRightMode,
             marginOverrides: marginOverrides,
+            barPaddingOverrides: barPaddingOverrides,
             barSpacingOverrides: barSpacingOverrides,
             barIconPlacements: barIconPlacements, // legacy compatibility; not changed by v5 UI
             barIconPlacementsByMode: barIconPlacementsByMode,
@@ -921,6 +1157,18 @@ Singleton {
             calendarFormat: calendarFormat,
             clockLocale: clockLocale,
             clockLowercase: clockLowercase,
+            clockSoundEnabled: clockSoundEnabled,
+            clockSoundLoop: clockSoundLoop,
+            clockSoundVolume: clockSoundVolume,
+            clockSound: clockSound,
+            clockSoundFile: clockSoundFile,
+            clockAlarmHour: clockAlarmHour,
+            clockAlarmMinute: clockAlarmMinute,
+            clockAlarmDaily: clockAlarmDaily,
+            clockAlarmEnabled: clockAlarmEnabled,
+            clockAlarmNextAt: clockAlarmNextAt,
+            nightLightTemperature: nightLightTemperature,
+            calendarNotes: calendarNotes,
             showWifi: showWifi,
             showBluetooth: showBluetooth,
             showBattery: showBattery,

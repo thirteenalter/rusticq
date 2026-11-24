@@ -16,6 +16,12 @@ def main():
         for name in ("components", "config", "services", "assets"):
             shutil.copytree(repo / name, root / name)
         (root / "tests").mkdir()
+        (root / "fixtures").mkdir()
+        (root / "fixtures/qmldir").write_text('singleton Pipewire 1.0 Pipewire.qml\nPwObjectTracker 1.0 PwObjectTracker.qml\n')
+        (root / "fixtures/Pipewire.qml").write_text('pragma Singleton\nimport QtQuick\nQtObject { property var defaultAudioSink: null }\n')
+        (root / "fixtures/PwObjectTracker.qml").write_text('import QtQuick\nQtObject { property var objects: [] }\n')
+        audio = root / "components/Audio.qml"
+        audio.write_text(audio.read_text().replace('import Quickshell.Services.Pipewire', 'import "../fixtures"'))
         shutil.copyfile(repo / "tools/QuickModesInteraction.qml", root / "tests/Interaction.qml")
         (root / "user-settings.json").write_text(json.dumps({
             "barMode": "clean-compact", "showNightMode": False, "showMicMute": False,
@@ -24,6 +30,7 @@ def main():
             "QuickModesService": '''
                 property bool keepAwake: false
                 property bool busy: false
+                property bool gamingPending: false
                 property string error: ""
                 property bool anyActive: keepAwake
                 function refresh() {}
@@ -39,6 +46,7 @@ def main():
                 property string deviceName: "Headphones"
             ''',
             "WifiService": '''
+                property bool ethernetConnected: false
                 property bool connected: true
                 property bool enabled: true
                 property string icon: "\\ue1d8"

@@ -174,7 +174,7 @@ FocusScope {
                 }
             }
         }
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.borderaccent }
+        Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
         Flickable {
             id: entryList
             Layout.fillWidth: true
