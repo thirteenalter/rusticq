@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/ryznxx/dev/quickshell/tools/test_alpha4.py", line 21, in <module>
+    assert 'Hyprland.toplevels.values' in source('modules/main/RusticDock.qml')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

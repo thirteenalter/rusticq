@@ -1,0 +1,12 @@
+test_doctor_malformed_config_warns (test_phase1_doctor_guard.DoctorTests.test_doctor_malformed_config_warns) ... ok
+test_doctor_no_live_desktop_is_read_only (test_phase1_doctor_guard.DoctorTests.test_doctor_no_live_desktop_is_read_only) ... ok
+test_immutable_backup_and_restoration (test_phase1_doctor_guard.RecoveryTests.test_immutable_backup_and_restoration) ... ok
+test_invalid_backup_refused (test_phase1_doctor_guard.RecoveryTests.test_invalid_backup_refused) ... ok
+test_invalid_current_remains_recoverable (test_phase1_doctor_guard.RecoveryTests.test_invalid_current_remains_recoverable) ... ok
+test_no_symlinks_or_path_traversal (test_phase1_doctor_guard.RecoveryTests.test_no_symlinks_or_path_traversal) ... ok
+test_usage_separate (test_phase1_doctor_guard.RecoveryTests.test_usage_separate) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.013s
+
+OK

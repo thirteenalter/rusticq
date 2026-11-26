@@ -7,6 +7,8 @@ import "../../../components"
 import ".."
 
 ColumnLayout {
+    id: settingsPageRoot
+    readonly property var settingsTheme: SettingsMaterial.forItem(settingsPageRoot)
     function saveModel() {
         const model = aiModelInput.text.trim();
         if (!/^[A-Za-z0-9_.-]{2,100}$/.test(model)) { keyStatusText.text = "Invalid model ID"; return; }
@@ -48,15 +50,15 @@ Process {
                             Layout.fillWidth: true
                             spacing: 12
 
-                            Text {
+                            GlassLabel {
                                 Layout.fillWidth: true
                                 text: "Choose a cloud provider, configure its model, and store an API key in your Linux keyring. No secret is saved in QML configuration files."
                                 wrapMode: Text.WordWrap
-                                color: Theme.muted
+                                color: settingsPageRoot.settingsTheme.contentMuted
                                 font.family: Fonts.poppins.name
-                                font.pixelSize: Fonts.scale(11)
+                                font.pixelSize: Fonts.scale(12)
                             }
-                            Text { text: "Provider"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
+                            GlassLabel { text: "Provider"; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
                             Repeater {
                                 model: [
                                     { name: "OpenAI · ChatGPT", provider: "openai", model: "gpt-4.1-mini" },
@@ -68,19 +70,19 @@ Process {
                                     required property var modelData
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 45
-                                    radius: 10
-                                    color: SettingsStore.aiProvider === providerRow.modelData.provider ? Qt.alpha(Theme.accent, 0.15) : Theme.surface
-                                    border.color: SettingsStore.aiProvider === providerRow.modelData.provider ? Theme.accent : "transparent"
-                                    border.width: SettingsStore.aiProvider === providerRow.modelData.provider ? 1 : 0
+                                    radius: settingsPageRoot.settingsTheme.glassRadius("card", 10)
+                                    color: settingsPageRoot.settingsTheme.glassColor("card", SettingsStore.aiProvider === providerRow.modelData.provider ? Qt.alpha(settingsPageRoot.settingsTheme.accent, 0.15) : settingsPageRoot.settingsTheme.surface)
+                                    border.color: settingsPageRoot.settingsTheme.glassBorder("card", SettingsStore.aiProvider === providerRow.modelData.provider ? settingsPageRoot.settingsTheme.accent : "transparent")
+                                    border.width: settingsPageRoot.settingsTheme.glassBorderWidth("card", SettingsStore.aiProvider === providerRow.modelData.provider ? 1 : 0)
                                     RowLayout {
                                         anchors.fill: parent
                                         anchors.leftMargin: 12; anchors.rightMargin: 12
                                         spacing: 9
-                                        Icon { icon: "\uf371"; font.pixelSize: Fonts.scale(18); color: Theme.accent }
-                                        Text { Layout.fillWidth: true; text: providerRow.modelData.name; font.pixelSize: Fonts.scale(12);
-                                            font.family: Fonts.poppins.name; color: Theme.foreground }
+                                        Icon { icon: "\uf371"; font.pixelSize: Fonts.scale(18); color: settingsPageRoot.settingsTheme.accent }
+                                        GlassLabel { Layout.fillWidth: true; text: providerRow.modelData.name; font.pixelSize: Fonts.scale(12);
+                                            font.family: Fonts.poppins.name; color: settingsPageRoot.settingsTheme.foreground }
                                         Icon { icon: "\ue5ca"; visible: SettingsStore.aiProvider === providerRow.modelData.provider;
-                                               font.pixelSize: Fonts.scale(19); color: Theme.accent }
+                                               font.pixelSize: Fonts.scale(19); color: settingsPageRoot.settingsTheme.accent }
                                     }
                                     MouseArea {
                                         anchors.fill: parent
@@ -97,19 +99,19 @@ Process {
                                     }
                                 }
                             }
-                            Text { text: "Model ID"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
+                            GlassLabel { text: "Model ID"; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 45
-                                radius: 10
-                                color: Theme.surface
+                                radius: settingsPageRoot.settingsTheme.glassRadius("card", 10)
+                                color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.surface)
                                 TextInput {
                                     id: aiModelInput
                                     anchors.fill: parent
                                     anchors.margins: 12
                                     verticalAlignment: TextInput.AlignVCenter
                                     text: SettingsStore.aiModel
-                                    color: Theme.foreground
+                                    color: settingsPageRoot.settingsTheme.foreground
                                     font.family: Fonts.poppins.name
                                     font.pixelSize: Fonts.scale(12)
                                     onAccepted: saveModel()
@@ -119,55 +121,55 @@ Process {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 36
                                 radius: 9
-                                color: Theme.accent
-                                Text { anchors.centerIn: parent; text: "Save Model ID"; color: Theme.background;
-                                    font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                                color: settingsPageRoot.settingsTheme.accent
+                                GlassLabel { anchors.centerIn: parent; text: "Save Model ID"; color: settingsPageRoot.settingsTheme.background;
+                                    font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: saveModel() }
                             }
-                            Text { text: "Suggested models"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                            GlassLabel { text: "Suggested models"; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                             ColumnLayout { Layout.fillWidth: true; spacing: 5
                                 Repeater {
                                     model: SettingsStore.aiProvider === "openai" ? ["gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini"] :
                                            SettingsStore.aiProvider === "anthropic" ? ["claude-haiku-4-5-20251001", "claude-sonnet-4-5-20250929"] :
                                            ["gemini-2.5-flash", "gemini-2.5-pro"]
                                     delegate: Rectangle { id: modelChoice; required property string modelData
-                                        Layout.fillWidth: true; Layout.preferredHeight: 32; radius: 9
-                                        color: SettingsStore.aiModel === modelData ? Qt.alpha(Theme.accent,0.15) : Theme.surface
+                                        Layout.fillWidth: true; Layout.preferredHeight: 32; radius: settingsPageRoot.settingsTheme.glassRadius("card", 9)
+                                        color: settingsPageRoot.settingsTheme.glassColor("card", SettingsStore.aiModel === modelData ? Qt.alpha(settingsPageRoot.settingsTheme.accent,0.15) : settingsPageRoot.settingsTheme.surface)
                                         RowLayout { anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 10
-                                            Text { Layout.fillWidth: true; text: modelChoice.modelData; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
-                                            Icon { visible: SettingsStore.aiModel === modelChoice.modelData; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: 16 }
+                                            GlassLabel { Layout.fillWidth: true; text: modelChoice.modelData; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+                                            Icon { visible: SettingsStore.aiModel === modelChoice.modelData; icon: "\ue5ca"; color: settingsPageRoot.settingsTheme.accent; font.pixelSize: 16 }
                                         }
                                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.aiModel = modelChoice.modelData; SettingsStore.save(); aiModelInput.text = modelChoice.modelData; } }
                                     }
                                 }
                             }
-                            Text { text: "API key (Linux Secret Service)"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
+                            GlassLabel { text: "API key (Linux Secret Service)"; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 44
-                                radius: 10
-                                color: Theme.surface
+                                radius: settingsPageRoot.settingsTheme.glassRadius("card", 10)
+                                color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.surface)
                                 TextInput {
                                     id: keyInput
                                     anchors.fill: parent
                                     anchors.margins: 12
                                     echoMode: TextInput.Password
                                     verticalAlignment: TextInput.AlignVCenter
-                                    color: Theme.foreground
+                                    color: settingsPageRoot.settingsTheme.foreground
                                     font.family: Fonts.poppins.name
                                     font.pixelSize: Fonts.scale(12)
                                     clip: true
                                 }
-                                Text { visible: keyInput.text.length === 0; anchors.verticalCenter: parent.verticalCenter;
-                                    x: 12; text: "Paste API key here (hidden)"; color: Theme.muted; font.pixelSize: Fonts.scale(11);
+                                GlassLabel { visible: keyInput.text.length === 0; anchors.verticalCenter: parent.verticalCenter;
+                                    x: 12; text: "Paste API key here (hidden)"; color: settingsPageRoot.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12);
                                     font.family: Fonts.poppins.name }
                             }
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: 8
                                 Rectangle {
-                                    Layout.fillWidth: true; Layout.preferredHeight: 36; radius: 9; color: Theme.accent
-                                    Text { anchors.centerIn: parent; text: "Save key"; font.pixelSize: Fonts.scale(11); color: Theme.background;
+                                    Layout.fillWidth: true; Layout.preferredHeight: 36; radius: 9; color: settingsPageRoot.settingsTheme.accent
+                                    GlassLabel { anchors.centerIn: parent; text: "Save key"; font.pixelSize: Fonts.scale(12); color: settingsPageRoot.settingsTheme.background;
                                         font.family: Fonts.poppinsSB.name }
                                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor;
                                         onClicked: {
@@ -177,42 +179,42 @@ Process {
                                         } }
                                 }
                                 Rectangle {
-                                    Layout.fillWidth: true; Layout.preferredHeight: 36; radius: 9; color: Theme.surface
-                                    Text { anchors.centerIn: parent; text: "Check status"; font.pixelSize: Fonts.scale(11); color: Theme.foreground;
+                                    Layout.fillWidth: true; Layout.preferredHeight: 36; radius: settingsPageRoot.settingsTheme.glassRadius("card", 9); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.surface)
+                                    GlassLabel { anchors.centerIn: parent; text: "Check status"; font.pixelSize: Fonts.scale(12); color: settingsPageRoot.settingsTheme.foreground;
                                         font.family: Fonts.poppinsSB.name }
                                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor;
                                         onClicked: keyAction.startAction("status", {provider: SettingsStore.aiProvider}) }
                                 }
                                 Rectangle {
-                                    Layout.preferredWidth: 90; Layout.preferredHeight: 36; radius: 9; color: Theme.surface
-                                    Text { anchors.centerIn: parent; text: "Remove key"; font.pixelSize: Fonts.scale(11); color: Theme.foreground;
+                                    Layout.preferredWidth: 90; Layout.preferredHeight: 36; radius: settingsPageRoot.settingsTheme.glassRadius("card", 9); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.surface)
+                                    GlassLabel { anchors.centerIn: parent; text: "Remove key"; font.pixelSize: Fonts.scale(12); color: settingsPageRoot.settingsTheme.foreground;
                                         font.family: Fonts.poppinsSB.name }
                                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor;
                                         onClicked: keyAction.startAction("key-delete", {provider: SettingsStore.aiProvider}) }
                                 }
                             }
-                            Text {
+                            GlassLabel {
                                 id: keyStatusText
                                 Layout.fillWidth: true
                                 text: "Select Check status to verify keyring access"
                                 wrapMode: Text.WordWrap
-                                color: Theme.muted
-                                font.pixelSize: Fonts.scale(11)
+                                color: settingsPageRoot.settingsTheme.contentMuted
+                                font.pixelSize: Fonts.scale(12)
                                 font.family: Fonts.poppins.name
                             }
-                            Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
-                            Text {
+                            Item { Layout.fillWidth: true; Layout.preferredHeight: settingsPageRoot.settingsTheme.sectionGap }
+                            GlassLabel {
                                 Layout.fillWidth: true
                                 text: "Use an API key for in-shell chat. Website login is separate: it opens your provider in a browser and does not authorize the shell."
                                 wrapMode: Text.WordWrap
-                                color: Theme.muted
-                                font.pixelSize: Fonts.scale(11)
+                                color: settingsPageRoot.settingsTheme.contentMuted
+                                font.pixelSize: Fonts.scale(12)
                                 font.family: Fonts.poppins.name
                             }
                             Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 9; color: Theme.surface
-                                Text { anchors.centerIn: parent; text: "Open provider website (browser login)";
-                                    font.pixelSize: Fonts.scale(11); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
+                                Layout.fillWidth: true; Layout.preferredHeight: 38; radius: settingsPageRoot.settingsTheme.glassRadius("card", 9); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.surface)
+                                GlassLabel { anchors.centerIn: parent; text: "Open provider website (browser login)";
+                                    font.pixelSize: Fonts.scale(12); color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name }
                                 MouseArea {
                                     anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                                     onClicked: {

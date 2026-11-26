@@ -11,10 +11,13 @@ def source(path):
     return p.read_text()
 
 section = source('modules/settings/SettingsSection.qml')
-assert 'implicitHeight: content.implicitHeight + Theme.sectionPadding * 2' in section
-assert 'default property alias controls: content.data' in section
+assert 'Suite.SettingsGroup {' in section
+group=source('components/settings/SettingsGroup.qml')
+assert 'implicitHeight:content.implicitHeight+Theme.sectionPadding*2' in group
+assert 'default property alias controls: content.data' in group
 win = source('modules/settings/SettingsWindow.qml')
-assert 'contentHeight: pageLoader.item ? pageLoader.item.implicitHeight + 16 : 0' in win
+frame=source('components/settings/SettingsWindowFrame.qml')
+assert 'contentHeight: pageColumn.implicitHeight+48' in frame
 assert 'Loader {' in win
 pages = ['appearance', 'bar', 'modules', 'widgets', 'dock', 'display', 'ai', 'about']
 for p in pages:
@@ -30,18 +33,23 @@ assert all(k in bar for k in ('"clean-compact"', '"separated"', '"professional"'
 modules=source('modules/settings/pages/SettingsModulesPage.qml')
 assert all(key in modules for key in ('showWifi','showBluetooth','showBattery','showAudio','showQuickModes','showLauncher'))
 overlay=source('modules/main/LauncherOverlay.qml')
-assert 'anchors.centerIn: parent' in overlay
-assert 'Math.min(SettingsStore.launcherWidth,' in overlay  # configurable launcher width
+assert 'LauncherStyle.anchor(' in overlay
+assert 'SettingsStore.launcherWidth' in source('config/LauncherStyle.qml')  # configurable, monitor-clamped geometry
 assert 'Store.launcherVisible' in overlay
 assert 'WlrLayer.Overlay' in overlay
 launcher=source('modules/main/MiniLauncher.qml')
-assert 'DesktopEntries.applications' in launcher and 'results = ordered' in launcher
-assert re.search(r'onQueryChanged:\s*\{[^}]*rebuild\(\)', launcher)
-assert 'root.results' in launcher
+controller=source('components/LauncherController.qml')
+results=source('components/LauncherResults.qml')
+assert 'DesktopEntries.applications' in controller and 'results = ordered' in controller
+assert re.search(r'onQueryChanged:\s*\{[^}]*rebuild\(\)', controller)
+assert 'property alias results: backend.results' in launcher
 shell=source('shell.qml')
 assert 'LauncherOverlay { screen: Store.launcherScreen }' in shell
 store=source('config/Store.qml')
-assert 'function toggleLauncher(screen)' in store
-assert 'Store.launcherVisible' not in source('modules/main/IndicatorPopup.qml')
-assert 'width: ListView.view.width\n                height: Math.max(SettingsStore.launcherRowHeight, SettingsStore.launcherIconSize + 20)' in launcher
+assert 'function toggleLauncher(screen, anchor)' in store
+indicator = source('modules/main/IndicatorPopup.qml')
+assert 'MiniLauncher {' not in indicator and 'LauncherOverlay {' not in indicator
+assert 'function onLauncherVisibleChanged()' in indicator  # release the old popup's focus before handoff
+assert 'width:ListView.view.width;height:root.rowHeight' in results
+assert 'Math.max(SettingsStore.launcherRowHeight,SettingsStore.launcherShowIcons ? iconSize+16 : 28)' in results
 print('RC5 Settings refactor: page split, intrinsic sizing, launcher centering and persistence checks passed')

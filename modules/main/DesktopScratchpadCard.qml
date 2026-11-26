@@ -6,7 +6,9 @@ import "../../components"
 // Multiline text editor, independent from the Kanban task backend.
 // DesktopWidgetWindow provides the monitor/workspace and keyboard-focusable
 // bottom-layer surface; this component persists via the existing SettingsStore.
-Rectangle {
+GlassSurface {
+    Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+    surfaceRole: "primary"
     id: root
     property string monitorName: ""
     property int workspaceId: -1
@@ -14,10 +16,10 @@ Rectangle {
     property bool loading: false
     property bool ready: false
     implicitHeight: 180
-    radius: 17
-    color: Theme.background
-    border.color: Theme.borderaccent
-    border.width: 1
+    radius: Theme.glassRadius("primary", 17)
+    color: Theme.glassColor("primary", Theme.background)
+    border.color: Theme.glassBorder("primary", Theme.borderaccent)
+    border.width: Theme.glassBorderWidth("primary", 1)
 
     function saveCurrentNote() {
         if (!loading && workspaceId > 0 && editor.text !== SettingsStore.workspaceNote(monitorName, workspaceId))
@@ -53,24 +55,25 @@ Rectangle {
         onTriggered: root.saveCurrentNote()
     }
     ColumnLayout {
+        objectName: "surfaceContent"
         anchors.fill: parent
-        anchors.margins: 12
+        anchors.margins: Theme.panelPadding
         spacing: 8
         RowLayout {
             Layout.fillWidth: true
             Icon { icon: "\ue873"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
-            Text { Layout.fillWidth: true; text: "Scratchpad · WS " + root.workspaceId; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
-            Text { text: editor.length + " chars"; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
+            GlassLabel { Layout.fillWidth: true; text: "Scratchpad · WS " + root.workspaceId; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+            GlassLabel { text: editor.length + " chars"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(9) }
         }
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            radius: 9
-            color: Theme.surface
+            radius: Theme.glassRadius("card", 9)
+            color: Theme.glassColor("card", Theme.surface)
             Flickable {
                 id: scroll
                 anchors.fill: parent
-                anchors.margins: 10
+                anchors.margins: Theme.controlPadding
                 contentWidth: width
                 contentHeight: Math.max(height, editor.implicitHeight)
                 clip: true
@@ -94,21 +97,21 @@ Rectangle {
                     else if (rect.y + rect.height > contentY + height)
                         contentY = rect.y + rect.height - height;
                 }
-                Text {
+                GlassLabel {
                     anchors.top: parent.top
                     visible: editor.text.length === 0 && !editor.activeFocus
                     text: "Write anything here...\n\nIdeas, quick thoughts, snippets.\nAutosaved for this workspace."
                     wrapMode: Text.WordWrap
-                    color: Theme.muted
+                    color: Theme.contentMuted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Fonts.scale(11)
                 }
             }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             text: "Autosaved locally · drag ↗ · resize ↘"
-            color: Theme.muted
+            color: Theme.contentMuted
             font.pixelSize: Fonts.scale(9)
         }
     }

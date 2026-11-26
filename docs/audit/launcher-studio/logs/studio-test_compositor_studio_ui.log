@@ -1,0 +1,10 @@
+test_niri_readonly_ui (__main__.UiContract.test_niri_readonly_ui) ... ok
+test_no_duplicate_keybinding_editor (__main__.UiContract.test_no_duplicate_keybinding_editor) ... ok
+test_preview_and_apply_require_token (__main__.UiContract.test_preview_and_apply_require_token) ... ok
+test_rollback_exposed (__main__.UiContract.test_rollback_exposed) ... ok
+test_settings_has_navigation_and_correct_loader (__main__.UiContract.test_settings_has_navigation_and_correct_loader) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.001s
+
+OK

@@ -1,0 +1,28 @@
+  INFO: Launching config: "/tmp/rusticq-padding-ui-smpr6pxi/shell.qml"
+  INFO: Shell ID: "3bbac980c7dcc78588da93b08ded51f0" Path ID "3bbac980c7dcc78588da93b08ded51f0"
+  INFO: Saving logs to "/tmp/rusticq-padding-ui-smpr6pxi/quickshell/by-id/3cjz0pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-padding-ui-smpr6pxi/quickshell/by-id/3cjz0pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: BAR TEST test_all_modes_edges_and_duplicate_widgets failed=false
+ DEBUG qml: BAR TEST test_custom_clock_and_popup_coordinates_fit_rail failed=false
+ DEBUG qml: BAR TEST test_editor_per_mode_reset_and_keyboard failed=false
+ DEBUG qml: BAR TEST test_hover_opens_and_leaving_does_not_close failed=false
+ DEBUG qml: BAR TEST test_icon_pixel_sizes_all_layouts_and_edges failed=false
+ DEBUG qml: BAR TEST test_padding_edges_and_resizing_both_monitors failed=false
+ DEBUG qml: BAR TEST test_quick_modes_bottom_trigger_stays_in_place failed=false
+ DEBUG qml: BAR TEST test_short_screen_scroll_centering_and_expanded_quick_modes failed=false
+ DEBUG qml: BAR TEST test_z_save_and_previews failed=false
+ DEBUG qml: BAR RESULTS 10 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-padding-ui-smpr6pxi/shell.qml"
+  INFO: Shell ID: "3bbac980c7dcc78588da93b08ded51f0" Path ID "3bbac980c7dcc78588da93b08ded51f0"
+  INFO: Saving logs to "/tmp/rusticq-padding-ui-smpr6pxi/quickshell/by-id/cjjz0pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-padding-ui-smpr6pxi/quickshell/by-id/cjjz0pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: PADDING RELOAD PASS
+PASS: five modes × four edges, per-mode padding, two screen sizes, narrow rails, scroll, quick modes, popup anchors, save/reload

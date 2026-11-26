@@ -4,6 +4,7 @@ import "../config"
 // Stable geometry: track and thumb share the same width reference.
 Item {
     id: slider
+    readonly property var settingsTheme: SettingsMaterial.forItem(slider)
     property int value: 0
     property int maximum: 32
     signal preview(int next)
@@ -14,15 +15,15 @@ Item {
     Rectangle {
         anchors.left: parent.left; anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        height: 9; radius: 5; color: Theme.background
+        height: 9; radius: slider.settingsTheme.glassRadius("control", 5); color: slider.settingsTheme.glassColor("control", slider.settingsTheme.background)
         Rectangle {
-            height: parent.height; radius: 5; color: Theme.accent
+            height: parent.height; radius: 5; color: slider.settingsTheme.accent
             width: Math.max(4, (parent.width - 16) * slider.value / slider.maximum + 8)
         }
     }
     Rectangle {
-        width: 16; height: 16; radius: 8; color: Theme.foreground
-        border.width: 2; border.color: Theme.accent
+        width: 16; height: 16; radius: 8; color: slider.settingsTheme.controlKnob
+        border.width: 2; border.color: slider.settingsTheme.accent
         anchors.verticalCenter: parent.verticalCenter
         x: (parent.width - width) * slider.value / slider.maximum
     }

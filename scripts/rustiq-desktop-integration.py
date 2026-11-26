@@ -24,6 +24,7 @@ SENTINEL = 'RUSTICQ MANAGED RC4'
 START = '-- BEGIN ' + SENTINEL
 END = '-- END ' + SENTINEL
 ACTION_CATALOG = [
+    {"key": "hypr-settings", "name": "RusticQ Hyprland Settings", "category": "Core"},
     {"key": 'settings', "name": 'Settings', "category": 'Core'},
     {"key": 'launcher', "name": 'App Launcher', "category": 'Core'},
     {"key": 'quick', "name": 'Quick Control', "category": 'Core'},

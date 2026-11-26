@@ -1,0 +1,20 @@
+test_cli_version_is_local_and_not_published_claim (test_beta3_versioning.Versioning.test_cli_version_is_local_and_not_published_claim) ... ok
+test_local_source_version_and_target_specific_comparison (test_beta3_versioning.Versioning.test_local_source_version_and_target_specific_comparison) ... ok
+test_no_rewrite_of_historical_betas (test_beta3_versioning.Versioning.test_no_rewrite_of_historical_betas) ... ok
+test_version_metadata_ui_and_docs (test_beta3_versioning.Versioning.test_version_metadata_ui_and_docs) ... ok
+test_active_beta4_and_all_documented_versions (test_beta4_versioning.ReleaseManifests.test_active_beta4_and_all_documented_versions) ... ok
+test_default_build_label_and_checksum_manifest_use_active_metadata (test_beta4_versioning.ReleaseManifests.test_default_build_label_and_checksum_manifest_use_active_metadata) ... ok
+test_explicit_build_label_preserves_release_identity (test_beta4_versioning.ReleaseManifests.test_explicit_build_label_preserves_release_identity) ... ok
+test_history_numeric_order_and_candidates_before_previous_alpha (test_beta4_versioning.ReleaseManifests.test_history_numeric_order_and_candidates_before_previous_alpha) ... ok
+test_invalid_current_fields_are_rejected (test_beta4_versioning.ReleaseManifests.test_invalid_current_fields_are_rejected) ... ok
+test_invalid_history_is_skipped_without_losing_current_release (test_beta4_versioning.ReleaseManifests.test_invalid_history_is_skipped_without_losing_current_release) ... ok
+test_invalid_version_pointers_are_rejected (test_beta4_versioning.ReleaseManifests.test_invalid_version_pointers_are_rejected) ... ok
+test_local_credentials_and_agent_files_are_excluded_from_archives (test_beta4_versioning.ReleaseManifests.test_local_credentials_and_agent_files_are_excluded_from_archives) ... ok
+test_missing_current_manifest_fails_instead_of_guessing (test_beta4_versioning.ReleaseManifests.test_missing_current_manifest_fails_instead_of_guessing) ... ok
+test_unsafe_build_label_is_rejected (test_beta4_versioning.ReleaseManifests.test_unsafe_build_label_is_rejected) ... ok
+test_version_pointer_selects_a_historical_manifest (test_beta4_versioning.ReleaseManifests.test_version_pointer_selects_a_historical_manifest) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 5.329s
+
+OK

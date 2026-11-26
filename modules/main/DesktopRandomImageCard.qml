@@ -6,18 +6,20 @@ import "../../config"
 import "../../components"
 
 // One local photo at a time; no external image URLs and no always-on scanner.
-Rectangle {
+GlassSurface {
+    Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+    surfaceRole: "primary"
     id: root
     property string imageUri: ""
     property string imageName: ""
     property string status: ""
     property int fileCount: 0
     readonly property string helper: Quickshell.shellPath("scripts/rusticq-widget-images.py")
-    implicitHeight: imageArea.implicitHeight + 28
-    radius: 17
-    color: Theme.background
-    border.color: Theme.borderaccent
-    border.width: 1
+    implicitHeight: imageArea.implicitHeight + Theme.panelPadding * 2
+    radius: Theme.glassRadius("primary", 17)
+    color: Theme.glassColor("primary", Theme.background)
+    border.color: Theme.glassBorder("primary", Theme.borderaccent)
+    border.width: Theme.glassBorderWidth("primary", 1)
     function next() {
         if (imageProcess.running) return;
         const args = ["python3", helper, "--folder", SettingsStore.widgetImageFolder];
@@ -56,18 +58,18 @@ Rectangle {
     ColumnLayout {
         id: imageArea
         anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
-        anchors.margins: 13
+        anchors.margins: Theme.panelPadding
         spacing: 9
         RowLayout {
             Layout.fillWidth: true; spacing: 8
             Icon { icon: "\ue3f4"; color: Theme.accent; font.pixelSize: Fonts.scale(19) }
-            Text { Layout.fillWidth: true; text: "Random Image"; color: Theme.foreground
+            GlassLabel { Layout.fillWidth: true; text: "Random Image"; color: Theme.foreground
                 font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
         }
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 188
-            radius: 10; color: Theme.surface; clip: true
+            radius: Theme.glassRadius("card", 10); color: Theme.glassColor("card", Theme.surface); clip: true
             Image {
                 anchors.fill: parent
                 asynchronous: true
@@ -81,21 +83,21 @@ Rectangle {
                 anchors.centerIn: parent; spacing: 6
                 visible: !root.imageUri
                 Icon { anchors.horizontalCenter: parent.horizontalCenter; icon: "\ue3f4"
-                    color: Theme.muted; font.pixelSize: Fonts.scale(26) }
-                Text { anchors.horizontalCenter: parent.horizontalCenter
+                    color: Theme.contentMuted; font.pixelSize: Fonts.scale(26) }
+                GlassLabel { anchors.horizontalCenter: parent.horizontalCenter
                     text: root.status || "Select a folder in Settings → Widgets"
                     width: 220; wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
-                    color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                    color: Theme.contentMuted; font.pixelSize: Fonts.scale(10) }
             }
         }
         RowLayout {
             Layout.fillWidth: true
-            Text { Layout.fillWidth: true; text: root.imageName || "Local photos only"
-                elide: Text.ElideMiddle; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
-            Text { text: root.fileCount ? root.fileCount + " images" : ""; color: Theme.accent; font.pixelSize: Fonts.scale(9) }
+            GlassLabel { Layout.fillWidth: true; text: root.imageName || "Local photos only"
+                elide: Text.ElideMiddle; color: Theme.contentMuted; font.pixelSize: Fonts.scale(10) }
+            GlassLabel { text: root.fileCount ? root.fileCount + " images" : ""; color: Theme.accent; font.pixelSize: Fonts.scale(9) }
             Rectangle {
-                Layout.preferredWidth: 58; Layout.preferredHeight: 27; radius: 8; color: Theme.surface
-                Text { anchors.centerIn: parent; text: "Next ↻"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+                Layout.preferredWidth: 58; Layout.preferredHeight: 27; radius: Theme.glassRadius("card", 8); color: Theme.glassColor("card", Theme.surface)
+                GlassLabel { anchors.centerIn: parent; text: "Next ↻"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
                 MouseArea { anchors.fill: parent; enabled: !imageProcess.running
                     cursorShape: Qt.PointingHandCursor; onClicked: root.next() }
             }

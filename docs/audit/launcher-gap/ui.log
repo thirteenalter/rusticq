@@ -1,0 +1,95 @@
+  INFO: Launching config: "/tmp/rusticq-launcher-studio-ui-1c67st_t/shell.qml"
+  INFO: Shell ID: "a06ba57ed4b57b2e20b6cba3df8fbddb" Path ID "a06ba57ed4b57b2e20b6cba3df8fbddb"
+  INFO: Saving logs to "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/46xh1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/46xh1pt/ipc.sock"
+  INFO: Configuration Loaded
+  WARN scene: QML FileView at @config/Theme.qml[35:5]: Read of /tmp/rusticq-launcher-studio-ui-1c67st_t/home/.config/aether/theme/colors.toml failed: File does not exist.
+ DEBUG qml: STUDIO TEST test_all_styles_share_input_and_backend failed=false calc= mode=false calcError= inflight= tools=0
+ DEBUG qml: STUDIO TEST test_calculator_and_settings_provider failed=false calc= mode=false calcError= inflight=sqrt(144)+8 tools=1
+ DEBUG qml: STUDIO TEST test_detached_gap_and_empty_results failed=false calc= mode=false calcError= inflight=sqrt(144)+8 tools=0
+ DEBUG qml: MAT alpha/radius #521a1a1d #a11a1a1d 7 23
+ DEBUG qml: MAT provider aether true rage #f5f5f7 #f5f5f7 0.10321202129125595 0.10321202129125595
+ DEBUG qml: MAT provider gruvbox true rage #f5f5f7 #f5f5f7 0.10321202129125595 0.10321202129125595
+ DEBUG qml: MAT solid #19191c #19191c #a11a1a1d
+ DEBUG qml: MAT up 184 0 174 10
+ DEBUG qml: STUDIO TEST test_detached_geometry_materials_and_palette failed=false calc= mode=false calcError= inflight=sqrt(144)+8 tools=0
+ DEBUG qml: STUDIO TEST test_keyboard_grids_pins_and_usage failed=false calc= mode=false calcError= inflight=sqrt(144)+8 tools=0
+ DEBUG qml: STUDIO TEST test_positions_backdrops_and_motion_disabled failed=false calc= mode=false calcError= inflight=sqrt(144)+8 tools=0
+ DEBUG qml: PROVIDER files [{"label":"studio-fixture.txt","detail":"Documents/studio-fixture.txt","action":"file","payload":"/tmp/rusticq-launcher-studio-ui-1c67st_t/home/Documents/studio-fixture.txt","icon":"📄"}]
+ DEBUG qml: PROVIDER notes [{"label":"studio-fixture","detail":"TODO · Enter to advance Kanban stage","action":"note-toggle","payload":"c373aed88dff43cf955d3f096c10dc82","icon":"📝"}]
+ DEBUG qml: STUDIO TEST test_provider_files_notes_and_stale_results failed=false calc= mode=false calcError= inflight=2+3 tools=1
+ DEBUG qml: STUDIO TEST test_results_fill_width_without_details failed=false calc= mode=true calcError= inflight=2+3 tools=0
+ DEBUG qml: STUDIO TEST test_validation_live_preferences_and_save failed=false calc= mode=false calcError= inflight=2+3 tools=0
+ DEBUG qml: STUDIO TEST test_x_external_preferences_keep_session failed=false calc= mode=false calcError= inflight=2+3 tools=0
+ DEBUG qml: STUDIO GALLERY selected detached card 0 1350 scroll 1362 scene QPointF(36, 70)
+ DEBUG qml: STUDIO RESET 10 790 detached
+ DEBUG qml: STUDIO TEST test_z_settings_gallery_and_independent_reset failed=false calc= mode=false calcError= inflight=2+3 tools=0
+ DEBUG qml: STUDIO RESULTS 12 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-launcher-studio-ui-1c67st_t/shell.qml"
+  INFO: Shell ID: "a06ba57ed4b57b2e20b6cba3df8fbddb" Path ID "a06ba57ed4b57b2e20b6cba3df8fbddb"
+  INFO: Saving logs to "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/lcxh1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/lcxh1pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: STUDIO RELOAD PASS
+  INFO: Launching config: "/tmp/rusticq-launcher-studio-ui-1c67st_t/shell.qml"
+  INFO: Shell ID: "a06ba57ed4b57b2e20b6cba3df8fbddb" Path ID "a06ba57ed4b57b2e20b6cba3df8fbddb"
+  INFO: Saving logs to "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/qcxh1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/qcxh1pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: STUDIO RELOAD PASS
+  INFO: Launching config: "/tmp/rusticq-launcher-studio-ui-1c67st_t/shell.qml"
+  INFO: Shell ID: "a06ba57ed4b57b2e20b6cba3df8fbddb" Path ID "a06ba57ed4b57b2e20b6cba3df8fbddb"
+  INFO: Saving logs to "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/vcxh1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/vcxh1pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: STUDIO RELOAD PASS
+  INFO: Launching config: "/tmp/rusticq-launcher-studio-ui-1c67st_t/shell.qml"
+  INFO: Shell ID: "a06ba57ed4b57b2e20b6cba3df8fbddb" Path ID "a06ba57ed4b57b2e20b6cba3df8fbddb"
+  INFO: Saving logs to "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/01cxh1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/01cxh1pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: STUDIO RELOAD PASS
+  INFO: Launching config: "/tmp/rusticq-launcher-studio-ui-1c67st_t/shell.qml"
+  INFO: Shell ID: "a06ba57ed4b57b2e20b6cba3df8fbddb" Path ID "a06ba57ed4b57b2e20b6cba3df8fbddb"
+  INFO: Saving logs to "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/51cxh1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/51cxh1pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: STUDIO RELOAD PASS
+  INFO: Launching config: "/tmp/rusticq-launcher-studio-ui-1c67st_t/shell.qml"
+  INFO: Shell ID: "a06ba57ed4b57b2e20b6cba3df8fbddb" Path ID "a06ba57ed4b57b2e20b6cba3df8fbddb"
+  INFO: Saving logs to "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/a1cxh1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/a1cxh1pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: STUDIO RELOAD PASS
+  INFO: Launching config: "/tmp/rusticq-launcher-studio-ui-1c67st_t/shell.qml"
+  INFO: Shell ID: "a06ba57ed4b57b2e20b6cba3df8fbddb" Path ID "a06ba57ed4b57b2e20b6cba3df8fbddb"
+  INFO: Saving logs to "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/f1cxh1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-launcher-studio-ui-1c67st_t/quickshell/by-id/f1cxh1pt/ipc.sock"
+  INFO: Configuration Loaded
+  WARN qml: Settings: defaults in use (user-settings.json): SyntaxError: JSON.parse: Parse error
+ DEBUG qml: STUDIO RELOAD PASS
+PASS: eleven styles, single controller/input, search, detached gap and calculator/settings providers

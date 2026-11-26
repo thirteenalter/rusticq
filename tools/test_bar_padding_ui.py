@@ -70,6 +70,8 @@ ShellRoot {
                 second.contentItem.parent = scene.contentItem; second.contentItem.x = 100;
             }
             function init() {
+                SettingsStore.barPopupsOnHover = false;
+                second.contentItem.visible = true;
                 SettingsStore.barIconSize = 16;
                 SettingsStore.barVisible = true; SettingsStore.barAutoHide = false;
                 SettingsStore.barMode = "compact"; SettingsStore.barPosition = "right";
@@ -202,13 +204,44 @@ ShellRoot {
                 slider.forceActiveFocus(); keyClick(Qt.Key_Left);
                 eq(SettingsStore.paddingFor("left"), 17, "keyboard step");
             }
+            function test_hover_opens_and_leaving_does_not_close() {
+                // The two monitor fixtures share one test scene, so keep the
+                // second monitor's pixels from covering the first hit target.
+                second.contentItem.visible=false;
+                SettingsStore.barPosition="top";
+                SettingsStore.barMode="professional";
+                wait(40);
+                const wifi=part("bar-item-wifi");
+                mouseMove(scene,1000,1000);
+                mouseMove(wifi,wifi.width/2,wifi.height/2);wait(180);
+                eq(first.miniKind,"","click mode does not open on hover");
+                mouseMove(scene,1000,1000);
+                SettingsStore.barPopupsOnHover=true;
+                mouseMove(wifi,wifi.width/2,wifi.height/2);wait(180);
+                eq(first.miniKind,"wifi","hover opens Wi-Fi");
+                mouseMove(scene,1000,1000);wait(180);
+                eq(first.miniKind,"wifi","pointer leaving must keep the popup open");
+                first.openMini("wifi",100,20);
+                eq(first.miniKind,"wifi","hover trigger click does not toggle closed");
+                first.closeMini();eq(first.miniKind,"","outside dismissal closes explicitly");
+                for(const edge of ["left","right"]) {
+                    SettingsStore.barPosition=edge;wait(40);
+                    const tile=part("bar-rail-item-wifi");
+                    mouseMove(scene,1000,1000);
+                    mouseMove(tile,tile.width/2,tile.height/2);wait(180);
+                    eq(first.miniKind,"wifi","vertical hover opens Wi-Fi");
+                    mouseMove(scene,1000,1000);wait(50);
+                    eq(first.miniKind,"wifi","vertical hover stays open");
+                    first.closeMini();
+                }
+            }
             function test_z_save_and_previews() {
                 for (let i=0; i<modes.length; i++) {
                     SettingsStore.barMode = modes[i];
                     SettingsStore.setBarPadding("left", i + 9, false);
                     SettingsStore.setBarPadding("right", i + 10, false);
                 }
-                SettingsStore.barMode = "compact"; SettingsStore.save();
+                SettingsStore.barMode = "compact"; SettingsStore.barPopupsOnHover=true; SettingsStore.save();
                 largeScreen.height = 980; wait(30);
                 first.contentItem.grabToImage(result => { previewSaved = result.saveToFile("/tmp/rusticq-bar-padding-rail.png"); });
                 tryVerify(() => previewSaved, 1500);
@@ -249,7 +282,8 @@ QtObject {
 }
 ''')
     bar=root/'modules/main/Bar.qml'
-    bar.write_text(bar.read_text().replace('import QtQuick\n','import QtQuick\nimport "../../fixtures" as Headless\n',1).replace('PanelWindow {','Headless.PanelWindow {',1))
+    bar.write_text(bar.read_text().replace('import QtQuick\n','import QtQuick\nimport "../../fixtures" as Headless\n',1).replace('PanelWindow {','Headless.PanelWindow {',1).replace('    WlrLayershell.namespace: "rusticq-bar"\n', ''))
+    bar.write_text(re.sub(r'^    WlrLayershell.keyboardFocus:.*\n', '', bar.read_text(), flags=re.M))
     (root/'modules/main/BarAutoHide.qml').write_text('''import QtQuick
 QtObject { property bool enabled: false; property string position: "top"; property var screen; property bool hovered: false; property bool heldOpen: false; readonly property bool shown: true }
 ''')
@@ -292,16 +326,18 @@ def main():
                  XDG_STATE_HOME=str(root/'state'), XDG_CACHE_HOME=str(root/'cache'), DBUS_SESSION_BUS_ADDRESS='unix:path='+str(root/'missing-bus'))
         output=run_qml(root,env,QML)
         summary=re.search(r'BAR RESULTS (\d+) passed, (\d+) failed',output)
-        assert summary and int(summary[1])>=9 and int(summary[2])==0,output
+        assert summary and int(summary[1])>=10 and int(summary[2])==0,output
         saved=json.loads((root/'user-settings.json').read_text())
         for i,mode in enumerate(('compact','clean-compact','separated','professional','simple')):
             assert saved['barPaddingOverrides'][mode]=={'left':i+9,'right':i+10}
         assert saved['showWifi'] is True
+        assert saved['barPopupsOnHover'] is True
         source='''import QtQuick
 import QtTest
 import Quickshell
 import "config"
 ShellRoot { TestCase { when: true; function test_reload() {
+    compare(SettingsStore.barPopupsOnHover,true);
     for (let i=0;i<SettingsStore.spacingModes.length;i++) {
         SettingsStore.barMode=SettingsStore.spacingModes[i];
         compare(SettingsStore.paddingFor("left"),i+9); compare(SettingsStore.paddingFor("right"),i+10);

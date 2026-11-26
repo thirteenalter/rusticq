@@ -8,6 +8,7 @@ import "../../../components"
 // Draw both previews above the Flow without reflowing the icons mid-drag.
 ColumnLayout {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     Layout.fillWidth: true
     spacing: 10
     readonly property var entries: [
@@ -163,16 +164,16 @@ ColumnLayout {
         Layout.fillWidth: true; spacing: 8
         ColumnLayout {
             Layout.fillWidth: true; spacing: 2
-            Text { text: "Drag to insert or swap · " + SettingsStore.barMode
-                color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
-            Text { Layout.fillWidth: true
+            GlassLabel { text: "Drag to insert or swap · " + SettingsStore.barMode
+                color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+            GlassLabel { Layout.fillWidth: true
                 text: "Drop in a gap or near an icon edge to INSERT (accent caret); drop at the center of an icon to SWAP (highlighted card). Works across Left / Center / Right."
-                color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap }
+                color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12); wrapMode: Text.WordWrap }
         }
         Rectangle {
             Layout.preferredWidth: 90; Layout.preferredHeight: 32
-            radius: 9; color: Theme.background
-            Text { anchors.centerIn: parent; text: "Reset mode"; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+            radius: root.settingsTheme.glassRadius("card", 9); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+            GlassLabel { anchors.centerIn: parent; text: "Reset mode"; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12) }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                 onClicked: SettingsStore.resetIconPlacements() }
         }
@@ -193,10 +194,10 @@ ColumnLayout {
             function dropOrigin() { return chips.mapToItem(root, 0, 0); }
             Layout.fillWidth: true
             Layout.preferredHeight: Math.max(88, zoneContents.implicitHeight + 23)
-            radius: 12
-            color: Theme.background
-            border.color: Theme.borderaccent
-            border.width: 1
+            radius: root.settingsTheme.glassRadius("card", 12)
+            color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+            border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.borderaccent)
+            border.width: root.settingsTheme.glassBorderWidth("card", 1)
             // Persistent-on-hover insertion placeholder. Draw it *over* the
             // Flow instead of adding an item to Flow: the tiles must not reflow
             // before the user actually drops the dragged icon.
@@ -208,28 +209,28 @@ ColumnLayout {
                 z: 900
                 width: 14
                 height: 69
-                radius: 6
-                color: Qt.alpha(Theme.accent, 0.20)
-                border.color: Theme.accent
-                border.width: 1
+                radius: root.settingsTheme.glassRadius("card", 6)
+                color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.accent, 0.20))
+                border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.accent)
+                border.width: root.settingsTheme.glassBorderWidth("card", 1)
                 x: zonePanel.mapFromItem(root, root.previewX, root.previewY).x - width / 2
                 y: zonePanel.mapFromItem(root, root.previewX, root.previewY).y - 2
                 Rectangle {
                     width: 4; height: parent.height - 9; radius: 2
                     anchors.centerIn: parent
-                    color: Theme.accent
+                    color: root.settingsTheme.accent
                 }
                 Rectangle {
                     width: 8; height: 8; radius: 4
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.top: parent.top; anchors.topMargin: -2
-                    color: Theme.accent
+                    color: root.settingsTheme.accent
                 }
                 Rectangle {
                     width: 8; height: 8; radius: 4
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: parent.bottom; anchors.bottomMargin: -2
-                    color: Theme.accent
+                    color: root.settingsTheme.accent
                 }
             }
             ColumnLayout {
@@ -238,11 +239,11 @@ ColumnLayout {
                 anchors.margins: 11; spacing: 8
                 RowLayout {
                     Layout.fillWidth: true; spacing: 7
-                    Icon { icon: "\ue5d3"; color: Theme.accent; font.pixelSize: Fonts.scale(14) }
-                    Text { text: zonePanel.modelData.title; Layout.fillWidth: true
-                        color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
-                    Text { text: String(zonePanel.items.length) + " icons"
-                        color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                    Icon { icon: "\ue5d3"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(14) }
+                    GlassLabel { text: zonePanel.modelData.title; Layout.fillWidth: true
+                        color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                    GlassLabel { text: String(zonePanel.items.length) + " icons"
+                        color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
                 }
                 Flow {
                     id: chips
@@ -257,15 +258,15 @@ ColumnLayout {
                             readonly property string iconKey: modelData
                             readonly property var iconInfo: root.details(modelData)
                             width: 133; height: 70
-                            radius: 10
+                            radius: root.settingsTheme.glassRadius("card", 10)
                             readonly property bool swapTarget: root.draggingKey.length > 0 &&
                                 root.previewKind === "swap" &&
                                 root.previewZone === zonePanel.modelData.zone &&
                                 root.previewSwapKey === tile.iconKey
-                            color: tileDrag.active ? Qt.alpha(Theme.accent, .24) :
-                                   swapTarget ? Qt.alpha(Theme.accent, .26) : Theme.surface
-                            border.color: (tileDrag.active || swapTarget) ? Theme.accent : "transparent"
-                            border.width: (tileDrag.active || swapTarget) ? 2 : 0
+                            color: root.settingsTheme.glassColor("card", tileDrag.active ? Qt.alpha(root.settingsTheme.accent, .24) :
+                                   swapTarget ? Qt.alpha(root.settingsTheme.accent, .26) : root.settingsTheme.surface)
+                            border.color: root.settingsTheme.glassBorder("card", (tileDrag.active || swapTarget) ? root.settingsTheme.accent : "transparent")
+                            border.width: root.settingsTheme.glassBorderWidth("card", (tileDrag.active || swapTarget) ? 2 : 0)
                             z: tileDrag.active ? 100 : swapTarget ? 10 : 0
                             opacity: tileDrag.active ? .75 : 1
                             DragHandler {
@@ -298,9 +299,9 @@ ColumnLayout {
                             ColumnLayout {
                                 anchors.centerIn: parent; spacing: 3
                                 Icon { Layout.alignment: Qt.AlignHCenter; icon: tile.iconInfo.icon
-                                    color: Theme.accent; font.pixelSize: Fonts.scale(17) }
-                                Text { Layout.alignment: Qt.AlignHCenter; text: tile.iconInfo.name
-                                    color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                                    color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(17) }
+                                GlassLabel { Layout.alignment: Qt.AlignHCenter; text: tile.iconInfo.name
+                                    color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12) }
                             }
                             // Explicit SWAP affordance. Do not show the insertion caret
                             // over a target that would exchange the two icons instead.
@@ -312,14 +313,14 @@ ColumnLayout {
                                 anchors.topMargin: 4
                                 width: 44; height: 18
                                 radius: 5
-                                color: Theme.accent
+                                color: root.settingsTheme.accent
                                 z: 11
-                                Text {
+                                GlassLabel {
                                     anchors.centerIn: parent
                                     text: "↔ Swap"
-                                    color: Theme.background
+                                    color: root.settingsTheme.background
                                     font.family: Fonts.poppinsSB.name
-                                    font.pixelSize: Fonts.scale(9)
+                                    font.pixelSize: Fonts.scale(12)
                                 }
                             }
                             // Keyboard/mouse fallback for precision and accessibility.
@@ -331,10 +332,10 @@ ColumnLayout {
                                     delegate: Rectangle {
                                         id: moveButton
                                         required property var modelData
-                                        width: 20; height: 20; radius: 5
-                                        color: Qt.alpha(Theme.accent,.12)
-                                        Text { anchors.centerIn: parent; text: moveButton.modelData.label
-                                            color: Theme.accent; font.pixelSize: Fonts.scale(11) }
+                                        width: 20; height: 20; radius: root.settingsTheme.glassRadius("card", 5)
+                                        color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.accent,.12))
+                                        GlassLabel { anchors.centerIn: parent; text: moveButton.modelData.label
+                                            color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(12) }
                                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                                             onClicked: root.moveBy(tile.iconKey, moveButton.modelData.diff) }
                                     }
@@ -346,7 +347,7 @@ ColumnLayout {
             }
         }
     }
-    Text { Layout.fillWidth: true
+    GlassLabel { Layout.fillWidth: true
         text: "Two drop actions: BETWEEN cards = insert with caret (other icons shift). ON a card's center = swap both cards. The ‹ / › buttons still allow precise moves."
-        color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap }
+        color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12); wrapMode: Text.WordWrap }
 }

@@ -8,23 +8,25 @@ import "../../services"
 // Shared card rhythm: 16px inset, 36px header, 12px gap, scrollable body.
 Rectangle {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     Layout.fillWidth: true
     property bool expanded: false
     property bool standalone: false
     property bool showSettingsButton: true
     property var targetScreen: null
     readonly property bool contentOpen: standalone || expanded
-    Layout.preferredHeight: contentOpen ? 366 : 68
-    radius: Theme.sectionRadius
+    Layout.preferredHeight: contentOpen ? 366 : root.settingsTheme.sectionHeaderHeight + root.settingsTheme.panelPadding * 2
+    radius: root.settingsTheme.glassRadius("card", root.settingsTheme.sectionRadius)
     clip: true
-    color: Qt.alpha(Theme.foreground, 0.02)
-    border.width: 1
-    border.color: Theme.borderaccent
+    color: standalone && root.settingsTheme.glassEnabled ? "transparent" : root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.foreground, 0.02))
+    border.width: standalone && root.settingsTheme.glassEnabled ? 0 : root.settingsTheme.glassBorderWidth("card", 1)
+    border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.borderaccent)
 
     ColumnLayout {
+        objectName: "surfaceContent"
         anchors.fill: parent
-        anchors.margins: Theme.sectionPadding
-        spacing: 12
+        anchors.margins: root.settingsTheme.sectionPadding
+        spacing: root.settingsTheme.contentGap
 
         RowLayout {
             Layout.fillWidth: true
@@ -73,24 +75,24 @@ Rectangle {
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 1
-                        Text {
+                        GlassLabel {
                             text: "Charge level"
                             font.family: Fonts.poppins.name
-                            font.pixelSize: Theme.helperTextSize
-                            color: Theme.muted
+                            font.pixelSize: root.settingsTheme.helperTextSize
+                            color: root.settingsTheme.contentMuted
                         }
-                        Text {
+                        GlassLabel {
                             text: BatteryService.available ? BatteryService.percentage + "%" : "Unavailable"
                             font.family: Fonts.poppinsSB.name
                             font.pixelSize: Fonts.scale(18)
-                            color: Theme.foreground
+                            color: root.settingsTheme.foreground
                         }
                     }
-                    Text {
+                    GlassLabel {
                         text: BatteryService.status
                         font.family: Fonts.poppins.name
                         font.pixelSize: Fonts.scale(11)
-                        color: BatteryService.charging ? Theme.success : Theme.muted
+                        color: BatteryService.charging ? root.settingsTheme.success : root.settingsTheme.muted
                         horizontalAlignment: Text.AlignRight
                         elide: Text.ElideRight
                     }
@@ -100,15 +102,15 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 7
                     radius: 4
-                    color: Theme.surface
+                    color: root.settingsTheme.surface
                     Rectangle {
                         width: parent.width * (BatteryService.available ? BatteryService.percentage / 100 : 0)
                         height: parent.height
                         radius: 4
-                        color: BatteryService.charging ? Theme.success : Theme.accent
+                        color: BatteryService.charging ? root.settingsTheme.success : root.settingsTheme.accent
                     }
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     text: !BatteryService.available ? "Battery status unavailable" :
                           BatteryService.full ? "Fully charged" :
@@ -117,15 +119,15 @@ Rectangle {
                           BatteryService.status === "Discharging" && BatteryService.timeToEmpty > 0 ?
                               "Estimated remaining: " + Math.round(BatteryService.timeToEmpty / 60) + " min" : BatteryService.status
                     font.family: Fonts.poppins.name
-                    font.pixelSize: Theme.helperTextSize
-                    color: Theme.muted
+                    font.pixelSize: root.settingsTheme.helperTextSize
+                    color: root.settingsTheme.contentMuted
                     wrapMode: Text.WordWrap
                 }
 
-                Text {
+                GlassLabel {
                     Layout.topMargin: 5
                     text: "Power mode"
-                    color: Theme.foreground
+                    color: root.settingsTheme.foreground
                     font.pixelSize: Fonts.scale(13)
                     font.family: Fonts.poppinsSB.name
                 }
@@ -142,20 +144,20 @@ Rectangle {
                         readonly property bool supported: modelData.mode !== PowerProfile.Performance || PowerProfiles.hasPerformanceProfile
                         Layout.fillWidth: true
                         Layout.preferredHeight: 50
-                        radius: Theme.rowRadius
-                        color: current ? Qt.alpha(Theme.accent, 0.13) : Theme.surface
+                        radius: root.settingsTheme.glassRadius("card", root.settingsTheme.rowRadius)
+                        color: root.settingsTheme.glassColor("card", current ? Qt.alpha(root.settingsTheme.accent, 0.13) : root.settingsTheme.surface)
                         opacity: supported ? 1 : 0.45
-                        border.width: current ? 1 : 0
-                        border.color: Theme.accent
+                        border.width: root.settingsTheme.glassBorderWidth("card", current ? 1 : 0)
+                        border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.accent)
                         RowLayout {
                             anchors.fill: parent
                             anchors.leftMargin: 12
                             anchors.rightMargin: 12
-                            spacing: Theme.sectionGap
+                            spacing: root.settingsTheme.sectionGap
                             Icon {
                                 icon: profileItem.modelData.icon
                                 font.pixelSize: Fonts.scale(20)
-                                color: profileItem.current ? Theme.accent : Theme.muted
+                                color: profileItem.current ? root.settingsTheme.accent : root.settingsTheme.muted
                                 Layout.minimumWidth: 22
                                 Layout.preferredWidth: 22
                                 Layout.maximumWidth: 22
@@ -165,23 +167,23 @@ Rectangle {
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
                                 spacing: 1
-                                Text {
+                                GlassLabel {
                                     Layout.fillWidth: true
                                     horizontalAlignment: Text.AlignLeft
                                     elide: Text.ElideRight
                                     text: profileItem.modelData.title
-                                    font.pixelSize: Theme.controlTextSize
+                                    font.pixelSize: root.settingsTheme.controlTextSize
                                     font.family: Fonts.poppinsSB.name
-                                    color: Theme.foreground
+                                    color: root.settingsTheme.foreground
                                 }
-                                Text {
+                                GlassLabel {
                                     Layout.fillWidth: true
                                     horizontalAlignment: Text.AlignLeft
                                     elide: Text.ElideRight
                                     text: profileItem.modelData.desc
-                                    font.pixelSize: Theme.helperTextSize
+                                    font.pixelSize: root.settingsTheme.helperTextSize
                                     font.family: Fonts.poppins.name
-                                    color: Theme.muted
+                                    color: root.settingsTheme.contentMuted
                                 }
                             }
                             Icon {
@@ -193,7 +195,7 @@ Rectangle {
                                 Layout.maximumWidth: 22
                                 Layout.alignment: Qt.AlignVCenter
                                 font.pixelSize: Fonts.scale(19)
-                                color: Theme.accent
+                                color: root.settingsTheme.accent
                             }
                         }
                         MouseArea {
@@ -204,14 +206,14 @@ Rectangle {
                         }
                     }
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     text: !PowerProfiles.hasPerformanceProfile ?
                           "Performance is unavailable from the system power-profile service." :
                           "Power profiles are managed by the system service."
                     font.family: Fonts.poppins.name
-                    font.pixelSize: Theme.helperTextSize
-                    color: Theme.muted
+                    font.pixelSize: root.settingsTheme.helperTextSize
+                    color: root.settingsTheme.contentMuted
                     wrapMode: Text.WordWrap
                 }
             }

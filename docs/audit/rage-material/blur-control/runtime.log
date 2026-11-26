@@ -1,0 +1,6 @@
+  INFO: Launching config: "/tmp/rage-material-capture-5gzmp05c/shell.qml"
+  INFO: Shell ID: "6889a8c3e7b94d58dca5f5d8c398c5db" Path ID "6889a8c3e7b94d58dca5f5d8c398c5db"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/7c41o7u0pt/log.qslog"
+  INFO: Configuration Loaded
+  WARN quickshell.hyprland.ipc: Got openwindow for workspace "1" which was not previously tracked.
+ DEBUG qml: CAPTURED grid

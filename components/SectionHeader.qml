@@ -5,11 +5,13 @@ import "../config"
 // Shared accordion header: [Material icon] [title] [spacer] [chevron].
 Item {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     Layout.fillWidth: true
-    implicitHeight: 36
-    height: 36
+    implicitHeight: subtitle.length ? 48 : 36
+    height: implicitHeight
     property string iconName: "\ue8b8"
     property string title: "Section"
+    property string subtitle: ""
     property bool expanded: false
     // In single-widget popups this becomes a static section title.
     property bool collapsible: true
@@ -17,20 +19,34 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        spacing: Theme.sectionGap
+        spacing: root.settingsTheme.sectionGap
         Icon {
             icon: root.iconName
             font.pixelSize: Fonts.scale(20)
-            color: Theme.accent
+            color: root.settingsTheme.accent
             Layout.preferredWidth: 24
         }
-        Text {
+        ColumnLayout {
             Layout.fillWidth: true
-            text: root.title
-            font.family: Fonts.poppinsSB.name
-            font.pixelSize: Theme.sectionTitleSize
-            color: Theme.foreground
-            elide: Text.ElideRight
+            Layout.minimumWidth: 0
+            spacing: 1
+            GlassLabel {
+                Layout.fillWidth: true
+                text: root.title
+                font.family: Fonts.poppinsSB.name
+                font.pixelSize: root.settingsTheme.sectionTitleSize
+                color: root.settingsTheme.foreground
+                elide: Text.ElideRight
+            }
+            GlassLabel {
+                visible: root.subtitle.length > 0
+                Layout.fillWidth: true
+                text: root.subtitle
+                color: root.settingsTheme.contentMuted
+                font.family: Fonts.poppins.name
+                font.pixelSize: root.settingsTheme.helperTextSize
+                elide: Text.ElideRight
+            }
         }
         Icon {
             visible: root.collapsible
@@ -38,7 +54,7 @@ Item {
             font.pixelSize: Fonts.scale(21)
             Layout.preferredWidth: 23
             rotation: root.expanded ? 180 : 0
-            Behavior on rotation { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
+            Behavior on rotation { enabled: root.settingsTheme.motionEnabled; NumberAnimation { duration: root.settingsTheme.motionFastDuration; easing.type: Easing.OutCubic } }
         }
     }
     MouseArea {

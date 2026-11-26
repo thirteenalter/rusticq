@@ -1,0 +1,11 @@
+PASS absolute center independent of left/right groups
+PASS single active center zone
+PASS legacy brand header and magnifying search field
+PASS compact quick cards isolated
+Traceback (most recent call last):
+  File "/home/ryznxx/dev/quickshell/tools/test_rc3.py", line 21, in <module>
+    check('Math.min(690, quickCards.preferredContentHeight + 119)'  in (root/'modules/bar/BarWrapper.qml').read_text(), 'responsive compact quick height')
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryznxx/dev/quickshell/tools/test_rc3.py", line 11, in check
+    raise AssertionError(label)
+AssertionError: responsive compact quick height

@@ -1,0 +1,74 @@
+{
+  "native": true,
+  "observe": true,
+  "profile": [
+    {
+      "phase": "dock-expand",
+      "frames": 19,
+      "firstSubmitMs": 10,
+      "p95SubmitGapMs": 51,
+      "maxSubmitGapMs": 51,
+      "nativeResizes": 10,
+      "nativeMoves": 12
+    },
+    {
+      "phase": "dock-collapse",
+      "frames": 19,
+      "firstSubmitMs": 21,
+      "p95SubmitGapMs": 50,
+      "maxSubmitGapMs": 50,
+      "nativeResizes": 12,
+      "nativeMoves": 11
+    },
+    {
+      "phase": "launcher-results-enter",
+      "frames": 19,
+      "firstSubmitMs": 24,
+      "p95SubmitGapMs": 87,
+      "maxSubmitGapMs": 87,
+      "nativeResizes": 6,
+      "nativeMoves": 0
+    },
+    {
+      "phase": "launcher-results-exit",
+      "frames": 15,
+      "firstSubmitMs": 48,
+      "p95SubmitGapMs": 23,
+      "maxSubmitGapMs": 23,
+      "nativeResizes": 1,
+      "nativeMoves": 0
+    },
+    {
+      "phase": "launcher-resize-spotlight",
+      "frames": 20,
+      "firstSubmitMs": 22,
+      "p95SubmitGapMs": 21,
+      "maxSubmitGapMs": 21,
+      "nativeResizes": 7,
+      "nativeMoves": 0
+    },
+    {
+      "phase": "launcher-resize-minimal",
+      "frames": 3,
+      "firstSubmitMs": 12,
+      "p95SubmitGapMs": 91,
+      "maxSubmitGapMs": 91,
+      "nativeResizes": 0,
+      "nativeMoves": 0
+    },
+    {
+      "phase": "launcher-resize-classic",
+      "frames": 3,
+      "firstSubmitMs": 11,
+      "p95SubmitGapMs": 16,
+      "maxSubmitGapMs": 16,
+      "nativeResizes": 0,
+      "nativeMoves": 0
+    }
+  ],
+  "results": {
+    "passed": 3,
+    "failed": 0
+  },
+  "note": "Frame-submit intervals in an isolated scene; not whole-desktop FPS/GPU benchmarks."
+}

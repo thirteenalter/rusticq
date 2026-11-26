@@ -1,0 +1,178 @@
+{
+  "created": [
+    {
+      "path": "components/LauncherController.qml",
+      "sha256": "f499bc2f32bc1ff7db965c6f194bc2f9df3104ce4cb696189cb154249dbeb92a"
+    },
+    {
+      "path": "components/LauncherView.qml",
+      "sha256": "02b20b3cdab7774470c128d1e5e023915e662f28f2615875f2e607e10c843bb4"
+    },
+    {
+      "path": "components/LauncherResults.qml",
+      "sha256": "8f02e7dd1595b02b2eae6dc5dc211e53036510a870876cb9afb3b058ff19c336"
+    },
+    {
+      "path": "components/LauncherMaterial.qml",
+      "sha256": "5cab4ac61d199a318c6db444170e2552e4418601bb06c0dce57d7f325ed7592f"
+    },
+    {
+      "path": "components/LauncherAppIcon.qml",
+      "sha256": "3d0aca196b84b687da662084332117e57c9718182ffc4ddc551662264fec4b92"
+    },
+    {
+      "path": "components/LauncherStylePreview.qml",
+      "sha256": "7bc99b484374fad4c3b0095103e8e929922a2e8c2f675e1c8cdbdc5d5f406349"
+    },
+    {
+      "path": "config/LauncherStyle.qml",
+      "sha256": "7bc9eb17fb61c94e8dd1054c7f3a29a05bd11f707e7ff9cb44431e657d3eff43"
+    },
+    {
+      "path": "modules/settings/pages/LauncherSettingRow.qml",
+      "sha256": "5c9421130408f94e7f2d1c6826b4187c8ccdb8fd28090192ee8455dc5be626b2"
+    },
+    {
+      "path": "tools/test_launcher_studio.py",
+      "sha256": "54456a9a1e5d577c98f517c92a295e9a8d5daa95449cd2ecf21a4cdd5cb89c10"
+    },
+    {
+      "path": "tools/test_launcher_studio_ui.py",
+      "sha256": "60158a2d03de1a6ad0e9e289b354d9e8bd7ced25b37e49396df446529f1c0eaa"
+    },
+    {
+      "path": "tools/capture_launcher_studio.py",
+      "sha256": "f1f9f3d93ecbdd006f3b2cf782d7439bc1699822c5aed52717a93d7fd96c5777"
+    },
+    {
+      "path": "docs/LAUNCHER-STUDIO.md",
+      "sha256": "b4910c20598ed8b258ce902468e62ebb54535f829028a81dc63cbf9ee92546e2"
+    },
+    {
+      "path": "docs/LAUNCHER-STUDIO-SCHEMA.md",
+      "sha256": "3ef65f4692fcf26a1c61aa2975c98c91ae0b9387652d16d7a90d85f26820aa5a"
+    },
+    {
+      "path": "changelog/LAUNCHER-STUDIO.md",
+      "sha256": "3ca319e9d6c03bf5908689f85cded580d0053e758007225a0559dab5473bc0f2"
+    }
+  ],
+  "modified": [
+    {
+      "path": "tools/test_beta1_feature_batch.py",
+      "sha256": "839d6b8a5554f67b9cb274987bb191739e840d1ae6a10a55ed62f321f58f9789"
+    },
+    {
+      "path": "tools/test_beta1.py",
+      "sha256": "838d59adae37d3960ea9b646379618a6baa105eae5f6dd5d4ed5e1fb8a8e6c45"
+    },
+    {
+      "path": "tools/test_beta3_features.py",
+      "sha256": "cd98453d2ebea1034f200b7151dec1b57bc7a960715659b3ab0d834c80b913b2"
+    },
+    {
+      "path": "config/SettingsStore.qml",
+      "sha256": "1a88d45532da24c552569e48836186a6185ada0cc3db6a010110cf043d2d31bc"
+    },
+    {
+      "path": "config/Store.qml",
+      "sha256": "d6397da32b2ac64f4c9d2d6dc502cef9e4dccea6dac813b09ccf455a988a1e26"
+    },
+    {
+      "path": "config/Theme.qml",
+      "sha256": "8c666bac319b4915899eb2fb0f5e80135b5d2da876274c883cae2404e685ff86"
+    },
+    {
+      "path": "config/qmldir",
+      "sha256": "f33a76ed025e222097693e18b41784a3209776046d7cd7a8bd662b1157e1cabc"
+    },
+    {
+      "path": "components/SurfaceMotion.qml",
+      "sha256": "6ea289ebf05bcb6551d60917334028a9fec10da4011c63e99294d59056808470"
+    },
+    {
+      "path": "components/BarZone.qml",
+      "sha256": "ba082a1699be949bfcff777896f7d839a0e1b0fa659e4127eb177fe852faaec2"
+    },
+    {
+      "path": "modules/main/Bar.qml",
+      "sha256": "427410122bd90f723d74b7b449cb6621843facc06ce93b0f06f2979a99738964"
+    },
+    {
+      "path": "modules/main/LauncherOverlay.qml",
+      "sha256": "f1d8e2c88504da7b03e89c57cc552cdf7d2dd57f0bc7c7c27cd95d0e534fe5e1"
+    },
+    {
+      "path": "modules/main/MiniLauncher.qml",
+      "sha256": "3e9ea3dc2d216e512d60c55311e7c2e86e27a0941a2040fb7b5dd23aef326eb3"
+    },
+    {
+      "path": "modules/settings/pages/SettingsLauncherPage.qml",
+      "sha256": "ec6016327ec2c7eae4c49ad1570417dfd93b48f5f60239d2b89b6a4254c23895"
+    },
+    {
+      "path": "services/AppUsage.qml",
+      "sha256": "c8690e6e3f7df339c6f5b2bee1c25a745b0afebcf5f84df08a584495eadc91d1"
+    },
+    {
+      "path": "services/GlassService.qml",
+      "sha256": "04443228ab6a79efff10a427d2ac9d844eeb42e80b21ad43b90d3c6cc5ec34a5"
+    },
+    {
+      "path": "scripts/rusticq-glass.py",
+      "sha256": "4d674b00e9f0ab2ff18721275d15ae56fdf5834100f4bc3c09540ef22673ec96"
+    },
+    {
+      "path": "user-settings.example.json",
+      "sha256": "af6064850392168ffd1a18b4850099d4e9f93bfc59cd8ec51a03fe6b69fde246"
+    },
+    {
+      "path": "tools/test_beta2_launcher_tools.py",
+      "sha256": "9179dafdefd5ae6638a11878301dfe76988824ae7d674407e5db3d760f03f13e"
+    },
+    {
+      "path": "tools/test_beta2_release_fuzzy.py",
+      "sha256": "1c11390923b60c488a3b7d19eca874e665da8f8a7abe1284e3e459d35952882a"
+    },
+    {
+      "path": "tools/test_dock_launcher_layout_fix.py",
+      "sha256": "d7e8a1be418bcc1e77ed082e4b4defd924177619b2ec32bbfe65d52043eee894"
+    },
+    {
+      "path": "tools/test_updater_launcher_fix.py",
+      "sha256": "0ac262896263173870d36d54732f550e4f6acbcb00900c89cd9f19286d1ad4e0"
+    },
+    {
+      "path": "tools/test_settings_refactor.py",
+      "sha256": "752ef1341afb409aeaf2917c8e65a984ce86e76f511350177338785aad5d36f3"
+    },
+    {
+      "path": "tools/test_native_lock_design_alignment.py",
+      "sha256": "1f62585e826c82232fd3571bf52b04b66647907968289ba6aba613faf81d0ccb"
+    },
+    {
+      "path": "tools/test_system_monitor_fix.py",
+      "sha256": "40c72274ee32bfcb65cd842ffd052a5aa4db68d2dc9824ffc98865536171c12c"
+    },
+    {
+      "path": ".github/workflows/static-validation.yml",
+      "sha256": "300cda2e4ff5fefdc7853f7a43ef168836fde9d8999533fdc71a5a44ef43dc4c"
+    },
+    {
+      "path": "README.md",
+      "sha256": "7fa8b313ac126ec10018df4b1a4887f0fc01d2ae72e17c667917c9997242b8aa"
+    },
+    {
+      "path": "FEATURES.md",
+      "sha256": "3f864f60f350e6cfae0449811ccdb7261ab60b5c402558aed2fde37decdab7c9"
+    },
+    {
+      "path": "docs/RAGE.md",
+      "sha256": "e4d5ea37ddb200b1304a0d95acfbff042f195dee2944ed5ca9c50474ef0562fd"
+    },
+    {
+      "path": "docs/RAGE-MATERIAL-RECONSTRUCTION.md",
+      "sha256": "412d43fce62b3c38563cd07df24dbcde9ca1ec07ad3dc1669a910d2b31f4a225"
+    }
+  ]
+}

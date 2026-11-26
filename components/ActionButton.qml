@@ -4,22 +4,23 @@ import "../config"
 
 Rectangle {
     id: button
+    readonly property var settingsTheme: SettingsMaterial.forItem(button)
     property string label: ""
     property string symbol: ""
     property bool selected: false
     property bool destructive: false
-    readonly property color actionColor: destructive ? Theme.error : Theme.accent
+    readonly property color actionColor: destructive ? button.settingsTheme.error : button.settingsTheme.accent
     signal clicked()
     implicitHeight: 36
     implicitWidth: buttonContent.implicitWidth + 18
-    radius: Theme.rowRadius
-    color: selected || pointer.containsMouse || activeFocus ? Qt.alpha(actionColor, 0.16) : Theme.surface
-    border.width: activeFocus ? 1 : 0
-    border.color: actionColor
+    radius: button.settingsTheme.glassRadius("control", button.settingsTheme.rowRadius)
+    color: button.settingsTheme.glassColor("control", selected || pointer.containsMouse || activeFocus ? Qt.alpha(actionColor, 0.16) : button.settingsTheme.surface)
+    border.width: button.settingsTheme.glassBorderWidth("control", activeFocus ? 1 : 0)
+    border.color: button.settingsTheme.glassBorder("control", actionColor)
     opacity: enabled ? 1 : 0.45
     scale: pointer.pressed ? 0.98 : 1
-    Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
-    Behavior on scale { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
+    Behavior on color { enabled: button.settingsTheme.motionEnabled; ColorAnimation { duration: button.settingsTheme.motionFastDuration } }
+    Behavior on scale { enabled: button.settingsTheme.motionEnabled; NumberAnimation { duration: button.settingsTheme.motionFastDuration; easing.type: Easing.OutCubic } }
     activeFocusOnTab: true
     Accessible.role: Accessible.Button
     Accessible.name: label || symbol
@@ -31,7 +32,7 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 5
         Icon { visible: button.symbol.length > 0; icon: button.symbol; color: button.actionColor; font.pixelSize: Fonts.scale(18) }
-        Text { visible: button.label.length > 0; text: button.label; color: button.destructive ? button.actionColor : Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+        GlassLabel { visible: button.label.length > 0; text: button.label; color: button.destructive ? button.actionColor : button.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
     }
     MouseArea {
         id: pointer

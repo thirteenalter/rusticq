@@ -1,0 +1,128 @@
+{
+  "recordedAt": "2026-11-25T10:55:29.341855+07:00",
+  "environment": {
+    "compositor": "Hyprland 0.56.2 / Omarchy",
+    "quickshell": "0.3.2",
+    "monitor": "eDP-1 1920x1080 scale 1, 60.001 Hz",
+    "compatibilityBaseline": "Quickshell 0.3.1 API; native 0.3.1 not installed"
+  },
+  "tests": [
+    {
+      "command": "python3 -B tools/verify-static.py",
+      "kind": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "166 QML, 0 issues",
+      "log": "logs/rq-motion-static.log"
+    },
+    {
+      "command": "python3 -B tools/test_motion_ui.py",
+      "kind": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "10 passed, 0 failed",
+      "log": "logs/rq-motion-global-ui.log"
+    },
+    {
+      "command": "python3 -B tools/test_launcher_studio_ui.py",
+      "kind": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "11 passed, 0 failed; all eleven styles and persistence",
+      "log": "logs/rq-motion-studio-ui.log"
+    },
+    {
+      "command": "python3 -B tools/test_launcher_studio.py",
+      "kind": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "7 tests passed",
+      "log": "logs/rq-motion-studio-static.log"
+    },
+    {
+      "command": "python3 -B tools/test_glassmorphism.py",
+      "kind": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "23 tests passed",
+      "log": "logs/rq-motion-glass-tests.log"
+    },
+    {
+      "command": "python3 -B tools/test_dock_launcher_layout_fix.py",
+      "kind": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "3 tests passed",
+      "log": "logs/rq-motion-dock-layout.log"
+    },
+    {
+      "command": "python3 -B tools/test_settings_refactor.py",
+      "kind": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Settings and launcher ownership passed",
+      "log": "logs/rq-motion-settings.log"
+    },
+    {
+      "command": "python3 -B tools/check-bar-modes.py",
+      "kind": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Five modes passed",
+      "log": "logs/rq-motion-bar-modes.log"
+    },
+    {
+      "command": "python3 -B tools/test_motion_ui.py --native-smoke",
+      "kind": "Wayland native",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "6 passed, 0 failed",
+      "log": "logs/rq-motion-native-smoke.log"
+    },
+    {
+      "command": "python3 -B tools/test_launcher_dock_motion.py --native --observe --source /home/ryznxx/.local/share/rusticq/shell --output /tmp/rusticq-motion-before-clean.json",
+      "kind": "Wayland native baseline",
+      "status": "OBSERVED",
+      "exitCode": 0,
+      "result": "Installed pre-fix code; mechanical resize/move counts recorded",
+      "log": "before-native.log"
+    },
+    {
+      "command": "python3 -B tools/test_launcher_dock_motion.py --native --output /tmp/rusticq-motion-ready-final.json",
+      "kind": "Wayland native",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "6 passed, 0 failed; stable geometry, cache/low-memory, unchanged delegates and prepared blur",
+      "log": "after-native.log"
+    },
+    {
+      "command": "python3 -B tools/capture_launcher_studio.py --run --styles spotlight,detached,launchpad,minimal,classic --input --output /tmp/rusticq-motion-visual-final",
+      "kind": "Wayland native",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "30 captures, keyboard/Escape, no canvas/dock halo; 17 None cases and 7 Detached gap cases",
+      "log": "runtime.log"
+    },
+    {
+      "command": "python3 -B tools/test_config_reload_ui.py",
+      "kind": "isolated IPC/offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Own saves, external settings, atomic replacement, remote reload, invalid source recovery passed",
+      "note": "Initial sandbox IPC socket access was denied; authorized rerun passed."
+    },
+    {
+      "command": "git diff --check",
+      "kind": "diff",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "No whitespace errors"
+    }
+  ],
+  "deployment": "deployment.json",
+  "limitations": [
+    "Frame-submit callbacks use GUI timestamps; not a GPU/FPS benchmark.",
+    "Long gaps in static phases can indicate no frames needed, not dropped animation frames.",
+    "Physical multi-monitor/fractional-scale testing not performed."
+  ]
+}

@@ -4,21 +4,24 @@ import "../../config"
 import "../../components"
 
 Rectangle {
+    id:root
+    QuickControlInputBridge {target:root;active:QuickControlStyle.modular}
     Layout.fillWidth: true
-    Layout.preferredHeight: 54
+    Layout.preferredHeight: QuickControlStyle.modular ? 42 : 54
     color: Theme.trsp
 
     RowLayout {
+        visible: !QuickControlStyle.modular
         anchors.fill: parent
-        anchors.leftMargin: 12
-        anchors.rightMargin: 12
-        spacing: 10
+        anchors.leftMargin: 0
+        anchors.rightMargin: 0
+        spacing: Theme.inlineGap
 
         Rectangle {
             Layout.preferredWidth: 32
             Layout.preferredHeight: 32
-            radius: 10
-            color: Theme.surface
+            radius: QuickControlStyle.modular ? QuickControlStyle.iconRadius : Theme.glassRadius("card", 10)
+            color: QuickControlStyle.modular ? QuickControlStyle.surface(false,false,false) : Theme.glassColor("card", Theme.surface)
             Icon {
                 anchors.centerIn: parent
                 icon: Store.advancedVisible ? "\ue5c4" : "\ue69b" // stat_minus_1
@@ -32,19 +35,19 @@ Rectangle {
                 onClicked: Store.advancedVisible = false
             }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
-            text: Store.advancedVisible ? "Advance" : "Quick Control"
+            text: Store.advancedVisible ? "Advanced" : "Quick Control"
             font.family: Fonts.poppinsSB.name
-            font.pixelSize: Fonts.scale(18)
+            font.pixelSize: Fonts.scale(QuickControlStyle.modular ? 16 : 18)
             color: Theme.foreground
         }
         Rectangle {
             visible: !Store.advancedVisible
             Layout.preferredWidth: 32
             Layout.preferredHeight: 32
-            radius: 10
-            color: Store.quickReorderMode ? Qt.alpha(Theme.accent, 0.18) : Theme.surface
+            radius: QuickControlStyle.modular ? QuickControlStyle.iconRadius : Theme.glassRadius("card", 10)
+            color: QuickControlStyle.modular ? QuickControlStyle.surface(Store.quickReorderMode,false,false) : Theme.glassColor("card", Store.quickReorderMode ? Qt.alpha(Theme.accent, 0.18) : Theme.surface)
             Icon { anchors.centerIn: parent; icon: "\ue8d5"; font.pixelSize: Fonts.scale(19); color: Store.quickReorderMode ? Theme.accent : Theme.muted }
             MouseArea {
                 anchors.fill: parent
@@ -56,8 +59,8 @@ Rectangle {
         Rectangle {
             Layout.preferredWidth: 32
             Layout.preferredHeight: 32
-            radius: 10
-            color: closeMouse.containsMouse ? Theme.accent : Theme.surface
+            radius: QuickControlStyle.modular ? QuickControlStyle.iconRadius : Theme.glassRadius("card", 10)
+            color: QuickControlStyle.modular ? QuickControlStyle.surface(false,closeMouse.containsMouse,false) : Theme.glassColor("card", closeMouse.containsMouse ? Theme.accent : Theme.surface)
             Icon {
                 anchors.centerIn: parent
                 icon: "\ue5cd"  // close
@@ -71,5 +74,14 @@ Rectangle {
                 onClicked: Store.sidebarVisible = false
             }
         }
+    }
+    RowLayout {
+        visible:QuickControlStyle.modular
+        anchors.fill:parent
+        spacing:QuickControlStyle.gap
+        QuickControlIconButton {visible:Store.advancedVisible;symbol:"\ue5c4";label:"Back to Quick Control";onClicked:Store.advancedVisible=false}
+        QuickControlLabel {Layout.fillWidth:true;text:Store.advancedVisible ? "Advanced" : "Quick Control";font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(16);elide:Text.ElideRight}
+        QuickControlIconButton {objectName:"quickReorderButton";visible:!Store.advancedVisible;symbol:"\ue8d5";label:"Reorder modules";selected:Store.quickReorderMode;onClicked:Store.quickReorderMode=!Store.quickReorderMode}
+        QuickControlIconButton {symbol:"\ue5cd";label:"Close Quick Control";onClicked:Store.sidebarVisible=false}
     }
 }

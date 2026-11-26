@@ -66,11 +66,16 @@ def test_qml_contract():
     settings = (ROOT / 'config/SettingsStore.qml').read_text()
     settings_page = (ROOT / 'modules/settings/pages/SettingsLauncherPage.qml').read_text()
     assert 'readonly property bool cleanHover' in launcher
-    assert 'visible: root.showResults' in launcher
-    assert 'model: root.displayedResults' in launcher
-    assert 'launcherLayoutMode === "clean-hover" && !launcherSurface.showResults' in overlay
+    view = (ROOT / 'components/LauncherView.qml').read_text()
+    controller = (ROOT / 'components/LauncherController.qml').read_text()
+    assert 'cleanHover ? revealPreview' in view
+    assert 'hoverClose;interval:650' in view
+    assert 'resultLimit:SettingsStore.launcherLayoutMode' in launcher
+    assert 'frontend.implicitHeight' in launcher
+    assert 'launcherSurface.implicitHeight' in overlay
+    assert 'displayedResults' in controller and 'toolRows : displayedResults' in controller
     assert 'launcherLayoutMode: launcherLayoutMode' in settings
-    assert 'onClicked: { SettingsStore.launcherLayoutMode' in settings_page
+    assert 'SettingsStore.setLauncherValue("launcherLayoutMode",card.modelData.key,true)' in settings_page
 
 
 if __name__ == '__main__':

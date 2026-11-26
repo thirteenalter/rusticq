@@ -117,6 +117,12 @@ Item {
             if (folder && folder.length) grabImage(settings.contentItem).save(folder + "/" + name + ".png");
         }
         function init() {
+            wifiCard.visible = false;
+            wifiCard.standalone = true;
+            wifiCard.expanded = true;
+            wifiCard.height = Qt.binding(() => wifiCard.implicitHeight);
+            bluetoothCard.standalone = true;
+            bluetoothCard.expanded = false;
             Store.closeDeviceSettings();
             deviceRequests.clear();
             wifiCard.popupScreen = ({height: 720});
@@ -140,6 +146,8 @@ Item {
             bluetoothCard.visible = false;
             compactAudio.visible = true;
             officeNetwork.connectCalls = 0;
+            officeNetwork.connected = false;
+            SettingsStore.uiDensity = "comfortable";
             guestNetwork.name = "Guest lounge";
             headphones.pairCalls = 0;
             keyboard.name = "Desk Keyboard";
@@ -149,6 +157,8 @@ Item {
             playback.audio.muted = false;
             playback.audio.channels = [1, 2];
             playback.properties = {"application.name": "Firefox", "media.name": "Example video"};
+            wifiCard.visible = true;
+            wifiCard.Window.window.requestActivate();
             wait(40);
         }
         function test_advanced_is_separate_and_back_restores_networks() {
@@ -182,7 +192,7 @@ Item {
             Fixtures.WifiFixture.adapter.networks.values = [officeNetwork, guestNetwork];
             tryCompare(list, "count", 2);
             const input = childrenOf(search).find(item => item.objectName === "nameSearchInput");
-            input.forceActiveFocus();
+            tryCompare(input, "activeFocus", true);
             input.insert(0, "  oFFICE  ");
             tryCompare(list, "count", 1);
             tryVerify(() => list.itemAtIndex(0) !== null);
@@ -201,6 +211,7 @@ Item {
             waitForRendering(wifiCard);
             mouseClick(childrenOf(search).find(item => item.objectName === "clearNameSearch"));
             compare(search.text, "");
+            compare(input.activeFocus, true);
             tryCompare(list, "count", 2);
             search.text = "guest";
             Fixtures.WifiFixture.adapter.networks.values = [officeNetwork];
@@ -208,6 +219,89 @@ Item {
             Fixtures.WifiFixture.device = null;
             tryCompare(search, "enabled", false);
             compare(search.text, "");
+        }
+        function test_wifi_surface_insets_connected_state_and_row_actions() {
+            Fixtures.WifiFixture.adapter.networks.values = [officeNetwork, guestNetwork];
+            officeNetwork.connected = true;
+            const list=named("wifiNetworkList"),content=named("wifiContent"),search=named("wifiNameSearch");
+            tryCompare(list,"count",2);
+            for(const density of ["comfortable","compact"]){
+                SettingsStore.uiDensity=density;wait(30);
+                fuzzyCompare(content.x,Theme.panelPadding,.75);
+                fuzzyCompare(content.width,wifiCard.width-2*Theme.panelPadding,.75);
+                fuzzyCompare(search.mapToItem(wifiCard,0,0).x,Theme.panelPadding,.75);
+                fuzzyCompare(list.mapToItem(wifiCard,0,0).x,Theme.panelPadding,.75);
+                const row=list.itemAtIndex(0);verify(row!==null);
+                verify(row.height>=54);verify(row.color.a>0);
+                mouseClick(row,20,25);wait(30);compare(wifiCard.activeNetwork,officeNetwork);
+                const actions=childrenOf(row).filter(item=>item.text==="Disconnect" && item.visible);
+                compare(actions.length,1);verify(row.height>70);
+                mouseClick(row,20,25);wait(30);compare(wifiCard.activeNetwork,null);
+            }
+            officeNetwork.connected=false;SettingsStore.uiDensity="comfortable";
+        }
+        function test_search_focus_on_expanded_quick_cards() {
+            const wifiSearch = named("wifiNameSearch");
+            wifiCard.standalone = false;
+            wifiCard.height = 350;
+            wifiCard.expanded = false;
+            verify(!wifiSearch.visible);
+            wifiCard.expanded = true;
+            tryCompare(findChild(wifiSearch, "nameSearchInput"), "activeFocus", true);
+            wifiCard.expanded = false;
+            verify(!wifiSearch.visible);
+            bluetoothCard.standalone = false;
+            bluetoothCard.expanded = false;
+            bluetoothCard.visible = true;
+            const btSearch = findChild(bluetoothCard, "bluetoothNameSearch");
+            verify(!btSearch.visible);
+            bluetoothCard.expanded = true;
+            tryCompare(findChild(btSearch, "nameSearchInput"), "activeFocus", true);
+            bluetoothCard.expanded = false;
+            verify(!btSearch.visible);
+            wait(20);
+            compare(findChild(btSearch, "nameSearchInput").activeFocus, false);
+        }
+        function test_name_search_focus_reopen_advanced_and_no_focus_theft() {
+            const wifiSearch = named("wifiNameSearch");
+            const wifiInput = childrenOf(wifiSearch).find(item => item.objectName === "nameSearchInput");
+            tryCompare(wifiInput, "activeFocus", true);
+            keyClick(Qt.Key_G);
+            compare(wifiSearch.text, "g");
+            keyClick(Qt.Key_Escape);
+            compare(wifiSearch.text, "");
+            compare(wifiInput.activeFocus, true);
+            wifiCard.showAdvanced();
+            verify(!wifiSearch.visible);
+            wifiCard.showNetworks();
+            tryCompare(wifiInput, "activeFocus", true);
+            const other = childrenOf(compactAudio).find(item => item.objectName === "audioFullscreenButton");
+            other.forceActiveFocus();
+            tryCompare(other, "activeFocus", true);
+            Fixtures.WifiFixture.adapter.networks.values = [officeNetwork, guestNetwork];
+            wait(40);
+            compare(other.activeFocus, true);
+            // Clicking the field's icon/padding forwards focus to the input.
+            mouseClick(wifiSearch, 4, wifiSearch.height / 2);
+            tryCompare(wifiInput, "activeFocus", true);
+            wifiCard.visible = false;
+            wifiCard.visible = true;
+            wait(20);
+            tryCompare(wifiInput, "activeFocus", true);
+            bluetoothCard.visible = true;
+            const btSearch = childrenOf(bluetoothCard).find(item => item.objectName === "bluetoothNameSearch");
+            const btInput = childrenOf(btSearch).find(item => item.objectName === "nameSearchInput");
+            tryCompare(btInput, "activeFocus", true);
+            keyClick(Qt.Key_H);
+            compare(btSearch.text, "h");
+            bluetoothCard.visible = false;
+            bluetoothCard.visible = true;
+            tryCompare(btInput, "activeFocus", true);
+            compare(btSearch.text, "");
+            Fixtures.Bluetooth.adapter.enabled = false;
+            verify(!btSearch.enabled);
+            Fixtures.Bluetooth.adapter.enabled = true;
+            tryCompare(btInput, "activeFocus", true);
         }
         function test_bluetooth_name_search_live_results_clear_and_pair() {
             compactAudio.visible = false;
@@ -217,7 +311,7 @@ Item {
             const list = childrenOf(bluetoothCard).find(item => item.objectName === "bluetoothDeviceList");
             tryCompare(list, "count", 2);
             const input = childrenOf(search).find(item => item.objectName === "nameSearchInput");
-            input.forceActiveFocus();
+            tryCompare(input, "activeFocus", true);
             input.insert(0, "  HEAD  ");
             tryCompare(list, "count", 1);
             const row = list.itemAt(0);
@@ -237,6 +331,7 @@ Item {
             mouseClick(childrenOf(search).find(item => item.objectName === "clearNameSearch"));
             tryCompare(list, "count", 2);
             compare(search.text, "");
+            compare(input.activeFocus, true);
             search.text = "head";
             Fixtures.Bluetooth.adapter.enabled = false;
             tryCompare(list, "count", 0);
@@ -493,18 +588,14 @@ Item {
             compare(settings.activePage.label, "Settings");
             compare(settings.settingsGroup, "home");
             saveSettingsPreview("settings-home");
-            const uiButton = childrenOf(settings.contentItem).find(item => item.objectName === "settingsGroup_ui");
-            verify(uiButton !== undefined);
-            waitForRendering(settings.contentItem);
-            mouseClick(uiButton);
-            tryCompare(settings, "settingsGroup", "ui");
-            verify(settings.navigationPages.some(page => page.key === "bar"));
-            verify(!settings.navigationPages.some(page => page.key === "wifi"));
-            mouseClick(childrenOf(settings.contentItem).find(item => item.objectName === "settingsGroup_system"));
-            tryCompare(settings, "settingsGroup", "system");
+            const sidebar=childrenOf(settings.contentItem).find(item=>item.objectName==="rusticq-settings-sidebar");
+            verify(sidebar!==undefined);
+            verify(settings.navigationPages.some(page=>page.key==="bar"));
+            verify(settings.navigationPages.some(page=>page.key==="wifi"));
+            verify(settings.navigationPages.some(page=>page.group==="Connectivity"));
+            settings.navigate("system");
+            compare(settings.settingsGroup,"system");
             saveSettingsPreview("settings-system");
-            verify(settings.navigationPages.some(page => page.key === "wifi"));
-            verify(!settings.navigationPages.some(page => page.key === "bar"));
             for (const tab of ["wifi", "bluetooth", "audio", "power", "bar"]) {
                 settings.navigate(tab);
                 wait(60);

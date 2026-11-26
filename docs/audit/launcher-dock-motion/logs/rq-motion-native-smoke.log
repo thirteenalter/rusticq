@@ -1,0 +1,11 @@
+  INFO: Launching config: "/tmp/rq-motion-native-f1wt5ybp/shell.qml"
+  INFO: Shell ID: "5b905d449ea0cea952cc6d4abc3b1a9e" Path ID "5b905d449ea0cea952cc6d4abc3b1a9e"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/rml797h1pt/log.qslog"
+  INFO: Configuration Loaded
+ DEBUG qml: NATIVE MOTION TEST test_ai_persists_hidden_and_low_memory_unloads failed=false
+ DEBUG qml: NATIVE MOTION TEST test_layers_release_and_unload failed=false
+ DEBUG qml: NATIVE MOTION TEST test_notification_and_osd_close_frames failed=false
+ DEBUG qml: NATIVE MOTION TEST test_popup_all_styles_and_retained_content failed=false
+ DEBUG qml: NATIVE MOTION TEST test_popup_reopen_and_instant_off failed=false
+ DEBUG qml: NATIVE MOTION RESULTS 6 passed, 0 failed
+PASS: native Wayland popup styles, quick reopen, focus release, layer unload, toast retention and OSD

@@ -1,7 +1,13 @@
 singleton Theme 1.0 Theme.qml
+singleton QuickControlStyle 1.0 QuickControlStyle.qml
 singleton Fonts 1.0 Fonts.qml
 singleton Config 1.0 Config.qml
 singleton Store 1.0 Store.qml
 singleton SettingsStore 1.0 SettingsStore.qml
 singleton ShellReload 1.0 ShellReload.qml
 singleton ReleaseInfo 1.0 ReleaseInfo.qml
+
+singleton LauncherStyle 1.0 LauncherStyle.qml
+
+singleton SettingsMaterial 1.0 SettingsMaterial.qml
+SettingsDesignTokens 1.0 SettingsDesignTokens.qml

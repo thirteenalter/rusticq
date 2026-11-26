@@ -35,7 +35,7 @@ class Tests(unittest.TestCase):
     def test_js_score_and_typo_tolerance(self):
         if not shutil.which('node'):
             self.skipTest('Node unavailable; JS source behavior must be checked in QML runtime')
-        source=(ROOT/'modules/main/MiniLauncher.qml').read_text()
+        source=(ROOT/'components/LauncherController.qml').read_text()
         impl='\n'.join(qml_function(source,name) for name in ('textOf','editDistance2','searchScore'))
         js='''"use strict";
 const assert=require('node:assert/strict');

@@ -4,6 +4,7 @@ import "../config"
 
 Rectangle {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     property string kind: "wifi"
     property string section: ""
     property string label: "Advanced settings"
@@ -13,8 +14,8 @@ Rectangle {
     property bool fullscreen: false
     implicitHeight: 34
     implicitWidth: iconOnly ? 34 : labelText.implicitWidth + 52
-    radius: Theme.rowRadius
-    color: Theme.surface
+    radius: root.settingsTheme.glassRadius("control", root.settingsTheme.rowRadius)
+    color: root.settingsTheme.glassColor("control", root.settingsTheme.surface)
     activeFocusOnTab: true
     Accessible.role: Accessible.Button
     Accessible.name: label
@@ -25,8 +26,8 @@ Rectangle {
     RowLayout {
         anchors.centerIn: parent
         spacing: 7
-        Icon { icon: root.symbol; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
-        Text { id: labelText; visible: !root.iconOnly; text: root.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Theme.helperTextSize }
+        Icon { icon: root.symbol; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(16) }
+        GlassLabel { id: labelText; visible: !root.iconOnly; text: root.label; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: root.settingsTheme.helperTextSize }
     }
     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.open() }
 }

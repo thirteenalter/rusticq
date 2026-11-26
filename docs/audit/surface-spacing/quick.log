@@ -1,0 +1,15 @@
+  INFO: Launching config: "/tmp/quickshell-ui-test-14pqq20s/shell.qml"
+  INFO: Shell ID: "03e3c419ae70a50ff1e82e3dffe21a41" Path ID "03e3c419ae70a50ff1e82e3dffe21a41"
+  INFO: Saving logs to "/tmp/quickshell-ui-test-14pqq20s/quickshell/by-id/ij19o6k1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+  INFO: Configuration Loaded
+ DEBUG qml: INTERACTION TESTS START
+ DEBUG qml: TEST test_clean_indicator_colors_and_spacing failed=false
+ DEBUG qml: TEST test_click_toggles_mode_without_closing failed=false
+ DEBUG qml: TEST test_nearby_hover_and_delayed_close failed=false
+ DEBUG qml: TEST test_scan_button_states_and_clicks failed=false
+ DEBUG qml: TEST test_visible_modules_and_autohide_setting failed=false
+ DEBUG qml: INTERACTION RESULTS 6 passed, 0 failed
+PASS: settings load/save, hover, click, module visibility, indicator styling, and scan button

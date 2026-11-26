@@ -8,6 +8,7 @@ import ".."
 
 ColumnLayout {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     width: parent ? parent.width : 700
     spacing: 14
     property string category: "os"
@@ -379,33 +380,33 @@ ColumnLayout {
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
-            Text {
+            GlassLabel {
                 Layout.fillWidth: true
                 text: root.loading ? "Reading system information…" : root.error.length ? root.error : (root.details.subtitle || "Current local system")
-                color: root.error.length ? Theme.error : Theme.muted
+                color: root.error.length ? root.settingsTheme.error : root.settingsTheme.muted
                 font.family: Fonts.poppins.name
-                font.pixelSize: Fonts.scale(11)
+                font.pixelSize: Fonts.scale(12)
                 wrapMode: Text.WordWrap
             }
             Rectangle {
                 Layout.preferredWidth: 98
                 Layout.preferredHeight: 32
-                radius: 10
-                color: Theme.background
+                radius: root.settingsTheme.glassRadius("card", 10)
+                color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
                 RowLayout {
                     anchors.centerIn: parent
                     spacing: 6
-                    Icon { icon: "\ue5d5"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
-                    Text { text: root.loading ? "Loading" : "Refresh"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                    Icon { icon: "\ue5d5"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(16) }
+                    GlassLabel { text: root.loading ? "Loading" : "Refresh"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 }
                 MouseArea { anchors.fill: parent; enabled: !root.loading; cursorShape: Qt.PointingHandCursor; onClicked: root.refresh() }
             }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             visible: root.details.headline !== undefined && !root.loading
             text: root.details.headline || ""
-            color: Theme.foreground
+            color: root.settingsTheme.foreground
             font.family: Fonts.poppinsSB.name
             font.pixelSize: Fonts.scale(17)
             wrapMode: Text.WordWrap
@@ -428,22 +429,22 @@ ColumnLayout {
                     required property var modelData
                     Layout.fillWidth: true
                     Layout.preferredHeight: 70
-                    radius: 11
-                    color: Theme.background
+                    radius: root.settingsTheme.glassRadius("card", 11)
+                    color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 11
                         spacing: 3
-                        Text { text: fact.modelData[0]; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true; elide: Text.ElideRight }
-                        Text { text: fact.modelData[1]; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true; elide: Text.ElideRight }
+                        GlassLabel { text: fact.modelData[0]; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true; elide: Text.ElideRight }
+                        GlassLabel { text: fact.modelData[1]; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true; elide: Text.ElideRight }
                     }
                 }
             }
         }
-        Text {
+        GlassLabel {
             visible: root.loading && root.facts.length === 0
             text: "Collecting hardware, operating system and package information…"
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
     }
 
@@ -452,12 +453,12 @@ ColumnLayout {
         heading: "Graphical applications"
         description: "Installed desktop entries recognized by Quickshell; these applications have launchable interfaces."
         symbol: "\ue5c3"
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             text: root.filteredDesktopApps.length + " graphical applications" + (searchInput.text.length ? " matching the package search" : "")
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
-        Text { visible: root.packageStatus.length > 0; text: root.packageStatus; Layout.fillWidth:true; color:Theme.muted; wrapMode:Text.WordWrap; font.pixelSize:Fonts.scale(10) }
+        GlassLabel { visible: root.packageStatus.length > 0; text: root.packageStatus; Layout.fillWidth:true; color:root.settingsTheme.muted; wrapMode:Text.WordWrap; font.pixelSize: Fonts.scale(12) }
         ListView {
             Layout.fillWidth: true
             Layout.preferredHeight: 280
@@ -468,22 +469,22 @@ ColumnLayout {
             delegate: Rectangle {
                 id: desktopAppRow
                 required property var modelData
-                width: ListView.view.width; height: 44; radius: 10
-                color: Theme.background
+                width: ListView.view.width; height: 44; radius: root.settingsTheme.glassRadius("card", 10)
+                color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
                 RowLayout {
                     anchors.fill: parent; anchors.margins: 8; spacing: 10
                     Rectangle {
-                        Layout.preferredWidth: 30; Layout.preferredHeight: 30; radius: 9
-                        color: Theme.surface
+                        Layout.preferredWidth: 30; Layout.preferredHeight: 30; radius: root.settingsTheme.glassRadius("card", 9)
+                        color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
                         Image { id: appIcon; anchors.fill: parent; anchors.margins: 4; fillMode: Image.PreserveAspectFit; source: String(desktopAppRow.modelData.icon || "").charAt(0) === "/" ? "file://" + desktopAppRow.modelData.icon : Quickshell.iconPath(desktopAppRow.modelData.icon || "", true); visible: status === Image.Ready }
-                        Text { anchors.centerIn: parent; visible: !appIcon.visible; text: String(desktopAppRow.modelData.name || "?").charAt(0).toUpperCase(); color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
+                        GlassLabel { anchors.centerIn: parent; visible: !appIcon.visible; text: String(desktopAppRow.modelData.name || "?").charAt(0).toUpperCase(); color: root.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
                     }
-                    Text { text: desktopAppRow.modelData.name || "Unknown app"; Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
-                    Text { text: desktopAppRow.modelData.genericName || "Desktop app"; Layout.preferredWidth: 95; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { text: desktopAppRow.modelData.name || "Unknown app"; Layout.fillWidth: true; elide: Text.ElideRight; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                    GlassLabel { text: desktopAppRow.modelData.genericName || "Desktop app"; Layout.preferredWidth: 95; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                     Rectangle {
                         Layout.preferredWidth: 64; Layout.preferredHeight: 28
-                        radius: 8; color: Theme.surface
-                        Text { anchors.centerIn: parent; text: "Manage"; color: Theme.accent; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
+                        radius: root.settingsTheme.glassRadius("card", 8); color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
+                        GlassLabel { anchors.centerIn: parent; text: "Manage"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppinsSB.name }
                         MouseArea { anchors.fill: parent; enabled: !packageResolve.running; cursorShape: Qt.PointingHandCursor; onClicked: root.resolveGraphicalApp(desktopAppRow.modelData) }
                     }
                 }
@@ -497,14 +498,14 @@ ColumnLayout {
         description: "Searches all installed providers by default. Select a result to install or remove it from RusticQ, without a terminal. AUR builds are third-party code—review their PKGBUILD first."
         symbol: "\ue8b6"
         Rectangle {
-            Layout.fillWidth: true; Layout.preferredHeight: 43; radius: 11; color: Theme.background
+            Layout.fillWidth: true; Layout.preferredHeight: 43; radius: root.settingsTheme.glassRadius("card", 11); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
             RowLayout { anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12; spacing: 9
-                Icon { icon: "\ue8b6"; color: Theme.accent; font.pixelSize: Fonts.scale(19) }
+                Icon { icon: "\ue8b6"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(19) }
                 TextInput {
                     id: catalogInput
                     Layout.fillWidth: true; Layout.fillHeight: true
                     verticalAlignment: TextInput.AlignVCenter
-                    color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
+                    color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                     onTextEdited: {
                         root.catalogQuery = text;
                         if (text.trim().length < 2) {
@@ -515,10 +516,10 @@ ColumnLayout {
                         } else catalogDebounce.restart();
                     }
                     Keys.onReturnPressed: root.lookupCatalog()
-                    Text { anchors.verticalCenter: parent.verticalCenter; visible: catalogInput.text.length === 0
-                        text: "Search all providers (e.g. firefox, steam, gimp)…"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { anchors.verticalCenter: parent.verticalCenter; visible: catalogInput.text.length === 0
+                        text: "Search all providers (e.g. firefox, steam, gimp)…"; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
                 }
-                Text { text: root.catalogBusy ? "Searching…" : "↵"; color: Theme.accent; font.pixelSize: Fonts.scale(11) }
+                GlassLabel { text: root.catalogBusy ? "Searching…" : "↵"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(12) }
             }
         }
         RowLayout { Layout.fillWidth: true; spacing: 7
@@ -526,40 +527,40 @@ ColumnLayout {
                 delegate: Rectangle { id: providerButton
                     required property var modelData
                     readonly property bool chosen: root.catalogProvider === modelData.id
-                    Layout.fillWidth: true; Layout.preferredHeight: 35; radius: 9
-                    color: chosen ? Qt.alpha(Theme.accent,.20) : Theme.background
-                    border.width: chosen ? 1 : 0; border.color: Theme.accent
-                    Text { anchors.centerIn: parent; text: providerButton.modelData.name; font.pixelSize: Fonts.scale(10); color: providerButton.chosen ? Theme.accent : Theme.foreground }
+                    Layout.fillWidth: true; Layout.preferredHeight: 35; radius: root.settingsTheme.glassRadius("card", 9)
+                    color: root.settingsTheme.glassColor("card", chosen ? Qt.alpha(root.settingsTheme.accent,.20) : root.settingsTheme.background)
+                    border.width: root.settingsTheme.glassBorderWidth("card", chosen ? 1 : 0); border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.accent)
+                    GlassLabel { anchors.centerIn: parent; text: providerButton.modelData.name; font.pixelSize: Fonts.scale(12); color: providerButton.chosen ? root.settingsTheme.accent : root.settingsTheme.foreground }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.catalogProvider = providerButton.modelData.id }
                 }
             }
         }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; font.pixelSize: Fonts.scale(10); color: Theme.muted
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap; font.pixelSize: Fonts.scale(12); color: root.settingsTheme.contentMuted
             text: "Available: " + ["pacman","yay","flatpak"].filter(k => root.catalogData.available && root.catalogData.available[k]).join(" · ") + " · " + root.catalogResults.length + " results" + (root.catalogBusy ? " · waiting for remaining providers…" : "") }
         RowLayout { Layout.fillWidth: true; spacing: 8
             Repeater { model: ["pacman","yay","flatpak"]
                 delegate: Rectangle {
                     required property string modelData
-                    Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9
+                    Layout.fillWidth: true; Layout.preferredHeight: 34; radius: root.settingsTheme.glassRadius("card", 9)
                     readonly property var part: root.providerState(modelData)
-                    color: part.busy ? Qt.alpha(Theme.accent,.10) : Theme.background
-                    border.width: 1; border.color: part.error ? Theme.warning : part.busy ? Theme.accent : Theme.borderaccent
+                    color: root.settingsTheme.glassColor("card", part.busy ? Qt.alpha(root.settingsTheme.accent,.10) : root.settingsTheme.background)
+                    border.width: root.settingsTheme.glassBorderWidth("card", 1); border.color: root.settingsTheme.glassBorder("card", part.error ? root.settingsTheme.warning : part.busy ? root.settingsTheme.accent : root.settingsTheme.borderaccent)
                     RowLayout { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10; spacing: 6
-                        Text { text: modelData === "yay" ? "Yay / AUR" : modelData.charAt(0).toUpperCase() + modelData.slice(1); color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                        GlassLabel { text: modelData === "yay" ? "Yay / AUR" : modelData.charAt(0).toUpperCase() + modelData.slice(1); color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12) }
                         Item { Layout.fillWidth: true }
-                        Text { text: part.busy ? "Loading" : (part.error ? "Issue" : String((part.results || []).length) + " found"); color: part.error ? Theme.warning : (part.busy ? Theme.accent : Theme.muted); font.pixelSize: Fonts.scale(9) }
+                        GlassLabel { text: part.busy ? "Loading" : (part.error ? "Issue" : String((part.results || []).length) + " found"); color: part.error ? root.settingsTheme.warning : (part.busy ? root.settingsTheme.accent : root.settingsTheme.muted); font.pixelSize: Fonts.scale(12) }
                     }
                 }
             }
         }
-        Text { visible: root.catalogError.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.catalogError; color: Theme.warning; font.pixelSize: Fonts.scale(10) }
-        Text {
+        GlassLabel { visible: root.catalogError.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.catalogError; color: root.settingsTheme.warning; font.pixelSize: Fonts.scale(12) }
+        GlassLabel {
             visible: root.searchedQuery.length >= 2 && !root.catalogBusy && root.catalogResults.length === 0 && !root.catalogError.length
             Layout.fillWidth: true
             text: "No packages found. Try a shorter name, choose another provider, or check that your repositories are configured."
-            color: Theme.muted
+            color: root.settingsTheme.contentMuted
             wrapMode: Text.WordWrap
-            font.pixelSize: Fonts.scale(10)
+            font.pixelSize: Fonts.scale(12)
         }
         ListView {
             visible: root.catalogQuery.length > 1
@@ -568,18 +569,18 @@ ColumnLayout {
             model: root.catalogResults
             delegate: Rectangle { id: catalogRow
                 required property var modelData
-                width: ListView.view.width; height: 58; radius: 10; color: Theme.background
+                width: ListView.view.width; height: 58; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
                 RowLayout { anchors.fill: parent; anchors.margins: 9; spacing: 9
-                    Rectangle { Layout.preferredWidth: 57; Layout.preferredHeight: 25; radius: 7; color: Qt.alpha(Theme.accent,.13)
-                        Text { anchors.centerIn: parent; text: catalogRow.modelData.source === "yay" ? "AUR" : catalogRow.modelData.source === "flatpak" ? "FLAT" : "REPO"; color: Theme.accent; font.pixelSize: Fonts.scale(9) }
+                    Rectangle { Layout.preferredWidth: 57; Layout.preferredHeight: 25; radius: root.settingsTheme.glassRadius("card", 7); color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.accent,.13))
+                        GlassLabel { anchors.centerIn: parent; text: catalogRow.modelData.source === "yay" ? "AUR" : catalogRow.modelData.source === "flatpak" ? "FLAT" : "REPO"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(12) }
                     }
                     ColumnLayout { Layout.fillWidth: true; spacing: 2
-                        Text { Layout.fillWidth: true; elide: Text.ElideRight; text: catalogRow.modelData.title || catalogRow.modelData.name; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
-                        Text { Layout.fillWidth: true; elide: Text.ElideRight; text: catalogRow.modelData.description || catalogRow.modelData.name; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
+                        GlassLabel { Layout.fillWidth: true; elide: Text.ElideRight; text: catalogRow.modelData.title || catalogRow.modelData.name; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                        GlassLabel { Layout.fillWidth: true; elide: Text.ElideRight; text: catalogRow.modelData.description || catalogRow.modelData.name; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
                     }
-                    Rectangle { Layout.preferredWidth: 76; Layout.preferredHeight: 32; radius: 8
-                        color: catalogRow.modelData.installed ? Qt.alpha(Theme.error,.13) : Qt.alpha(Theme.accent,.15)
-                        Text { anchors.centerIn: parent; text: catalogRow.modelData.installed ? "Remove" : "Install"; color: catalogRow.modelData.installed ? Theme.error : Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                    Rectangle { Layout.preferredWidth: 76; Layout.preferredHeight: 32; radius: root.settingsTheme.glassRadius("card", 8)
+                        color: root.settingsTheme.glassColor("card", catalogRow.modelData.installed ? Qt.alpha(root.settingsTheme.error,.13) : Qt.alpha(root.settingsTheme.accent,.15))
+                        GlassLabel { anchors.centerIn: parent; text: catalogRow.modelData.installed ? "Remove" : "Install"; color: catalogRow.modelData.installed ? root.settingsTheme.error : root.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                         MouseArea { anchors.fill: parent; enabled: !packageLauncher.running; cursorShape: Qt.PointingHandCursor
                             onClicked: root.requestOperation(catalogRow.modelData.installed ? "remove" : "install", catalogRow.modelData.name, catalogRow.modelData.source) }
                     }
@@ -587,29 +588,29 @@ ColumnLayout {
             }
         }
         RowLayout { Layout.fillWidth: true; spacing: 8
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 9; color: Theme.background
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: root.settingsTheme.glassRadius("card", 9); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
                 TextInput { id: packageNameInput; anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12; verticalAlignment: TextInput.AlignVCenter
-                    color: Theme.foreground; font.pixelSize: Fonts.scale(11)
+                    color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12)
                     onTextEdited: root.newPackageName = text
-                    Text { anchors.verticalCenter: parent.verticalCenter; visible: !parent.text.length; text: "Exact package / Flatpak ID…"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { anchors.verticalCenter: parent.verticalCenter; visible: !parent.text.length; text: "Exact package / Flatpak ID…"; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
                 }
             }
-            Rectangle { Layout.preferredWidth: 81; Layout.preferredHeight: 38; radius: 9; color: Theme.accent
-                Text { anchors.centerIn: parent; text: "Install…"; color: Theme.background; font.pixelSize: Fonts.scale(10) }
+            Rectangle { Layout.preferredWidth: 81; Layout.preferredHeight: 38; radius: 9; color: root.settingsTheme.accent
+                GlassLabel { anchors.centerIn: parent; text: "Install…"; color: root.settingsTheme.background; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                     onClicked: root.requestOperation("install", root.newPackageName, root.catalogProvider === "all" ? "pacman" : root.catalogProvider) }
             }
         }
-        Text { Layout.fillWidth: true; text: "Manual installs use the selected provider (All defaults to Pacman). Search results preserve their provider."; color: Theme.muted; wrapMode: Text.WordWrap; font.pixelSize: Fonts.scale(9) }
+        GlassLabel { Layout.fillWidth: true; text: "Manual installs use the selected provider (All defaults to Pacman). Search results preserve their provider."; color: root.settingsTheme.contentMuted; wrapMode: Text.WordWrap; font.pixelSize: Fonts.scale(12) }
     }
 
     SettingsSection {
         visible: root.category === "apps" && (root.packageAwaitingSystemAuth || packageLauncher.running)
         heading: "System authorization"
         symbol: "\ue897"
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.foreground; font.pixelSize: Fonts.scale(11)
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12)
             text: "Authorization is handled by your active system Polkit agent, not by RusticQ. If configured, scan your fingerprint; otherwise enter your password in the system dialog. No credentials are collected or stored by RusticQ." }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.warning; font.pixelSize: Fonts.scale(10)
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: root.settingsTheme.warning; font.pixelSize: Fonts.scale(12)
             text: !root.authCapabilities.pkexec ? "Warning: pkexec unavailable. Pacman administration cannot proceed." :
                   !root.authCapabilities.known_agent_detected ? "Polkit agent not detected by the local probe. If no prompt appears, start hyprpolkitagent or your current Polkit agent; do not run two agents." :
                   (root.authCapabilities.fingerprint_configured ? "Fingerprint authentication may be available via PAM." : "Password authentication expected unless your PAM configuration enables another method.") }
@@ -618,7 +619,7 @@ ColumnLayout {
         visible: root.category === "apps" && root.packageStatus.length > 0
         heading: "Package operation status"
         symbol: "\ue88e"
-        Text { Layout.fillWidth: true; text: root.packageStatus; color: Theme.foreground; font.pixelSize: Fonts.scale(11); wrapMode: Text.WordWrap }
+        GlassLabel { Layout.fillWidth: true; text: root.packageStatus; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12); wrapMode: Text.WordWrap }
     }
 
     SettingsSection {
@@ -630,24 +631,24 @@ ColumnLayout {
             visible: root.category === "apps"
             Layout.fillWidth: true
             Layout.preferredHeight: visible ? 38 : 0
-            radius: 10
-            color: Theme.background
+            radius: root.settingsTheme.glassRadius("card", 10)
+            color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
             RowLayout {
                 anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 11; spacing: 8
-                Icon { icon: "\ue8b6"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
+                Icon { icon: "\ue8b6"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(18) }
                 TextInput {
                     id: searchInput
                     Layout.fillWidth: true; Layout.fillHeight: true
                     verticalAlignment: TextInput.AlignVCenter
-                    color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
-                    Text { anchors.verticalCenter: parent.verticalCenter; visible: searchInput.text.length === 0; text: "Search installed packages…"; color: Theme.muted; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name }
+                    color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
+                    GlassLabel { anchors.verticalCenter: parent.verticalCenter; visible: searchInput.text.length === 0; text: "Search installed packages…"; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppins.name }
                 }
             }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             text: root.filteredRows.length + " matching entries" + (root.category === "apps" ? " · sorted alphabetically" : "")
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
         ListView {
             Layout.fillWidth: true
@@ -661,18 +662,18 @@ ColumnLayout {
                 required property var modelData
                 width: ListView.view.width
                 height: 43
-                radius: 10
-                color: Theme.background
+                radius: root.settingsTheme.glassRadius("card", 10)
+                color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
                 RowLayout {
                     anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 11; spacing: 9
-                    Rectangle { Layout.preferredWidth: 27; Layout.preferredHeight: 27; radius: 8; color: Qt.alpha(Theme.accent, 0.12); Icon { anchors.centerIn: parent; icon: root.category === "apps" ? "\ue5c3" : "\ue1db"; color: Theme.accent; font.pixelSize: Fonts.scale(16) } }
-                    Text { text: root.category === "apps" ? packageRow.modelData.name : packageRow.modelData.name + (packageRow.modelData.mount ? " · " + packageRow.modelData.mount : ""); Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
-                    Text { text: root.category === "apps" ? packageRow.modelData.version : packageRow.modelData.size; Layout.preferredWidth: root.category === "apps" ? 90 : 160; horizontalAlignment: Text.AlignRight; elide: Text.ElideLeft; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                    Rectangle { Layout.preferredWidth: 27; Layout.preferredHeight: 27; radius: root.settingsTheme.glassRadius("card", 8); color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.accent, 0.12)); Icon { anchors.centerIn: parent; icon: root.category === "apps" ? "\ue5c3" : "\ue1db"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(16) } }
+                    GlassLabel { text: root.category === "apps" ? packageRow.modelData.name : packageRow.modelData.name + (packageRow.modelData.mount ? " · " + packageRow.modelData.mount : ""); Layout.fillWidth: true; elide: Text.ElideRight; color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+                    GlassLabel { text: root.category === "apps" ? packageRow.modelData.version : packageRow.modelData.size; Layout.preferredWidth: root.category === "apps" ? 90 : 160; horizontalAlignment: Text.AlignRight; elide: Text.ElideLeft; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                     Rectangle {
                         visible: root.category === "apps"
                         Layout.preferredWidth: visible ? 76 : 0; Layout.preferredHeight: 28
-                        radius: 8; color: Qt.alpha(Theme.error, 0.12)
-                        Text { anchors.centerIn: parent; text: "Uninstall"; color: Theme.error; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
+                        radius: root.settingsTheme.glassRadius("card", 8); color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.error, 0.12))
+                        GlassLabel { anchors.centerIn: parent; text: "Uninstall"; color: root.settingsTheme.error; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppinsSB.name }
                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.requestOperation("remove", packageRow.modelData.name) }
                     }
                 }
@@ -689,8 +690,8 @@ ColumnLayout {
                 required property string modelData
                 Layout.fillWidth: true
                 spacing: 9
-                Icon { icon: "\ue88e"; font.pixelSize: Fonts.scale(15); color: Theme.accent }
-                Text { text: modelData; Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+                Icon { icon: "\ue88e"; font.pixelSize: Fonts.scale(15); color: root.settingsTheme.accent }
+                GlassLabel { text: modelData; Layout.fillWidth: true; wrapMode: Text.WordWrap; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
             }
         }
     }

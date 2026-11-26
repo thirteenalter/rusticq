@@ -10,16 +10,18 @@ import "../../services"
 // modelData: a Component declared outside a Loader cannot see that Loader's id.
 Rectangle {
     id: wifiWidget
+    readonly property var settingsTheme: SettingsMaterial.forItem(wifiWidget)
     Layout.fillWidth: true
-    radius: Theme.sectionRadius
+    radius: wifiWidget.settingsTheme.glassRadius("card", wifiWidget.settingsTheme.sectionRadius)
     clip: true
-    border.width: 1
-    border.color: Theme.borderaccent
-    color: Qt.alpha(Theme.foreground, 0.02)
+    border.width: standalone && wifiWidget.settingsTheme.glassEnabled ? 0 : wifiWidget.settingsTheme.glassBorderWidth("card", 1)
+    border.color: wifiWidget.settingsTheme.glassBorder("card", wifiWidget.settingsTheme.borderaccent)
+    color: standalone && wifiWidget.settingsTheme.glassEnabled ? "transparent" : wifiWidget.settingsTheme.glassColor("card", Qt.alpha(wifiWidget.settingsTheme.foreground, 0.02))
 
     property bool expanded: true
     property bool standalone: false
     property bool fullSettings: false
+    property bool externalScroll: false
     property bool showAdvancedNavigation: true
     property bool advancedOpen: false
     property bool hiddenOpen: false
@@ -28,11 +30,12 @@ Rectangle {
     readonly property real listHeightLimit: 300
     readonly property bool contentOpen: standalone || expanded
     // Normal and Advanced are separate pages. Only the active page scrolls.
-    implicitHeight: standalone || advancedOpen ? wifiContent.implicitHeight + 2 * Theme.sectionPadding : 0
+    implicitHeight: standalone || advancedOpen ? wifiContent.implicitHeight + 2 * wifiWidget.settingsTheme.sectionPadding : 0
 
     WifiManager { id: manager }
     readonly property var availableNetworks: manager.wifiDevice && manager.wifiEnabled && manager.wifiHardwareEnabled
         ? manager.wifiDevice.networks.values : []
+    readonly property var connectedNetwork: availableNetworks.find(network => network.connected) || null
 
     property var activeNetwork: null
     property var passwordNetwork: null
@@ -148,21 +151,58 @@ Rectangle {
     ColumnLayout {
         id: wifiContent
         anchors.fill: parent
-        anchors.margins: Theme.sectionPadding
-        spacing: 12
+        objectName: "wifiContent"
+        anchors.margins: wifiWidget.settingsTheme.panelPadding
+        spacing: wifiWidget.settingsTheme.contentGap
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 36
-            Layout.maximumHeight: 36
-            spacing: 8
+            Layout.preferredHeight: wifiHeader.implicitHeight
+            Layout.maximumHeight: wifiHeader.implicitHeight
+            spacing: wifiWidget.settingsTheme.inlineGap
             SectionHeader {
+                id: wifiHeader
                 Layout.fillWidth: true
                 title: wifiWidget.advancedOpen ? "Advanced Wi-Fi" : "Wi-Fi"
+                subtitle: !wifiWidget.contentOpen ? "" : !manager.wifiDevice ? "No adapter available" : !manager.wifiHardwareEnabled ? "Hardware disabled"
+                    : !manager.wifiEnabled ? "Turn on to discover networks" : wifiWidget.connectedNetwork
+                    ? "Connected · " + wifiWidget.connectedNetwork.name : "Choose a network to connect"
                 iconName: "\ue63e"
                 expanded: wifiWidget.contentOpen
                 collapsible: !wifiWidget.standalone
                 onToggleRequested: if (!wifiWidget.standalone) wifiWidget.expanded = !wifiWidget.expanded
+            }
+            Rectangle {
+                objectName: "wifiPowerToggle"
+                visible: wifiWidget.contentOpen && !wifiWidget.advancedOpen
+                Layout.preferredWidth: 40; Layout.preferredHeight: 22
+                radius: 11
+                color: manager.wifiEnabled ? wifiWidget.settingsTheme.accent : wifiWidget.settingsTheme.surface
+                opacity: manager.wifiHardwareEnabled ? 1 : 0.5
+                activeFocusOnTab: true
+                Accessible.role: Accessible.CheckBox
+                Accessible.name: "Enable Wi-Fi"
+                Accessible.checkable: true
+                Accessible.checked: manager.wifiEnabled
+                function toggle() { if (manager.wifiHardwareEnabled && manager.wifiDevice !== null) manager.toggleWifi(); }
+                Accessible.onPressAction: toggle()
+                Keys.onSpacePressed: toggle()
+                Keys.onReturnPressed: toggle()
+                border.width: activeFocus ? 1 : 0
+                border.color: wifiWidget.settingsTheme.foreground
+                Rectangle {
+                    width: 18; height: 18; radius: 9
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: manager.wifiEnabled ? parent.width - width - 2 : 2
+                    color: wifiWidget.settingsTheme.controlKnob
+                    Behavior on x { enabled: wifiWidget.settingsTheme.motionEnabled; NumberAnimation { duration: wifiWidget.settingsTheme.motionFastDuration; easing.type: Easing.OutCubic } }
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: manager.wifiHardwareEnabled && manager.wifiDevice !== null
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: parent.toggle()
+                }
             }
             DeviceSettingsButton {
                 objectName: "wifiFullscreenButton"
@@ -179,43 +219,13 @@ Rectangle {
         RowLayout {
             visible: wifiWidget.contentOpen && !wifiWidget.advancedOpen
             Layout.fillWidth: true
-            Layout.preferredHeight: 32
-            spacing: 8
-            Text {
-                text: manager.wifiEnabled ? "Wi-Fi enabled" : "Wi-Fi disabled"
-                Layout.fillWidth: true
-                font.family: Fonts.poppins.name
-                font.pixelSize: Theme.controlTextSize
-                color: Theme.muted
-            }
-            Rectangle {
-                Layout.preferredWidth: 40; Layout.preferredHeight: 22
-                radius: 11
-                color: manager.wifiEnabled ? Theme.accent : Theme.surface
-                opacity: manager.wifiHardwareEnabled ? 1 : 0.5
-                Rectangle {
-                    width: 18; height: 18; radius: 9
-                    anchors.verticalCenter: parent.verticalCenter
-                    x: manager.wifiEnabled ? parent.width - width - 2 : 2
-                    color: Theme.foreground
-                    Behavior on x { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    enabled: manager.wifiHardwareEnabled && manager.wifiDevice !== null
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: manager.toggleWifi()
-                }
-            }
-        }
-        RowLayout {
-            visible: wifiWidget.contentOpen && !wifiWidget.advancedOpen
-            Layout.fillWidth: true
+            spacing: wifiWidget.settingsTheme.inlineGap
             NameSearchField {
                 id: wifiSearch
                 objectName: "wifiNameSearch"
                 Layout.fillWidth: true
                 placeholder: "Search Wi-Fi by name"
+                autoFocus: wifiWidget.contentOpen && !wifiWidget.advancedOpen
                 enabled: manager.wifiEnabled && manager.wifiHardwareEnabled && manager.wifiDevice !== null
                 onTextChanged: {
                     wifiWidget.activeNetwork = null;
@@ -231,83 +241,33 @@ Rectangle {
             }
         }
 
-        RowLayout {
-            visible: wifiWidget.contentOpen && (wifiWidget.showAdvancedNavigation || WifiService.portalAvailable)
-            Layout.fillWidth: true
-            Layout.preferredHeight: 34
-            spacing: 8
-            Rectangle {
-                objectName: "wifiAdvancedNavigation"
-                visible: wifiWidget.showAdvancedNavigation
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                radius: Theme.rowRadius
-                color: Theme.surface
-                activeFocusOnTab: true
-                Accessible.role: Accessible.Button
-                Accessible.name: wifiWidget.advancedOpen ? "Back to Wi-Fi" : "Advanced Wi-Fi"
-                function navigate() {
-                    if (wifiWidget.advancedOpen) wifiWidget.showNetworks();
-                    else wifiWidget.showAdvanced();
-                }
-                Accessible.onPressAction: navigate()
-                Keys.onReturnPressed: navigate()
-                Keys.onSpacePressed: navigate()
-                RowLayout { anchors.centerIn: parent; spacing: 7
-                    Icon { icon: wifiWidget.advancedOpen ? "\ue5c4" : "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
-                    Text { text: wifiWidget.advancedOpen ? "Back to Wi-Fi" : "Advanced Wi-Fi";
-                        color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
-                }
-                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: parent.navigate() }
-            }
-            ActionButton {
-                objectName: "wifiPortalButton"
-                visible: WifiService.portalAvailable
-                enabled: WifiService.portalAvailable
-                Layout.fillWidth: !wifiWidget.showAdvancedNavigation
-                Layout.fillHeight: true
-                label: "Login portal"
-                symbol: "\ue89e"
-                onClicked: wifiWidget.openPortal()
-            }
-        }
-        Text {
-            objectName: "wifiPortalError"
-            visible: wifiWidget.contentOpen && WifiService.portalAvailable && wifiWidget.portalError.length > 0
-            Layout.fillWidth: true
-            text: wifiWidget.portalError
-            wrapMode: Text.WordWrap
-            color: Theme.error
-            font.family: Fonts.poppins.name
-            font.pixelSize: Theme.helperTextSize
-        }
-
         Flickable {
             id: advancedViewport
             objectName: "wifiAdvancedPage"
             visible: wifiWidget.contentOpen && wifiWidget.advancedOpen
             Layout.fillWidth: true
             Layout.preferredHeight: visible ? implicitHeight : 0
-            implicitHeight: wifiWidget.standalone && !wifiWidget.fullSettings
+            implicitHeight: wifiWidget.standalone && !wifiWidget.fullSettings && !wifiWidget.externalScroll
                 ? Math.min(advancedPage.implicitHeight, Math.max(120,
                     (wifiWidget.popupScreen ? wifiWidget.popupScreen.height : 995)
-                    - 95 - 2 * Theme.sectionPadding - 70 - 2 * wifiContent.spacing))
+                    - 95 - 2 * wifiWidget.settingsTheme.panelPadding - wifiHeader.implicitHeight - 34 - 2 * wifiContent.spacing))
                 : advancedPage.implicitHeight
             contentWidth: width
             contentHeight: advancedPage.implicitHeight
+            interactive: !wifiWidget.externalScroll
             clip: true
             boundsBehavior: Flickable.StopAtBounds
             ColumnLayout {
                 id: advancedPage
                 width: advancedViewport.width
-                spacing: Theme.sectionGap
+                spacing: wifiWidget.settingsTheme.sectionGap
                 Rectangle {
                     objectName: "addHiddenWifiButton"
                     visible: !wifiWidget.hiddenOpen
                     Layout.fillWidth: true
                     Layout.preferredHeight: 36
-                    radius: Theme.rowRadius
-                    color: Qt.alpha(Theme.accent, 0.16)
+                    radius: wifiWidget.settingsTheme.glassRadius("card", wifiWidget.settingsTheme.rowRadius)
+                    color: wifiWidget.settingsTheme.glassColor("card", Qt.alpha(wifiWidget.settingsTheme.accent, 0.16))
                     enabled: manager.wifiEnabled && manager.wifiHardwareEnabled && manager.wifiDevice !== null
                     opacity: enabled ? 1 : 0.45
                     activeFocusOnTab: true
@@ -317,9 +277,9 @@ Rectangle {
                     Keys.onReturnPressed: wifiWidget.hiddenOpen = true
                     Keys.onSpacePressed: wifiWidget.hiddenOpen = true
                     RowLayout { anchors.centerIn: parent; spacing: 7
-                        Icon { icon: "\ue145"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
-                        Text { text: "Add hidden Wi-Fi"; color: Theme.accent;
-                            font.family: Fonts.poppinsSB.name; font.pixelSize: Theme.helperTextSize }
+                        Icon { icon: "\ue145"; color: wifiWidget.settingsTheme.accent; font.pixelSize: Fonts.scale(17) }
+                        GlassLabel { text: "Add hidden Wi-Fi"; color: wifiWidget.settingsTheme.accent;
+                            font.family: Fonts.poppinsSB.name; font.pixelSize: wifiWidget.settingsTheme.helperTextSize }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: wifiWidget.hiddenOpen = true }
                 }
@@ -339,6 +299,24 @@ Rectangle {
             }
         }
 
+        RowLayout {
+            objectName: "wifiNetworkHeading"
+            visible: wifiWidget.contentOpen && !wifiWidget.advancedOpen && manager.wifiEnabled && manager.wifiHardwareEnabled && manager.wifiDevice !== null
+            Layout.fillWidth: true
+            GlassLabel {
+                Layout.fillWidth: true
+                text: "Networks"
+                color: wifiWidget.settingsTheme.contentMuted
+                font.family: Fonts.poppinsSB.name
+                font.pixelSize: Fonts.scale(10)
+            }
+            GlassLabel {
+                text: manager.scanning ? "Scanning…" : wifiList.count + " available"
+                color: wifiWidget.settingsTheme.contentMuted
+                font.family: Fonts.poppins.name
+                font.pixelSize: Fonts.scale(10)
+            }
+        }
         ListView {
             id: wifiList
             objectName: "wifiNetworkList"
@@ -347,9 +325,9 @@ Rectangle {
             Layout.fillHeight: !wifiWidget.standalone
             Layout.preferredHeight: wifiWidget.standalone
                                     ? Math.min(wifiWidget.listHeightLimit,
-                                        Math.max(84, contentHeight + 4, Math.min(300, count * 70 + 8))) : -1
+                                        Math.max(96, contentHeight + 4, Math.min(300, count * 68))) : -1
             clip: true
-            spacing: 8
+            spacing: wifiWidget.settingsTheme.compactGap
             model: ScriptModel {
                 comparisonMode: ObjectComparison.Identity
                 values: {
@@ -358,16 +336,16 @@ Rectangle {
                 }
             }
             add: Transition {
-                enabled: Theme.motionEnabled
-                NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: Theme.motionEnterDuration; easing.type: Easing.OutCubic }
+                enabled: wifiWidget.settingsTheme.motionEnabled
+                NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: wifiWidget.settingsTheme.motionEnterDuration; easing.type: Easing.OutCubic }
             }
             remove: Transition {
-                enabled: Theme.motionEnabled
-                NumberAnimation { properties: "opacity"; to: 0; duration: Theme.motionExitDuration; easing.type: Easing.OutCubic }
+                enabled: wifiWidget.settingsTheme.motionEnabled
+                NumberAnimation { properties: "opacity"; to: 0; duration: wifiWidget.settingsTheme.motionExitDuration; easing.type: Easing.OutCubic }
             }
             displaced: Transition {
-                enabled: Theme.motionEnabled
-                NumberAnimation { properties: "x,y"; duration: Theme.motionEnterDuration; easing.type: Easing.OutCubic }
+                enabled: wifiWidget.settingsTheme.motionEnabled
+                NumberAnimation { properties: "x,y"; duration: wifiWidget.settingsTheme.motionEnterDuration; easing.type: Easing.OutCubic }
             }
 
             delegate: Rectangle {
@@ -378,10 +356,24 @@ Rectangle {
                 readonly property bool needsPassword: wifiWidget.passwordNetwork === network
                 readonly property bool processing: manager.processingNetwork === network
                 width: wifiList.width
-                height: rowColumn.implicitHeight + 14
-                radius: Theme.rowRadius
-                color: expanded ? Qt.alpha(Theme.accent, 0.12) : mainMouse.containsMouse
-                       ? Qt.alpha(Theme.foreground, 0.09) : Theme.surface
+                objectName: "wifiNetworkRow"
+                height: rowColumn.implicitHeight + wifiWidget.settingsTheme.inlineGap * 2
+                radius: wifiWidget.settingsTheme.glassRadius("card", wifiWidget.settingsTheme.rowRadius)
+                color: expanded || activeFocus ? wifiWidget.settingsTheme.glassSelected : mainMouse.containsMouse
+                    ? wifiWidget.settingsTheme.glassHover : network && network.connected ? wifiWidget.settingsTheme.glassCard : "transparent"
+                border.width: activeFocus ? 1 : 0
+                border.color: wifiWidget.settingsTheme.accent
+                activeFocusOnTab: true
+                Accessible.role: Accessible.Button
+                Accessible.name: network ? network.name + ", " + manager.stateText(network) : "Network"
+                function expand() {
+                    wifiWidget.activeNetwork = expanded ? null : network;
+                    wifiWidget.passwordNetwork = null;
+                    wifiWidget.passwordText = "";
+                }
+                Accessible.onPressAction: expand()
+                Keys.onReturnPressed: expand()
+                Keys.onSpacePressed: expand()
 
                 Connections {
                     target: networkItem.network
@@ -421,13 +413,15 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top
-                    anchors.margins: 8
-                    spacing: 7
+                    anchors.topMargin: wifiWidget.settingsTheme.inlineGap
+                    anchors.leftMargin: wifiWidget.settingsTheme.controlPadding
+                    anchors.rightMargin: wifiWidget.settingsTheme.controlPadding
+                    spacing: wifiWidget.settingsTheme.inlineGap
 
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 42
-                        spacing: 10
+                        spacing: wifiWidget.settingsTheme.contentGap
 
                         Icon {
                             Layout.preferredWidth: 24
@@ -435,40 +429,46 @@ Rectangle {
                                   ? networkItem.network.signalStrength : 0)
                             font.pixelSize: Fonts.scale(20)
                             color: networkItem.network && networkItem.network.connected
-                                   ? Theme.accent : Theme.foreground
+                                   ? wifiWidget.settingsTheme.accent : wifiWidget.settingsTheme.foreground
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 0
-                            Text {
+                            GlassLabel {
                                 Layout.fillWidth: true
                                 text: networkItem.network ? networkItem.network.name : ""
-                                color: Theme.foreground
+                                color: wifiWidget.settingsTheme.foreground
                                 font.family: Fonts.poppinsSB.name
-                                font.pixelSize: Fonts.scale(13)
+                                font.pixelSize: Fonts.scale(12)
                                 elide: Text.ElideRight
                             }
-                            Text {
+                            GlassLabel {
                                 Layout.fillWidth: true
                                 text: manager.stateText(networkItem.network)
                                 color: networkItem.network && networkItem.network.connected
-                                       ? Theme.accent : Theme.muted
+                                       ? wifiWidget.settingsTheme.accent : wifiWidget.settingsTheme.contentMuted
                                 font.family: Fonts.poppins.name
-                                font.pixelSize: Theme.helperTextSize
+                                font.pixelSize: wifiWidget.settingsTheme.helperTextSize
                                 elide: Text.ElideRight
                             }
+                        }
+                        Icon {
+                            visible: networkItem.network && networkItem.network.connected && !networkItem.processing
+                            icon: "\ue5ca"
+                            color: wifiWidget.settingsTheme.accent
+                            font.pixelSize: Fonts.scale(18)
                         }
                         Icon {
                             visible: networkItem.network
                                      && networkItem.network.security !== WifiSecurityType.Open
                             icon: "\ue899" // lock
-                            color: Theme.muted
+                            color: wifiWidget.settingsTheme.contentMuted
                         }
-                        Text {
+                        GlassLabel {
                             visible: networkItem.processing
                             text: "…"
                             font.pixelSize: Fonts.scale(18)
-                            color: Theme.accent
+                            color: wifiWidget.settingsTheme.accent
                         }
                     }
 
@@ -481,14 +481,14 @@ Rectangle {
                             Layout.preferredHeight: 30
                             Layout.preferredWidth: actionText.implicitWidth + 22
                             radius: 8
-                            color: Theme.accent
+                            color: wifiWidget.settingsTheme.accent
                             opacity: networkItem.processing ? 0.5 : 1
-                            Text {
+                            GlassLabel {
                                 id: actionText
                                 anchors.centerIn: parent
                                 text: networkItem.network && networkItem.network.connected
                                       ? "Disconnect" : "Connect"
-                                color: Theme.background
+                                color: wifiWidget.settingsTheme.background
                                 font.family: Fonts.poppins.name
                                 font.pixelSize: Fonts.scale(11)
                             }
@@ -504,15 +504,15 @@ Rectangle {
                             visible: networkItem.network ? networkItem.network.known : false
                             Layout.preferredHeight: 30
                             Layout.preferredWidth: forgetLabel.implicitWidth + 20
-                            color: Theme.surface
-                            radius: 8
-                            Text {
+                            color: wifiWidget.settingsTheme.glassColor("card", wifiWidget.settingsTheme.surface)
+                            radius: wifiWidget.settingsTheme.glassRadius("card", 8)
+                            GlassLabel {
                                 id: forgetLabel
                                 anchors.centerIn: parent
                                 text: "Forget"
                                 font.family: Fonts.poppins.name
                                 font.pixelSize: Fonts.scale(11)
-                                color: Theme.error
+                                color: wifiWidget.settingsTheme.error
                             }
                             MouseArea {
                                 anchors.fill: parent
@@ -527,7 +527,7 @@ Rectangle {
                         Item { Layout.fillWidth: true }
                     }
 
-                    Text {
+                    GlassLabel {
                         visible: wifiWidget.errorNetwork === networkItem.network
                                  && wifiWidget.errorText.length > 0
                         Layout.fillWidth: true
@@ -535,7 +535,7 @@ Rectangle {
                         wrapMode: Text.WordWrap
                         font.family: Fonts.poppins.name
                         font.pixelSize: Fonts.scale(11)
-                        color: Theme.error
+                        color: wifiWidget.settingsTheme.error
                     }
 
                     RowLayout {
@@ -545,18 +545,18 @@ Rectangle {
                         Rectangle {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 32
-                            color: Theme.background
-                            radius: 8
-                            border.color: Theme.borderaccent
+                            color: wifiWidget.settingsTheme.glassColor("card", wifiWidget.settingsTheme.background)
+                            radius: wifiWidget.settingsTheme.glassRadius("card", 8)
+                            border.color: wifiWidget.settingsTheme.glassBorder("card", wifiWidget.settingsTheme.borderaccent)
                             clip: true
-                            Text {
+                            GlassLabel {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 10
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "Wi-Fi password"
                                 font.family: Fonts.poppins.name
-                                font.pixelSize: Theme.helperTextSize
-                                color: Theme.muted
+                                font.pixelSize: wifiWidget.settingsTheme.helperTextSize
+                                color: wifiWidget.settingsTheme.contentMuted
                                 visible: passwordInput.text.length === 0
                             }
                             TextInput {
@@ -568,7 +568,7 @@ Rectangle {
                                 text: wifiWidget.passwordText
                                 echoMode: TextInput.Password
                                 focus: networkItem.needsPassword
-                                color: Theme.foreground
+                                color: wifiWidget.settingsTheme.foreground
                                 font.family: Fonts.poppins.name
                                 font.pixelSize: Fonts.scale(12)
                                 onTextEdited: wifiWidget.passwordText = text
@@ -580,13 +580,13 @@ Rectangle {
                             Layout.preferredWidth: 35
                             Layout.preferredHeight: 32
                             radius: 8
-                            color: Theme.accent
-                            Text {
+                            color: wifiWidget.settingsTheme.accent
+                            GlassLabel {
                                 anchors.centerIn: parent
                                 text: "OK"
                                 font.family: Fonts.poppinsSB.name
                                 font.pixelSize: Fonts.scale(11)
-                                color: Theme.background
+                                color: wifiWidget.settingsTheme.background
                             }
                             MouseArea {
                                 anchors.fill: parent
@@ -597,8 +597,8 @@ Rectangle {
                         Rectangle {
                             Layout.preferredWidth: 30
                             Layout.preferredHeight: 32
-                            color: Theme.surface
-                            radius: 8
+                            color: wifiWidget.settingsTheme.glassColor("card", wifiWidget.settingsTheme.surface)
+                            radius: wifiWidget.settingsTheme.glassRadius("card", 8)
                             Icon { anchors.centerIn: parent; icon: "\ue5cd" }
                             MouseArea {
                                 anchors.fill: parent
@@ -617,14 +617,10 @@ Rectangle {
                     x: 0
                     y: 0
                     width: parent.width
-                    height: 52
+                    height: 42 + wifiWidget.settingsTheme.inlineGap * 2
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        wifiWidget.activeNetwork = networkItem.expanded ? null : networkItem.network;
-                        wifiWidget.passwordNetwork = null;
-                        wifiWidget.passwordText = "";
-                    }
+                    onClicked: networkItem.expand()
                 }
             }
 
@@ -637,9 +633,9 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     icon: "\ue1d8"
                     font.pixelSize: Fonts.scale(25)
-                    color: Theme.muted
+                    color: wifiWidget.settingsTheme.contentMuted
                 }
-                Text {
+                GlassLabel {
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
@@ -648,11 +644,11 @@ Rectangle {
                           !manager.wifiEnabled ? "Wi-Fi is off" :
                           wifiSearch.query.length > 0 && wifiWidget.availableNetworks.length > 0
                               ? "No matching networks" : "No networks found"
-                    color: Theme.muted
+                    color: wifiWidget.settingsTheme.contentMuted
                     font.family: Fonts.poppins.name
-                    font.pixelSize: Theme.controlTextSize
+                    font.pixelSize: wifiWidget.settingsTheme.controlTextSize
                 }
-                Text {
+                GlassLabel {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
@@ -661,11 +657,62 @@ Rectangle {
                     text: wifiSearch.query.length > 0 && wifiWidget.availableNetworks.length > 0
                           ? "Try another name or clear the search" :
                           manager.scanning ? "Scanning for networks…" : "Select Scan to find networks"
-                    color: Theme.muted
+                    color: wifiWidget.settingsTheme.contentMuted
                     font.family: Fonts.poppins.name
-                    font.pixelSize: Theme.helperTextSize
+                    font.pixelSize: wifiWidget.settingsTheme.helperTextSize
                 }
             }
         }
+        RowLayout {
+            visible: wifiWidget.contentOpen && (wifiWidget.showAdvancedNavigation || WifiService.portalAvailable)
+            Layout.fillWidth: true
+            Layout.preferredHeight: 34
+            spacing: 8
+            Rectangle {
+                objectName: "wifiAdvancedNavigation"
+                visible: wifiWidget.showAdvancedNavigation
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius: wifiWidget.settingsTheme.glassRadius("card", wifiWidget.settingsTheme.rowRadius)
+                color: wifiWidget.settingsTheme.glassColor("card", wifiWidget.settingsTheme.surface)
+                activeFocusOnTab: true
+                Accessible.role: Accessible.Button
+                Accessible.name: wifiWidget.advancedOpen ? "Back to Wi-Fi" : "Advanced Wi-Fi"
+                function navigate() {
+                    if (wifiWidget.advancedOpen) wifiWidget.showNetworks();
+                    else wifiWidget.showAdvanced();
+                }
+                Accessible.onPressAction: navigate()
+                Keys.onReturnPressed: navigate()
+                Keys.onSpacePressed: navigate()
+                RowLayout { anchors.centerIn: parent; spacing: 7
+                    Icon { icon: wifiWidget.advancedOpen ? "\ue5c4" : "\ue8b8"; color: wifiWidget.settingsTheme.accent; font.pixelSize: Fonts.scale(16) }
+                    GlassLabel { text: wifiWidget.advancedOpen ? "Back to Wi-Fi" : "Advanced Wi-Fi";
+                        color: wifiWidget.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: parent.navigate() }
+            }
+            ActionButton {
+                objectName: "wifiPortalButton"
+                visible: WifiService.portalAvailable
+                enabled: WifiService.portalAvailable
+                Layout.fillWidth: !wifiWidget.showAdvancedNavigation
+                Layout.fillHeight: true
+                label: "Login portal"
+                symbol: "\ue89e"
+                onClicked: wifiWidget.openPortal()
+            }
+        }
+        GlassLabel {
+            objectName: "wifiPortalError"
+            visible: wifiWidget.contentOpen && WifiService.portalAvailable && wifiWidget.portalError.length > 0
+            Layout.fillWidth: true
+            text: wifiWidget.portalError
+            wrapMode: Text.WordWrap
+            color: wifiWidget.settingsTheme.error
+            font.family: Fonts.poppins.name
+            font.pixelSize: wifiWidget.settingsTheme.helperTextSize
+        }
+
     }
 }

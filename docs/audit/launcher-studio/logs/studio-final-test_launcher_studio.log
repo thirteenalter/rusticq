@@ -1,0 +1,11 @@
+test_bounded_transparent_window_and_optional_lower_backdrop (__main__.LauncherStudioContracts.test_bounded_transparent_window_and_optional_lower_backdrop) ... ok
+test_distinct_frontends_and_shared_gallery (__main__.LauncherStudioContracts.test_distinct_frontends_and_shared_gallery) ... ok
+test_native_material_visibility_and_motion_are_independent (__main__.LauncherStudioContracts.test_native_material_visibility_and_motion_are_independent) ... ok
+test_one_index_editor_and_safe_execution_path (__main__.LauncherStudioContracts.test_one_index_editor_and_safe_execution_path) ... ok
+test_provider_history_is_bounded_and_not_written_to_disk (__main__.LauncherStudioContracts.test_provider_history_is_bounded_and_not_written_to_disk) ... ok
+test_single_validated_schema_and_documented_defaults (__main__.LauncherStudioContracts.test_single_validated_schema_and_documented_defaults) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.008s
+
+OK

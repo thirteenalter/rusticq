@@ -3,34 +3,40 @@ import QtQuick.Layouts
 import "../../config"
 import "../../components"
 import "../../services" as Services
+import "../quickcontrol"
 
 // Fixed card heights and layout-managed rows prevent bar/value/footer overlap.
 Rectangle {
     id: root
     Layout.fillWidth: true
     property bool compactQuick: false
-    Layout.preferredHeight: compactQuick ? 222 : 372
-    radius: Theme.sectionRadius
-    color: Qt.alpha(Theme.foreground, 0.02)
-    border.width: 1
-    border.color: Theme.borderaccent
+    property bool framelessQuickControl: false
+    implicitHeight: framelessQuickControl && modularMetrics.item ? modularMetrics.item.implicitHeight : compactHeight
+    readonly property int compactHeight: Theme.panelPadding * 2 + 36 + Theme.compactGap + 146 + Theme.inlineGap
+    Layout.preferredHeight: framelessQuickControl ? implicitHeight : compactQuick ? compactHeight : 372
+    radius: Theme.glassRadius("card", Theme.sectionRadius)
+    color: framelessQuickControl ? "transparent" : Theme.glassColor("card", Qt.alpha(Theme.foreground, 0.02))
+    border.width: framelessQuickControl ? 0 : Theme.glassBorderWidth("card", 1)
+    border.color: Theme.glassBorder("card", Theme.borderaccent)
     clip: true
 
+    Loader {id:modularMetrics;anchors.fill:parent;active:root.framelessQuickControl;visible:active;sourceComponent:QuickControlSystemMetrics {}}
     RowLayout {
-        x: 16; y: compactQuick ? 9 : 16; width: parent.width - 32; height: 36
-        spacing: 10
+        visible: !root.framelessQuickControl
+        x: Theme.panelPadding; y: Theme.panelPadding; width: parent.width - Theme.panelPadding * 2; height: 36
+        spacing: Theme.contentGap
         Icon { icon: "\ue8b8"; font.pixelSize: Fonts.scale(20); color: Theme.accent; Layout.preferredWidth: 24 }
-        Text { text: "System"; color: Theme.foreground; font.pixelSize: Theme.sectionTitleSize;
+        GlassLabel { text: "System"; color: Theme.foreground; font.pixelSize: Theme.sectionTitleSize;
                font.family: Fonts.poppinsSB.name; Layout.fillWidth: true }
-        Text { text: "LIVE"; color: Theme.muted; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name }
+        GlassLabel { text: "LIVE"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name }
     }
 
     GridLayout {
         id: compactGrid
-        visible: root.compactQuick
-        x: 16; y: 49; width: parent.width - 32
+        visible: root.compactQuick && !root.framelessQuickControl
+        x: Theme.panelPadding; y: Theme.panelPadding + 36 + Theme.compactGap; width: parent.width - Theme.panelPadding * 2
         columns: 2
-        columnSpacing: 8; rowSpacing: 8
+        columnSpacing: Theme.inlineGap; rowSpacing: Theme.inlineGap
         Repeater {
             model: ["cpu", "memory", "disk", "temperature"]
             delegate: Rectangle {
@@ -38,7 +44,7 @@ Rectangle {
                 required property string modelData
                 Layout.fillWidth: true
                 Layout.preferredHeight: 73
-                radius: 11; color: Qt.alpha(Theme.foreground, 0.055)
+                radius: Theme.glassRadius("card", 11); color: Theme.glassColor("card", Qt.alpha(Theme.foreground, 0.055))
                 readonly property real level: modelData === "cpu" ? Services.SysMonService.cpuUsage / 100
                     : modelData === "memory" ? Services.SysMonService.memUsedPercent
                     : modelData === "disk" ? Services.SysMonService.diskUsedPercent
@@ -51,13 +57,13 @@ Rectangle {
                             icon: compactMetric.modelData === "cpu" ? "\ue30d" : compactMetric.modelData === "memory" ? "\ue322" : compactMetric.modelData === "disk" ? "\ue1db" : "\ue1ff"
                             color: Theme.accent; font.pixelSize: Fonts.scale(15)
                         }
-                        Text {
+                        GlassLabel {
                             Layout.fillWidth: true
                             text: compactMetric.modelData === "cpu" ? "CPU" : compactMetric.modelData === "memory" ? "RAM" : compactMetric.modelData === "disk" ? "Free disk" : "Temp"
                             color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                             elide: Text.ElideRight
                         }
-                        Text {
+                        GlassLabel {
                             text: compactMetric.modelData === "cpu" ? Math.round(Services.SysMonService.cpuUsage) + "%"
                                 : compactMetric.modelData === "memory" ? Services.SysMonService.memUsedGB.toFixed(1) + "G"
                                 : compactMetric.modelData === "disk" ? Services.SysMonService.diskAvailableGB.toFixed(0) + "G"
@@ -77,10 +83,10 @@ Rectangle {
     }
 
     ColumnLayout {
-        visible: !root.compactQuick
+        visible: !root.compactQuick && !root.framelessQuickControl
         id: metricColumn
-        x: 16; y: compactQuick ? 46 : 64
-        width: parent.width - 32
+        x: Theme.panelPadding; y: Theme.panelPadding + 36 + Theme.contentGap
+        width: parent.width - Theme.panelPadding * 2
         spacing: compactQuick ? 5 : 8
 
         Repeater {
@@ -90,8 +96,8 @@ Rectangle {
                 required property string modelData
                 Layout.fillWidth: true
                 Layout.preferredHeight: compactQuick ? (modelData === "disk" ? 51 : 43) : (modelData === "disk" ? 72 : 58)
-                radius: 11
-                color: Qt.alpha(Theme.foreground, 0.055)
+                radius: Theme.glassRadius("card", 11)
+                color: Theme.glassColor("card", Qt.alpha(Theme.foreground, 0.055))
                 readonly property real fraction: {
                     if (modelData === "cpu") return Services.SysMonService.cpuUsage / 100;
                     if (modelData === "memory") return Services.SysMonService.memUsedPercent;
@@ -120,24 +126,24 @@ Rectangle {
                         Layout.preferredHeight: compactQuick ? 16 : 21
                         spacing: 7
                         Icon { icon: metric.glyph; font.pixelSize: Fonts.scale(16); color: Theme.accent; Layout.preferredWidth: 20 }
-                        Text {
+                        GlassLabel {
                             text: metric.title
                             Layout.fillWidth: true
                             font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
                             color: Theme.foreground
                         }
-                        Text {
+                        GlassLabel {
                             text: metric.valueText
                             font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10)
                             color: Theme.foreground
                         }
                     }
-                    Text {
+                    GlassLabel {
                         visible: metric.modelData === "disk" && !compactQuick
                         Layout.fillWidth: true
                         Layout.leftMargin: 27
                         text: Services.SysMonService.diskAvailableGB.toFixed(1) + " GiB available (root /)"
-                        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted
+                        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.contentMuted
                     }
                     Item { Layout.fillHeight: true }
                     Rectangle {
@@ -155,12 +161,12 @@ Rectangle {
                 }
             }
         }
-        Text {
+        GlassLabel {
             visible: !compactQuick
             Layout.fillWidth: true
             Layout.leftMargin: 5
             text: "System metrics · Updated from the local machine"
-            color: Theme.muted
+            color: Theme.contentMuted
             font.family: Fonts.poppins.name
             font.pixelSize: Fonts.scale(10)
         }

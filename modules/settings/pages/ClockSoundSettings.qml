@@ -7,6 +7,7 @@ import ".."
 
 SettingsSection {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     heading: "Timer & alarm sound"
     description: "Choose a sound, repeat behaviour and an independent volume up to 125%."
     symbol: "\ue050"
@@ -63,18 +64,18 @@ SettingsSection {
         selected: SettingsStore.clockSound === "custom"
         onClicked: soundPicker.open()
     }
-    Text {
+    GlassLabel {
         visible: SettingsStore.clockSound === "custom"
         Layout.fillWidth: true
         text: SettingsStore.clockSoundFile.split("/").pop()
         textFormat: Text.PlainText
-        color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+        color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         elide: Text.ElideMiddle
     }
     RowLayout {
         Layout.fillWidth: true
-        Text { text: "Clock volume"; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
-        Text { objectName: "clock-sound-volume-label"; text: root.draftVolume + "%"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+        GlassLabel { text: "Clock volume"; Layout.fillWidth: true; color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { objectName: "clock-sound-volume-label"; text: root.draftVolume + "%"; color: root.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
     }
     SettingRangeSlider {
         objectName: "clock-sound-volume"
@@ -96,11 +97,11 @@ SettingsSection {
         selected: SettingsStore.clockSoundLoop
         onClicked: { SettingsStore.clockSoundLoop = !SettingsStore.clockSoundLoop; SettingsStore.save(); }
     }
-    Text {
+    GlassLabel {
         Layout.fillWidth: true
         text: Store.clockSoundError || "Clock sounds play even in Silent mode. Volume boosts this sound only; system mute still applies."
-        color: Store.clockSoundError ? Theme.error : Theme.muted
-        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+        color: Store.clockSoundError ? root.settingsTheme.error : root.settingsTheme.muted
+        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         wrapMode: Text.WordWrap
     }
     FileDialog {

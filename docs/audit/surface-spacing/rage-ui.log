@@ -1,0 +1,51 @@
+  INFO: Launching config: "/tmp/rusticq-rage-ui-_stlclvm/shell.qml"
+  INFO: Shell ID: "adee3f66f76a8696f644a2f4972270e8" Path ID "adee3f66f76a8696f644a2f4972270e8"
+  INFO: Saving logs to "/tmp/rusticq-rage-ui-_stlclvm/quickshell/by-id/bc19e6k1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+  INFO: Configuration Loaded
+ DEBUG qml: RAGE TEST test_default_disabled_and_exact_restoration failed=false
+ DEBUG qml: RAGE TEST test_fallback_performance_low_memory_release_resources failed=false
+ DEBUG qml: RAGE TEST test_keyboard_master_and_presets failed=false
+ DEBUG qml: RAGE TEST test_native_provider_controls_without_glass failed=false
+ DEBUG qml: RAGE TEST test_palette_sources_and_semantic_colors failed=false
+ DEBUG qml: RAGE TEST test_reset_restores_standard_without_other_preferences failed=false
+ DEBUG qml: RAGE TEST test_slider_preview_commit_and_keyboard failed=false
+ DEBUG qml: RAGE TEST test_type_enum_and_range_validation failed=false
+ DEBUG qml: RAGE TEST test_z_external_edit_no_shell_reload_then_persist failed=false
+ DEBUG qml: RAGE RESULTS 10 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-rage-ui-_stlclvm/shell.qml"
+  INFO: Shell ID: "adee3f66f76a8696f644a2f4972270e8" Path ID "adee3f66f76a8696f644a2f4972270e8"
+  INFO: Saving logs to "/tmp/rusticq-rage-ui-_stlclvm/quickshell/by-id/1d19f6k1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+  INFO: Configuration Loaded
+ DEBUG qml: RAGE RELOAD PASS
+  INFO: Launching config: "/tmp/rusticq-rage-ui-_stlclvm/shell.qml"
+  INFO: Shell ID: "adee3f66f76a8696f644a2f4972270e8" Path ID "adee3f66f76a8696f644a2f4972270e8"
+  INFO: Saving logs to "/tmp/rusticq-rage-ui-_stlclvm/quickshell/by-id/6d19f6k1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+  INFO: Configuration Loaded
+ DEBUG qml: RAGE RELOAD PASS
+  INFO: Launching config: "/tmp/rusticq-rage-ui-_stlclvm/shell.qml"
+  INFO: Shell ID: "adee3f66f76a8696f644a2f4972270e8" Path ID "adee3f66f76a8696f644a2f4972270e8"
+  INFO: Saving logs to "/tmp/rusticq-rage-ui-_stlclvm/quickshell/by-id/bd19f6k1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+  INFO: Configuration Loaded
+ DEBUG qml: RAGE RELOAD PASS
+  INFO: Launching config: "/tmp/rusticq-rage-ui-_stlclvm/shell.qml"
+  INFO: Shell ID: "adee3f66f76a8696f644a2f4972270e8" Path ID "adee3f66f76a8696f644a2f4972270e8"
+  INFO: Saving logs to "/tmp/rusticq-rage-ui-_stlclvm/quickshell/by-id/gd19f6k1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+  INFO: Configuration Loaded
+  WARN qml: Settings: defaults in use (user-settings.json): SyntaxError: JSON.parse: Parse error
+ DEBUG qml: RAGE RELOAD PASS
+PASS: 9 RAGE UI interactions including native provider controls, saved reload, legacy migration, invalid schema/JSON; no compositor mutations

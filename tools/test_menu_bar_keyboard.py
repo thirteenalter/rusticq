@@ -32,6 +32,8 @@ def function_source(name):
 class KeyboardMenuTests(unittest.TestCase):
     def test_popup_keyboard_focus_is_gated_by_menu_kind(self):
         self.assertIn('grabFocus: kind !== ""', POPUP)
+        self.assertIn('HyprlandFocusGrab {', POPUP)
+        self.assertIn('popup.dismissalArmed', POPUP)
         self.assertIn('kind === "menu"', POPUP)
         self.assertIn('widgetLoader.item.forceActiveFocus()', POPUP)
         self.assertIn('onLoaded: if (popup.kind === "menu")', POPUP)
@@ -39,6 +41,8 @@ class KeyboardMenuTests(unittest.TestCase):
         self.assertIn('Keys.onPressed:', MENU)
         self.assertIn('root.forceActiveFocus()', MENU)
         self.assertNotIn('Keys.onPressed:', BAR)
+        self.assertIn('WlrLayershell.keyboardFocus: WlrKeyboardFocus.None', BAR)
+        self.assertIn('popup.keyboardPrimed ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive', POPUP)
 
     def test_arrow_enter_escape_are_handled_locally(self):
         for name in ('Left', 'Right', 'Up', 'Down', 'Return', 'Enter', 'Escape'):

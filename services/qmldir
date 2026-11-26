@@ -1,6 +1,9 @@
 singleton BatteryService 1.0 BatteryService.qml
+singleton BrightnessService 1.0 BrightnessService.qml
 singleton BluetoothService 1.0 BluetoothService.qml
 singleton WifiService 1.0 WifiService.qml
+singleton SpeedTestService 1.0 SpeedTestService.qml
+singleton GlassService 1.0 GlassService.qml
 singleton WeatherService 1.0 WeatherService.qml
 singleton SysMonService 1.0 SysMonService.qml
 singleton TooltipService 1.0 TooltipService.qml
@@ -14,3 +17,4 @@ singleton SystemMetrics 1.0 SystemMetrics.qml
 
 singleton AiChats 1.0 AiChats.qml
 singleton ScreenRecorder 1.0 ScreenRecorder.qml
+singleton HyprlandConfigService 1.0 HyprlandConfigService.qml

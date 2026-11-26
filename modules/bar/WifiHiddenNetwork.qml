@@ -6,7 +6,8 @@ import "../../services"
 
 ColumnLayout {
     id: root
-    spacing: Theme.sectionGap
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
+    spacing: root.settingsTheme.sectionGap
     property string ssid: ""
     property string password: ""
     property string security: "wpa-psk"
@@ -45,19 +46,19 @@ ColumnLayout {
         }
     }
 
-    Text {
+    GlassLabel {
         Layout.fillWidth: true
         text: "Hidden network · enter the exact SSID"
-        color: Theme.muted
+        color: root.settingsTheme.contentMuted
         wrapMode: Text.WordWrap
         font.family: Fonts.poppins.name
-        font.pixelSize: Theme.helperTextSize
+        font.pixelSize: root.settingsTheme.helperTextSize
     }
     Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 34
-        radius: Theme.rowRadius
-        color: Theme.surface
+        radius: root.settingsTheme.glassRadius("card", root.settingsTheme.rowRadius)
+        color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
         clip: true
         TextInput {
             id: ssidInput
@@ -68,23 +69,23 @@ ColumnLayout {
             verticalAlignment: TextInput.AlignVCenter
             text: root.ssid
             enabled: root.available && !WifiService.hiddenConnecting
-            color: Theme.foreground
+            color: root.settingsTheme.foreground
             font.family: Fonts.poppins.name
-            font.pixelSize: Theme.controlTextSize
+            font.pixelSize: root.settingsTheme.controlTextSize
             activeFocusOnTab: true
             Accessible.name: "Hidden Wi-Fi network name"
             onTextEdited: root.ssid = text
             onAccepted: root.submit()
         }
-        Text {
+        GlassLabel {
             anchors.left: parent.left
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             visible: !ssidInput.text.length
             text: "Network name (SSID)"
-            color: Theme.muted
+            color: root.settingsTheme.contentMuted
             font.family: Fonts.poppins.name
-            font.pixelSize: Theme.helperTextSize
+            font.pixelSize: root.settingsTheme.helperTextSize
         }
     }
     RowLayout {
@@ -98,8 +99,8 @@ ColumnLayout {
                 required property var modelData
                 Layout.fillWidth: true
                 Layout.preferredHeight: 30
-                radius: Theme.rowRadius
-                color: root.security === modelData.key ? Qt.alpha(Theme.accent, 0.18) : Theme.surface
+                radius: root.settingsTheme.glassRadius("card", root.settingsTheme.rowRadius)
+                color: root.settingsTheme.glassColor("card", root.security === modelData.key ? Qt.alpha(root.settingsTheme.accent, 0.18) : root.settingsTheme.surface)
                 enabled: !WifiService.hiddenConnecting
                 activeFocusOnTab: true
                 Accessible.role: Accessible.RadioButton
@@ -113,12 +114,12 @@ ColumnLayout {
                 Accessible.onPressAction: select()
                 Keys.onSpacePressed: select()
                 Keys.onReturnPressed: select()
-                Text {
+                GlassLabel {
                     anchors.centerIn: parent
                     text: securityOption.modelData.label
-                    color: root.security === securityOption.modelData.key ? Theme.accent : Theme.foreground
+                    color: root.security === securityOption.modelData.key ? root.settingsTheme.accent : root.settingsTheme.foreground
                     font.family: Fonts.poppinsSB.name
-                    font.pixelSize: Theme.helperTextSize
+                    font.pixelSize: root.settingsTheme.helperTextSize
                 }
                 MouseArea {
                     anchors.fill: parent
@@ -132,8 +133,8 @@ ColumnLayout {
         visible: root.security !== "open"
         Layout.fillWidth: true
         Layout.preferredHeight: 34
-        radius: Theme.rowRadius
-        color: Theme.surface
+        radius: root.settingsTheme.glassRadius("card", root.settingsTheme.rowRadius)
+        color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
         clip: true
         TextInput {
             id: passwordInput
@@ -145,23 +146,23 @@ ColumnLayout {
             text: root.password
             echoMode: TextInput.Password
             enabled: root.available && !WifiService.hiddenConnecting
-            color: Theme.foreground
+            color: root.settingsTheme.foreground
             font.family: Fonts.poppins.name
-            font.pixelSize: Theme.controlTextSize
+            font.pixelSize: root.settingsTheme.controlTextSize
             activeFocusOnTab: true
             Accessible.name: "Hidden Wi-Fi password"
             onTextEdited: root.password = text
             onAccepted: root.submit()
         }
-        Text {
+        GlassLabel {
             anchors.left: parent.left
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             visible: !passwordInput.text.length
             text: "Wi-Fi password"
-            color: Theme.muted
+            color: root.settingsTheme.contentMuted
             font.family: Fonts.poppins.name
-            font.pixelSize: Theme.helperTextSize
+            font.pixelSize: root.settingsTheme.helperTextSize
         }
     }
     RowLayout {
@@ -170,20 +171,20 @@ ColumnLayout {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 32
-            radius: Theme.rowRadius
-            color: Theme.surface
+            radius: root.settingsTheme.glassRadius("card", root.settingsTheme.rowRadius)
+            color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
             activeFocusOnTab: true
             Accessible.role: Accessible.Button
             Accessible.name: "Back to Wi-Fi networks"
             Accessible.onPressAction: root.closeRequested()
             Keys.onReturnPressed: root.closeRequested()
             Keys.onSpacePressed: root.closeRequested()
-            Text {
+            GlassLabel {
                 anchors.centerIn: parent
                 text: "Back"
-                color: Theme.foreground
+                color: root.settingsTheme.foreground
                 font.family: Fonts.poppins.name
-                font.pixelSize: Theme.helperTextSize
+                font.pixelSize: root.settingsTheme.helperTextSize
             }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.closeRequested() }
         }
@@ -191,8 +192,8 @@ ColumnLayout {
             objectName: "hiddenConnectButton"
             Layout.fillWidth: true
             Layout.preferredHeight: 32
-            radius: Theme.rowRadius
-            color: Theme.accent
+            radius: root.settingsTheme.rowRadius
+            color: root.settingsTheme.accent
             enabled: root.available && !WifiService.hiddenConnecting
             opacity: enabled ? 1 : 0.5
             activeFocusOnTab: true
@@ -201,24 +202,24 @@ ColumnLayout {
             Accessible.onPressAction: root.submit()
             Keys.onReturnPressed: root.submit()
             Keys.onSpacePressed: root.submit()
-            Text {
+            GlassLabel {
                 anchors.centerIn: parent
                 text: WifiService.hiddenConnecting ? "Connecting…" : "Connect"
-                color: Theme.background
+                color: root.settingsTheme.background
                 font.family: Fonts.poppinsSB.name
-                font.pixelSize: Theme.helperTextSize
+                font.pixelSize: root.settingsTheme.helperTextSize
             }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.submit() }
         }
     }
-    Text {
+    GlassLabel {
         Layout.fillWidth: true
         visible: text.length > 0
         text: root.validationMessage || (!root.available ? "Enable an available Wi-Fi adapter first"
               : WifiService.hiddenConnecting ? "Connecting to hidden Wi-Fi…" : WifiService.hiddenMessage)
-        color: root.validationMessage || !root.available || WifiService.hiddenFailed ? Theme.error : Theme.muted
+        color: root.validationMessage || !root.available || WifiService.hiddenFailed ? root.settingsTheme.error : root.settingsTheme.muted
         wrapMode: Text.WordWrap
         font.family: Fonts.poppins.name
-        font.pixelSize: Theme.helperTextSize
+        font.pixelSize: root.settingsTheme.helperTextSize
     }
 }

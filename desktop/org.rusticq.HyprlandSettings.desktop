@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=RusticQ Hyprland Settings
+GenericName=Hyprland Configuration Studio
+Comment=Configure Hyprland with previews, validation and rollback
+Exec=rusticq hypr-settings
+Icon=rusticq-hypr-settings
+Terminal=false
+Categories=Settings;DesktopSettings;
+Keywords=Hyprland;Compositor;Gaps;Blur;Rounding;RusticQ;
+StartupNotify=false

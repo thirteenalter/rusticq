@@ -1,0 +1,28 @@
+  INFO: Launching config: "/tmp/rage-native-palette-7i_t2ke1/shell.qml"
+  INFO: Shell ID: "bfefbce19a307d26d006edfcca006128" Path ID "bfefbce19a307d26d006edfcca006128"
+  INFO: Saving logs to "/tmp/rage-native-palette-7i_t2ke1/quickshell/by-id/3lbz0pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rage-native-palette-7i_t2ke1/quickshell/by-id/3lbz0pt/ipc.sock"
+  WARN quickshell.bluetooth: Could not connect to DBus. Bluetooth integration is not available.
+  WARN quickshell.network.networkmanager: Could not connect to DBus. NetworkManager backend will not work.
+ ERROR quickshell.network: Network will not work. Could not find an available backend.
+  INFO: Configuration Loaded
+ DEBUG qml: NATIVE PALETTE TEST test_all_semantic_colors_ignore_external_sources failed=false
+ DEBUG qml: NATIVE PALETTE TEST test_base_background_and_text_are_opaque_with_external_alpha failed=false
+ DEBUG qml: NATIVE PALETTE TEST test_glass_reset_and_bar_material_do_not_reset_provider failed=false
+ DEBUG qml: NATIVE PALETTE TEST test_material_layers_preserve_foreground_and_geometry failed=false
+ DEBUG qml: NATIVE PALETTE TEST test_watched_aether_file_does_not_change_native_palette failed=false
+ DEBUG qml: NATIVE PALETTE TEST test_z_save_native_provider failed=false
+ DEBUG qml: NATIVE PALETTE RESULTS 7 passed, 0 failed
+  INFO: Launching config: "/tmp/rage-native-palette-7i_t2ke1/shell.qml"
+  INFO: Shell ID: "bfefbce19a307d26d006edfcca006128" Path ID "bfefbce19a307d26d006edfcca006128"
+  INFO: Saving logs to "/tmp/rage-native-palette-7i_t2ke1/quickshell/by-id/y1mbz0pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rage-native-palette-7i_t2ke1/quickshell/by-id/y1mbz0pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: PROVIDER RELOAD PASS
+PASS: 38 semantic tokens; 4 native palettes, 3 styles, glass on/off, extreme external updates, watched Aether file, solid bar, layers, geometry, save/reload

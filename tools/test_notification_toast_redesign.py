@@ -19,9 +19,19 @@ assert 'sourceIndex: i' in service, 'the original native action index must be pr
 assert 'acts[index].invoke()' in service
 assert 'textFormat: Text.PlainText' in toast
 assert not re.search(r'\b(?:Open screenshot|Open folder|xdg-open|sh\s+-c)\b', toast), 'do not invent screenshot paths or commands'
-from fontTools.ttLib import TTFont
-font = TTFont(root / 'assets/google.ttf')
-cmap = set().union(*(set(table.cmap) for table in font['cmap'].tables))
+try:
+    from fontTools.ttLib import TTFont
+except ImportError:
+    # The shell already uses fontconfig; avoid a new Python test dependency.
+    import subprocess
+    charset = subprocess.check_output(['fc-query', '--format=%{charset}', str(root / 'assets/google.ttf')], text=True)
+    cmap = set()
+    for span in charset.split():
+        limits = [int(n, 16) for n in span.split('-')]
+        cmap.update(range(limits[0], limits[-1] + 1))
+else:
+    font = TTFont(root / 'assets/google.ttf')
+    cmap = set().union(*(set(table.cmap) for table in font['cmap'].tables))
 for code in re.findall(r'\\u([0-9A-Fa-f]{4})', toast):
     assert int(code, 16) in cmap, f'missing icon U+{code}'
 print('PASS notification toast layout, real icons, screenshot thumbnail and safe native actions')

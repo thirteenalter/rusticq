@@ -7,7 +7,7 @@ Pill {
     property bool showIcon: true
     property bool showDetails: true
     signal activated(real localX)
-    color: "transparent"
+    baseColor: "transparent"
     horizontalPadding: 4
     verticalPadding: 1
 

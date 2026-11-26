@@ -1,0 +1,16 @@
+  INFO: Launching config: "/tmp/rusticq-weather-ui-lebvijtk/shell.qml"
+  INFO: Shell ID: "cefd5536a6e57ca1a88db581bba907de" Path ID "cefd5536a6e57ca1a88db581bba907de"
+  INFO: Saving logs to "/tmp/rusticq-weather-ui-lebvijtk/quickshell/by-id/3lbz0pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-weather-ui-lebvijtk/quickshell/by-id/3lbz0pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: WEATHER TEST test_fetch_single_request_and_error_recovery failed=false
+ DEBUG qml: WEATHER TEST test_invalid_data_keeps_last_observation failed=false
+ DEBUG qml: WEATHER TEST test_long_weather_and_short_viewport_scroll failed=false
+ DEBUG qml: WEATHER TEST test_missing_optional_fields_are_readable failed=false
+ DEBUG qml: WEATHER TEST test_outside_click_does_not_close_panel_padding_or_controls failed=false
+ DEBUG qml: WEATHER TEST test_valid_json_units_location_and_semicolon_conditions failed=false
+ DEBUG qml: WEATHER RESULTS 7 passed, 0 failed
+PASS: weather JSON, Celsius/location, bad-data fallback, deduplicated refresh, scrolling, inside/outside clicks

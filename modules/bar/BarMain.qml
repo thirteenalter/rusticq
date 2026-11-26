@@ -38,10 +38,10 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: visible ? 40 : 0
                 spacing: 8
-                Text {
+                GlassLabel {
                     text: "Drag the handles to reorder sections"
                     Layout.fillWidth: true
-                    color: Theme.muted
+                    color: Theme.contentMuted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Fonts.scale(10)
                     wrapMode: Text.WordWrap
@@ -49,9 +49,9 @@ Item {
                 Rectangle {
                     Layout.preferredWidth: 58
                     Layout.preferredHeight: 28
-                    radius: 9
-                    color: Theme.surface
-                    Text { anchors.centerIn: parent; text: "Reset"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                    radius: Theme.glassRadius("card", 9)
+                    color: Theme.glassColor("card", Theme.surface)
+                    GlassLabel { anchors.centerIn: parent; text: "Reset"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetQuickOrder() }
                 }
             }
@@ -110,9 +110,9 @@ Item {
                         y: Math.max(8, (orderedCard.height - 44) / 2)
                         width: 21
                         height: 44
-                        radius: 9
-                        color: grabArea.pressed ? Qt.alpha(Theme.accent, .26) : Theme.surface
-                        border.width: 0
+                        radius: Theme.glassRadius("card", 9)
+                        color: Theme.glassColor("card", grabArea.pressed ? Qt.alpha(Theme.accent, .26) : Theme.surface)
+                        border.width: Theme.glassBorderWidth("card", 0)
                         Icon { anchors.centerIn: parent; icon: "\ue8d5"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
                         MouseArea {
                             id: grabArea

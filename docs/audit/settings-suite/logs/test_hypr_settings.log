@@ -1,0 +1,44 @@
+test_altered_source_block_is_rejected (__main__.Studio.test_altered_source_block_is_rejected) ... ok
+test_animation_disable_is_a_real_override (__main__.Studio.test_animation_disable_is_a_real_override) ... ok
+test_atomic_apply_preserves_original_and_includes (__main__.Studio.test_atomic_apply_preserves_original_and_includes) ... ok
+test_cancellation_during_write_restores_both_files (__main__.Studio.test_cancellation_during_write_restores_both_files) ... ok
+test_changed_preview_payload_requires_new_token (__main__.Studio.test_changed_preview_payload_requires_new_token) ... ok
+test_color_validation_and_lua_no_injection (__main__.Studio.test_color_validation_and_lua_no_injection) ... ok
+test_custom_preset_contains_no_automation (__main__.Studio.test_custom_preset_contains_no_automation) ... ok
+test_duplicates_and_secret_env_are_rejected (__main__.Studio.test_duplicates_and_secret_env_are_rejected) ... ok
+test_empty_environment_value_and_workspace_layout_are_supported (__main__.Studio.test_empty_environment_value_and_workspace_layout_are_supported) ... ok
+test_export_import_roundtrip_does_not_apply (__main__.Studio.test_export_import_roundtrip_does_not_apply) ... ok
+test_external_include_change_rejects_preview (__main__.Studio.test_external_include_change_rejects_preview) ... ok
+test_failed_validation_rolls_back_both_files (__main__.Studio.test_failed_validation_rolls_back_both_files) ... ok
+test_final_manifest_write_failure_is_transactional (__main__.Studio.test_final_manifest_write_failure_is_transactional) ... ok
+test_foreign_fragment_is_not_overwritten (__main__.Studio.test_foreign_fragment_is_not_overwritten) ... ok
+test_future_version_is_read_only (__main__.Studio.test_future_version_is_read_only) ... ok
+test_invalid_and_unsupported_options (__main__.Studio.test_invalid_and_unsupported_options) ... ok
+test_legacy_options_and_records (__main__.Studio.test_legacy_options_and_records) ... ok
+test_lua_rules_generated_separately_from_legacy (__main__.Studio.test_lua_rules_generated_separately_from_legacy) ... ok
+test_malformed_markers_fail_closed (__main__.Studio.test_malformed_markers_fail_closed) ... ok
+test_manual_snapshot_can_restore_after_later_apply (__main__.Studio.test_manual_snapshot_can_restore_after_later_apply) ... ok
+test_missing_cli_dependency_is_reported (__main__.Studio.test_missing_cli_dependency_is_reported) ... ok
+test_missing_session_is_read_only (__main__.Studio.test_missing_session_is_read_only) ... ok
+test_modern_bool_protocol_and_css_gaps (__main__.Studio.test_modern_bool_protocol_and_css_gaps) ... ok
+test_no_compositor_writes_for_local_preview (__main__.Studio.test_no_compositor_writes_for_local_preview) ... ok
+test_preset_scope_excludes_sensitive_sections (__main__.Studio.test_preset_scope_excludes_sensitive_sections) ... ok
+test_preview_never_writes (__main__.Studio.test_preview_never_writes) ... ok
+test_preview_restore_older_snapshot_preserves_new_user_comments (__main__.Studio.test_preview_restore_older_snapshot_preserves_new_user_comments) ... ok
+test_repeated_apply_does_not_duplicate_source (__main__.Studio.test_repeated_apply_does_not_duplicate_source) ... ok
+test_reported_defaults_and_ranges_override_fallback_schema (__main__.Studio.test_reported_defaults_and_ranges_override_fallback_schema) ... ok
+test_restore_preview_token_rejects_new_external_change (__main__.Studio.test_restore_preview_token_rejects_new_external_change) ... ok
+test_restore_previous_configuration (__main__.Studio.test_restore_previous_configuration) ... ok
+test_restore_rejects_changed_include (__main__.Studio.test_restore_rejects_changed_include) ... ok
+test_restore_rejects_external_edit (__main__.Studio.test_restore_rejects_external_edit) ... ok
+test_returning_lua_entrypoint_is_not_silently_ignored (__main__.Studio.test_returning_lua_entrypoint_is_not_silently_ignored) ... ok
+test_snapshot_without_apply_and_restore (__main__.Studio.test_snapshot_without_apply_and_restore) ... ok
+test_status_reports_effective_values_and_schema (__main__.Studio.test_status_reports_effective_values_and_schema) ... ok
+test_symlink_root_is_not_writable (__main__.Studio.test_symlink_root_is_not_writable) ... ok
+test_two_gateway_writers_share_one_lock (__main__.Studio.test_two_gateway_writers_share_one_lock) ... ok
+test_unknown_defaults_are_not_fabricated (__main__.Studio.test_unknown_defaults_are_not_fabricated) ... ok
+
+----------------------------------------------------------------------
+Ran 39 tests in 0.142s
+
+OK

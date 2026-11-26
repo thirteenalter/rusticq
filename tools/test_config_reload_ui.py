@@ -12,10 +12,18 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 QML = '''import QtQuick
+import QtQuick.Window
 import Quickshell
 import Quickshell.Io
 import "config"
+import "modules/main"
 ShellRoot {
+    Window {
+        visible:true;width:1400;height:950
+        // Compile the production launcher in the same engine on every reload.
+        // A cold-load-only test misses Quickshell inline-type reload failures.
+        MiniLauncher {width:implicitWidth;height:implicitHeight;applicationEntries:[]}
+    }
     IpcHandler {
         target: "rusticq"
         function reload(): void { ShellReload.requestReload(); }
@@ -86,7 +94,8 @@ def main():
                    QT_QUICK_BACKEND="software", XDG_RUNTIME_DIR=str(runtime), QS_NO_RELOAD_POPUP="1")
         def tree(name):
             path = base / name
-            shutil.copytree(ROOT / "config", path / "config")
+            for directory in ["config","components","modules","services","assets","scripts"]:
+                shutil.copytree(ROOT / directory, path / directory, ignore=shutil.ignore_patterns('__pycache__'))
             (path / "shell.qml").write_text(QML.replace("MARKER", name))
             (path / "user-settings.json").write_text('{"clockFormat":"HH:mm"}')
             return path

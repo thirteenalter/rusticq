@@ -41,6 +41,7 @@ assert 'systemMonitorVisible: false' in store
 assert 'Pipewire.preferredDefaultAudioSource' in advanced
 assert 'root.inputDevices' in advanced
 assert 'SystemMetrics' in mon and 'WifiService.ssid' in mon
-assert 'kind === "menu" ? 14' in (ROOT/'modules/main/IndicatorPopup.qml').read_text()
-assert 'Layout.leftMargin: 42' in (ROOT/'modules/bar/BarMonitors.qml').read_text()
+assert 'radius: Theme.glassRadius("popup", Theme.sectionRadius)' in (ROOT/'modules/main/IndicatorPopup.qml').read_text()
+assert 'modeBox.currentText' in (ROOT/'modules/bar/BarMonitors.qml').read_text()
+assert 'scheduleLive()' in (ROOT/'modules/bar/BarMonitors.qml').read_text()
 print('System monitor / audio / popup regression: OK')

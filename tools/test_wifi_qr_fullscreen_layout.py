@@ -29,7 +29,9 @@ class WifiOverlayLayoutTests(unittest.TestCase):
         self.assertIn('anchors { top: true; bottom: true; left: true; right: true }', share)
         self.assertIn('HyprlandFocusGrab {', share)
         self.assertIn('Keys.onEscapePressed: root.close()', share)
-        self.assertIn('onVisibleChanged:', share)
+        self.assertIn('function onWifiQrVisibleChanged() { root.syncVisibility(); }', share)
+        self.assertIn('function syncVisibility()', share)
+        self.assertIn('root.qrReady ? "white" : Theme.glassColor', share)
         self.assertIn('cleanupPending = true', share)
         self.assertIn('retryPending', share)
         self.assertIn('secondsRemaining <= 0', share)
@@ -63,7 +65,8 @@ class WifiOverlayLayoutTests(unittest.TestCase):
         self.assertIn('popupScreen: popup.hostWindow ? popup.hostWindow.screen : null', popup)
         self.assertIn('function closeWifiQr()', store)
         self.assertIn('wifiQrScreen = screen', store)
-        self.assertIn('anchor.rect.x:', popup)
+        self.assertIn('margins.left:', popup)
+        self.assertIn('readonly property real hostX:', popup)
 
 if __name__ == '__main__':
     unittest.main()

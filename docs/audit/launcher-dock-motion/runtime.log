@@ -1,0 +1,6 @@
+  INFO: Launching config: "/tmp/rusticq-studio-native-mwxyu_bm/shell.qml"
+  INFO: Shell ID: "d0134dc64c82aa57c5c913fe0530eb18" Path ID "d0134dc64c82aa57c5c913fe0530eb18"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/0hd7mlg1pt/log.qslog"
+  INFO: Configuration Loaded
+  WARN scene: QML FileView at @config/Theme.qml[35:5]: Read of /tmp/rusticq-studio-native-mwxyu_bm/home/.config/aether/theme/colors.toml failed: File does not exist.
+  WARN scene: QML Image at @components/LauncherAppIcon.qml[10:5]: Cannot open: file:///home/ryznxx/.local/share/applications/icons/ChatGPT.png

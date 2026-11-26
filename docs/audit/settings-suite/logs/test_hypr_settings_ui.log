@@ -1,0 +1,38 @@
+  INFO: Launching config: "/tmp/rusticq-hypr-ui-95hceapu/shell.qml"
+  INFO: Shell ID: "4ac85e43a074546cc8655c59e8f5d609" Path ID "4ac85e43a074546cc8655c59e8f5d609"
+  INFO: Saving logs to "/tmp/rusticq-hypr-ui-95hceapu/quickshell/by-id/3oz04pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-hypr-ui-95hceapu/quickshell/by-id/3oz04pt/ipc.sock"
+  INFO: Configuration Loaded
+  WARN scene: QML FileView at @config/Theme.qml[35:5]: Read of /tmp/rusticq-hypr-ui-95hceapu/home/.config/aether/theme/colors.toml failed: File does not exist.
+  WARN: This plugin does not support setting window masks
+ DEBUG qml: HYPR TEST test_a_existing_settings_still_loads failed=false
+ DEBUG qml: HYPR TEST test_b_review_and_apply_refreshes_state failed=false
+ DEBUG qml: HYPR TEST test_close_with_a_draft_requires_confirmation failed=false
+ DEBUG qml: HYPR TEST test_confirmation_ownership_and_parent_window failed=false
+ DEBUG qml: HYPR TEST test_interactive_slider_and_toggle failed=false
+  WARN: This plugin does not support raise()
+  WARN: This plugin does not support raise()
+ DEBUG qml: HYPR TEST test_launcher_entry_and_single_window_state failed=false
+ DEBUG qml: HYPR TEST test_local_draft_does_not_apply failed=false
+ DEBUG qml: HYPR TEST test_navigation_all_categories failed=false
+ DEBUG qml: HYPR TEST test_preferences_validation_and_reset failed=false
+ DEBUG qml: HYPR TEST test_preset_is_staged failed=false
+ DEBUG qml: HYPR TEST test_record_editor_stages_a_rule failed=false
+ DEBUG qml: HYPR TEST test_records_survive_navigation failed=false
+ DEBUG qml: HYPR TEST test_search_aliases failed=false
+  WARN: This plugin does not support setting window masks
+ DEBUG qml: HYPR TEST test_search_highlight_and_resize failed=false
+  WARN: This plugin does not support setting window masks
+  WARN: This plugin does not support setting window masks
+ DEBUG qml: HYPR TEST test_sidebar_hover_and_content_are_scoped_to_the_row failed=false
+  WARN: This plugin does not support setting window masks
+ DEBUG qml: HYPR TEST test_theme_preferences failed=false
+  WARN: This plugin does not support setting window masks
+  WARN: This plugin does not support setting window masks
+ DEBUG qml: HYPR TEST test_z_capture_preview failed=false
+ DEBUG qml: HYPR TEST test_zz_external_config_change_invalidates_preview failed=false
+ DEBUG qml: HYPR RESULTS 19 passed, 0 failed
+Hyprland studio UI: navigation, launcher, drafts, presets, sizing and persistence passed.

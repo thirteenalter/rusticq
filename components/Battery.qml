@@ -32,7 +32,7 @@ Item {
             color: root.statusColor
         }
 
-        Text {
+        GlassLabel {
             Layout.alignment: Qt.AlignVCenter
             text: BatteryService.percentage + "%" + (BatteryService.charging ? " +" : "")
             visible: root.showValue

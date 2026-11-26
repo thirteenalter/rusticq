@@ -1,0 +1,3 @@
+PASS test_clients_and_dedup
+PASS test_commands_and_focus
+PASS test_qml_contract

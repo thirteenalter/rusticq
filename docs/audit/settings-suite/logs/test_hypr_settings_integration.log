@@ -1,0 +1,10 @@
+{"ok": true, "result": {"action": "hypr-settings"}}
+test_action_catalogue_can_assign_shortcut (__main__.Integration.test_action_catalogue_can_assign_shortcut) ... ok
+test_cli_uses_existing_ipc_dispatcher (__main__.Integration.test_cli_uses_existing_ipc_dispatcher) ... ok
+test_desktop_entry_is_valid (__main__.Integration.test_desktop_entry_is_valid) ... ok
+test_install_dry_run_creates_nothing (__main__.Integration.test_install_dry_run_creates_nothing) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.137s
+
+OK

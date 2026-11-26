@@ -8,12 +8,14 @@ import "modules/main"
 import "modules/bar"
 import "modules/ai"
 import "modules/settings"
+import "modules/hyprsettings"
 import "modules/power"
 import "services"
 
 // Satu bar untuk setiap monitor, satu sidebar sesuai monitor yang diklik.
 ShellRoot {
     id: root
+    Component.onCompleted: GlassService.initialize()
     // Resolve keyboard shortcuts from Hyprland focus, not Quickshell.screens[0].
     // A workspace is displayed by its monitor, so focusing workspace 2 on DP-2
     // opens every overlay on DP-2 without spawning a second Quickshell process.
@@ -50,6 +52,8 @@ ShellRoot {
         if (action === "quick") { Store.toggleQuick(screen); return; }
         if (action === "ai") { Store.toggleAi(screen); return; }
         if (action === "monitor") { Store.monitorScreen = screen; Store.systemMonitorVisible = !Store.systemMonitorVisible; return; }
+        if (action === "hypr-settings") { Store.openHyprSettings("overview", screen); return; }
+        if (action === "settings-compositor" && !!Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")) { Store.openHyprSettings("overview", screen); return; }
         if (action === "settings") { Store.showSettings("home", screen); return; }
         if (action.indexOf("settings-") === 0) {
             const tab = action.substring(9);
@@ -198,7 +202,15 @@ ShellRoot {
         RusticDock { required property var modelData; screen: modelData }
     }
     MotionLoader {
+        id: launcherLoader
+        property bool warmed: false
         shown: Store.launcherVisible
+        keepLoaded: warmed && !SettingsStore.lowMemoryShellMode
+        onShownChanged: if (shown) warmed = true
+        property Connections memoryPolicy: Connections {
+            target: SettingsStore
+            function onLowMemoryShellModeChanged() { if (SettingsStore.lowMemoryShellMode) launcherLoader.warmed = false; }
+        }
         LauncherOverlay { screen: Store.launcherScreen }
     }
     MotionLoader {
@@ -225,6 +237,10 @@ ShellRoot {
     MotionLoader {
         shown: Store.settingsVisible
         SettingsWindow {}
+    }
+    MotionLoader {
+        shown: Store.hyprSettingsVisible
+        HyprSettingsWindow {}
     }
     MotionLoader {
         shown: Store.deviceSettingsVisible

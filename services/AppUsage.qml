@@ -6,6 +6,16 @@ import Quickshell.Io
 Singleton {
     id: root
     property var usage: ({})
+    // Session-only action history: never write provider payloads or note/file
+    // contents into the application's persistent usage JSON.
+    property var recentCommands: []
+    function noteCommand(entry) {
+        if (!entry || typeof entry.action!=="string" || typeof entry.payload!=="string") return;
+        if (entry.payload.length>4096) return;
+        if (["settings","file","folder","window","workspace","ocr","color"].indexOf(entry.action)<0) return;
+        const item={label:String(entry.label || entry.action).slice(0,120),action:entry.action,payload:entry.payload,icon:String(entry.icon || "›")};
+        recentCommands=[item].concat(recentCommands.filter(old=>old.action!==item.action || old.payload!==item.payload)).slice(0,8);
+    }
     FileView {
         id: usageFile
         path: Qt.resolvedUrl("../app-usage.json")

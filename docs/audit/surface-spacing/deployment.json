@@ -1,0 +1,37 @@
+{
+  "initialResidualDeployment": {
+    "files": [
+      "config/SettingsStore.qml",
+      "config/Theme.qml",
+      "modules/main/IndicatorPopup.qml",
+      "modules/main/MiniEthernetInfo.qml",
+      "modules/settings/SettingsSection.qml",
+      "modules/settings/SettingsWindow.qml",
+      "modules/settings/pages/SettingsAppearancePage.qml",
+      "modules/settings/pages/SurfaceSpacingSettings.qml"
+    ],
+    "apply": true,
+    "preferenceHashesBefore": {
+      "user-settings.json": "114e1f671df7638495927d345de3719f713cacfa154535b1241d6338b99f2da5",
+      "app-usage.json": null
+    },
+    "backup": "/home/ryznxx/.local/state/rusticq/backups/surface-spacing-20261125-115800",
+    "runtimeErrors": [],
+    "sourceMatches": true,
+    "preferencesByteIdentical": true
+  },
+  "reloadCompatibilityFix": {
+    "files": [
+      "components/LauncherView.qml"
+    ],
+    "apply": true,
+    "preferenceHashesBefore": {
+      "user-settings.json": "114e1f671df7638495927d345de3719f713cacfa154535b1241d6338b99f2da5",
+      "app-usage.json": null
+    },
+    "backup": "/home/ryznxx/.local/state/rusticq/backups/surface-spacing-20261125-120646",
+    "runtimeErrors": [],
+    "sourceMatches": true,
+    "preferencesByteIdentical": true
+  }
+}

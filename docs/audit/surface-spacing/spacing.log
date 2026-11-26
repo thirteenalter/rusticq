@@ -1,0 +1,20 @@
+  INFO: Launching config: "/tmp/rusticq-spacing-ui-2zfhqhx_/shell.qml"
+  INFO: Shell ID: "3f61bcab1b6038c4ca57616f5e3955b3" Path ID "3f61bcab1b6038c4ca57616f5e3955b3"
+  INFO: Saving logs to "/tmp/rusticq-spacing-ui-2zfhqhx_/quickshell/by-id/ps2949k1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+  INFO: Configuration Loaded
+  WARN scene: QML FileView at @config/Theme.qml[35:5]: Read of /tmp/rusticq-spacing-ui-2zfhqhx_/home/.config/aether/theme/colors.toml failed: File does not exist.
+ ERROR quickshell.service.pipewire.loop: Failed to connect pipewire context. Errno: 112
+ DEBUG qml: SPACING RESULTS 3 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-spacing-ui-2zfhqhx_/shell.qml"
+  INFO: Shell ID: "3f61bcab1b6038c4ca57616f5e3955b3" Path ID "3f61bcab1b6038c4ca57616f5e3955b3"
+  INFO: Saving logs to "/tmp/rusticq-spacing-ui-2zfhqhx_/quickshell/by-id/iw2989k1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+  INFO: Configuration Loaded
+ DEBUG qml: SPACING RELOAD PASS
+  WARN scene: QML FileView at @config/Theme.qml[35:5]: Read of /tmp/rusticq-spacing-ui-2zfhqhx_/home/.config/aether/theme/colors.toml failed: File does not exist.
+PASS: 11 production content layouts × 2 densities × 3 palette/material modes × 3 padding choices; manual controls, validation, commit-only save and restart

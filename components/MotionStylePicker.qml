@@ -4,9 +4,10 @@ import "../config"
 
 ColumnLayout {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     property string settingKey: "animationStyle"
     Layout.fillWidth: true
-    spacing: Theme.sectionGap
+    spacing: root.settingsTheme.sectionGap
     GridLayout {
         Layout.fillWidth: true
         columns: width < 460 ? 2 : 3
@@ -35,27 +36,27 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 86
-        radius: Theme.rowRadius
-        color: Theme.background
+        radius: root.settingsTheme.glassRadius("card", root.settingsTheme.rowRadius)
+        color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
         clip: true
         Rectangle {
             id: previewBar
             anchors.centerIn: parent
             width: Math.max(120, parent.width - 44)
             height: 38
-            radius: 12
-            color: Theme.surface
+            radius: root.settingsTheme.glassRadius("card", 12)
+            color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
             transform: Translate { x: preview.offsetX; y: preview.offsetY }
             RowLayout {
                 anchors.centerIn: parent
                 spacing: 16
-                Icon { icon: "\ue8b6"; color: Theme.accent; font.pixelSize: 18 }
-                Text { text: "RusticQ"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 12 }
-                Icon { icon: "\ue63e"; color: Theme.foreground; font.pixelSize: 18 }
-                Icon { icon: "\ue1a7"; color: Theme.foreground; font.pixelSize: 18 }
+                Icon { icon: "\ue8b6"; color: root.settingsTheme.accent; font.pixelSize: 18 }
+                GlassLabel { text: "RusticQ"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: 12 }
+                Icon { icon: "\ue63e"; color: root.settingsTheme.foreground; font.pixelSize: 18 }
+                Icon { icon: "\ue1a7"; color: root.settingsTheme.foreground; font.pixelSize: 18 }
             }
         }
         SurfaceMotion { id: preview; shown: true; target: previewBar; edge: SettingsStore.barPosition; style: SettingsStore[root.settingKey] }
     }
-    ActionButton { label: "Preview animation"; symbol: "\ue037"; enabled: Theme.motionEnabled; onClicked: preview.replay() }
+    ActionButton { label: "Preview animation"; symbol: "\ue037"; enabled: root.settingsTheme.motionEnabled; onClicked: preview.replay() }
 }

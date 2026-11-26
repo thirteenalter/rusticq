@@ -1,0 +1,13 @@
+ DEBUG qml: CONFIG_LOADED 436492 HH:mm first
+ DEBUG qml: CONFIG_LOADED 436492 HH:mm dddd first
+ DEBUG qml: WATCH false
+ DEBUG qml: CONFIG_LOADED 436492 dd/MM/yyyy first
+ DEBUG qml: WATCH false
+ DEBUG qml: CONFIG_LOADED 436492 dd/MM/yyyy new-source
+ DEBUG qml: WATCH false
+ DEBUG qml: CONFIG_LOADED 436492 HH:mm new-source
+ DEBUG qml: CONFIG_LOADED 436658 HH:mm second
+ DEBUG qml: CONFIG_LOADED 436658 HH:mm second
+ DEBUG qml: RELOAD_FAILED Failed to load configuration
+ DEBUG qml: CONFIG_LOADED 436492 HH:mm recovered-source
+PASS: own saves do not reload; external settings, imports, atomic source replacement and remote IPC reload in place; failed updates/invalid JSON do not reload; invalid QML keeps the previous shell

@@ -1,54 +1,10 @@
 import QtQuick
-import QtQuick.Layouts
 import "../../config"
-import "../../components"
-
-// Unlike the RC5 cards, the root's intrinsic height is derived from its content.
-// It is safe to use inside a ColumnLayout in a Flickable.
-Rectangle {
-    id: section
-    default property alias controls: content.data
-    property string heading: ""
-    property string description: ""
-    property string symbol: "\ue8b8"
-    Layout.fillWidth: true
-    implicitHeight: content.implicitHeight + Theme.sectionPadding * 2
-    radius: Theme.sectionRadius
-    color: Theme.surface
-    border.width: 1
-    border.color: Theme.borderaccent
-
-    ColumnLayout {
-        id: content
-        x: Theme.sectionPadding
-        y: Theme.sectionPadding
-        width: Math.max(0, section.width - Theme.sectionPadding * 2)
-        spacing: Theme.sectionGap
-        RowLayout {
-            visible: section.heading.length > 0
-            Layout.fillWidth: true
-            spacing: 11
-            Rectangle {
-                Layout.preferredWidth: 34
-                Layout.preferredHeight: 34
-                radius: 11
-                color: Qt.alpha(Theme.accent, 0.14)
-                Icon { anchors.centerIn: parent; icon: section.symbol; color: Theme.accent; font.pixelSize: Fonts.scale(19) }
-            }
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 2
-                Text { text: section.heading; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(14); color: Theme.foreground }
-                Text {
-                    visible: section.description.length > 0
-                    Layout.fillWidth: true
-                    text: section.description
-                    color: Theme.muted
-                    wrapMode: Text.WordWrap
-                    font.family: Fonts.poppins.name
-                    font.pixelSize: Fonts.scale(10)
-                }
-            }
-        }
-    }
+import "../../components/settings" as Suite
+Suite.SettingsGroup {
+    id:section
+    property var appearance:null
+    readonly property var controlTheme:appearance || SettingsMaterial.forItem(parent)
+    property alias heading:section.title
+    design:controlTheme
 }

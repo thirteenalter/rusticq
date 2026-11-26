@@ -49,8 +49,24 @@ ShellRoot {
             sourceComponent: BarIconSizeEditor {}
         }
         TestCase {
+            id: motionTests
             name: "MotionLifecycle"
             when: true
+            property bool enteredBetweenFrames: false
+            property bool enteredWhileAnimating: false
+            property bool enteredFromLeft: false
+            property bool exitedBetweenFrames: false
+            Connections {
+                target: motion
+                function onProgressChanged() {
+                    if (motion.progress <= 0 || motion.progress >= 1) return;
+                    if (motion.shown) {
+                        motionTests.enteredBetweenFrames = true;
+                        motionTests.enteredWhileAnimating = motion.animating;
+                        motionTests.enteredFromLeft = motion.offsetX < 0;
+                    } else motionTests.exitedBetweenFrames = true;
+                }
+            }
             function init() {
                 SettingsStore.animationsEnabled = false;
                 motion.shown = false;
@@ -64,28 +80,43 @@ ShellRoot {
                 iconEditor.active = false;
                 appearance.visible = true;
                 motion.edge = "left";
+                motion.startReady = true;
+                enteredBetweenFrames=false; enteredWhileAnimating=false;
+                enteredFromLeft=false; exitedBetweenFrames=false;
                 wait(20);
             }
-            function cleanup() { console.log("MOTION TEST " + qtest_results.functionName + " failed=" + qtest_results.failed); }
+            function cleanup() { console.log("MOTION TEST " + qtest_results.functionName + " failed=" + qtest_results.failed + " stage=" + motionStage); }
             function cleanupTestCase() { console.log("MOTION RESULTS " + qtest_results.passCount + " passed, " + qtest_results.failCount + " failed"); }
+            property string motionStage: ""
             function test_entry_exit_and_no_input_during_close() {
+                motionStage="initial";
                 compare(motion.presented, false);
                 motion.shown = true;
+                motionStage="enter presented";
                 verify(motion.presented);
-                tryVerify(() => motion.progress > 0 && motion.progress < 1);
-                verify(motion.animating);
-                verify(motion.offsetX < 0);
+                motionStage="enter intermediate";
+                // Observe actual frame changes; polling can miss all intermediate
+                // values when another UI fixture blocks the event loop briefly.
+                tryVerify(() => enteredBetweenFrames);
+                motionStage="enter animation";
+                verify(enteredWhileAnimating);
+                verify(enteredFromLeft);
                 tryCompare(surface, "enabled", true);
+                motionStage="enter settled";
                 tryCompare(motion, "progress", 1);
-                compare(surface.opacity, 1);
-                compare(surface.scale, 1);
-                compare(motion.offsetX, 0);
+                motionStage="surface settled";
+                // Binding targets settle after the progress notification.
+                tryCompare(surface, "opacity", 1);
+                tryCompare(surface, "scale", 1);
+                tryCompare(motion, "offsetX", 0);
+                motionStage="exit presented";
                 motion.shown = false;
                 verify(motion.presented);
                 tryCompare(surface, "enabled", false);
-                tryVerify(() => motion.progress > 0 && motion.progress < 1);
+                tryVerify(() => exitedBetweenFrames);
+                motionStage="exit settled";
                 tryCompare(motion, "presented", false);
-                compare(surface.opacity, 0);
+                tryCompare(surface, "opacity", 0);
                 compare(motion.animating, false);
             }
             function test_reopening_reverses_from_current_frame() {
@@ -99,6 +130,21 @@ ShellRoot {
                 fuzzyCompare(motion.progress, before, 0.001);
                 tryCompare(motion, "progress", 1);
                 compare(surface.enabled, true);
+            }
+            function test_entry_waits_for_the_first_native_frame() {
+                motion.startReady = false;
+                motion.shown = true;
+                wait(60);
+                compare(motion.progress, 0);
+                verify(motion.presented);
+                motion.startReady = true;
+                tryVerify(() => enteredBetweenFrames);
+                tryCompare(motion, "progress", 1);
+                motion.shown = false;
+                SettingsStore.animationsEnabled = false;
+                motion.startReady = false;
+                motion.shown = true;
+                tryCompare(motion, "progress", 1);
             }
             function test_off_settles_active_transitions_immediately() {
                 motion.shown = true;

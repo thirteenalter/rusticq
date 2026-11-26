@@ -34,6 +34,13 @@ class Beta3FeatureTests(unittest.TestCase):
         p = patch.object(NOTES, 'STATE', self.notes)
         p.start()
         self.addCleanup(p.stop)
+        # Launcher dynamically imports its notes helper. Reuse this isolated
+        # instance too; otherwise its provider test writes the real user's state.
+        original=LAUNCHER.module
+        provider=patch.object(LAUNCHER,'module',side_effect=lambda filename,name:
+                              NOTES if filename=='rusticq-notes.py' else original(filename,name))
+        provider.start()
+        self.addCleanup(provider.stop)
 
     def test_notes_add_read_move_cycle_and_delete(self):
         created = NOTES.op('add', 'Write docs')
@@ -159,11 +166,11 @@ class Beta3FeatureTests(unittest.TestCase):
         self.assertIn('desktopProfilePrevious: desktopProfilePrevious', store)
         self.assertIn('SettingsStore.applyDesktopProfile(', (ROOT / 'modules/settings/pages/SettingsModulesPage.qml').read_text())
 
-    def test_default_launcher_not_replaced(self):
-        qml=(ROOT/'modules/main/MiniLauncher.qml').read_text()
+    def test_shared_launcher_backend_and_navigation_preserved(self):
+        qml=(ROOT/'components/LauncherController.qml').read_text()
         self.assertIn('DesktopEntries.applications.values', qml)
         self.assertIn('^:(emoji|settings|wallpaper|color|ocr|files|folders|windows|workspaces|notes)', qml)
-        self.assertIn('Keys.onDownPressed', qml)
+        self.assertIn('Keys.onDownPressed', (ROOT/'components/LauncherView.qml').read_text())
 
 
 if __name__ == '__main__':

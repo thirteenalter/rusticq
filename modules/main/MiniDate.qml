@@ -66,15 +66,16 @@ Item {
         ScrollIndicator.vertical: ScrollIndicator {}
         ColumnLayout {
             id: content
+            objectName: "surfaceContent"
             x: Theme.sectionPadding
             y: Theme.sectionPadding
             width: Math.max(0, viewport.width - Theme.sectionPadding * 2)
-            spacing: 14
+            spacing: Theme.contentGap
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8
                 Icon { icon: "\uebcc"; font.pixelSize: Fonts.scale(20); color: Theme.accent }
-                Text {
+                GlassLabel {
                     text: root.editing ? (root.selectedNote ? "Edit activity" : "Add activity") : "Calendar"
                     font.family: Fonts.poppinsSB.name
                     font.pixelSize: Fonts.scale(16)
@@ -106,7 +107,7 @@ Item {
             RowLayout {
                 visible: !root.editing
                 Layout.fillWidth: true
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     text: Qt.formatDate(root.displayedMonth, "MMMM yyyy")
                     font.family: Fonts.poppinsSB.name
@@ -127,13 +128,13 @@ Item {
                 rowSpacing: 4
                 Repeater {
                     model: root.weekdays
-                    delegate: Text {
+                    delegate: GlassLabel {
                         required property string modelData
                         Layout.fillWidth: true
                         Layout.preferredHeight: 22
                         horizontalAlignment: Text.AlignHCenter
                         text: modelData
-                        color: Theme.muted
+                        color: Theme.contentMuted
                         font.family: Fonts.poppins.name
                         font.pixelSize: Fonts.scale(10)
                     }
@@ -152,17 +153,17 @@ Item {
                         objectName: "calendar-day-" + dateKey
                         Layout.fillWidth: true
                         Layout.preferredHeight: 34
-                        radius: Theme.rowRadius
-                        color: isToday ? Theme.accent : selected ? Qt.alpha(Theme.accent, 0.18) : pointer.containsMouse ? Theme.surface : "transparent"
+                        radius: Theme.glassRadius("card", Theme.rowRadius)
+                        color: Theme.glassColor("card", isToday ? Theme.accent : selected ? Qt.alpha(Theme.accent, 0.18) : pointer.containsMouse ? Theme.surface : "transparent")
                         activeFocusOnTab: true
-                        border.width: activeFocus ? 1 : 0
-                        border.color: Theme.accent
+                        border.width: Theme.glassBorderWidth("card", activeFocus ? 1 : 0)
+                        border.color: Theme.glassBorder("card", Theme.accent)
                         Accessible.role: Accessible.Button
                         Accessible.name: Qt.formatDate(cellDate, "dddd, dd MMMM yyyy") + (note ? " · " + note.title : "")
                         Accessible.onPressAction: root.selectDate(cellDate)
                         Keys.onReturnPressed: root.selectDate(cellDate)
                         Keys.onSpacePressed: root.selectDate(cellDate)
-                        Text {
+                        GlassLabel {
                             anchors.centerIn: parent
                             anchors.verticalCenterOffset: dateCell.note ? -2 : 0
                             text: dateCell.cellDate.getDate()
@@ -201,22 +202,22 @@ Item {
                     Rectangle {
                         Layout.preferredWidth: 44
                         Layout.preferredHeight: 48
-                        radius: Theme.rowRadius
-                        color: Qt.alpha(Theme.accent, 0.10)
+                        radius: Theme.glassRadius("card", Theme.rowRadius)
+                        color: Theme.glassColor("card", Qt.alpha(Theme.accent, 0.10))
                         ColumnLayout {
                             anchors.centerIn: parent
                             spacing: 0
-                            Text {
+                            GlassLabel {
                                 Layout.alignment: Qt.AlignHCenter
                                 text: Qt.formatDate(root.selectedDate, "dd")
                                 color: Theme.accent
                                 font.family: Fonts.poppinsSB.name
                                 font.pixelSize: Fonts.scale(19)
                             }
-                            Text {
+                            GlassLabel {
                                 Layout.alignment: Qt.AlignHCenter
                                 text: Qt.formatDate(root.selectedDate, "MMM").toUpperCase()
-                                color: Theme.muted
+                                color: Theme.contentMuted
                                 font.family: Fonts.poppins.name
                                 font.pixelSize: Fonts.scale(8)
                             }
@@ -225,7 +226,7 @@ Item {
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 3
-                        Text {
+                        GlassLabel {
                             Layout.fillWidth: true
                             text: Qt.formatDate(root.selectedDate, "dddd")
                             font.family: Fonts.poppinsSB.name
@@ -233,12 +234,12 @@ Item {
                             color: Theme.foreground
                             elide: Text.ElideRight
                         }
-                        Text {
+                        GlassLabel {
                             Layout.fillWidth: true
                             text: root.selectedNote ? "Your activity" : "Nothing planned"
                             font.family: Fonts.poppins.name
                             font.pixelSize: Fonts.scale(10)
-                            color: Theme.muted
+                            color: Theme.contentMuted
                         }
                     }
                     ActionButton {
@@ -254,10 +255,10 @@ Item {
                     visible: root.selectedNote !== null
                     Layout.fillWidth: true
                     implicitHeight: activityContent.implicitHeight + 24
-                    radius: Theme.rowRadius
-                    color: Theme.surface
-                    border.width: 1
-                    border.color: Theme.borderaccent
+                    radius: Theme.glassRadius("card", Theme.rowRadius)
+                    color: Theme.glassColor("card", Theme.surface)
+                    border.width: Theme.glassBorderWidth("card", 1)
+                    border.color: Theme.glassBorder("card", Theme.borderaccent)
                     ColumnLayout {
                         id: activityContent
                         x: 12
@@ -273,7 +274,7 @@ Item {
                                 radius: 3
                                 color: Theme.calendarCategoryColor(root.selectedNote ? root.selectedNote.category : "event")
                             }
-                            Text {
+                            GlassLabel {
                                 Layout.fillWidth: true
                                 text: root.selectedNote ? root.selectedNote.category.charAt(0).toUpperCase() + root.selectedNote.category.slice(1) : ""
                                 color: Theme.calendarCategoryColor(root.selectedNote ? root.selectedNote.category : "event")
@@ -299,7 +300,7 @@ Item {
                                 }
                             }
                         }
-                        Text {
+                        GlassLabel {
                             Layout.fillWidth: true
                             text: root.selectedNote ? root.selectedNote.title : ""
                             textFormat: Text.PlainText
@@ -308,12 +309,12 @@ Item {
                             color: Theme.foreground
                             wrapMode: Text.WordWrap
                         }
-                        Text {
+                        GlassLabel {
                             visible: !!root.selectedNote && root.selectedNote.notes.length > 0
                             Layout.fillWidth: true
                             text: root.selectedNote ? root.selectedNote.notes : ""
                             textFormat: Text.PlainText
-                            color: Theme.muted
+                            color: Theme.contentMuted
                             font.family: Fonts.poppins.name
                             font.pixelSize: Fonts.scale(11)
                             wrapMode: Text.WordWrap
@@ -326,19 +327,19 @@ Item {
             ColumnLayout {
                 visible: root.editing
                 Layout.fillWidth: true
-                spacing: 14
+                spacing: Theme.contentGap
                 Rectangle {
                     Layout.fillWidth: true
                     implicitHeight: 38
-                    radius: Theme.rowRadius
-                    color: Qt.alpha(Theme.accent, 0.08)
+                    radius: Theme.glassRadius("card", Theme.rowRadius)
+                    color: Theme.glassColor("card", Qt.alpha(Theme.accent, 0.08))
                     RowLayout {
                         anchors.fill: parent
                         anchors.leftMargin: 12
                         anchors.rightMargin: 12
                         spacing: 8
                         Icon { icon: "\uebcc"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
-                        Text {
+                        GlassLabel {
                             Layout.fillWidth: true
                             text: Qt.formatDate(root.selectedDate, "ddd, dd MMMM yyyy")
                             color: Theme.foreground
@@ -351,14 +352,14 @@ Item {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 7
-                    Text { text: "Activity"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { text: "Activity"; color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     Rectangle {
                         Layout.fillWidth: true
                         implicitHeight: 46
-                        radius: Theme.rowRadius
-                        color: Theme.surface
-                        border.width: 1
-                        border.color: titleInput.activeFocus ? Theme.accent : Theme.borderaccent
+                        radius: Theme.glassRadius("card", Theme.rowRadius)
+                        color: Theme.glassColor("card", Theme.surface)
+                        border.width: Theme.glassBorderWidth("card", 1)
+                        border.color: Theme.glassBorder("card", titleInput.activeFocus ? Theme.accent : Theme.borderaccent)
                         TextInput {
                             id: titleInput
                             objectName: "calendar-note-title"
@@ -376,12 +377,12 @@ Item {
                             clip: true
                             Accessible.name: "Activity title"
                             Keys.onReturnPressed: if (text.trim()) root.saveNote()
-                            Text {
+                            GlassLabel {
                                 visible: titleInput.text.length === 0
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: parent.width
                                 text: "What’s planned?"
-                                color: Theme.muted
+                                color: Theme.contentMuted
                                 font.family: Fonts.poppins.name
                                 font.pixelSize: Fonts.scale(12)
                                 elide: Text.ElideRight
@@ -392,7 +393,7 @@ Item {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 7
-                    Text { text: "Category"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { text: "Category"; color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 6
@@ -414,17 +415,17 @@ Item {
                     spacing: 7
                     RowLayout {
                         Layout.fillWidth: true
-                        Text { text: "Details"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        GlassLabel { text: "Details"; color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                         Item { Layout.fillWidth: true }
-                        Text { text: "Optional"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                        GlassLabel { text: "Optional"; color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
                     }
                     Rectangle {
                         Layout.fillWidth: true
                         implicitHeight: 90
-                        radius: Theme.rowRadius
-                        color: Theme.surface
-                        border.width: 1
-                        border.color: notesInput.activeFocus ? Theme.accent : Theme.borderaccent
+                        radius: Theme.glassRadius("card", Theme.rowRadius)
+                        color: Theme.glassColor("card", Theme.surface)
+                        border.width: Theme.glassBorderWidth("card", 1)
+                        border.color: Theme.glassBorder("card", notesInput.activeFocus ? Theme.accent : Theme.borderaccent)
                         Flickable {
                             id: notesViewport
                             anchors.fill: parent
@@ -454,10 +455,10 @@ Item {
                                     else if (cursorRectangle.y + cursorRectangle.height > notesViewport.contentY + notesViewport.height)
                                         notesViewport.contentY = cursorRectangle.y + cursorRectangle.height - notesViewport.height;
                                 }
-                                Text {
+                                GlassLabel {
                                     visible: notesInput.text.length === 0
                                     text: "Add a few details…"
-                                    color: Theme.muted
+                                    color: Theme.contentMuted
                                     font: notesInput.font
                                 }
                             }
@@ -483,12 +484,12 @@ Item {
                     }
                 }
             }
-            Text {
+            GlassLabel {
                 visible: root.message.length > 0
                 text: root.message
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
-                color: Theme.muted
+                color: Theme.contentMuted
                 font.family: Fonts.poppins.name
                 font.pixelSize: Fonts.scale(10)
             }

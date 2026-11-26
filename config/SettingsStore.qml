@@ -14,6 +14,7 @@ Singleton {
     property string barMode: "separated"
     property bool barVisible: true
     property bool barAutoHide: false
+    property bool barPopupsOnHover: false
     property bool showBarRecoveryHandle: true
     readonly property string barVisibilityMode: barVisible ? (barAutoHide ? "auto" : "show") : (showBarRecoveryHandle ? "hide" : "hidden")
     property bool showBarToggleIcon: true
@@ -37,7 +38,314 @@ Singleton {
     property string uiCustomFont: ""
     property real uiFontScale: 1.0
     property string uiDensity: "comfortable"
+    // -1 follows density; zero is a valid manual inset. These affect content,
+    // never the bar's custom geometry or the launcher's independent padding.
+    property int surfacePanelPadding: -1
+    property int surfaceCardPadding: -1
+    property int surfaceControlPadding: -1
+    property int surfaceContentGap: -1
+    property int surfaceInlineGap: -1
+    readonly property var surfaceSpacingDefaults: ({surfacePanelPadding:-1, surfaceCardPadding:-1,
+        surfaceControlPadding:-1, surfaceContentGap:-1, surfaceInlineGap:-1})
+    readonly property var surfaceSpacingMaximums: ({surfacePanelPadding:32, surfaceCardPadding:24,
+        surfaceControlPadding:20, surfaceContentGap:24, surfaceInlineGap:16})
+    function setSurfaceSpacing(key, value, persist) {
+        if (!Object.prototype.hasOwnProperty.call(surfaceSpacingDefaults,key)
+            || !Number.isInteger(value) || value < -1 || value > surfaceSpacingMaximums[key]) return false;
+        root[key] = value;
+        if (persist !== false) save();
+        return true;
+    }
+    function applySurfaceSpacingSettings(data) {
+        if (!data || typeof data !== "object" || Array.isArray(data)) return;
+        for (const key of Object.keys(surfaceSpacingDefaults))
+            if (Object.prototype.hasOwnProperty.call(data,key)) setSurfaceSpacing(key,data[key],false);
+    }
+    function resetSurfaceSpacing() { applySurfaceSpacingSettings(surfaceSpacingDefaults); save(); }
     property bool animationsEnabled: true
+    // Existing installations stay Classic until the user selects a new layout.
+    property var surfaceMaterialOverrides: ({})
+    function loadSurfaceMaterials(data) {
+        const next={};const source=data.surfaceMaterialOverrides;
+        if (!source || typeof source!=="object" || Array.isArray(source))return;
+        for(const key of ["dock","notifications","widgets","popovers","dialogs"]) {
+            const v=source[key];if(!v || typeof v!=="object")continue;
+            next[key]={inherit:v.inherit!==false,glass:v.glass!==false,background:v.background!==false,outline:v.outline!==false,
+                opacity:typeof v.opacity==="number" && Number.isFinite(v.opacity)?Math.max(0.15,Math.min(1,v.opacity)):0.6,
+                radius:typeof v.radius==="number" && Number.isFinite(v.radius)?Math.max(0,Math.min(32,Math.round(v.radius))):16};
+        }
+        surfaceMaterialOverrides=next;
+    }
+    function setSurfaceMaterial(surface,key,value) {
+        const next=JSON.parse(JSON.stringify(surfaceMaterialOverrides));
+        next[surface]=Object.assign({},next[surface] || {},{[key]:value});loadSurfaceMaterials({surfaceMaterialOverrides:next});save();
+    }
+    property var settingsWindowAppearance: ({shared:{},rusticq:{enabled:false,values:{}},hyprland:{enabled:false,values:{}}})
+    property int rusticSettingsWidth: 1100
+    property int rusticSettingsHeight: 760
+    function validSettingsAppearance(values) {
+        const result={};
+        if (!values || typeof values!=="object" || Array.isArray(values)) return result;
+        const ranges={windowOpacity:[0.15,1],sidebarOpacity:[0,1],groupOpacity:[0.01,0.5],popoverOpacity:[0.8,1],outlineOpacity:[0,0.5],outlineWidth:[0,2],radius:[0,28],sidebarWidth:[220,280],shadow:[0,0.3]};
+        const choices={mode:["follow","rage-dark","rage-light","neutral-dark","neutral-light"],density:["compact","comfortable"],iconStyle:["color","neutral"]};
+        for (const key of Object.keys(values)) {
+            const value=values[key];
+            if (ranges[key] && typeof value==="number" && Number.isFinite(value)) result[key]=["radius","sidebarWidth"].indexOf(key)>=0?Math.round(Math.max(ranges[key][0],Math.min(ranges[key][1],value))):Math.max(ranges[key][0],Math.min(ranges[key][1],value));
+            else if (choices[key] && choices[key].indexOf(value)>=0) result[key]=value;
+            else if (["outline","animations"].indexOf(key)>=0 && typeof value==="boolean") result[key]=value;
+            else if (key==="accent" && typeof value==="string" && /^#[0-9a-fA-F]{6}$/.test(value)) result[key]=value;
+        }
+        return result;
+    }
+    function loadSettingsAppearance(data) {
+        if (Number.isFinite(data.rusticSettingsWidth)) rusticSettingsWidth=Math.round(Math.max(800,Math.min(2400,data.rusticSettingsWidth)));
+        if (Number.isFinite(data.rusticSettingsHeight)) rusticSettingsHeight=Math.round(Math.max(560,Math.min(1800,data.rusticSettingsHeight)));
+        const value=data.settingsWindowAppearance;
+        if (!value || typeof value!=="object" || Array.isArray(value)) {
+            if (data.hyprSettingsGlass===true || ["light","follow"].indexOf(data.hyprSettingsTheme)>=0) {
+                const mode=data.hyprSettingsTheme==="follow"?"follow":(data.hyprSettingsGlass?"rage-":"neutral-")+(data.hyprSettingsTheme==="light"?"light":"dark");
+                settingsWindowAppearance={shared:{},rusticq:{enabled:false,values:{}},hyprland:{enabled:true,values:{mode:mode}}};
+            }
+            return;
+        }
+        const next={shared:validSettingsAppearance(value.shared)};
+        for (const app of ["rusticq","hyprland"]) next[app]={enabled:!!value[app] && value[app].enabled===true,values:validSettingsAppearance(value[app] && value[app].values)};
+        settingsWindowAppearance=next;
+    }
+    function setSettingsAppearance(app,key,value,persist) {
+        if (["shared","rusticq","hyprland"].indexOf(app)<0) return;
+        const next=JSON.parse(JSON.stringify(settingsWindowAppearance));
+        if (app!=="shared" && key==="enabled") next[app].enabled=value===true;
+        else {
+            const validated=validSettingsAppearance({[key]:value});
+            if (!Object.prototype.hasOwnProperty.call(validated,key)) return;
+            if(app==="shared") next.shared=Object.assign({},next.shared,validated);
+            else next[app].values=Object.assign({},next[app].values,validated);
+        }
+        settingsWindowAppearance=next;if(persist!==false)save();
+    }
+    function resetSettingsAppearance() { settingsWindowAppearance={shared:{},rusticq:{enabled:false,values:{}},hyprland:{enabled:false,values:{}}};save(); }
+    property int hyprSettingsWidth: 1100
+    property int hyprSettingsHeight: 760
+    property string hyprSettingsTheme: "dark"
+    property bool hyprSettingsGlass: false
+    property bool hyprSettingsShowUnsupported: true
+    readonly property var hyprSettingsDefaults: ({hyprSettingsWidth:1100,hyprSettingsHeight:760,
+        hyprSettingsTheme:"dark",hyprSettingsGlass:false,hyprSettingsShowUnsupported:true})
+    function loadHyprSettingsPreferences(data) {
+        if (Number.isFinite(data.hyprSettingsWidth)) hyprSettingsWidth = Math.max(800, Math.min(2400, Math.round(data.hyprSettingsWidth)));
+        if (Number.isFinite(data.hyprSettingsHeight)) hyprSettingsHeight = Math.max(560, Math.min(1800, Math.round(data.hyprSettingsHeight)));
+        if (["follow", "dark", "light"].indexOf(data.hyprSettingsTheme) >= 0) hyprSettingsTheme = data.hyprSettingsTheme;
+        if (typeof data.hyprSettingsGlass === "boolean") hyprSettingsGlass = data.hyprSettingsGlass;
+        if (typeof data.hyprSettingsShowUnsupported === "boolean") hyprSettingsShowUnsupported = data.hyprSettingsShowUnsupported;
+    }
+    function resetHyprSettingsPreferences() {
+        loadHyprSettingsPreferences(hyprSettingsDefaults); save();
+    }
+    property string quickControlLayout: "classic"
+    property bool quickControlPanelBackground: false
+    property bool quickControlPanelOutline: false
+    property bool quickControlComponentBackground: true
+    property bool quickControlComponentOutline: false
+    property bool quickControlComponentGlass: true
+    property bool quickControlAccentTint: false
+    property real quickControlSurfaceOpacity: 0.94
+    property real quickControlHoverOpacity: 0.98
+    property int quickControlPanelRadius: 20
+    property int quickControlComponentRadius: 16
+    property int quickControlIconRadius: 12
+    property int quickControlComponentSpacing: 8
+    property int quickControlSectionSpacing: 20
+    property int quickControlPanelWidth: 400
+    property bool quickControlCompact: false
+    property bool quickControlAnimations: true
+    readonly property var quickControlDefaults: ({quickControlLayout:"classic", quickControlPanelBackground:false,
+        quickControlPanelOutline:false, quickControlComponentBackground:true, quickControlComponentOutline:false,
+        quickControlComponentGlass:true, quickControlAccentTint:false, quickControlSurfaceOpacity:0.94,
+        quickControlHoverOpacity:0.98, quickControlPanelRadius:20, quickControlComponentRadius:16,
+        quickControlIconRadius:12, quickControlComponentSpacing:8, quickControlSectionSpacing:20,
+        quickControlPanelWidth:400, quickControlCompact:false, quickControlAnimations:true})
+    readonly property var quickControlLimits: ({quickControlSurfaceOpacity:[0,1], quickControlHoverOpacity:[0,1],
+        quickControlPanelRadius:[0,40], quickControlComponentRadius:[0,32], quickControlIconRadius:[0,28],
+        quickControlComponentSpacing:[0,24], quickControlSectionSpacing:[0,40], quickControlPanelWidth:[320,560]})
+    function setQuickControlSetting(key, value, persist) {
+        if (!Object.prototype.hasOwnProperty.call(quickControlDefaults,key)) return false;
+        if (key === "quickControlLayout") {
+            if (["classic","modular","frameless"].indexOf(value) < 0) return false;
+        } else if (typeof quickControlDefaults[key] === "boolean") {
+            if (typeof value !== "boolean") return false;
+        } else {
+            if (typeof value !== "number" || !Number.isFinite(value)) return false;
+            value = Math.max(quickControlLimits[key][0],Math.min(quickControlLimits[key][1],value));
+            if (key !== "quickControlSurfaceOpacity" && key !== "quickControlHoverOpacity") value = Math.round(value);
+        }
+        root[key] = value;
+        if (persist !== false) save();
+        return true;
+    }
+    function applyQuickControlSettings(data) {
+        if (!data || typeof data !== "object" || Array.isArray(data)) return;
+        for (const key of Object.keys(quickControlDefaults))
+            if (Object.prototype.hasOwnProperty.call(data,key)) setQuickControlSetting(key,data[key],false);
+    }
+    function resetQuickControlSettings() { applyQuickControlSettings(quickControlDefaults); save(); }
+    property bool showSpeedTestPanel: true
+    property bool showSpeedometerGauge: true
+    property bool speedTestGaugeAnimation: true
+    property bool speedTestGaugeGlow: false
+    property bool showSpeedTestTime: true
+    property string speedTestPanelStyle: "classic"
+    readonly property var networkPanelDefaults: ({showSpeedTestPanel:true, showSpeedometerGauge:true,
+        speedTestGaugeAnimation:true, speedTestGaugeGlow:false, showSpeedTestTime:true, speedTestPanelStyle:"classic"})
+    function setNetworkPanelSetting(key, value, persist) {
+        if (!Object.prototype.hasOwnProperty.call(networkPanelDefaults,key)) return false;
+        if (key === "speedTestPanelStyle") {
+            if (["classic", "modern", "compact"].indexOf(value) < 0) return false;
+        } else if (typeof value !== "boolean") return false;
+        root[key] = value;
+        if (persist !== false) save();
+        return true;
+    }
+    function applyNetworkPanelSettings(data) {
+        if (!data || typeof data !== "object" || Array.isArray(data)) return;
+        for (const key of Object.keys(networkPanelDefaults))
+            if (Object.prototype.hasOwnProperty.call(data,key)) setNetworkPanelSetting(key,data[key],false);
+    }
+    // RAGE — RUSTIQ ADAPTIVE GLASS ENGINE. Old settings remain Standard UI.
+    property bool glassmorphismEnabled: false
+    property string rageMode: "adaptive"
+    property string ragePalette: "obsidian"
+    property string glassStyle: "frosted"
+    property real glassOpacity: 0.44
+    property bool glassBlurEnabled: true
+    property int glassBlurRadius: 24 // Retained preference; backend must advertise independent strength.
+    property real glassBorderOpacity: 0.16
+    property int glassCornerRadius: 20
+    property bool glassReflectionEnabled: true
+    property bool glassShadowEnabled: true
+    property real glassShadowIntensity: 0.14
+    property real glassTintStrength: 0.10
+    property bool glassPerformanceMode: false
+    // Bar decoration is independent of palette, material and layout geometry.
+    property bool barBackgroundEnabled: true
+    property bool barOutlineEnabled: true
+    property bool barSegmentBackgroundEnabled: true
+    property bool barSegmentOutlineEnabled: true
+    property bool barModuleBackgroundEnabled: true
+    property bool barModuleOutlineEnabled: true
+    property bool barGlassEnabled: true
+    property bool barRailFillEnabled: false
+    property real barOpacity: 1.0
+    property int barCornerRadius: -1
+    property int barSegmentRadius: -1
+    property int barModuleRadius: -1
+    property bool barCapsuleGeometry: false
+    readonly property var barSurfaceDefaults: ({barBackgroundEnabled:true,barOutlineEnabled:true,
+        barSegmentBackgroundEnabled:true,barSegmentOutlineEnabled:true,barModuleBackgroundEnabled:true,
+        barModuleOutlineEnabled:true,barGlassEnabled:true,barRailFillEnabled:false,barOpacity:1.0,barCornerRadius:-1,
+        barSegmentRadius:-1,barModuleRadius:-1,barCapsuleGeometry:false})
+    function applyBarSurfaceSettings(data) {
+        if (!data || typeof data !== "object" || Array.isArray(data)) return;
+        for (const key of Object.keys(barSurfaceDefaults)) {
+            const value=data[key];
+            if (typeof barSurfaceDefaults[key] === "boolean") {
+                if (typeof value === "boolean") root[key]=value;
+            } else if (key === "barOpacity") {
+                if (typeof value === "number" && Number.isFinite(value) && value>=.1 && value<=1) root[key]=value;
+            } else if (Number.isInteger(value) && value>=-1 && value<=64) root[key]=value;
+        }
+    }
+    function setBarSurfaceValue(key,value,persist) {
+        if (!Object.prototype.hasOwnProperty.call(barSurfaceDefaults,key)) return false;
+        if (typeof barSurfaceDefaults[key] === "boolean") {
+            if (typeof value !== "boolean") return false;
+        } else {
+            if (typeof value !== "number" || !Number.isFinite(value)) return false;
+            value=key === "barOpacity" ? Math.max(.1,Math.min(1,value)) : Math.round(Math.max(-1,Math.min(64,value)));
+        }
+        root[key]=value;
+        if (persist !== false) save();
+        return true;
+    }
+    function setBarSurfacePreset(preset) {
+        const presets={original:[true,true,true,true,true,true],rail:[true,true,true,true,true,true],
+            borderless:[true,false,true,false,true,false],floating:[false,false,true,false,false,false],
+            outline:[false,true,false,false,false,false],naked:[false,false,false,false,false,false]};
+        if (!Object.prototype.hasOwnProperty.call(presets,preset)) return false;
+        const keys=["barBackgroundEnabled","barOutlineEnabled","barSegmentBackgroundEnabled",
+            "barSegmentOutlineEnabled","barModuleBackgroundEnabled","barModuleOutlineEnabled"];
+        keys.forEach((key,index) => root[key]=presets[preset][index]);
+        if (preset === "rail" || preset === "borderless") barGlassEnabled=true;
+        if (["original","rail","borderless","floating"].indexOf(preset)>=0)
+            barRailFillEnabled=preset === "rail" || preset === "borderless";
+        save();
+        return true;
+    }
+    function resetBarSurfaceSettings() { applyBarSurfaceSettings(barSurfaceDefaults); save(); }
+    readonly property var glassDefaults: ({glassmorphismEnabled:false, rageMode:"adaptive", ragePalette:"obsidian", glassStyle:"frosted", glassOpacity:0.44,
+        glassBlurEnabled:true, glassBlurRadius:24, glassBorderOpacity:0.16, glassCornerRadius:20,
+        glassReflectionEnabled:true, glassShadowEnabled:true, glassShadowIntensity:0.14,
+        glassTintStrength:0.10, glassPerformanceMode:false})
+    readonly property var glassLimits: ({glassOpacity:[0.15,1], glassBlurRadius:[0,64],
+        glassBorderOpacity:[0,0.6], glassCornerRadius:[0,32], glassShadowIntensity:[0,0.6], glassTintStrength:[0,0.5]})
+    function applyGlassSettings(data) {
+        if (!data || typeof data !== "object" || Array.isArray(data)) return;
+        for (const key of Object.keys(glassDefaults)) {
+            const value = data[key];
+            if (typeof glassDefaults[key] === "boolean") {
+                if (typeof value === "boolean") root[key] = value;
+            } else if (key === "rageMode") {
+                if (["adaptive", "exclusive"].indexOf(value) >= 0) rageMode = value;
+            } else if (key === "ragePalette") {
+                if (["obsidian", "pearl", "pure-crystal", "graphite-frost"].indexOf(value) >= 0) ragePalette = value;
+            } else if (key === "glassStyle") {
+                if (["frosted", "crystal", "tinted"].indexOf(value) >= 0) glassStyle = value;
+            } else if (typeof value === "number" && Number.isFinite(value)
+                       && value >= glassLimits[key][0] && value <= glassLimits[key][1]) {
+                if (key === "glassBlurRadius" || key === "glassCornerRadius") {
+                    if (Number.isInteger(value)) root[key] = value;
+                } else root[key] = value;
+            }
+        }
+    }
+    function setGlassValue(key, value, persist) {
+        if (!Object.prototype.hasOwnProperty.call(glassDefaults, key)) return false;
+        if (typeof glassDefaults[key] === "boolean") {
+            if (typeof value !== "boolean") return false;
+        } else if (key === "rageMode" || key === "ragePalette") {
+            const choices = key === "rageMode" ? ["adaptive", "exclusive"] : ["obsidian", "pearl", "pure-crystal", "graphite-frost"];
+            if (choices.indexOf(value) < 0) return false;
+        } else if (key === "glassStyle") return setGlassPreset(value);
+        else {
+            if (typeof value !== "number" || !Number.isFinite(value)) return false;
+            value = Math.max(glassLimits[key][0], Math.min(glassLimits[key][1], value));
+            if (key === "glassBlurRadius" || key === "glassCornerRadius") value = Math.round(value);
+        }
+        root[key] = value;
+        if (persist !== false) save();
+        return true;
+    }
+    function setGlassPreset(style) {
+        const presets = {
+            frosted: {glassOpacity:0.44, glassTintStrength:0.10, glassBorderOpacity:0.16,
+                glassShadowIntensity:0.14, glassReflectionEnabled:true, glassShadowEnabled:true},
+            crystal: {glassOpacity:0.24, glassTintStrength:0.05, glassBorderOpacity:0.14,
+                glassShadowIntensity:0.10, glassReflectionEnabled:true, glassShadowEnabled:true},
+            tinted: {glassOpacity:0.50, glassTintStrength:0.30, glassBorderOpacity:0.16,
+                glassShadowIntensity:0.14, glassReflectionEnabled:true, glassShadowEnabled:true}
+        };
+        if (!Object.prototype.hasOwnProperty.call(presets, style)) return false;
+        applyGlassSettings(presets[style]);
+        glassStyle = style;
+        save();
+        return true;
+    }
+    function resetGlassSettings() {
+        const mode = rageMode, palette = ragePalette;
+        applyGlassSettings(glassDefaults);
+        rageMode = mode; ragePalette = palette;
+        save();
+    }
     property string animationStyle: "float"
     property string barAnimationStyle: "float"
     readonly property var animationStyles: ["float", "fade", "slide", "zoom", "spring"]
@@ -85,7 +393,7 @@ Singleton {
                 const value = desktopProfilePrevious[key];
                 if (key === "barMode" && spacingModes.indexOf(value) < 0) continue;
                 if (key === "uiDensity" && ["compact", "comfortable"].indexOf(value) < 0) continue;
-                if (key === "launcherLayoutMode" && ["compact", "clean-hover"].indexOf(value) < 0) continue;
+                if (key === "launcherLayoutMode" && launcherEnums.launcherLayoutMode.indexOf(value) < 0) continue;
                 if (typeof value === "boolean" || typeof value === "string") root[key] = value;
             }
         }
@@ -130,31 +438,132 @@ Singleton {
     property bool showNotifications: true
     property bool showLauncher: true
     property bool showRusticQIcon: true
-    // App launcher geometry and density (persisted; monitor size is still clamped).
-    property string launcherLayoutMode: "compact" // compact | clean-hover
+    // Launcher Studio: one style selector, one validated persistent contract.
+    property bool launcherUseStyleDefaults: true
+    property string launcherLayoutMode: "spotlight"
     property int launcherWidth: 660
-    property int launcherHeight: 605
+    property int launcherHeight: 520
     property int launcherIconSize: 30
-    property int launcherRowHeight: 56
+    property int launcherRowHeight: 48
     property int launcherFavoriteColumns: 3
-    function updateLauncherSize(key, value, persist) {
-        const limits = {
-            launcherWidth: [440, 1000], launcherHeight: [360, 850],
-            launcherIconSize: [20, 64], launcherRowHeight: [50, 92],
-            launcherFavoriteColumns: [2, 5]
-        };
-        if (!limits[key] || !Number.isFinite(value)) return;
-        root[key] = Math.max(limits[key][0], Math.min(limits[key][1], Math.round(value)));
-        if (persist !== false) save();
+    property string launcherPosition: "auto"
+    property int launcherOffsetX: 0
+    property int launcherOffsetY: 0
+    property real launcherCustomX: 0.5
+    property real launcherCustomY: 0.2
+    property string launcherBackdropMode: "auto"
+    property real launcherBackdropOpacity: 0.25
+    property bool launcherGlassmorphismEnabled: true
+    property string launcherMaterialMode: "inherit"
+    property real launcherOpacity: -1.0
+    property int launcherCornerRadius: -1
+    property bool launcherBackgroundEnabled: true
+    property bool launcherOutlineEnabled: true
+    property bool launcherHighlightsEnabled: true
+    property bool launcherShowBranding: false
+    property bool launcherShowCategories: true
+    property bool launcherShowFavorites: true
+    property bool launcherShowRecent: true
+    property bool launcherShowShortcutHints: true
+    property bool launcherShowPreview: false
+    property bool launcherShowIcons: true
+    property int launcherGridColumns: 6
+    property int launcherGridIconSize: 64
+    property int launcherResultSpacing: 6
+    property int launcherPadding: 16
+    property int launcherSearchHeight: 68
+    property int launcherSearchFontSize: 22
+    property string launcherAnimationStyle: "inherit"
+    property int detachedLauncherGap: 10
+    property int detachedLauncherInputHeight: 64
+    property int detachedLauncherInputFontSize: 21
+    property int detachedLauncherInputRadius: 18
+    property int detachedLauncherResultsRadius: 16
+    property string detachedLauncherPlaceholder: "Search applications, files, notes\u2026"
+    property bool detachedLauncherShowIcon: true
+    property bool detachedLauncherShowHint: true
+    property string detachedLauncherResultMode: "adaptive"
+    property string detachedLauncherAppLayout: "grid"
+    property string detachedLauncherResultWidthMode: "match-input"
+    property int detachedLauncherResultsWidth: 660
+    property string detachedLauncherExpansionDirection: "auto"
+    property string detachedLauncherResultAlignment: "center"
+    property int detachedLauncherMaxResults: 24
+    property bool detachedLauncherShowEmptyResults: false
+    property bool detachedLauncherInputGlassEnabled: true
+    property bool detachedLauncherResultsGlassEnabled: true
+    property bool detachedLauncherInputBackgroundEnabled: true
+    property bool detachedLauncherResultsBackgroundEnabled: true
+    property bool detachedLauncherInputOutlineEnabled: true
+    property bool detachedLauncherResultsOutlineEnabled: true
+    property bool detachedLauncherInputInheritMaterial: true
+    property bool detachedLauncherResultsInheritMaterial: true
+    property real detachedLauncherInputOpacity: 0.4
+    property real detachedLauncherResultsOpacity: 0.5
+    property bool detachedLauncherInputHighlights: true
+    property bool detachedLauncherResultsHighlights: true
+    property real detachedLauncherInputShadowIntensity: 0.14
+    property real detachedLauncherResultsShadowIntensity: 0.14
+    readonly property var launcherAppearanceDefaults: ({"launcherLayoutMode":"spotlight","launcherWidth":660,"launcherHeight":520,"launcherIconSize":30,"launcherRowHeight":48,"launcherFavoriteColumns":3,"launcherPosition":"auto","launcherOffsetX":0,"launcherOffsetY":0,"launcherCustomX":0.5,"launcherCustomY":0.2,"launcherBackdropMode":"auto","launcherBackdropOpacity":0.25,"launcherGlassmorphismEnabled":true,"launcherMaterialMode":"inherit","launcherOpacity":-1.0,"launcherCornerRadius":-1,"launcherBackgroundEnabled":true,"launcherOutlineEnabled":true,"launcherHighlightsEnabled":true,"launcherShowBranding":false,"launcherShowCategories":true,"launcherShowFavorites":true,"launcherShowRecent":true,"launcherShowShortcutHints":true,"launcherShowPreview":false,"launcherShowIcons":true,"launcherGridColumns":6,"launcherGridIconSize":64,"launcherResultSpacing":6,"launcherPadding":16,"launcherSearchHeight":68,"launcherSearchFontSize":22,"launcherAnimationStyle":"inherit","detachedLauncherGap":10,"detachedLauncherInputHeight":64,"detachedLauncherInputFontSize":21,"detachedLauncherInputRadius":18,"detachedLauncherResultsRadius":16,"detachedLauncherPlaceholder":"Search applications, files, notes\u2026","detachedLauncherShowIcon":true,"detachedLauncherShowHint":true,"detachedLauncherResultMode":"adaptive","detachedLauncherAppLayout":"grid","detachedLauncherResultWidthMode":"match-input","detachedLauncherResultsWidth":660,"detachedLauncherExpansionDirection":"auto","detachedLauncherResultAlignment":"center","detachedLauncherMaxResults":24,"detachedLauncherShowEmptyResults":false,"detachedLauncherInputGlassEnabled":true,"detachedLauncherResultsGlassEnabled":true,"detachedLauncherInputBackgroundEnabled":true,"detachedLauncherResultsBackgroundEnabled":true,"detachedLauncherInputOutlineEnabled":true,"detachedLauncherResultsOutlineEnabled":true,"detachedLauncherInputInheritMaterial":true,"detachedLauncherResultsInheritMaterial":true,"detachedLauncherInputOpacity":0.4,"detachedLauncherResultsOpacity":0.5,"detachedLauncherInputHighlights":true,"detachedLauncherResultsHighlights":true,"detachedLauncherInputShadowIntensity":0.14,"detachedLauncherResultsShadowIntensity":0.14,"launcherUseStyleDefaults":true})
+    readonly property var launcherEnums: ({"launcherLayoutMode":["compact","clean-hover","spotlight","raycast","launchpad","fluent","minimal","classic","overview","command","detached"],"launcherPosition":["auto","center","upper-center","lower-center","top-left","top-right","bottom-left","bottom-right","follow-bar","custom"],"launcherBackdropMode":["auto","none","dim","blur","dim-blur","focus"],"launcherMaterialMode":["inherit","solid"],"launcherAnimationStyle":["inherit","none","fade","scale","slide","float","spring"],"detachedLauncherResultMode":["list","grid","adaptive"],"detachedLauncherAppLayout":["list","grid"],"detachedLauncherResultWidthMode":["match-input","custom"],"detachedLauncherExpansionDirection":["auto","down","up"],"detachedLauncherResultAlignment":["left","center","right"]})
+    readonly property var launcherLimits: ({"launcherWidth":[320,1920],"launcherHeight":[120,1200],"launcherIconSize":[16,96],"launcherRowHeight":[28,96],"launcherFavoriteColumns":[2,8],"launcherOffsetX":[-1000,1000],"launcherOffsetY":[-1000,1000],"launcherCustomX":[0,1],"launcherCustomY":[0,1],"launcherBackdropOpacity":[0,0.85],"launcherOpacity":[-1,1],"launcherCornerRadius":[-1,48],"launcherGridColumns":[2,12],"launcherGridIconSize":[32,128],"launcherResultSpacing":[0,24],"launcherPadding":[4,40],"launcherSearchHeight":[40,100],"launcherSearchFontSize":[12,32],"detachedLauncherGap":[0,32],"detachedLauncherInputHeight":[44,96],"detachedLauncherInputFontSize":[14,32],"detachedLauncherInputRadius":[0,48],"detachedLauncherResultsRadius":[0,48],"detachedLauncherResultsWidth":[320,1600],"detachedLauncherMaxResults":[1,100],"detachedLauncherInputOpacity":[0.15,1],"detachedLauncherResultsOpacity":[0.15,1],"detachedLauncherInputShadowIntensity":[0,0.6],"detachedLauncherResultsShadowIntensity":[0,0.6]})
+    function validLauncherValue(key,value) {
+        if (!Object.prototype.hasOwnProperty.call(launcherAppearanceDefaults,key)) return false;
+        const initial=launcherAppearanceDefaults[key];
+        if (typeof initial === "boolean") return typeof value === "boolean";
+        if (launcherEnums[key]) return typeof value === "string" && launcherEnums[key].indexOf(value)>=0;
+        if (typeof initial === "string") return typeof value === "string" && value.length<=160 && !/[\x00-\x1f]/.test(value);
+        const bounds=launcherLimits[key];
+        if (typeof value!=="number" || !Number.isFinite(value) || !bounds || value<bounds[0] || value>bounds[1]) return false;
+        if (key === "launcherOpacity" && value<0 && value!==-1) return false;
+        return ["launcherCustomX","launcherCustomY","launcherBackdropOpacity","launcherOpacity","detachedLauncherInputOpacity","detachedLauncherResultsOpacity","detachedLauncherInputShadowIntensity","detachedLauncherResultsShadowIntensity"].indexOf(key)>=0 || Number.isInteger(value);
     }
+    function applyLauncherSettings(data) {
+        if (!data || typeof data!=="object" || Array.isArray(data)) return;
+        for(const key of Object.keys(launcherAppearanceDefaults)) if(validLauncherValue(key,data[key])) root[key]=data[key];
+    }
+    function loadLauncherSettings(data) {
+        applyLauncherSettings(launcherAppearanceDefaults);
+        if (!data || typeof data!=="object" || Array.isArray(data)) return;
+        // Existing installations retain their legacy geometry, including files
+        // written before the layout selector or size controls were introduced.
+        if (Object.keys(data).length && data.launcherUseStyleDefaults === undefined
+                && (data.launcherLayoutMode === undefined || ["compact","clean-hover"].indexOf(data.launcherLayoutMode)>=0)) {
+            launcherLayoutMode="compact";
+            launcherHeight=605;
+            launcherRowHeight=56;
+        }
+        applyLauncherSettings(data);
+    }
+    function setLauncherValue(key,value,persist) {
+        if (!Object.prototype.hasOwnProperty.call(launcherAppearanceDefaults,key)) return false;
+        if (typeof value === "number" && Number.isFinite(value) && launcherLimits[key]) {
+            const limits=launcherLimits[key];value=Math.max(limits[0],Math.min(limits[1],value));
+            if (Number.isInteger(launcherAppearanceDefaults[key]) && ["launcherCustomX","launcherCustomY","launcherBackdropOpacity","launcherOpacity"].indexOf(key)<0) value=Math.round(value);
+        }
+        if (!validLauncherValue(key,value)) return false;
+        root[key]=value;
+        if (["launcherWidth","launcherHeight","launcherSearchHeight","launcherSearchFontSize"].indexOf(key)>=0) launcherUseStyleDefaults=false;
+        if (persist!==false) save();
+        return true;
+    }
+    function launcherSnapshot() {
+        const data={};for(const key of Object.keys(launcherAppearanceDefaults)) data[key]=root[key];return data;
+    }
+    function updateLauncherSize(key,value,persist) { return setLauncherValue(key,value,persist); }
     function resetLauncherSize() {
-        launcherWidth = 660;
-        launcherHeight = 605;
-        launcherIconSize = 30;
-        launcherRowHeight = 56;
-        launcherFavoriteColumns = 3;
+        for(const key of ["launcherWidth","launcherHeight","launcherIconSize","launcherRowHeight","launcherFavoriteColumns"]) root[key]=launcherAppearanceDefaults[key];
+        if (["compact","clean-hover"].indexOf(launcherLayoutMode)>=0) { launcherHeight=605;launcherRowHeight=56; }
+        launcherUseStyleDefaults=true;
         save();
     }
+    function resetLauncherAppearance() {
+        const style=launcherLayoutMode;applyLauncherSettings(launcherAppearanceDefaults);launcherLayoutMode=style;save();
+    }
+    function resetDetachedLauncherAppearance() {
+        for(const key of Object.keys(launcherAppearanceDefaults)) if(key.startsWith("detachedLauncher")) root[key]=launcherAppearanceDefaults[key];save();
+    }
+
     property bool showTaskView: true
     property bool desktopCalendar: false
     property bool desktopSystem: false
@@ -863,8 +1272,34 @@ Singleton {
             try {
                 const data = JSON.parse(text);
                 if (!data || typeof data !== "object" || Array.isArray(data)) return;
+                const previous = JSON.parse(root.settingsSnapshot || "{}");
+                const changed = Array.from(new Set(Object.keys(previous).concat(Object.keys(data))))
+                    .filter(key => JSON.stringify(previous[key]) !== JSON.stringify(data[key]));
                 root.settingsSnapshot = text;
-                ShellReload.requestReload();
+                if (changed.length && changed.every(key => Object.prototype.hasOwnProperty.call(root.glassDefaults, key)
+                    || Object.prototype.hasOwnProperty.call(root.barSurfaceDefaults,key)
+                    || Object.prototype.hasOwnProperty.call(root.surfaceSpacingDefaults,key)
+                    || Object.prototype.hasOwnProperty.call(root.networkPanelDefaults,key)
+                    || Object.prototype.hasOwnProperty.call(root.quickControlDefaults,key)
+                    || Object.prototype.hasOwnProperty.call(root.hyprSettingsDefaults,key)
+                    || ["settingsWindowAppearance","rusticSettingsWidth","rusticSettingsHeight","surfaceMaterialOverrides"].indexOf(key)>=0
+                    || Object.prototype.hasOwnProperty.call(root.launcherAppearanceDefaults,key))) {
+                    root.applySurfaceSpacingSettings(root.surfaceSpacingDefaults);
+                    root.loadSurfaceMaterials(data);
+                    root.loadSettingsAppearance(data);
+                    root.loadHyprSettingsPreferences(root.hyprSettingsDefaults);
+                    root.loadHyprSettingsPreferences(data);
+                    root.applySurfaceSpacingSettings(data);
+                    root.applyNetworkPanelSettings(root.networkPanelDefaults);
+                    root.applyNetworkPanelSettings(data);
+                    root.applyQuickControlSettings(root.quickControlDefaults);
+                    root.applyQuickControlSettings(data);
+                    root.applyGlassSettings(root.glassDefaults);
+                    root.applyGlassSettings(data);
+                    root.applyBarSurfaceSettings(root.barSurfaceDefaults);
+                    root.applyBarSurfaceSettings(data);
+                    root.loadLauncherSettings(data);
+                } else ShellReload.requestReload();
             } catch (e) { console.warn("Settings: ignored invalid external JSON"); }
         }
     }
@@ -872,6 +1307,15 @@ Singleton {
         try {
             settingsSnapshot = settingsFile.text();
             const data = JSON.parse(settingsSnapshot);
+            loadSurfaceMaterials(data);
+            loadSettingsAppearance(data);
+            loadHyprSettingsPreferences(data);
+            applySurfaceSpacingSettings(data);
+            applyNetworkPanelSettings(data);
+            applyQuickControlSettings(data);
+            applyGlassSettings(data);
+            applyBarSurfaceSettings(data);
+            if (typeof data.barPopupsOnHover === "boolean") barPopupsOnHover = data.barPopupsOnHover;
             if (["aether", "gruvbox"].indexOf(data.colorSource) !== -1) colorSource = data.colorSource;
             if (["orange", "green", "blue", "purple"].indexOf(data.accentName) !== -1)
                 accentName = data.accentName;
@@ -945,8 +1389,7 @@ Singleton {
                         if (zone !== targetZone) transferIconSpacing(key, zone, targetZone, modeName);
                 }
             }
-            if (["compact", "clean-hover"].indexOf(data.launcherLayoutMode) !== -1)
-                launcherLayoutMode = data.launcherLayoutMode;
+            loadLauncherSettings(data);
             if (["plain", "filled"].indexOf(data.quickControlButtonStyle) !== -1)
                 quickControlButtonStyle = data.quickControlButtonStyle;
             for (const key of ["clockDisplayMode", "calendarDisplayMode"])
@@ -975,8 +1418,6 @@ Singleton {
             if (Number.isInteger(data.nightLightTemperature) && data.nightLightTemperature >= 2000 && data.nightLightTemperature <= 6000)
                 nightLightTemperature = data.nightLightTemperature;
             calendarNotes = normalizeCalendarNotes(data.calendarNotes);
-            for (const key of ["launcherWidth", "launcherHeight", "launcherIconSize", "launcherRowHeight", "launcherFavoriteColumns"])
-                if (Number.isInteger(data[key])) updateLauncherSize(key, data[key], false);
             if (data.widgetWorkspaceScopes && typeof data.widgetWorkspaceScopes === "object" &&
                 !Array.isArray(data.widgetWorkspaceScopes)) {
                 const cleanScopes = {};
@@ -1063,7 +1504,16 @@ Singleton {
     function save() {
         // An external import wins over stale in-memory edits during reload.
         if (ShellReload.pending) return;
-        const text = JSON.stringify({
+        const text = JSON.stringify(Object.assign({
+            surfaceMaterialOverrides:surfaceMaterialOverrides,
+            settingsWindowAppearance: settingsWindowAppearance,
+            rusticSettingsWidth: rusticSettingsWidth,
+            rusticSettingsHeight: rusticSettingsHeight,
+            hyprSettingsWidth: hyprSettingsWidth,
+            hyprSettingsHeight: hyprSettingsHeight,
+            hyprSettingsTheme: hyprSettingsTheme,
+            hyprSettingsGlass: hyprSettingsGlass,
+            hyprSettingsShowUnsupported: hyprSettingsShowUnsupported,
             accentName: accentName,
             colorSource: colorSource,
             barMode: barMode,
@@ -1074,7 +1524,62 @@ Singleton {
             uiCustomFont: uiCustomFont,
             uiFontScale: uiFontScale,
             uiDensity: uiDensity,
+            surfacePanelPadding: surfacePanelPadding,
+            surfaceCardPadding: surfaceCardPadding,
+            surfaceControlPadding: surfaceControlPadding,
+            surfaceContentGap: surfaceContentGap,
+            surfaceInlineGap: surfaceInlineGap,
             animationsEnabled: animationsEnabled,
+            quickControlLayout: quickControlLayout,
+            quickControlPanelBackground: quickControlPanelBackground,
+            quickControlPanelOutline: quickControlPanelOutline,
+            quickControlComponentBackground: quickControlComponentBackground,
+            quickControlComponentOutline: quickControlComponentOutline,
+            quickControlComponentGlass: quickControlComponentGlass,
+            quickControlAccentTint: quickControlAccentTint,
+            quickControlSurfaceOpacity: quickControlSurfaceOpacity,
+            quickControlHoverOpacity: quickControlHoverOpacity,
+            quickControlPanelRadius: quickControlPanelRadius,
+            quickControlComponentRadius: quickControlComponentRadius,
+            quickControlIconRadius: quickControlIconRadius,
+            quickControlComponentSpacing: quickControlComponentSpacing,
+            quickControlSectionSpacing: quickControlSectionSpacing,
+            quickControlPanelWidth: quickControlPanelWidth,
+            quickControlCompact: quickControlCompact,
+            quickControlAnimations: quickControlAnimations,
+            showSpeedTestPanel: showSpeedTestPanel,
+            showSpeedometerGauge: showSpeedometerGauge,
+            speedTestGaugeAnimation: speedTestGaugeAnimation,
+            speedTestGaugeGlow: speedTestGaugeGlow,
+            showSpeedTestTime: showSpeedTestTime,
+            speedTestPanelStyle: speedTestPanelStyle,
+            glassmorphismEnabled: glassmorphismEnabled,
+            rageMode: rageMode,
+            ragePalette: ragePalette,
+            glassStyle: glassStyle,
+            glassOpacity: glassOpacity,
+            glassBlurEnabled: glassBlurEnabled,
+            glassBlurRadius: glassBlurRadius,
+            glassBorderOpacity: glassBorderOpacity,
+            glassCornerRadius: glassCornerRadius,
+            glassReflectionEnabled: glassReflectionEnabled,
+            glassShadowEnabled: glassShadowEnabled,
+            glassShadowIntensity: glassShadowIntensity,
+            glassTintStrength: glassTintStrength,
+            glassPerformanceMode: glassPerformanceMode,
+            barBackgroundEnabled: barBackgroundEnabled,
+            barOutlineEnabled: barOutlineEnabled,
+            barSegmentBackgroundEnabled: barSegmentBackgroundEnabled,
+            barSegmentOutlineEnabled: barSegmentOutlineEnabled,
+            barModuleBackgroundEnabled: barModuleBackgroundEnabled,
+            barModuleOutlineEnabled: barModuleOutlineEnabled,
+            barGlassEnabled: barGlassEnabled,
+            barRailFillEnabled: barRailFillEnabled,
+            barOpacity: barOpacity,
+            barCornerRadius: barCornerRadius,
+            barSegmentRadius: barSegmentRadius,
+            barModuleRadius: barModuleRadius,
+            barCapsuleGeometry: barCapsuleGeometry,
             animationStyle: animationStyle,
             barAnimationStyle: barAnimationStyle,
             barIconSize: barIconSize,
@@ -1095,6 +1600,7 @@ Singleton {
             recordingIndicatorOffsetY: recordingIndicatorOffsetY,
             barVisible: barVisible,
             barAutoHide: barAutoHide,
+            barPopupsOnHover: barPopupsOnHover,
             showBarRecoveryHandle: showBarRecoveryHandle,
             showBarToggleIcon: showBarToggleIcon,
             lockscreenBackground: lockscreenBackground,
@@ -1191,7 +1697,7 @@ Singleton {
             showUploadSpeed: showUploadSpeed,
             aiProvider: aiProvider,
             aiModel: aiModel
-        }, null, 2) + "\n";
+        }, launcherSnapshot()), null, 2) + "\n";
         settingsSnapshot = text;
         settingsFile.setText(text);
     }

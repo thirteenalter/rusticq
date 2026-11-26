@@ -5,6 +5,7 @@ Targets only two exact-title, address-validated Hyprland clients. Does not
 change active workspace, pin windows, install rules, or edit user config.
 Supports Lua-backed Hyprland / Omarchy Quattro and legacy Hyprland.
 """
+import argparse
 import json
 import re
 import shutil
@@ -91,13 +92,13 @@ def arrange(settings, confirm):
     return True
 
 
-def main():
+def main(settings_title=SETTINGS_TITLE):
     if not shutil.which('hyprctl'):
         return 0
     for _ in range(14):
         try:
             clients = get_clients()
-            settings = find_client(clients, SETTINGS_TITLE)
+            settings = find_client(clients, settings_title)
             confirm = find_client(clients, CONFIRM_TITLE)
             if settings and confirm:
                 return 0 if arrange(settings, confirm) else 1
@@ -108,4 +109,6 @@ def main():
 
 
 if __name__ == '__main__':
-    raise SystemExit(main())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--parent-title', choices=[SETTINGS_TITLE, 'RusticQ Hyprland Settings'], default=SETTINGS_TITLE)
+    raise SystemExit(main(parser.parse_args().parent_title))

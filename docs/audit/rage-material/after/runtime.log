@@ -1,0 +1,14 @@
+  INFO: Launching config: "/tmp/rage-material-capture-l633dx17/shell.qml"
+  INFO: Shell ID: "ed4f77938e1c1e2ac2a180a2376c46ee" Path ID "ed4f77938e1c1e2ac2a180a2376c46ee"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/4h3186u0pt/log.qslog"
+  INFO: Configuration Loaded
+  WARN quickshell.hyprland.ipc: Got openwindow for workspace "1" which was not previously tracked.
+ DEBUG qml: CAPTURED monochrome
+ DEBUG qml: CAPTURED white
+ DEBUG qml: CAPTURED color
+ DEBUG qml: CAPTURED grid
+ DEBUG qml: CAPTURED text
+ DEBUG qml: CAPTURED settings
+ DEBUG qml: CAPTURED quick-control
+  WARN scene: QML FileView at @services/AppUsage.qml[9:5]: Read of /tmp/rage-material-capture-l633dx17/app-usage.json failed: File does not exist.
+ DEBUG qml: CAPTURED launcher

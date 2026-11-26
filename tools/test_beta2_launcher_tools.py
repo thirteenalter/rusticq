@@ -91,8 +91,8 @@ class Providers(unittest.TestCase):
                 CALC.evaluate(expr)
 
     def test_launcher_reuses_existing_ux(self):
-        qml=(ROOT/'modules/main/MiniLauncher.qml').read_text()
-        for name in ('toolsMode','toolList','toolSearchProcess','toolRunProcess','selectedIndex',
+        qml='\n'.join((ROOT/path).read_text() for path in ('components/LauncherController.qml','components/LauncherView.qml','components/LauncherResults.qml'))
+        for name in ('toolsMode','launcherResultList','toolSearchProcess','toolRunProcess','selectedIndex',
                      'Keys.onDownPressed','Keys.onUpPressed','Keys.onReturnPressed',
                      'Quickshell.execDetached','Store.showSettings('):
             self.assertIn(name,qml)

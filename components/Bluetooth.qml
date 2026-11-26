@@ -26,7 +26,7 @@ Item {
             Layout.maximumWidth: root.iconSlotWidth
             Layout.alignment: Qt.AlignVCenter
         }
-        Text {
+        GlassLabel {
             Layout.alignment: Qt.AlignVCenter
             visible: root.forceDetails || (!root.cleanStyle && hover.hovered)
             text: !BluetoothService.enabled ? "Bluetooth off" : BluetoothService.connected

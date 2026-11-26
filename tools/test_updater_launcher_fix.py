@@ -68,9 +68,13 @@ def test_launcher():
         assert f'{field}: {field}' in store
         assert f'"{field}"' in store
         assert field in page
-    assert 'SettingsStore.launcherWidth' in overlay and 'SettingsStore.launcherHeight' in overlay
-    assert 'SettingsStore.launcherIconSize' in launch
-    assert 'SettingsStore.launcherFavoriteColumns' in launch
+    metadata=(ROOT/'config/LauncherStyle.qml').read_text()
+    frontend=(ROOT/'components/LauncherView.qml').read_text()
+    assert 'LauncherStyle.anchor(' in overlay
+    assert 'SettingsStore.launcherWidth' in metadata and 'SettingsStore.launcherHeight' in metadata
+    assert 'SettingsStore.launcherIconSize' in frontend
+    assert 'SettingsStore.launcherFavoriteColumns' in frontend
+    assert 'LauncherController {' in launch and 'LauncherView {' in launch
     assert 'SettingsLauncherPage {}' in settings
     assert 'showLauncher' in store
 

@@ -1,13 +1,17 @@
 import QtQuick
 import "../config"
 
-Rectangle {
+BarSurface {
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
+    Behavior on color { enabled: root.settingsTheme.motionEnabled && SettingsStore.barModuleBackgroundEnabled; ColorAnimation { duration: root.settingsTheme.motionFastDuration } }
+    baseBorderColor: "black"
+    baseBorderWidth: 0
     id: root
     default property alias content: container.data
     property int horizontalPadding: 20
     property int verticalPadding: 10
-    color: Theme.borderaccent
-    radius: height / 2
+    baseColor: root.settingsTheme.borderaccent
+    baseRadius: height / 2
     // Avoid childrenRect -> centered children -> parent implicit-size cycles.
     implicitWidth: container.implicitWidth + horizontalPadding * 2
     implicitHeight: container.implicitHeight + verticalPadding * 2

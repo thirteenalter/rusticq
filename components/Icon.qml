@@ -1,7 +1,7 @@
 import QtQuick
 import "../config"
 
-Text {
+GlassLabel {
     id: root
 
     property alias icon: root.text

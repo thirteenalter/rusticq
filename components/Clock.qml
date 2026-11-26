@@ -20,7 +20,7 @@ Pill {
         (showDate && dateHasCaption && SettingsStore.clockFormatHasSeconds(SettingsStore.calendarFormat))
     signal timeActivated(real localX)
     signal dateActivated(real localX)
-    color: "transparent"
+    baseColor: "transparent"
     horizontalPadding: 4
     verticalPadding: 1
 

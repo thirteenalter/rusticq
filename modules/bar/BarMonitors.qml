@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Basic
 import Quickshell
 import Quickshell.Io
 import "../../config"
@@ -9,6 +9,9 @@ import "../../components"
 // Beta 1 live displays: HyprMon-style change-on-selection, verified readback and timed rollback.
 ColumnLayout {
     id: root
+    property var appearance: null
+    readonly property var controlTheme: appearance || Theme
+    property bool framelessQuickControl: false
     Layout.fillWidth: true
     spacing: 13
     property var drafts: []
@@ -142,19 +145,21 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth:true; spacing:10
         ColumnLayout { Layout.fillWidth:true; spacing:3
-            Text { text:"Your displays";font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(14);color:Theme.foreground }
-            Text { text:root.drafts.length+" connected · live controls";font.pixelSize:Fonts.scale(10);color:Theme.muted }
+            GlassLabel { text:"Your displays";font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(14);color:root.controlTheme.foreground }
+            GlassLabel { text:root.drafts.length+" connected · live controls";font.pixelSize:Fonts.scale(10);color:root.controlTheme.muted }
         }
-        Rectangle { Layout.preferredWidth:88;Layout.preferredHeight:32;radius:9;color:Theme.surface
-            Text { anchors.centerIn:parent;text:"Refresh";font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(10);color:Theme.foreground }
+        Rectangle { Layout.preferredWidth:88;Layout.preferredHeight:32;radius:root.controlTheme.glassRadius("card", 9);color:root.controlTheme.glassColor("card", root.controlTheme.surface)
+            GlassLabel { anchors.centerIn:parent;text:"Refresh";font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(10);color:root.controlTheme.foreground }
             MouseArea { anchors.fill:parent;enabled:!root.busy;cursorShape:Qt.PointingHandCursor;onClicked:readMonitors.running=true }
         }
     }
     Rectangle {
         id: preview
+        objectName: "monitorPreview"
+        visible: !root.framelessQuickControl || root.drafts.length > 0
         Layout.fillWidth:true;Layout.preferredHeight:220
-        radius:14;color:Qt.alpha(Theme.foreground,.035)
-        border.color:Theme.borderaccent;clip:true
+        radius:root.controlTheme.glassRadius("card", 14);color:root.framelessQuickControl ? "transparent" : root.controlTheme.glassColor("card", Qt.alpha(root.controlTheme.foreground,.035))
+        border.color:root.controlTheme.glassBorder("card", root.controlTheme.borderaccent);clip:true
         Repeater { model:root.drafts
             delegate: Rectangle {
                 id:screenChip
@@ -164,13 +169,13 @@ ColumnLayout {
                 height:Math.max(36, Math.round(display.height/display.scale*root.previewScale))
                 x:16+(display.x-root.minX)*root.previewScale
                 y:16+(display.y-root.minY)*root.previewScale
-                radius:9
-                color:root.selectedName===display.name?Qt.alpha(Theme.accent,.19):Theme.surface
-                border.color:root.selectedName===display.name?Theme.accent:Theme.borderaccent
-                border.width:root.selectedName===display.name?2:1
+                radius:root.controlTheme.glassRadius("card", 9)
+                color:root.controlTheme.glassColor("card", root.selectedName===display.name?Qt.alpha(root.controlTheme.accent,.19):root.controlTheme.surface)
+                border.color:root.controlTheme.glassBorder("card", root.selectedName===display.name?root.controlTheme.accent:root.controlTheme.borderaccent)
+                border.width:root.controlTheme.glassBorderWidth("card", root.selectedName===display.name?2:1)
                 Column { anchors.centerIn:parent;spacing:4
-                    Text { anchors.horizontalCenter:parent.horizontalCenter;text:screenChip.display.name;color:Theme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11) }
-                    Text { anchors.horizontalCenter:parent.horizontalCenter;text:screenChip.display.width+" × "+screenChip.display.height;color:Theme.muted;font.pixelSize:Fonts.scale(9) }
+                    GlassLabel { anchors.horizontalCenter:parent.horizontalCenter;text:screenChip.display.name;color:root.controlTheme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11) }
+                    GlassLabel { anchors.horizontalCenter:parent.horizontalCenter;text:screenChip.display.width+" × "+screenChip.display.height;color:root.controlTheme.muted;font.pixelSize:Fonts.scale(9) }
                 }
                 MouseArea { anchors.fill:parent;cursorShape:Qt.OpenHandCursor
                     drag.target:root.busy ? null : screenChip
@@ -195,13 +200,13 @@ ColumnLayout {
                 id:monitorSelect
                 required property var modelData
                 readonly property bool active:root.selectedName===modelData.name
-                Layout.fillWidth:true;Layout.preferredHeight:43;radius:10
-                color:active?Qt.alpha(Theme.accent,.17):Theme.surface
-                border.color:active?Theme.accent:Theme.borderaccent;border.width:1
+                Layout.fillWidth:true;Layout.preferredHeight:43;radius:root.controlTheme.glassRadius("card", 10)
+                color:root.controlTheme.glassColor("card", active?Qt.alpha(root.controlTheme.accent,.17):root.controlTheme.surface)
+                border.color:root.controlTheme.glassBorder("card", active?root.controlTheme.accent:root.controlTheme.borderaccent);border.width:root.controlTheme.glassBorderWidth("card", 1)
                 RowLayout { anchors.centerIn:parent;spacing:7
-                    Icon { icon:"\ue30b";color:monitorSelect.active?Theme.accent:Theme.muted;font.pixelSize:Fonts.scale(16) }
-                    Text { text:monitorSelect.modelData.name;color:Theme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11) }
-                    Icon { visible:monitorSelect.active;icon:"\ue5ca";color:Theme.accent;font.pixelSize:Fonts.scale(15) }
+                    Icon { icon:"\ue30b";color:monitorSelect.active?root.controlTheme.accent:root.controlTheme.muted;font.pixelSize:Fonts.scale(16) }
+                    GlassLabel { text:monitorSelect.modelData.name;color:root.controlTheme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11) }
+                    Icon { visible:monitorSelect.active;icon:"\ue5ca";color:root.controlTheme.accent;font.pixelSize:Fonts.scale(15) }
                 }
                 MouseArea { anchors.fill:parent;cursorShape:Qt.PointingHandCursor;onClicked:root.selectedName=monitorSelect.modelData.name }
             }
@@ -211,73 +216,74 @@ ColumnLayout {
         visible:root.selected!==null
         Layout.fillWidth:true
         Layout.preferredHeight:details.implicitHeight+30
-        radius:13;color:Theme.surface
+        radius:root.controlTheme.glassRadius("card", 13);color:root.framelessQuickControl ? "transparent" : root.controlTheme.glassColor("card", root.controlTheme.surface)
         ColumnLayout { id:details
             anchors.left:parent.left;anchors.right:parent.right;anchors.top:parent.top;anchors.margins:15;spacing:12
             RowLayout { Layout.fillWidth:true
                 ColumnLayout { Layout.fillWidth:true;spacing:2
-                    Text { text:root.selected?root.selected.name:"";font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(14);color:Theme.foreground }
-                    Text { text:root.selected?(root.selected.description||"Connected output"):"";elide:Text.ElideRight;Layout.fillWidth:true;color:Theme.muted;font.pixelSize:Fonts.scale(10) }
+                    GlassLabel { text:root.selected?root.selected.name:"";font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(14);color:root.controlTheme.foreground }
+                    GlassLabel { text:root.selected?(root.selected.description||"Connected output"):"";elide:Text.ElideRight;Layout.fillWidth:true;color:root.controlTheme.muted;font.pixelSize:Fonts.scale(10) }
                 }
-                Text { text:root.selected&&root.selected.focused?"Focused":"";color:Theme.accent;font.pixelSize:Fonts.scale(10) }
+                GlassLabel { text:root.selected&&root.selected.focused?"Focused":"";color:root.controlTheme.accent;font.pixelSize:Fonts.scale(10) }
             }
-            Text { text:"Resolution and refresh rate";font.family:Fonts.poppinsSB.name;color:Theme.foreground;font.pixelSize:Fonts.scale(11) }
-            ComboBox {
+            GlassLabel { text:"Resolution and refresh rate";font.family:Fonts.poppinsSB.name;color:root.controlTheme.foreground;font.pixelSize:Fonts.scale(11) }
+            ComboBox { palette: ControlPalette {}
+
                 id:modeBox
                 Layout.fillWidth:true;Layout.preferredHeight:41
                 model:root.selected?(root.selected.modes.length?root.selected.modes:[root.selected.mode]):[]
                 currentIndex:root.selected?Math.max(0, model.findIndex(m=>String(m).replace("Hz","")===root.selected.mode)):0
                 enabled: !root.busy
                 onActivated: index => {if (index>=0 && index<model.length) root.chooseMode(model[index]);}
-                contentItem:Text { text:modeBox.currentText;verticalAlignment:Text.AlignVCenter;leftPadding:13;rightPadding:26;color:Theme.foreground;font.family:Fonts.poppins.name;font.pixelSize:Fonts.scale(11);elide:Text.ElideRight }
-                background:Rectangle { radius:10;color:Theme.background;border.color:modeBox.pressed?Theme.accent:Theme.borderaccent;border.width:1 }
-                indicator:Icon { x:modeBox.width-width-10;y:(modeBox.height-height)/2;icon:"\ue5cf";color:Theme.accent;font.pixelSize:Fonts.scale(17) }
+                contentItem:GlassLabel { text:modeBox.currentText;verticalAlignment:Text.AlignVCenter;leftPadding:13;rightPadding:26;color:root.controlTheme.foreground;font.family:Fonts.poppins.name;font.pixelSize:Fonts.scale(11);elide:Text.ElideRight }
+                background:Rectangle { radius:root.controlTheme.glassRadius("card", 10);color:root.controlTheme.glassColor("card", root.controlTheme.background);border.color:root.controlTheme.glassBorder("card", modeBox.pressed?root.controlTheme.accent:root.controlTheme.borderaccent);border.width:root.controlTheme.glassBorderWidth("card", 1) }
+                indicator:Icon { x:modeBox.width-width-10;y:(modeBox.height-height)/2;icon:"\ue5cf";color:root.controlTheme.accent;font.pixelSize:Fonts.scale(17) }
                 delegate:ItemDelegate { width:modeBox.width;height:36
                     required property int index
                     required property var modelData
-                    contentItem:Text { text:String(modelData);leftPadding:10;verticalAlignment:Text.AlignVCenter;color:Theme.foreground;font.pixelSize:Fonts.scale(10);elide:Text.ElideRight }
-                    background:Rectangle { color:highlighted?Qt.alpha(Theme.accent,.23):Theme.background;radius:6 }
+                    contentItem:GlassLabel { text:String(modelData);leftPadding:10;verticalAlignment:Text.AlignVCenter;color:root.controlTheme.foreground;font.pixelSize:Fonts.scale(10);elide:Text.ElideRight }
+                    background:Rectangle { color:root.controlTheme.glassColor("card", highlighted?Qt.alpha(root.controlTheme.accent,.23):root.controlTheme.background);radius:root.controlTheme.glassRadius("card", 6) }
                 }
                 popup:Popup { y:modeBox.height+4;width:modeBox.width;implicitHeight:Math.min(contentItem.implicitHeight+8,238);padding:4
                     contentItem:ListView { clip:true;implicitHeight:contentHeight;model:modeBox.popup.visible?modeBox.delegateModel:null;currentIndex:modeBox.highlightedIndex;ScrollIndicator.vertical:ScrollIndicator{} }
-                    background:Rectangle { radius:10;color:Theme.background;border.color:Theme.borderaccent;border.width:1 }
+                    background:Rectangle { radius:root.controlTheme.glassRadius("card", 10);color:root.controlTheme.glassColor("card", root.controlTheme.background);border.color:root.controlTheme.glassBorder("card", root.controlTheme.borderaccent);border.width:root.controlTheme.glassBorderWidth("card", 1) }
                 }
             }
-            Text { text:"Scale";color:Theme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11) }
+            GlassLabel { text:"Scale";color:root.controlTheme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11) }
             RowLayout { Layout.fillWidth:true;spacing:6
                 Repeater { model:[1,1.25,1.5,1.75,2]
                     delegate:Rectangle { id:scaleBtn
                         required property real modelData
                         readonly property bool chosen:root.selected!==null&&Math.abs(root.selected.scale-modelData)<.005
-                        Layout.fillWidth:true;Layout.preferredHeight:34;radius:8
-                        color:chosen?Qt.alpha(Theme.accent,.17):Theme.background
-                        border.color:chosen?Theme.accent:Theme.borderaccent;border.width:1
-                        Text { anchors.centerIn:parent;text:scaleBtn.modelData+"×";color:Theme.foreground;font.pixelSize:Fonts.scale(10) }
+                        Layout.fillWidth:true;Layout.preferredHeight:34;radius:root.controlTheme.glassRadius("card", 8)
+                        color:root.controlTheme.glassColor("card", chosen?Qt.alpha(root.controlTheme.accent,.17):root.controlTheme.background)
+                        border.color:root.controlTheme.glassBorder("card", chosen?root.controlTheme.accent:root.controlTheme.borderaccent);border.width:root.controlTheme.glassBorderWidth("card", 1)
+                        GlassLabel { anchors.centerIn:parent;text:scaleBtn.modelData+"×";color:root.controlTheme.foreground;font.pixelSize:Fonts.scale(10) }
                         MouseArea { anchors.fill:parent;enabled:!root.busy;cursorShape:Qt.PointingHandCursor;onClicked:if(root.selected)root.setField(root.selectedName,"scale",scaleBtn.modelData) }
                     }
                 }
             }
-            Text { text:"Place relative to another display";color:Theme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11) }
+            GlassLabel { text:"Place relative to another display";color:root.controlTheme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11) }
             RowLayout { Layout.fillWidth:true;spacing:6
                 Repeater { model:[{title:"Left",id:"left"},{title:"Right",id:"right"},{title:"Above",id:"above"},{title:"Below",id:"below"}]
                     delegate:Rectangle { id:direction
                         required property var modelData
-                        Layout.fillWidth:true;Layout.preferredHeight:34;radius:8;color:Theme.background
-                        Text { anchors.centerIn:parent;text:direction.modelData.title;color:Theme.foreground;font.pixelSize:Fonts.scale(10) }
+                        Layout.fillWidth:true;Layout.preferredHeight:34;radius:root.controlTheme.glassRadius("card", 8);color:root.controlTheme.glassColor("card", root.controlTheme.background)
+                        GlassLabel { anchors.centerIn:parent;text:direction.modelData.title;color:root.controlTheme.foreground;font.pixelSize:Fonts.scale(10) }
                         MouseArea { anchors.fill:parent;enabled:root.drafts.length>1&&!root.busy;cursorShape:Qt.PointingHandCursor;onClicked:root.place(direction.modelData.id) }
                     }
                 }
             }
-            Text { text:root.selected?"Position "+root.selected.x+", "+root.selected.y+" px · "+root.selected.width+"×"+root.selected.height+" · "+root.selected.scale+"×":"";color:Theme.muted;font.pixelSize:Fonts.scale(10) }
+            GlassLabel { text:root.selected?"Position "+root.selected.x+", "+root.selected.y+" px · "+root.selected.width+"×"+root.selected.height+" · "+root.selected.scale+"×":"";color:root.controlTheme.muted;font.pixelSize:Fonts.scale(10) }
         }
     }
     Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: root.awaitingKeep ? 54 : 0
         visible: root.awaitingKeep
-        radius: 11
-        color: Qt.alpha(Theme.accent, 0.12)
-        border.color: Theme.accent
+        radius: root.controlTheme.glassRadius("card", 11)
+        color: root.controlTheme.glassColor("card", Qt.alpha(root.controlTheme.accent, 0.12))
+        border.color: root.controlTheme.glassBorder("card", root.controlTheme.accent)
         RowLayout {
             anchors.fill: parent
             anchors.margins: 9
@@ -285,17 +291,17 @@ ColumnLayout {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: "New display layout is active"; font.family: Fonts.poppinsSB.name; color: Theme.foreground; font.pixelSize: Fonts.scale(11) }
-                Text { text: "Reverts in " + root.secondsLeft + "s if not kept"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                GlassLabel { text: "New display layout is active"; font.family: Fonts.poppinsSB.name; color: root.controlTheme.foreground; font.pixelSize: Fonts.scale(11) }
+                GlassLabel { text: "Reverts in " + root.secondsLeft + "s if not kept"; color: root.controlTheme.contentMuted; font.pixelSize: Fonts.scale(10) }
             }
             Rectangle {
-                Layout.preferredWidth: 100; Layout.fillHeight: true; radius: 8; color: Theme.surface
-                Text { anchors.centerIn: parent; text: "Revert now"; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                Layout.preferredWidth: 100; Layout.fillHeight: true; radius: root.controlTheme.glassRadius("card", 8); color: root.controlTheme.glassColor("card", root.controlTheme.surface)
+                GlassLabel { anchors.centerIn: parent; text: "Revert now"; color: root.controlTheme.foreground; font.pixelSize: Fonts.scale(10) }
                 MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor; onClicked: root.run("revert") }
             }
             Rectangle {
-                Layout.preferredWidth: 120; Layout.fillHeight: true; radius: 8; color: Theme.accent
-                Text { anchors.centerIn: parent; text: "Keep changes"; color: Theme.background; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
+                Layout.preferredWidth: 120; Layout.fillHeight: true; radius: 8; color: root.controlTheme.accent
+                GlassLabel { anchors.centerIn: parent; text: "Keep changes"; color: root.controlTheme.background; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
                 MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor; onClicked: root.run("keep") }
             }
         }
@@ -303,22 +309,22 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         spacing: 8
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             text: root.busy ? "Applying…" : "Instant apply · verified against Hyprland"
-            color: Theme.muted
+            color: root.controlTheme.contentMuted
             font.pixelSize: Fonts.scale(10)
         }
         Rectangle {
-            Layout.preferredWidth: 112; Layout.preferredHeight: 35; radius: 9; color: Theme.surface
-            Text { anchors.centerIn: parent; text: "Export Lua"; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+            Layout.preferredWidth: 112; Layout.preferredHeight: 35; radius: root.controlTheme.glassRadius("card", 9); color: root.controlTheme.glassColor("card", root.controlTheme.surface)
+            GlassLabel { anchors.centerIn: parent; text: "Export Lua"; color: root.controlTheme.foreground; font.pixelSize: Fonts.scale(10) }
             MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor; onClicked: root.run("export") }
         }
     }
-    Text { Layout.fillWidth:true;text:root.status;color:root.failed?Theme.error:Theme.muted;wrapMode:Text.WordWrap;font.pixelSize:Fonts.scale(11) }
-    Text { Layout.fillWidth:true;text:"Select a resolution, scale, position or drag a screen: changes apply immediately. Keep within 15 seconds; otherwise the independent rollback guard restores the previous layout. Export Lua for startup persistence (Omarchy files are not overwritten).";color:Theme.muted;wrapMode:Text.WordWrap;font.pixelSize:Fonts.scale(10) }
-    Rectangle { Layout.fillWidth:true;Layout.preferredHeight:34;radius:9;color:Theme.surface
-        Text { anchors.centerIn:parent;text:"Open nwg-displays (alternative)";color:Theme.foreground;font.pixelSize:Fonts.scale(11) }
+    GlassLabel { Layout.fillWidth:true;text:root.status;color:root.failed?root.controlTheme.error:root.controlTheme.muted;wrapMode:Text.WordWrap;font.pixelSize:Fonts.scale(11) }
+    GlassLabel { Layout.fillWidth:true;text:"Select a resolution, scale, position or drag a screen: changes apply immediately. Keep within 15 seconds; otherwise the independent rollback guard restores the previous layout. Export Lua for startup persistence (Omarchy files are not overwritten).";color:root.controlTheme.muted;wrapMode:Text.WordWrap;font.pixelSize:Fonts.scale(10) }
+    Rectangle { Layout.fillWidth:true;Layout.preferredHeight:34;radius:root.controlTheme.glassRadius("card", 9);color:root.controlTheme.glassColor("card", root.controlTheme.surface)
+        GlassLabel { anchors.centerIn:parent;text:"Open nwg-displays (alternative)";color:root.controlTheme.foreground;font.pixelSize:Fonts.scale(11) }
         MouseArea { anchors.fill:parent;cursorShape:Qt.PointingHandCursor;onClicked:Quickshell.execDetached(["nwg-displays"]) }
     }
 }

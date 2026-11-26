@@ -1,0 +1,104 @@
+{
+  "mode": "isolated backend and Qt offscreen; no live Hyprland verification",
+  "tests": [
+    {
+      "test": "verify-static.py",
+      "exitCode": 0,
+      "seconds": 1.59
+    },
+    {
+      "test": "check-bar-modes.py",
+      "exitCode": 0,
+      "seconds": 0.03
+    },
+    {
+      "test": "test_hypr_settings.py",
+      "exitCode": 0,
+      "seconds": 0.26
+    },
+    {
+      "test": "test_hypr_settings_integration.py",
+      "exitCode": 0,
+      "seconds": 0.26
+    },
+    {
+      "test": "test_hypr_settings_ui.py",
+      "exitCode": 0,
+      "seconds": 4.24
+    },
+    {
+      "test": "test_compositor_studio_safety.py",
+      "exitCode": 0,
+      "seconds": 0.33
+    },
+    {
+      "test": "test_compositor_studio_ui.py",
+      "exitCode": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "test_rc4_desktop_integration.py",
+      "exitCode": 0,
+      "seconds": 1.87
+    },
+    {
+      "test": "test_shortcut_lua_compat.py",
+      "exitCode": 0,
+      "seconds": 0.16
+    },
+    {
+      "test": "test_shortcut_full_backup.py",
+      "exitCode": 0,
+      "seconds": 2.71
+    },
+    {
+      "test": "test_shortcut_backup_confirmation.py",
+      "exitCode": 0,
+      "seconds": 0.08
+    },
+    {
+      "test": "test_beta1_live_displays_confirmation.py",
+      "exitCode": 0,
+      "seconds": 0.15
+    },
+    {
+      "test": "test_portable_user_settings.py",
+      "exitCode": 0,
+      "seconds": 0.48
+    },
+    {
+      "test": "test_settings_refactor.py",
+      "exitCode": 0,
+      "seconds": 0.04
+    },
+    {
+      "test": "test_wifi_audio_ui.py",
+      "exitCode": 0,
+      "seconds": 4.52
+    },
+    {
+      "test": "test_audio_peak.py",
+      "exitCode": 0,
+      "seconds": 0.16
+    },
+    {
+      "test": "test_wifi_advanced_shortcuts.py",
+      "exitCode": 0,
+      "seconds": 0.35
+    },
+    {
+      "test": "test_launcher_studio_ui.py",
+      "exitCode": 0,
+      "seconds": 7.96
+    },
+    {
+      "test": "test_surface_spacing_ui.py",
+      "exitCode": 0,
+      "seconds": 4.92
+    }
+  ],
+  "studioBackendTests": 39,
+  "studioQmlTests": 18,
+  "integrationTests": 4,
+  "nativeHyprlandVerified": false
+}

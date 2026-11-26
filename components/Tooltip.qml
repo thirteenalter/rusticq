@@ -2,7 +2,11 @@ import QtQuick
 import "../services/"
 import "../config"
 
-Rectangle {
+GlassSurface {
+    Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+    border.color: Theme.glassBorder("tooltip", "black")
+    border.width: Theme.glassBorderWidth("tooltip", 0)
+    surfaceRole: "tooltip"
     id: root
 
     property string text: ""
@@ -15,15 +19,15 @@ Rectangle {
 
     z: 99999
 
-    radius: 8
+    radius: Theme.glassRadius("tooltip", 8)
 
-    color: Theme.surface
+    color: Theme.glassColor("tooltip", Theme.surface)
 
 
     implicitWidth: label.implicitWidth + 16
     implicitHeight: label.implicitHeight + 10
 
-    Text {
+    GlassLabel {
         id: label
 
         anchors.centerIn: parent

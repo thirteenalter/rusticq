@@ -1,0 +1,63 @@
+{
+  "target": "/home/ryznxx/.local/share/rusticq/shell",
+  "backup": "/home/ryznxx/.local/state/rusticq/backups/motion-20261125-105313",
+  "files": [
+    {
+      "path": "components/SurfaceMotion.qml",
+      "before": "6ea289ebf05bcb6551d60917334028a9fec10da4011c63e99294d59056808470",
+      "after": "4f5d7890f8c13433f6f045dcfc2ae58de81b128157232f5ef76e7903126cf92b"
+    },
+    {
+      "path": "components/LauncherController.qml",
+      "before": "f499bc2f32bc1ff7db965c6f194bc2f9df3104ce4cb696189cb154249dbeb92a",
+      "after": "74a056df985d2dabdcc199807609fd7d42bd873185d5ffb087d2ed5e35e920de"
+    },
+    {
+      "path": "components/LauncherAppIcon.qml",
+      "before": "3d0aca196b84b687da662084332117e57c9718182ffc4ddc551662264fec4b92",
+      "after": "b5345acf34c8596b418e3cd034b985576fedf53769e0a71d5067b0fffb02eeb8"
+    },
+    {
+      "path": "components/LauncherView.qml",
+      "before": "02b20b3cdab7774470c128d1e5e023915e662f28f2615875f2e607e10c843bb4",
+      "after": "21d3d04c23f160e943d4e1606fb5b6943544310047499f34abb81ac4f94bb823"
+    },
+    {
+      "path": "modules/main/MiniLauncher.qml",
+      "before": "3e9ea3dc2d216e512d60c55311e7c2e86e27a0941a2040fb7b5dd23aef326eb3",
+      "after": "dfb71227a4ecaadde4951a79a2fc4ae2d5af565c5574d9a9fa664d6783fcc162"
+    },
+    {
+      "path": "modules/main/LauncherOverlay.qml",
+      "before": "f1d8e2c88504da7b03e89c57cc552cdf7d2dd57f0bc7c7c27cd95d0e534fe5e1",
+      "after": "ebc268a5788bf645e3d7add361a6cb31c5b7518fd231755cfa7f61f6ead77086"
+    },
+    {
+      "path": "modules/main/RusticDock.qml",
+      "before": "8d12c984c41b29a3bbc767e80d3cd9ec3ac8adcb030ec5240bee6e6eccde1609",
+      "after": "73d147385e6197d42d3a940d7b66df223f8de1164ba9b12c6cb6dedd6b10c203"
+    },
+    {
+      "path": "services/GlassService.qml",
+      "before": "04443228ab6a79efff10a427d2ac9d844eeb42e80b21ad43b90d3c6cc5ec34a5",
+      "after": "731925ac5dc1ed44bc2190e82516c3040aa52b10f76be0d2a7a55d25e18e290b"
+    },
+    {
+      "path": "scripts/rusticq-glass.py",
+      "before": "4d674b00e9f0ab2ff18721275d15ae56fdf5834100f4bc3c09540ef22673ec96",
+      "after": "0f468c0978c7ddc39aeba896c4972a678102400f9067b47b65d9945b26be46f3"
+    },
+    {
+      "path": "shell.qml",
+      "before": "92098dc94b6adebe1fd2892840745543584772d012f57ef1c99e4e20c3347b5b",
+      "after": "109c8c812293d6cfab4350574ccac28da00f56f79aaebcb997d8c5b5e12c35cf"
+    }
+  ],
+  "preferencesIncluded": false,
+  "compositorRestarted": false,
+  "status": "applied",
+  "reloadAccepted": true,
+  "runtimeLoaded": true,
+  "runtimeErrors": [],
+  "preferencesByteIdentical": true
+}

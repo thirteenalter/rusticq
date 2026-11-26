@@ -13,7 +13,8 @@ Row {
     Repeater {
         model: 6
 
-        Rectangle {
+        BarSurface {
+            objectName: "barWorkspaceSurface"
             id: workspaceButton
             required property int index
             readonly property int workspaceId: index + 1
@@ -21,12 +22,13 @@ Row {
                                               && Hyprland.focusedWorkspace.id === workspaceId
             width: root.buttonSize
             height: root.buttonSize
-            radius: 8
-            color: !root.backgroundEnabled ? "transparent" : selected ? Theme.accent : Theme.surface
-            border.width: root.backgroundEnabled ? 1 : 0
-            border.color: selected ? Theme.accent : Theme.borderaccent
+            baseRadius: 8
+            baseColor: root.backgroundEnabled ? Theme.surface : "transparent"
+            feedbackColor: selected && root.backgroundEnabled ? Theme.accent : "transparent"
+            baseBorderWidth: root.backgroundEnabled ? 1 : 0
+            baseBorderColor: selected ? Theme.accent : Theme.borderaccent
 
-            Text {
+            GlassLabel {
                 anchors.centerIn: parent
                 text: workspaceButton.workspaceId
                 font.family: Fonts.poppins.name

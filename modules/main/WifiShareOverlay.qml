@@ -12,6 +12,7 @@ import "../../components"
 // runtime directory and is only requested on demand. Closing or expiry
 // unlinks the QR from its private tmpfs directory.
 PanelWindow {
+    WlrLayershell.namespace: "rusticq-wifi-qr"
     id: root
     screen: Store.wifiQrScreen
     readonly property bool presented: motion.presented
@@ -138,19 +139,21 @@ PanelWindow {
         Rectangle {
             anchors.fill: parent
             opacity: motion.progress
-            color: Qt.alpha("#07090b", 0.60)
-            MouseArea { anchors.fill: parent; onClicked: root.close() }
+            color: Theme.glassScrim(Theme.modalScrim)
+            OutsideClickArea { anchors.fill: parent; surface: card; onOutsideClicked: root.close() }
         }
-        Rectangle {
+        GlassSurface {
+            Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+            surfaceRole: "modal"
             id: card
             transform: Translate { x: motion.offsetX; y: motion.offsetY }
             width: Math.min(448, Math.max(290, parent.width - 32))
             height: content.implicitHeight + 42
             anchors.centerIn: parent
-            radius: Theme.sectionRadius
-            color: Theme.background
-            border.color: Theme.borderaccent
-            border.width: 1
+            radius: Theme.surfaceRadius("dialogs","modal", Theme.sectionRadius)
+            color: Theme.surfaceColor("dialogs","modal", Theme.background)
+            border.color: Theme.surfaceBorder("dialogs","modal", Theme.borderaccent)
+            border.width: Theme.surfaceBorderWidth("dialogs","modal", 1)
             // Consume clicks inside the card: only the dimmed background and
             // Done should dismiss, never a tap on the QR image itself.
             MouseArea { anchors.fill: parent; onClicked: mouse => { mouse.accepted = true; } }
@@ -159,36 +162,37 @@ PanelWindow {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.margins: 21
+                anchors.margins: Theme.dialogPadding
                 spacing: 14
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 12
                     Rectangle {
                         Layout.preferredWidth: 40; Layout.preferredHeight: 40
-                        radius: 12; color: Qt.alpha(Theme.accent, .16)
+                        radius: Theme.glassRadius("card", 12); color: Theme.glassColor("card", Qt.alpha(Theme.accent, .16))
                         Icon { anchors.centerIn: parent; icon: "\uef6d"; color: Theme.accent; font.pixelSize: Fonts.scale(21) }
                     }
                     ColumnLayout {
                         Layout.fillWidth: true; spacing: 2
-                        Text { text: "Share Wi-Fi"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(16) }
-                        Text { text: "Scan to join this network"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        GlassLabel { text: "Share Wi-Fi"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(16) }
+                        GlassLabel { text: "Scan to join this network"; color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     }
-                    Text { text: root.qrReady ? root.secondsRemaining + "s" : ""; color: Theme.accent; font.pixelSize: Fonts.scale(12) }
+                    GlassLabel { text: root.qrReady ? root.secondsRemaining + "s" : ""; color: Theme.accent; font.pixelSize: Fonts.scale(12) }
                 }
                 Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 5
-                    Text { text: "CONNECTED NETWORK"; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
-                    Text { Layout.fillWidth: true; text: Store.wifiQrSsid || "Current Wi-Fi"; elide: Text.ElideRight;
+                    GlassLabel { text: "CONNECTED NETWORK"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(9) }
+                    GlassLabel { Layout.fillWidth: true; text: Store.wifiQrSsid || "Current Wi-Fi"; elide: Text.ElideRight;
                         color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
                 }
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: Math.min(294, card.width - 48)
                     Layout.preferredHeight: Math.min(294, card.width - 48)
-                    radius: 14
-                    color: root.qrReady ? "white" : Theme.surface
+                    radius: Theme.glassRadius("card", 14)
+                    // Preserve the QR quiet zone and scanner contrast in every style.
+                    color: root.qrReady ? "white" : Theme.glassColor("card", Theme.surface)
                     Image {
                         anchors.fill: parent
                         anchors.margins: 11
@@ -203,7 +207,7 @@ PanelWindow {
                         spacing: 9
                         visible: !root.qrReady
                         Icon { Layout.alignment: Qt.AlignHCenter; icon: "\uef6d"; font.pixelSize: Fonts.scale(34); color: Theme.accent }
-                        Text {
+                        GlassLabel {
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.WordWrap
@@ -213,23 +217,23 @@ PanelWindow {
                         }
                     }
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     text: "The QR includes the Wi-Fi password. Only share it with people you trust."
                     wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
-                    color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                    color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                 }
                 Rectangle {
                     Layout.fillWidth: true; Layout.preferredHeight: 39
-                    radius: Theme.rowRadius; color: Theme.surface
-                    Text { anchors.centerIn: parent; text: "Done · Esc"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    radius: Theme.glassRadius("card", Theme.rowRadius); color: Theme.glassColor("card", Theme.surface)
+                    GlassLabel { anchors.centerIn: parent; text: "Done · Esc"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.close() }
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     text: "QR is cleared automatically after 45 seconds"
                     horizontalAlignment: Text.AlignHCenter
-                    color: Theme.muted; font.pixelSize: Fonts.scale(9)
+                    color: Theme.contentMuted; font.pixelSize: Fonts.scale(9)
                 }
             }
         }

@@ -36,7 +36,7 @@ Item {
             Layout.preferredHeight: Theme.barIconSlotSize
             Layout.alignment: Qt.AlignCenter
         }
-        Text {
+        GlassLabel {
             text: root.caption
             textFormat: Text.PlainText
             visible: root.showCaption

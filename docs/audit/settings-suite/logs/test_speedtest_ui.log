@@ -1,0 +1,28 @@
+  INFO: Launching config: "/tmp/rusticq-speedtest-ui-wn57a1yc/shell.qml"
+  INFO: Shell ID: "414cdfa2e15e3e1d08597fa87c42d3dd" Path ID "414cdfa2e15e3e1d08597fa87c42d3dd"
+  INFO: Saving logs to "/tmp/rusticq-speedtest-ui-wn57a1yc/quickshell/by-id/6hha04pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-speedtest-ui-wn57a1yc/quickshell/by-id/6hha04pt/ipc.sock"
+  WARN quickshell.network.networkmanager: Could not connect to DBus. NetworkManager backend will not work.
+ ERROR quickshell.network: Network will not work. Could not find an available backend.
+  INFO: Configuration Loaded
+ DEBUG qml: SPEED TEST test_a_idle_and_sibling_card_geometry failed false phase idle error 
+ DEBUG qml: SPEED TEST test_b_real_event_states_and_shared_service failed false phase complete error 
+ DEBUG qml: SPEED TEST test_c_cancel_preserves_previous_completed_results failed false phase cancelled error 
+ DEBUG qml: SPEED TEST test_d_missing_invalid_failed_and_timeout failed false phase error error Speed test timed out. Check your connection and retry.
+ DEBUG qml: SPEED TEST test_e_offline_blocks_launch_and_allows_cancel failed false phase cancelled error 
+ DEBUG qml: SPEED TEST test_f_styles_density_palette_and_no_gauge_space failed false phase cancelled error 
+ DEBUG qml: SPEED TEST test_g_settings_controls_validation_and_persistence failed false phase cancelled error 
+ DEBUG qml: SPEED TEST RESULTS 8 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-speedtest-ui-wn57a1yc/shell.qml"
+  INFO: Shell ID: "414cdfa2e15e3e1d08597fa87c42d3dd" Path ID "414cdfa2e15e3e1d08597fa87c42d3dd"
+  INFO: Saving logs to "/tmp/rusticq-speedtest-ui-wn57a1yc/quickshell/by-id/fjma04pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-speedtest-ui-wn57a1yc/quickshell/by-id/fjma04pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: NETWORK SETTINGS RELOAD PASS
+PASS: production cards, scrolling, states, shared results, cancel, timeout, offline, missing dependency, styles, palettes and persisted settings

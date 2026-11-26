@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "backend": "hyprland",
+  "supported": true,
+  "active": false,
+  "independentStrength": false,
+  "persistentChanges": false,
+  "message": "Global compositor blur is off. RAGE leaves it off and uses a readable tinted fallback.",
+  "version": "0.56.2",
+  "globalBlur": false
+}

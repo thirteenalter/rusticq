@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 import "../../config"
 import "../../services"
 import "../../components"
@@ -8,6 +9,7 @@ import "../../components"
 // Single-surface toast. No accent stripe, stacked borders, or fake buttons.
 // Height comes from the laid-out content, not a fixed screen-space guess.
 PanelWindow {
+    WlrLayershell.namespace: "rusticq-notifications"
     id: toastWindow
     property var retainedNotice: null
     readonly property var notice: NotificationCenter.toast || retainedNotice
@@ -44,17 +46,19 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     margins { top: 54; right: 16 }
     implicitWidth: hasImage ? 454 : 408
-    implicitHeight: Math.max(116, bodyColumn.implicitHeight + 34)
+    implicitHeight: Math.max(116, bodyColumn.implicitHeight + Theme.panelPadding * 2)
     color: "transparent"
 
-    Rectangle {
+    GlassSurface {
+        Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+        surfaceRole: "popup"
         id: toastSurface
         anchors.fill: parent
         transform: Translate { x: motion.offsetX; y: motion.offsetY }
-        radius: 19
-        color: Theme.background
-        border.width: 1
-        border.color: Theme.borderaccent
+        radius: Theme.surfaceRadius("notifications","popup", 19)
+        color: Theme.surfaceColor("notifications","popup", Theme.background)
+        border.width: Theme.surfaceBorderWidth("notifications","popup", 1)
+        border.color: Theme.surfaceBorder("notifications","popup", Theme.borderaccent)
         clip: true
 
         ColumnLayout {
@@ -62,10 +66,10 @@ PanelWindow {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.leftMargin: 17
-            anchors.rightMargin: 17
-            anchors.topMargin: 16
-            spacing: 11
+            anchors.leftMargin: Theme.panelPadding
+            anchors.rightMargin: Theme.panelPadding
+            anchors.topMargin: Theme.panelPadding
+            spacing: Theme.contentGap
 
             RowLayout {
                 Layout.fillWidth: true
@@ -74,8 +78,8 @@ PanelWindow {
                 Rectangle {
                     Layout.preferredWidth: 36
                     Layout.preferredHeight: 36
-                    radius: 11
-                    color: Qt.alpha(Theme.accent, 0.12)
+                    radius: Theme.glassRadius("card", 11)
+                    color: Theme.glassColor("card", Qt.alpha(Theme.accent, 0.12))
                     Image {
                         id: realAppIcon
                         anchors.centerIn: parent
@@ -100,7 +104,7 @@ PanelWindow {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 1
-                    Text {
+                    GlassLabel {
                         Layout.fillWidth: true
                         text: notice ? notice.app : ""
                         font.family: Fonts.poppinsSB.name
@@ -109,20 +113,20 @@ PanelWindow {
                         elide: Text.ElideRight
                         textFormat: Text.PlainText
                     }
-                    Text {
+                    GlassLabel {
                         Layout.fillWidth: true
                         text: notice ? notice.tag : ""
                         font.family: Fonts.poppins.name
                         font.pixelSize: Fonts.scale(9)
-                        color: Theme.muted
+                        color: Theme.contentMuted
                         elide: Text.ElideRight
                         textFormat: Text.PlainText
                     }
                 }
 
-                Text {
+                GlassLabel {
                     text: notice ? notice.when : ""
-                    color: Theme.muted
+                    color: Theme.contentMuted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Fonts.scale(10)
                     textFormat: Text.PlainText
@@ -131,8 +135,8 @@ PanelWindow {
                 Rectangle {
                     Layout.preferredWidth: 28
                     Layout.preferredHeight: 28
-                    radius: 9
-                    color: dismissMouse.containsMouse ? Qt.alpha(Theme.foreground, 0.08) : "transparent"
+                    radius: Theme.glassRadius("card", 9)
+                    color: Theme.glassColor("card", dismissMouse.containsMouse ? Qt.alpha(Theme.foreground, 0.08) : "transparent")
                     Icon {
                         anchors.centerIn: parent
                         icon: "\ue5cd"
@@ -156,7 +160,7 @@ PanelWindow {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 5
-                    Text {
+                    GlassLabel {
                         Layout.fillWidth: true
                         text: notice ? notice.title : ""
                         color: Theme.foreground
@@ -167,11 +171,11 @@ PanelWindow {
                         elide: Text.ElideRight
                         textFormat: Text.PlainText
                     }
-                    Text {
+                    GlassLabel {
                         visible: text.length > 0
                         Layout.fillWidth: true
                         text: notice ? notice.body : ""
-                        color: Theme.muted
+                        color: Theme.contentMuted
                         font.family: Fonts.poppins.name
                         font.pixelSize: Fonts.scale(11)
                         lineHeight: 1.2
@@ -187,8 +191,8 @@ PanelWindow {
                     Layout.alignment: Qt.AlignTop
                     Layout.preferredWidth: visible ? 112 : 0
                     Layout.preferredHeight: visible ? 78 : 0
-                    radius: 10
-                    color: Theme.surface
+                    radius: Theme.glassRadius("card", 10)
+                    color: Theme.glassColor("card", Theme.surface)
                     clip: true
 
                     Image {
@@ -225,12 +229,12 @@ PanelWindow {
                             ? toastWindow.notice.actions[index] : null
                         Layout.fillWidth: true
                         Layout.preferredHeight: 32
-                        radius: 9
-                        color: index === 0 ? Qt.alpha(Theme.accent, 0.15) : Theme.surface
+                        radius: Theme.glassRadius("card", 9)
+                        color: Theme.glassColor("card", index === 0 ? Qt.alpha(Theme.accent, 0.15) : Theme.surface)
                         RowLayout {
                             anchors.centerIn: parent
                             spacing: 6
-                            Text {
+                            GlassLabel {
                                 text: nativeAction.action ? nativeAction.action.text : ""
                                 color: index === 0 ? Theme.accent : Theme.foreground
                                 font.family: Fonts.poppinsSB.name

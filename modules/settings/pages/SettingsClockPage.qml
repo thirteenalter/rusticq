@@ -6,8 +6,10 @@ import "../../../modules/main"
 import ".."
 
 ColumnLayout {
+    id: settingsPageRoot
+    readonly property var settingsTheme: SettingsMaterial.forItem(settingsPageRoot)
     width: parent ? parent.width : 680
-    spacing: Theme.sectionGap
+    spacing: settingsPageRoot.settingsTheme.sectionGap
     SettingsSection {
         heading: "Clock & calendar"
         description: "Format and language for the bar clock and calendar."

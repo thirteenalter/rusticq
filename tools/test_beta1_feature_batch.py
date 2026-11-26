@@ -41,12 +41,13 @@ class CalculatorTests(unittest.TestCase):
                 calc.evaluate(expr)
 
     def test_launcher_integrates_without_app_command_eval(self):
-        launcher = (ROOT / 'modules/main/MiniLauncher.qml').read_text()
+        launcher = (ROOT / 'components/LauncherController.qml').read_text()
+        view = (ROOT / 'components/LauncherView.qml').read_text()
         self.assertIn('readonly property bool calculatorMode:', launcher)
         self.assertIn('calcDebounce.restart()', launcher)
         self.assertIn('onExited: (code, status)', launcher)
-        self.assertIn('onClicked: root.copyResult()', launcher)
-        self.assertIn('Keys.onDownPressed:', launcher)  # old navigation preserved
+        self.assertIn('root.controller.copyResult()', view)
+        self.assertIn('Keys.onDownPressed:', view)  # old navigation preserved
 
 
 class CLIAndServiceTests(unittest.TestCase):

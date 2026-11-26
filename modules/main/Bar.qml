@@ -9,7 +9,10 @@ import "../../services"
 // All bar modes share ONE set of functional components. Switching modes
 // never spawns a second bar, duplicates system watchers, or resets sidebar state.
 PanelWindow {
+    WlrLayershell.namespace: "rusticq-bar"
     id: barWindow
+    // The popup owns keyboard focus; the bar itself never captures typing.
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     readonly property bool requested: SettingsStore.barVisible && autoHide.shown
     visible: motion.presented
     SurfaceMotion { id: motion; shown: barWindow.requested; target: barWindow.contentItem; edge: barWindow.barPosition; style: SettingsStore.barAnimationStyle; closedScale: 1 }
@@ -29,21 +32,37 @@ PanelWindow {
                   || (Store.aiVisible && Store.aiScreen === barWindow.screen)
     }
     property string miniKind: ""
+    onMiniKindChanged: if (miniKind !== "") Store.barPopupOpened(barWindow)
     property real miniAnchorX: 0
     property real miniAnchorY: 0
     property string menuSection: "view"
     function openMenu(section, item) {
         const same = miniKind === "menu" && menuSection === section && indicatorPopup.visible;
-        if (same) { closeMini(); return; }
+        if (same) { if (!SettingsStore.barPopupsOnHover) closeMini(); return; }
         const point = barWindow.mapFromItem(item, item.width / 2, item.height / 2);
         menuSection = section;
         miniAnchorX = point.x; miniAnchorY = point.y;
         miniKind = "menu";
     }
     function closeMini() { miniKind = ""; }
+    function toggleLauncherFrom(item) {
+        closeMini();
+        const point=barWindow.mapFromItem(item,0,0);
+        const sx=barPosition==="right" ? screen.width-margins.right-width : margins.left;
+        const sy=barPosition==="bottom" ? screen.height-margins.bottom-height : margins.top;
+        Store.toggleLauncher(screen,{x:sx+point.x,y:sy+point.y,width:item.width,height:item.height,position:barPosition,screenName:screen.name});
+    }
+    function hoverMini(kind, xPosition, yPosition) {
+        if (!SettingsStore.barPopupsOnHover || miniKind === kind) return;
+        openMini(kind, xPosition, yPosition);
+    }
+    function hoverMenu(section, item) {
+        if (!SettingsStore.barPopupsOnHover || (miniKind === "menu" && menuSection === section)) return;
+        openMenu(section, item);
+    }
     function openMini(kind, xPosition, yPosition) {
         Store.sidebarVisible = false;
-        if (miniKind === kind) { miniKind = ""; return; }
+        if (miniKind === kind) { if (!SettingsStore.barPopupsOnHover) miniKind = ""; return; }
         // Position before changing kind so the new popup opens at the clicked icon.
         miniAnchorX = xPosition;
         miniAnchorY = yPosition === undefined ? barHeight / 2 : yPosition;
@@ -125,22 +144,26 @@ PanelWindow {
         right: SettingsStore.marginFor("right", professionalMode ? 0 : verticalMode ? (barPosition === "right" ? Theme.barEdgeGap : 0) : 6)
     }
 
-    Rectangle {
+    BarSurface {
+        objectName: "barOuterSurface"
+        Behavior on color { enabled: Theme.motionEnabled && SettingsStore.barBackgroundEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+        barLayer: "outer"
         anchors.fill: parent
-        color: barWindow.verticalMode ? (barWindow.separatedMode || barWindow.cleanCompactMode ? "transparent" : Theme.background) : barWindow.professionalMode ? Theme.background : "transparent"
-        border.width: (barWindow.verticalMode && !barWindow.separatedMode && !barWindow.cleanCompactMode) || (!barWindow.verticalMode && barWindow.professionalMode) ? 1 : 0
-        border.color: Theme.borderaccent
-        radius: barWindow.verticalMode && !barWindow.professionalMode ? 12 : 0
+        baseColor: Theme.barBaseBackground
+        baseBorderWidth: Theme.barBaseBorderWidth
+        baseBorderColor: Theme.borderaccent
+        baseRadius: Theme.barBaseCornerRadius
+        MouseArea { anchors.fill: parent; enabled: barWindow.miniKind !== ""; onClicked: barWindow.closeMini() }
     }
     Rectangle {
-        visible: barWindow.professionalMode
+        visible: barWindow.professionalMode && SettingsStore.barOutlineEnabled
         anchors.bottom: barWindow.barPosition === "top" ? parent.bottom : undefined
         anchors.top: barWindow.barPosition === "bottom" ? parent.top : undefined
         anchors.left: barWindow.barPosition === "right" ? parent.left : undefined
         anchors.right: barWindow.barPosition === "left" ? parent.right : undefined
         width: barWindow.verticalMode ? 1 : parent.width
         height: barWindow.verticalMode ? parent.height : 1
-        color: Qt.alpha(Theme.accent, 0.35)
+        color: Theme.glassColor("card", Qt.alpha(Theme.accent, 0.35))
     }
 
     RowLayout {
@@ -223,11 +246,11 @@ PanelWindow {
             sourceComponent: sharedCenterZone
             anchors.centerIn: parent
         }
-        Text {
+        GlassLabel {
             visible: barWindow.professionalMode && fixedCenter.item && fixedCenter.item.implicitWidth === 0
             anchors.centerIn: parent
             text: Theme.useAether ? "RUSTICQ / AETHER" : "RUSTICQ / GRUVBOX"
-            font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10); color: Theme.muted
+            font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10); color: Theme.contentMuted
         }
     }
     Loader {

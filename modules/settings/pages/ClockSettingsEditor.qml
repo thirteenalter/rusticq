@@ -5,7 +5,8 @@ import "../../../components"
 
 ColumnLayout {
     id: root
-    spacing: Theme.sectionGap
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
+    spacing: root.settingsTheme.sectionGap
 
     Flow {
         Layout.fillWidth: true
@@ -16,13 +17,13 @@ ColumnLayout {
                 id: languageChoice
                 required property var modelData
                 readonly property bool selected: SettingsStore.clockLocale === modelData.key
-                width: languageLabel.implicitWidth + 22; height: 32; radius: 9
-                color: selected ? Qt.alpha(Theme.accent, .16) : Theme.background
-                border.width: selected ? 1 : 0; border.color: Theme.accent
-                Text {
+                width: languageLabel.implicitWidth + 22; height: 32; radius: root.settingsTheme.glassRadius("card", 9)
+                color: root.settingsTheme.glassColor("card", selected ? Qt.alpha(root.settingsTheme.accent, .16) : root.settingsTheme.background)
+                border.width: root.settingsTheme.glassBorderWidth("card", selected ? 1 : 0); border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.accent)
+                GlassLabel {
                     id: languageLabel
                     anchors.centerIn: parent; text: languageChoice.modelData.label
-                    color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                    color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                 }
                 MouseArea {
                     anchors.fill: parent; cursorShape: Qt.PointingHandCursor
@@ -57,13 +58,13 @@ ColumnLayout {
             required property var modelData
             Layout.fillWidth: true
             spacing: 8
-            Text {
+            GlassLabel {
                 text: clockRow.modelData.label
-                color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12)
+                color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12)
             }
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: 46
-                radius: 10; color: Theme.background; clip: true
+                radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background); clip: true
                 HoverHandler { id: previewHover }
                 Clock {
                     anchors.centerIn: parent
@@ -85,12 +86,12 @@ ColumnLayout {
                         required property var modelData
                         readonly property bool selected: SettingsStore[clockRow.modelData.modeKey] === modelData.key
                         objectName: clockRow.modelData.modeKey + "-" + modelData.key
-                        Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9
-                        color: selected ? Qt.alpha(Theme.accent, .16) : Theme.background
-                        border.width: selected ? 1 : 0; border.color: Theme.accent
-                        Text {
+                        Layout.fillWidth: true; Layout.preferredHeight: 34; radius: root.settingsTheme.glassRadius("card", 9)
+                        color: root.settingsTheme.glassColor("card", selected ? Qt.alpha(root.settingsTheme.accent, .16) : root.settingsTheme.background)
+                        border.width: root.settingsTheme.glassBorderWidth("card", selected ? 1 : 0); border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.accent)
+                        GlassLabel {
                             anchors.centerIn: parent; text: styleChoice.modelData.label
-                            color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                            color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                         }
                         MouseArea {
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor
@@ -109,13 +110,13 @@ ColumnLayout {
                         required property var modelData
                         readonly property bool selected: SettingsStore[clockRow.modelData.formatKey] === modelData.format
                         objectName: clockRow.modelData.formatKey + "-" + modelData.label
-                        width: presetLabel.implicitWidth + 20; height: 30; radius: 8
-                        color: selected ? Qt.alpha(Theme.accent, .16) : Theme.background
-                        border.width: selected ? 1 : 0; border.color: Theme.accent
-                        Text {
+                        width: presetLabel.implicitWidth + 20; height: 30; radius: root.settingsTheme.glassRadius("card", 8)
+                        color: root.settingsTheme.glassColor("card", selected ? Qt.alpha(root.settingsTheme.accent, .16) : root.settingsTheme.background)
+                        border.width: root.settingsTheme.glassBorderWidth("card", selected ? 1 : 0); border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.accent)
+                        GlassLabel {
                             id: presetLabel
                             anchors.centerIn: parent; text: presetChoice.modelData.label
-                            color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                            color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                         }
                         MouseArea {
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor
@@ -126,16 +127,16 @@ ColumnLayout {
             }
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: 40
-                radius: 9; color: Theme.background
-                border.width: 1
-                border.color: formatInput.acceptableFormat ? (formatInput.activeFocus ? Theme.accent : Theme.borderaccent) : Theme.error
+                radius: root.settingsTheme.glassRadius("card", 9); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                border.width: root.settingsTheme.glassBorderWidth("card", 1)
+                border.color: root.settingsTheme.glassBorder("card", formatInput.acceptableFormat ? (formatInput.activeFocus ? root.settingsTheme.accent : root.settingsTheme.borderaccent) : root.settingsTheme.error)
                 TextInput {
                     id: formatInput
                     objectName: clockRow.modelData.formatKey + "-input"
                     readonly property bool acceptableFormat: SettingsStore.validClockFormat(text)
                     anchors.fill: parent; anchors.margins: 10
                     text: SettingsStore[clockRow.modelData.formatKey]
-                    color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                    color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                     verticalAlignment: TextInput.AlignVCenter
                     clip: true; selectByMouse: true; maximumLength: 120
                     onEditingFinished: {
@@ -144,18 +145,18 @@ ColumnLayout {
                     }
                 }
             }
-            Text {
+            GlassLabel {
                 Layout.fillWidth: true
                 text: formatInput.acceptableFormat ? "Custom format · press Enter or leave the field to save." : "Enter 1–120 characters on a single line."
-                color: formatInput.acceptableFormat ? Theme.muted : Theme.error
-                font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap
+                color: formatInput.acceptableFormat ? root.settingsTheme.muted : root.settingsTheme.error
+                font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); wrapMode: Text.WordWrap
             }
         }
     }
-    Text {
+    GlassLabel {
         Layout.fillWidth: true
         text: "HH:mm = 20:30 · ss = seconds · dddd = Friday · d = 13 · MMMM = November · yyyy = 2026. Put literal words in single quotes.\nExample: HH:mm dddd, d MMMM yyyy. Formats are case-sensitive. Long labels wrap on vertical bars. Show or hide Clock and Calendar in Modules."
-        color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+        color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         wrapMode: Text.WordWrap
     }
 }

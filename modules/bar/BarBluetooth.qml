@@ -9,6 +9,7 @@ import "../../components"
 // implicitHeight of children while they are invisible.
 Rectangle {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     Layout.fillWidth: true
     property bool expanded: false
     property bool standalone: false
@@ -17,11 +18,11 @@ Rectangle {
     readonly property bool contentOpen: standalone || expanded
     readonly property var adapter: Native.Bluetooth.defaultAdapter
     readonly property var availableDevices: adapter && adapter.enabled ? adapter.devices.values : []
-    Layout.preferredHeight: contentOpen ? 336 : 68
-    radius: Theme.sectionRadius
-    color: Qt.alpha(Theme.foreground, 0.02)
-    border.width: 1
-    border.color: Theme.borderaccent
+    Layout.preferredHeight: contentOpen ? 336 : root.settingsTheme.sectionHeaderHeight + root.settingsTheme.panelPadding * 2
+    radius: root.settingsTheme.glassRadius("card", root.settingsTheme.sectionRadius)
+    color: standalone && root.settingsTheme.glassEnabled ? "transparent" : root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.foreground, 0.02))
+    border.width: standalone && root.settingsTheme.glassEnabled ? 0 : root.settingsTheme.glassBorderWidth("card", 1)
+    border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.borderaccent)
     clip: true
 
     onContentOpenChanged: if (!contentOpen) bluetoothSearch.text = ""
@@ -33,9 +34,10 @@ Rectangle {
     }
 
     ColumnLayout {
+        objectName: "surfaceContent"
         anchors.fill: parent
-        anchors.margins: Theme.sectionPadding
-        spacing: 12
+        anchors.margins: root.settingsTheme.sectionPadding
+        spacing: root.settingsTheme.contentGap
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 36
@@ -79,26 +81,26 @@ Rectangle {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 30
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     text: !root.adapter ? "No Bluetooth adapter" :
                           root.adapter.enabled ? "Bluetooth enabled" : "Bluetooth disabled"
-                    color: Theme.muted
+                    color: root.settingsTheme.contentMuted
                     font.family: Fonts.poppins.name
-                    font.pixelSize: Theme.controlTextSize
+                    font.pixelSize: root.settingsTheme.controlTextSize
                 }
                 Rectangle {
                     Layout.preferredWidth: 40
                     Layout.preferredHeight: 22
                     radius: 12
                     opacity: root.adapter ? 1 : 0.4
-                    color: root.adapter && root.adapter.enabled ? Theme.accent : Theme.surface
+                    color: root.adapter && root.adapter.enabled ? root.settingsTheme.accent : root.settingsTheme.surface
                     Rectangle {
                         width: 18; height: 18; radius: 9
                         x: root.adapter && root.adapter.enabled ? parent.width - width - 2 : 2
                         anchors.verticalCenter: parent.verticalCenter
-                        color: Theme.foreground
-                        Behavior on x { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
+                        color: root.settingsTheme.controlKnob
+                        Behavior on x { enabled: root.settingsTheme.motionEnabled; NumberAnimation { duration: root.settingsTheme.motionFastDuration; easing.type: Easing.OutCubic } }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -116,6 +118,7 @@ Rectangle {
                     objectName: "bluetoothNameSearch"
                     Layout.fillWidth: true
                     placeholder: "Search Bluetooth by name"
+                    autoFocus: root.contentOpen
                     enabled: root.adapter !== null && root.adapter.enabled
                     onTextChanged: bluetoothScroll.contentY = 0
                 }
@@ -142,48 +145,48 @@ Rectangle {
                     readonly property var device: modelData
                     Layout.fillWidth: true
                     Layout.preferredHeight: 58
-                    radius: 11
-                    color: Theme.surface
+                    radius: root.settingsTheme.glassRadius("card", 11)
+                    color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
                     RowLayout {
                         anchors.fill: parent
                         anchors.margins: 9
                         spacing: 7
-                        Icon { icon: "\ue337"; font.pixelSize: Fonts.scale(19); color: deviceRow.device.connected ? Theme.accent : Theme.muted }
+                        Icon { icon: "\ue337"; font.pixelSize: Fonts.scale(19); color: deviceRow.device.connected ? root.settingsTheme.accent : root.settingsTheme.muted }
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 2
-                            Text {
+                            GlassLabel {
                                 text: deviceRow.device.name || deviceRow.device.address
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
-                                color: Theme.foreground
+                                color: root.settingsTheme.foreground
                                 font.pixelSize: Fonts.scale(11)
                                 font.family: Fonts.poppinsSB.name
                             }
-                            Text {
+                            GlassLabel {
                                 text: deviceRow.device.connected ? "Connected" :
                                       deviceRow.device.pairing ? "Pairing…" :
                                       deviceRow.device.paired ? "Paired" : "Available"
-                                color: deviceRow.device.connected ? Theme.success : Theme.muted
+                                color: deviceRow.device.connected ? root.settingsTheme.success : root.settingsTheme.muted
                                 font.pixelSize: Fonts.scale(10)
                                 font.family: Fonts.poppins.name
                             }
                         }
-                        Text {
+                        GlassLabel {
                             visible: deviceRow.device.batteryAvailable
                             text: Math.round(deviceRow.device.battery * 100) + "%"
-                            color: Theme.muted
+                            color: root.settingsTheme.contentMuted
                             font.pixelSize: Fonts.scale(10)
                         }
                         Rectangle {
                             Layout.preferredWidth: 76
                             Layout.preferredHeight: 30
-                            radius: 9
-                            color: deviceRow.device.connected ? Theme.background : Theme.accent
-                            Text {
+                            radius: root.settingsTheme.glassRadius("card", 9)
+                            color: root.settingsTheme.glassColor("card", deviceRow.device.connected ? root.settingsTheme.background : root.settingsTheme.accent)
+                            GlassLabel {
                                 anchors.centerIn: parent
                                 text: deviceRow.device.connected ? "Disconnect" : deviceRow.device.paired ? "Connect" : "Pair"
-                                color: deviceRow.device.connected ? Theme.foreground : Theme.background
+                                color: deviceRow.device.connected ? root.settingsTheme.foreground : root.settingsTheme.background
                                 font.family: Fonts.poppinsSB.name
                                 font.pixelSize: Fonts.scale(10)
                             }
@@ -202,7 +205,7 @@ Rectangle {
                 }
             }
 
-            Text {
+            GlassLabel {
                 Layout.fillWidth: true
                 visible: deviceList.count === 0
                 text: !root.adapter ? "No adapter found. Check BlueZ and rfkill." :
@@ -210,15 +213,15 @@ Rectangle {
                       bluetoothSearch.query.length > 0 && root.availableDevices.length > 0
                           ? "No matching devices. Try another name or clear the search." :
                       root.adapter.discovering ? "Scanning for nearby devices…" : "No devices found. Select Scan."
-                color: Theme.muted
+                color: root.settingsTheme.contentMuted
                 wrapMode: Text.WordWrap
                 font.family: Fonts.poppins.name
                 font.pixelSize: Fonts.scale(11)
             }
-            Text {
+            GlassLabel {
                 Layout.fillWidth: true
                 text: "Pairing confirmation may require a Bluetooth agent such as blueman."
-                color: Theme.muted
+                color: root.settingsTheme.contentMuted
                 wrapMode: Text.WordWrap
                 font.family: Fonts.poppins.name
                 font.pixelSize: Fonts.scale(10)

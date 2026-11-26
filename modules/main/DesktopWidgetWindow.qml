@@ -11,6 +11,7 @@ import "../../components"
 // Layer Bottom puts cards behind normal application windows.
 // Each card measures its own content; overflow scrolls on short displays.
 PanelWindow {
+    WlrLayershell.namespace: "rusticq-desktop-widgets"
     id: desktop
     // On the Bottom layer these windows would otherwise appear on ALL
     // workspaces. Filter using this monitor's active workspace, not global
@@ -114,7 +115,7 @@ PanelWindow {
             anchors.rightMargin: 9
             anchors.verticalCenter: parent.verticalCenter
             icon: "\ue25d"
-            color: Theme.muted
+            color: Theme.contentMuted
             opacity: 0.8
             font.pixelSize: Fonts.scale(14)
         }
@@ -177,53 +178,59 @@ PanelWindow {
                 sourceComponent: DesktopRandomImageCard {}
             }
 
-            Rectangle {
+            GlassSurface {
+                Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+                border.width: Theme.surfaceBorderWidth("widgets","primary", 0)
+                surfaceRole: "primary"
                 visible: desktop.kind === "clock"
                 Layout.fillWidth: true
-                Layout.preferredHeight: visible ? clockContent.implicitHeight + 28 : 0
-                radius: 17; color: Theme.background; border.color: Theme.borderaccent
+                Layout.preferredHeight: visible ? clockContent.implicitHeight + 2 * Theme.panelPadding : 0
+                radius: Theme.surfaceRadius("widgets","primary", 17); color: Theme.surfaceColor("widgets","primary", Theme.background); border.color: Theme.surfaceBorder("widgets","primary", Theme.borderaccent)
                 ColumnLayout {
                     id: clockContent
-                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.panelPadding }
                     spacing: 5
                     RowLayout {
                         Layout.fillWidth: true; spacing: 7
                         Icon { icon: "\ue8b5"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
-                        Text { text: "DESK CLOCK"; color: Theme.muted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true }
+                        GlassLabel { text: "DESK CLOCK"; color: Theme.contentMuted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true }
                     }
-                    Text { text: Qt.formatDateTime(clock.date, "HH:mm"); color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(30); Layout.alignment: Qt.AlignHCenter }
-                    Text { text: Qt.formatDate(clock.date, "dddd, dd MMMM yyyy"); color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); Layout.alignment: Qt.AlignHCenter }
+                    GlassLabel { text: Qt.formatDateTime(clock.date, "HH:mm"); color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(34); font.letterSpacing: -0.8; Layout.alignment: Qt.AlignHCenter }
+                    GlassLabel { text: Qt.formatDate(clock.date, "dddd, dd MMMM yyyy"); color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); Layout.alignment: Qt.AlignHCenter }
                 }
             }
 
-            Rectangle {
+            GlassSurface {
+                Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+                border.width: Theme.surfaceBorderWidth("widgets","primary", 0)
+                surfaceRole: "primary"
                 visible: desktop.kind === "calendar"
                 Layout.fillWidth: true
-                Layout.preferredHeight: visible ? calendarContent.implicitHeight + 28 : 0
-                radius: 17; color: Theme.background; border.color: Theme.borderaccent
+                Layout.preferredHeight: visible ? calendarContent.implicitHeight + 2 * Theme.panelPadding : 0
+                radius: Theme.surfaceRadius("widgets","primary", 17); color: Theme.surfaceColor("widgets","primary", Theme.background); border.color: Theme.surfaceBorder("widgets","primary", Theme.borderaccent)
                 ColumnLayout {
                     id: calendarContent
-                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.panelPadding }
                     spacing: 9
                     RowLayout {
                         Layout.fillWidth: true; spacing: 8
                         Icon { icon: "\ue916"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
                         ColumnLayout {
                             Layout.fillWidth: true; spacing: 0
-                            Text { text: "Calendar"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
-                            Text { text: Qt.formatDate(clock.date, "MMMM yyyy"); color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                            GlassLabel { text: "Calendar"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
+                            GlassLabel { text: Qt.formatDate(clock.date, "MMMM yyyy"); color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                         }
                         Rectangle {
-                            Layout.preferredWidth: 30; Layout.preferredHeight: 26; radius: 8
-                            color: Qt.alpha(Theme.accent, .14)
-                            Text { anchors.centerIn: parent; text: Qt.formatDate(clock.date, "dd"); color: Theme.accent; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppinsSB.name }
+                            Layout.preferredWidth: 30; Layout.preferredHeight: 26; radius: Theme.glassRadius("card", 8)
+                            color: Theme.glassColor("card", Qt.alpha(Theme.accent, .14))
+                            GlassLabel { anchors.centerIn: parent; text: Qt.formatDate(clock.date, "dd"); color: Theme.accent; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppinsSB.name }
                         }
                     }
                     GridLayout {
                         Layout.fillWidth: true; columns: 7; columnSpacing: 3; rowSpacing: 2
                         Repeater {
                             model: ["Mo","Tu","We","Th","Fr","Sa","Su"]
-                            delegate: Text { required property string modelData; text: modelData; Layout.fillWidth: true; Layout.preferredHeight: 19; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
+                            delegate: GlassLabel { required property string modelData; text: modelData; Layout.fillWidth: true; Layout.preferredHeight: 19; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; color: Theme.contentMuted; font.pixelSize: Fonts.scale(9) }
                         }
                         Repeater {
                             model: 42
@@ -234,9 +241,9 @@ PanelWindow {
                                 readonly property bool isToday: validDay && day === clock.date.getDate()
                                 readonly property var dateNote: validDay ? SettingsStore.calendarNote(SettingsStore.calendarDateKey(
                                     new Date(clock.date.getFullYear(), clock.date.getMonth(), day))) : null
-                                Layout.fillWidth: true; Layout.preferredHeight: 24; radius: 7
-                                color: isToday ? Theme.accent : "transparent"
-                                Text { anchors.centerIn: parent; text: dayChip.validDay ? String(dayChip.day) : ""; color: dayChip.isToday ? Theme.background : Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                                Layout.fillWidth: true; Layout.preferredHeight: 24; radius: Theme.glassRadius("card", 7)
+                                color: Theme.glassColor("card", isToday ? Theme.accent : "transparent")
+                                GlassLabel { anchors.centerIn: parent; text: dayChip.validDay ? String(dayChip.day) : ""; color: dayChip.isToday ? Theme.background : Theme.foreground; font.pixelSize: Fonts.scale(10) }
                                 Rectangle {
                                     visible: dayChip.dateNote !== null
                                     width: 3; height: 3; radius: 2
@@ -250,24 +257,27 @@ PanelWindow {
                 }
             }
 
-            Rectangle {
+            GlassSurface {
+                Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+                border.width: Theme.surfaceBorderWidth("widgets","primary", 0)
+                surfaceRole: "primary"
                 visible: desktop.kind === "system"
                 Layout.fillWidth: true
-                Layout.preferredHeight: visible ? sysContent.implicitHeight + 28 : 0
-                radius: 17; color: Theme.background; border.color: Theme.borderaccent
+                Layout.preferredHeight: visible ? sysContent.implicitHeight + 2 * Theme.panelPadding : 0
+                radius: Theme.surfaceRadius("widgets","primary", 17); color: Theme.surfaceColor("widgets","primary", Theme.background); border.color: Theme.surfaceBorder("widgets","primary", Theme.borderaccent)
                 ColumnLayout {
                     id: sysContent
-                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.panelPadding }
                     spacing: 8
                     RowLayout {
                         Layout.fillWidth: true; spacing: 8
                         Icon { icon: "\ue322"; font.pixelSize: Fonts.scale(18); color: Theme.accent }
                         ColumnLayout {
                             Layout.fillWidth: true; spacing: 1
-                            Text { text: "System monitor"; font.pixelSize: Fonts.scale(13); font.family: Fonts.poppinsSB.name; color: Theme.foreground }
-                            Text { text: "Live usage · history"; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name; color: Theme.muted }
+                            GlassLabel { text: "System monitor"; font.pixelSize: Fonts.scale(13); font.family: Fonts.poppinsSB.name; color: Theme.foreground }
+                            GlassLabel { text: "Live usage · history"; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name; color: Theme.contentMuted }
                         }
-                        Text { text: "LIVE"; font.pixelSize: Fonts.scale(9); color: Theme.accent; font.family: Fonts.poppinsSB.name }
+                        GlassLabel { text: "LIVE"; font.pixelSize: Fonts.scale(9); color: Theme.accent; font.family: Fonts.poppinsSB.name }
                     }
                     MetricWave { Layout.fillWidth: true; Layout.preferredHeight: 48; samples: desktop.cpuHistory }
                     Repeater {
@@ -281,11 +291,11 @@ PanelWindow {
                             Layout.fillWidth: true; spacing: 3
                             RowLayout {
                                 Layout.fillWidth: true
-                                Text { text: meter.modelData.label; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
-                                Text { text: meter.modelData.value; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                                GlassLabel { text: meter.modelData.label; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                                GlassLabel { text: meter.modelData.value; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                             }
                             Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 5; radius: 3; color: Theme.surface
+                                Layout.fillWidth: true; Layout.preferredHeight: 5; radius: 3; color: Theme.glassColor("control", Theme.surface)
                                 Rectangle { height: parent.height; width: Math.max(0,Math.min(1,meter.modelData.pct))*parent.width; radius: 3; color: Theme.accent }
                             }
                         }
@@ -293,30 +303,33 @@ PanelWindow {
                 }
             }
 
-            Rectangle {
+            GlassSurface {
+                Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+                border.width: Theme.surfaceBorderWidth("widgets","primary", 0)
+                surfaceRole: "primary"
                 visible: desktop.kind === "media"
                 Layout.fillWidth: true
-                Layout.preferredHeight: visible ? mediaContent.implicitHeight + 28 : 0
-                radius: 17; color: Theme.background; border.color: Theme.borderaccent
+                Layout.preferredHeight: visible ? mediaContent.implicitHeight + 2 * Theme.panelPadding : 0
+                radius: Theme.surfaceRadius("widgets","primary", 17); color: Theme.surfaceColor("widgets","primary", Theme.background); border.color: Theme.surfaceBorder("widgets","primary", Theme.borderaccent)
                 ColumnLayout {
                     id: mediaContent
-                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.panelPadding }
                     spacing: 9
                     RowLayout {
                         Layout.fillWidth: true; spacing: 8
                         Icon { icon: "\ue405"; color: Theme.accent; font.pixelSize: Fonts.scale(19) }
-                        Text { text: "Now Playing"; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
-                        Text { text: desktop.hasPlayer ? desktop.player.identity : "Idle"; color: Theme.muted; font.pixelSize: Fonts.scale(9); elide: Text.ElideRight; Layout.maximumWidth: 90 }
+                        GlassLabel { text: "Now Playing"; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
+                        GlassLabel { text: desktop.hasPlayer ? desktop.player.identity : "Idle"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(9); elide: Text.ElideRight; Layout.maximumWidth: 90 }
                     }
                     Rectangle {
-                        Layout.fillWidth: true; Layout.preferredHeight: 57; radius: 11; color: Theme.surface
+                        Layout.fillWidth: true; Layout.preferredHeight: 57; radius: Theme.glassRadius("card", 11); color: Theme.glassColor("card", Theme.surface)
                         RowLayout {
                             anchors.fill: parent; anchors.margins: 8; spacing: 9
-                            Rectangle { Layout.preferredWidth: 42; Layout.preferredHeight: 42; radius: 10; color: Qt.alpha(Theme.accent, .12); Icon { anchors.centerIn: parent; icon: "\ue405"; font.pixelSize: Fonts.scale(23); color: Theme.accent } }
+                            Rectangle { Layout.preferredWidth: 42; Layout.preferredHeight: 42; radius: Theme.glassRadius("card", 10); color: Theme.glassColor("card", Qt.alpha(Theme.accent, .12)); Icon { anchors.centerIn: parent; icon: "\ue405"; font.pixelSize: Fonts.scale(23); color: Theme.accent } }
                             ColumnLayout {
                                 Layout.fillWidth: true; spacing: 2
-                                Text { Layout.fillWidth: true; text: desktop.hasPlayer ? (desktop.player.trackTitle || "Unknown track") : "Nothing playing"; elide: Text.ElideRight; color: Theme.foreground; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppinsSB.name }
-                                Text { Layout.fillWidth: true; text: desktop.hasPlayer ? (desktop.player.trackArtist || "Unknown artist") : "Open a music player"; elide: Text.ElideRight; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                                GlassLabel { Layout.fillWidth: true; text: desktop.hasPlayer ? (desktop.player.trackTitle || "Unknown track") : "Nothing playing"; elide: Text.ElideRight; color: Theme.foreground; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppinsSB.name }
+                                GlassLabel { Layout.fillWidth: true; text: desktop.hasPlayer ? (desktop.player.trackArtist || "Unknown artist") : "Open a music player"; elide: Text.ElideRight; color: Theme.contentMuted; font.pixelSize: Fonts.scale(10) }
                             }
                         }
                     }
@@ -330,7 +343,7 @@ PanelWindow {
                             ]
                             delegate: Rectangle {
                                 id: mediaButton; required property var modelData
-                                Layout.preferredWidth: 38; Layout.preferredHeight: 34; radius: 10; color: Theme.surface
+                                Layout.preferredWidth: 38; Layout.preferredHeight: 34; radius: Theme.glassRadius("card", 10); color: Theme.glassColor("card", Theme.surface)
                                 Icon { anchors.centerIn: parent; icon: mediaButton.modelData.glyph; font.pixelSize: Fonts.scale(20); color: Theme.foreground }
                                 MouseArea { anchors.fill: parent; enabled: desktop.hasPlayer && desktop.player.canControl; cursorShape: Qt.PointingHandCursor; onClicked: {
                                     if (mediaButton.modelData.op === "previous" && desktop.player.canGoPrevious) desktop.player.previous();
@@ -343,43 +356,49 @@ PanelWindow {
                 }
             }
 
-            Rectangle {
+            GlassSurface {
+                Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+                border.width: Theme.surfaceBorderWidth("widgets","primary", 0)
+                surfaceRole: "primary"
                 visible: desktop.kind === "weather"
                 Layout.fillWidth: true
-                Layout.preferredHeight: visible ? weatherContent.implicitHeight + 28 : 0
-                radius: 17; color: Theme.background; border.color: Theme.borderaccent
+                Layout.preferredHeight: visible ? weatherContent.implicitHeight + 2 * Theme.panelPadding : 0
+                radius: Theme.surfaceRadius("widgets","primary", 17); color: Theme.surfaceColor("widgets","primary", Theme.background); border.color: Theme.surfaceBorder("widgets","primary", Theme.borderaccent)
                 ColumnLayout {
                     id: weatherContent
-                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.panelPadding }
                     spacing: 8
                     RowLayout {
                         Layout.fillWidth: true; spacing: 8
                         Icon { icon: WeatherService.icon; color: Theme.accent; font.pixelSize: Fonts.scale(24) }
                         ColumnLayout {
                             Layout.fillWidth: true; spacing: 1
-                            Text { text: "Weather"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
-                            Text { text: WeatherService.location || "Location unavailable"; color: Theme.muted; font.pixelSize: Fonts.scale(10); elide: Text.ElideRight }
+                            GlassLabel { text: "Weather"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
+                            GlassLabel { text: WeatherService.location || "Location unavailable"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(10); elide: Text.ElideRight }
                         }
-                        Text { text: WeatherService.temperature || "--"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(18) }
+                        GlassLabel { text: WeatherService.temperature || "--"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(18) }
                     }
-                    Text { text: WeatherService.condition || "Weather information unavailable"; color: Theme.foreground; font.pixelSize: Fonts.scale(11); wrapMode: Text.WordWrap; Layout.fillWidth: true }
-                    Text { text: "Feels like " + (WeatherService.feelsLike || "--"); color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { text: WeatherService.condition || "Weather information unavailable"; color: Theme.foreground; font.pixelSize: Fonts.scale(11); wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                    GlassLabel { text: "Feels like " + (WeatherService.feelsLike || "--"); color: Theme.contentMuted; font.pixelSize: Fonts.scale(10) }
                 }
             }
 
-            Rectangle {
+            GlassSurface {
+                Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+                border.width: Theme.surfaceBorderWidth("widgets","primary", 0)
+                surfaceRole: "primary"
                 visible: desktop.kind === "connectivity"
                 Layout.fillWidth: true
-                Layout.preferredHeight: visible ? networkContent.implicitHeight + 28 : 0
-                radius: 17; color: Theme.background; border.color: Theme.borderaccent
+                Layout.preferredHeight: visible ? networkContent.implicitHeight + 2 * Theme.panelPadding : 0
+                radius: Theme.surfaceRadius("widgets","primary", 17); color: Theme.surfaceColor("widgets","primary", Theme.background); border.color: Theme.surfaceBorder("widgets","primary", Theme.borderaccent)
                 ColumnLayout {
                     id: networkContent
-                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: Theme.panelPadding }
                     spacing: 8
                     RowLayout {
                         Layout.fillWidth: true; spacing: 8
                         Icon { icon: "\ue1d8"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
-                        Text { text: "Connectivity"; Layout.fillWidth: true; color: Theme.foreground; font.pixelSize: Fonts.scale(13); font.family: Fonts.poppinsSB.name }
+                        GlassLabel { text: "Connectivity"; Layout.fillWidth: true; color: Theme.foreground; font.pixelSize: Fonts.scale(13); font.family: Fonts.poppinsSB.name }
                     }
                     Repeater {
                         model: [
@@ -391,8 +410,8 @@ PanelWindow {
                             id: netRow; required property var modelData
                             Layout.fillWidth: true; spacing: 8
                             Icon { icon: netRow.modelData.glyph; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
-                            Text { text: netRow.modelData.label; color: Theme.foreground; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name; Layout.fillWidth: true }
-                            Text { text: netRow.modelData.detail; color: Theme.muted; font.pixelSize: Fonts.scale(10); elide: Text.ElideRight; Layout.maximumWidth: 170 }
+                            GlassLabel { text: netRow.modelData.label; color: Theme.foreground; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name; Layout.fillWidth: true }
+                            GlassLabel { text: netRow.modelData.detail; color: Theme.contentMuted; font.pixelSize: Fonts.scale(10); elide: Text.ElideRight; Layout.maximumWidth: 170 }
                         }
                     }
                 }

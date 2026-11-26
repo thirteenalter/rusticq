@@ -86,11 +86,11 @@ class Beta1Tests(unittest.TestCase):
         self.assertNotIn('heading: root.pendingAction === "remove" ? "Confirm uninstall"',info)
 
     def test_launcher_and_audio_meters_are_real(self):
-        launcher=(ROOT/'modules/main/MiniLauncher.qml').read_text()
+        launcher=(ROOT/'components/LauncherView.qml').read_text()
         self.assertIn('Keys.onDownPressed',launcher)
         self.assertIn('Keys.onUpPressed',launcher)
         self.assertIn('Keys.onReturnPressed',launcher)
-        self.assertIn('selectedIndex',launcher)
+        self.assertIn('selectedIndex',(ROOT/'components/LauncherController.qml').read_text())
         audio=(ROOT/'modules/main/MiniAudio.qml').read_text()
         self.assertEqual(audio.count('PwNodePeakMonitor'),2)
         self.assertIn('outputPeak.peak',audio)

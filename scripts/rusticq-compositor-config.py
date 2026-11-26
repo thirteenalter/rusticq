@@ -414,6 +414,9 @@ def rollback(snapshot):
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1].startswith('studio-'):
+        from hypr_settings_studio import dispatch
+        return dispatch(sys.modules[__name__])
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('status', 'preview', 'apply', 'history', 'rollback'))
     parser.add_argument('--section', choices=SECTIONS)

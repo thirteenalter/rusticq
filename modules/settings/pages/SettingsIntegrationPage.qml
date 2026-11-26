@@ -8,6 +8,7 @@ import ".."
 
 ColumnLayout {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     width: parent ? parent.width : 680
     spacing: 14
     property var info: ({permanent:false, shortcut_managed:false, compatibility:{}})
@@ -527,93 +528,93 @@ ColumnLayout {
         heading: "System Doctor & configuration recovery"
         description: "Read-only system inspection and opt-in snapshots of user-settings.json. No installation, Omarchy changes, or background monitoring."
         symbol: "\ue869"
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Doctor: " + root.doctorSummary; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.guardSummary; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Doctor: " + root.doctorSummary; color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.guardSummary; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
         RowLayout {
             Layout.fillWidth: true; spacing: 8
             Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Run diagnostics"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                Layout.fillWidth: true; Layout.preferredHeight: 37; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: "Run diagnostics"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.refreshSafeTools() }
             }
             Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10
-                color: root.guardBusy ? Theme.borderaccent : Theme.accent
-                Text { anchors.centerIn: parent; text: root.guardBusy ? "Creating backup…" : "Backup settings now"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                Layout.fillWidth: true; Layout.preferredHeight: 37; radius: root.settingsTheme.glassRadius("card", 10)
+                color: root.settingsTheme.glassColor("card", root.guardBusy ? root.settingsTheme.borderaccent : root.settingsTheme.accent)
+                GlassLabel { anchors.centerIn: parent; text: root.guardBusy ? "Creating backup…" : "Backup settings now"; color: root.settingsTheme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: !root.guardBusy; cursorShape: Qt.PointingHandCursor; onClicked: root.makeConfigBackup() }
             }
         }
-        Text { visible: root.guardMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.guardMessage; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "For explicit restore: rusticq config list settings, then rusticq config restore settings SNAPSHOT_ID --confirm RESTORE. Valid restored settings reload automatically."; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+        GlassLabel { visible: root.guardMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.guardMessage; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "For explicit restore: rusticq config list settings, then rusticq config restore settings SNAPSHOT_ID --confirm RESTORE. Valid restored settings reload automatically."; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
     }
 
     SettingsSection {
         heading: "User settings · Save / Load"
         description: "Transfer RusticQ appearance, bar, wallpaper, widgets, dock and shortcut UI preferences to another install. Does not export API keys, app usage, or Omarchy system configuration."
         symbol: "\ue8b8"
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
              text: "Source: user-settings.json of this running RusticQ. Save creates a portable JSON in ~/Documents/RusticQ-Settings. Loading creates a recovery snapshot and automatically reloads the new configuration."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
         RowLayout { Layout.fillWidth: true; spacing: 8
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10
-                color: root.settingsTransferBusy ? Theme.borderaccent : Theme.accent
-                Text { anchors.centerIn: parent; text: root.settingsTransferBusy && root.settingsTransferAction === "export" ? "Saving…" : "Save user settings"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: root.settingsTheme.glassRadius("card", 10)
+                color: root.settingsTheme.glassColor("card", root.settingsTransferBusy ? root.settingsTheme.borderaccent : root.settingsTheme.accent)
+                GlassLabel { anchors.centerIn: parent; text: root.settingsTransferBusy && root.settingsTransferAction === "export" ? "Saving…" : "Save user settings"; color: root.settingsTheme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: !root.settingsTransferBusy && !settingsExportDelay.running
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: { SettingsStore.save(); settingsExportDelay.restart(); } }
             }
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Browse settings JSON"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: "Browse settings JSON"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: !root.settingsTransferBusy && !settingsFilePickerProc.running
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: settingsFilePickerProc.exec(["python3", Quickshell.shellPath("scripts/rusticq-appearance.py"), "pick-settings"]) }
             }
         }
-        Text { Layout.fillWidth: true; visible: root.settingsExportPath.length > 0; wrapMode: Text.WrapAnywhere
-            text: "Saved file: " + root.settingsExportPath; color: Theme.accent; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 43; radius: 10; color: Theme.background
+        GlassLabel { Layout.fillWidth: true; visible: root.settingsExportPath.length > 0; wrapMode: Text.WrapAnywhere
+            text: "Saved file: " + root.settingsExportPath; color: root.settingsTheme.accent; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 43; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
             TextInput { id: transferImportPath
                 anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
                 verticalAlignment: TextInput.AlignVCenter; selectByMouse: true; clip: true
                 text: root.settingsImportPath
                 onTextEdited: { root.settingsImportPath = text; root.invalidateSettingsPreview(); }
-                color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
-                Text { anchors.verticalCenter: parent.verticalCenter; visible: parent.text.length === 0
-                    text: "Path to saved RusticQ .json (paste path or Browse)"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
+                GlassLabel { anchors.verticalCenter: parent.verticalCenter; visible: parent.text.length === 0
+                    text: "Path to saved RusticQ .json (paste path or Browse)"; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
             }
         }
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10
-            color: root.settingsImportPath.trim().length > 0 && !root.settingsTransferBusy ? Theme.surface : Theme.borderaccent
-            Text { anchors.centerIn: parent; text: "Validate & preview import"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 37; radius: root.settingsTheme.glassRadius("card", 10)
+            color: root.settingsTheme.glassColor("card", root.settingsImportPath.trim().length > 0 && !root.settingsTransferBusy ? root.settingsTheme.surface : root.settingsTheme.borderaccent)
+            GlassLabel { anchors.centerIn: parent; text: "Validate & preview import"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
             MouseArea { anchors.fill: parent; enabled: root.settingsImportPath.trim().length > 0 && !root.settingsTransferBusy
                 cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor; onClicked: root.settingsTransfer("inspect") }
         }
         ColumnLayout { Layout.fillWidth: true; visible: root.settingsPreviewReady; spacing: 7
-            Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+            GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
                 text: "Validated: " + (root.settingsImportPreview.fields || 0) + " settings · " + (root.settingsImportPreview.format || "JSON") + " · SHA-256 checked before import. Loading replaces this instance's settings file but preserves the current version in Config Recovery backups."
-                color: Theme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10; color: Theme.background
+                color: root.settingsTheme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
                 TextInput { anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
                     verticalAlignment: TextInput.AlignVCenter; selectByMouse: true
                     text: root.settingsImportConfirmation; onTextEdited: root.settingsImportConfirmation = text
-                    color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
-                    Text { visible: parent.text.length === 0; anchors.verticalCenter: parent.verticalCenter
-                        text: "Type IMPORT SETTINGS to confirm"; color: Theme.muted; font.pixelSize: Fonts.scale(10) } }
+                    color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
+                    GlassLabel { visible: parent.text.length === 0; anchors.verticalCenter: parent.verticalCenter
+                        text: "Type IMPORT SETTINGS to confirm"; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) } }
             }
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10
-                color: root.settingsImportConfirmation === "IMPORT SETTINGS" && !root.settingsTransferBusy ? Theme.accent : Theme.borderaccent
-                Text { anchors.centerIn: parent; text: "Load user settings"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: root.settingsTheme.glassRadius("card", 10)
+                color: root.settingsTheme.glassColor("card", root.settingsImportConfirmation === "IMPORT SETTINGS" && !root.settingsTransferBusy ? root.settingsTheme.accent : root.settingsTheme.borderaccent)
+                GlassLabel { anchors.centerIn: parent; text: "Load user settings"; color: root.settingsTheme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent
                     enabled: root.settingsPreviewReady && root.settingsImportConfirmation === "IMPORT SETTINGS" && !root.settingsTransferBusy
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor; onClicked: root.settingsTransfer("import") }
             }
         }
-        Text { visible: root.settingsTransferMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
+        GlassLabel { visible: root.settingsTransferMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
             text: root.settingsTransferMessage
-            color: root.settingsTransferOk ? Theme.accent : Theme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+            color: root.settingsTransferOk ? root.settingsTheme.accent : root.settingsTheme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "After Load succeeds, RusticQ reloads automatically and applies the imported settings."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
     }
 
     SettingsSection {
@@ -623,39 +624,39 @@ ColumnLayout {
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
-            Text {
+            GlassLabel {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: root.dependencyInfo.ok === true
                     ? ("Core missing: " + root.dependencyInfo.missing_core + "  ·  Optional missing: " + root.dependencyInfo.missing_optional)
                     : "Checking installed packages..."
-                color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
             }
             Rectangle {
-                Layout.preferredWidth: 80; Layout.preferredHeight: 32; radius: 9
-                color: Theme.background
-                Text { anchors.centerIn: parent; text: "Refresh"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+                Layout.preferredWidth: 80; Layout.preferredHeight: 32; radius: root.settingsTheme.glassRadius("card", 9)
+                color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: "Refresh"; color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.refreshDependencies() }
             }
         }
         Rectangle {
-            Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
-            color: Theme.background
+            Layout.fillWidth: true; Layout.preferredHeight: 38; radius: root.settingsTheme.glassRadius("card", 10)
+            color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
             RowLayout {
                 anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10
                 spacing: 8
-                Icon { icon: "\ue8b6"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
+                Icon { icon: "\ue8b6"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(17) }
                 TextInput {
                     Layout.fillWidth: true
-                    color: Theme.foreground
-                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                    color: root.settingsTheme.foreground
+                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                     text: root.dependencyFilter
                     onTextEdited: root.dependencyFilter = text
-                    Text {
+                    GlassLabel {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: parent.text.length === 0
                         text: "Filter packages or features..."
-                        color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                        color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                     }
                 }
             }
@@ -674,30 +675,30 @@ ColumnLayout {
                 visible: root.dependencyFilter.trim().length === 0 || searchable.indexOf(root.dependencyFilter.toLowerCase().trim()) >= 0
                 Layout.fillWidth: true
                 Layout.preferredHeight: visible ? 64 : 0
-                radius: 11
-                color: selected ? Qt.alpha(Theme.accent, 0.13) : Theme.background
-                border.width: selected ? 1 : 0
-                border.color: Theme.accent
+                radius: root.settingsTheme.glassRadius("card", 11)
+                color: root.settingsTheme.glassColor("card", selected ? Qt.alpha(root.settingsTheme.accent, 0.13) : root.settingsTheme.background)
+                border.width: root.settingsTheme.glassBorderWidth("card", selected ? 1 : 0)
+                border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.accent)
                 RowLayout {
                     anchors.fill: parent; anchors.margins: 9; spacing: 10
-                    Icon { icon: dependencyRow.installed ? "\ue5ca" : "\ue8b8"; color: dependencyRow.installed ? Theme.success : Theme.accent; font.pixelSize: Fonts.scale(18) }
+                    Icon { icon: dependencyRow.installed ? "\ue5ca" : "\ue8b8"; color: dependencyRow.installed ? root.settingsTheme.success : root.settingsTheme.accent; font.pixelSize: Fonts.scale(18) }
                     ColumnLayout {
                         Layout.fillWidth: true; spacing: 3
-                        Text {
+                        GlassLabel {
                             text: dependencyRow.modelData.name + "  ·  " + dependencyRow.modelData.package
-                            color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11)
+                            color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12)
                             elide: Text.ElideRight; Layout.fillWidth: true
                         }
-                        Text {
+                        GlassLabel {
                             text: (dependencyRow.modelData.group === "core" ? "CORE · " : "OPTIONAL · ") + dependencyRow.modelData.description
-                            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                             elide: Text.ElideRight; Layout.fillWidth: true
                         }
                     }
-                    Text {
+                    GlassLabel {
                         text: dependencyRow.installed ? (dependencyRow.modelData.group === "core" ? "Core · installed" : "Remove") : (dependencyRow.selected ? "Selected" : "Install")
-                        color: dependencyRow.installed ? Theme.success : Theme.accent
-                        font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10)
+                        color: dependencyRow.installed ? root.settingsTheme.success : root.settingsTheme.accent
+                        font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12)
                     }
                 }
                 MouseArea {
@@ -712,28 +713,28 @@ ColumnLayout {
                 }
             }
         }
-        Text {
+        GlassLabel {
             visible: root.selectedDependency.length > 0
             Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "Selected: " + root.selectedDependency + " · " + root.selectedDependencyAction.toUpperCase() + ". Confirm the action below, then authorize with graphical Polkit. Pacman's dependency and Omarchy policy checks remain enforced."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
         Rectangle {
             visible: root.selectedDependency.length > 0
             Layout.fillWidth: true; Layout.preferredHeight: visible ? 39 : 0
-            radius: 10; color: Theme.background
+            radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
             TextInput {
                 anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
                 verticalAlignment: TextInput.AlignVCenter
                 text: root.dependencyConfirmation
                 onTextEdited: root.dependencyConfirmation = text
-                color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                 selectByMouse: true
-                Text {
+                GlassLabel {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: parent.text.length === 0
                     text: root.selectedDependencyAction === "remove" ? ("Type REMOVE " + root.selectedDependency) : "Type INSTALL to authorize installation"
-                    color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                    color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                 }
             }
         }
@@ -741,13 +742,13 @@ ColumnLayout {
             id: dependencyCommit
             visible: root.selectedDependency.length > 0
             Layout.fillWidth: true; Layout.preferredHeight: visible ? 39 : 0
-            radius: 11
+            radius: root.settingsTheme.glassRadius("card", 11)
             readonly property bool canInstall: root.selectedDependency.length > 0 && root.dependencyConfirmation === (root.selectedDependencyAction === "remove" ? "REMOVE " + root.selectedDependency : "INSTALL") && !root.dependencyBusy
-            color: canInstall ? Theme.accent : Theme.borderaccent
-            Text {
+            color: root.settingsTheme.glassColor("card", canInstall ? root.settingsTheme.accent : root.settingsTheme.borderaccent)
+            GlassLabel {
                 anchors.centerIn: parent
                 text: root.dependencyBusy ? "Working…" : (root.selectedDependencyAction === "remove" ? "Remove from GUI" : "Install from GUI")
-                color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11)
+                color: root.settingsTheme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12)
             }
             MouseArea {
                 anchors.fill: parent; enabled: dependencyCommit.canInstall
@@ -755,17 +756,17 @@ ColumnLayout {
                 onClicked: root.requestDependencyInstall()
             }
         }
-        Text {
+        GlassLabel {
             visible: root.dependencyMessage.length > 0
             Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: root.dependencyMessage
-            color: root.dependencyLastOk ? Theme.success : Theme.foreground
-            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.dependencyLastOk ? root.settingsTheme.success : root.settingsTheme.foreground
+            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "System services (NetworkManager, BlueZ, PipeWire) are not enabled automatically. Quickshell must already run inside a Hyprland session. See docs/DEPENDENCIES.md."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
     }
 
@@ -773,19 +774,19 @@ ColumnLayout {
         heading: "Shell Updates"
         description: "Automatically checks official GitHub Releases. Update ~/dev/quickshell even after restoring Omarchy, or update a permanently installed shell. Each target has separate rollback backups."
         symbol: "\ue869"
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "Local source: " + ReleaseInfo.tag + " · Automatic checks only fetch release information. Use Install update to review a release, or Fetch & install to check and install in one step."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
         RowLayout { Layout.fillWidth: true; spacing: 8
             Repeater { model: ["dev", "installed"]
                 delegate: Rectangle {
                     required property string modelData
-                    Layout.fillWidth: true; Layout.preferredHeight: 36; radius: 9
-                    color: root.shellUpdateTarget === modelData ? Theme.accent : Theme.background
-                    Text { anchors.centerIn: parent
+                    Layout.fillWidth: true; Layout.preferredHeight: 36; radius: root.settingsTheme.glassRadius("card", 9)
+                    color: root.settingsTheme.glassColor("card", root.shellUpdateTarget === modelData ? root.settingsTheme.accent : root.settingsTheme.background)
+                    GlassLabel { anchors.centerIn: parent
                         text: modelData === "dev" ? "DEV · ~/dev/quickshell" : "PERMANENT · shell"
-                        color: root.shellUpdateTarget === modelData ? Theme.background : Theme.foreground
-                        font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                        color: root.shellUpdateTarget === modelData ? root.settingsTheme.background : root.settingsTheme.foreground
+                        font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                         enabled: !root.shellUpdateBusy && !root.shellUpdateCheckBusy
                         onClicked: {
@@ -800,47 +801,47 @@ ColumnLayout {
                 }
             }
         }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: root.shellUpdateTarget === "dev"
                 ? "Update target: " + (root.shellUpdateStatus.local_path || "~/dev/quickshell") + " · usable without permanent integration."
                 : (root.shellUpdateStatus.installed
                    ? "Installed target: " + root.shellUpdateStatus.installed_path
                    : "Permanent shell not installed. Select DEV to update GitHub first, then install permanent when ready.")
-            color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+            color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "Last release for selected target: " + ((root.shellUpdateTarget === "dev" ? root.shellUpdateStatus.dev_tag : root.shellUpdateStatus.installed_tag) || "unknown/local")
                 + " · Restore points: " + root.shellUpdateTargetBackups
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 8; color: Theme.background; radius: 5; clip: true
-            Rectangle { height: parent.height; radius: 5; color: Theme.accent
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 8; color: root.settingsTheme.background; radius: 5; clip: true
+            Rectangle { height: parent.height; radius: 5; color: root.settingsTheme.accent
                 width: parent.width * Math.max(0, Math.min(100, root.shellUpdateStatus.progress || 0)) / 100 }
         }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: (root.shellUpdateStatus.phase || "Ready") + " · " + (root.shellUpdateStatus.progress || 0) + "%"
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "Source: " + (root.shellUpdateStatus.local_path || "~/dev/quickshell") +
                   "   ·   Destination: " + (root.shellUpdateTarget === "dev" ? root.shellUpdateStatus.local_path : root.shellUpdateStatus.installed_path)
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
         RowLayout { Layout.fillWidth: true; spacing: 8
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
-                color: root.shellUpdateStatus.installed && !root.shellUpdateBusy ? Theme.accent : Theme.borderaccent
-                Text { anchors.centerIn: parent; text: "Reapply Local"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: root.settingsTheme.glassRadius("card", 10)
+                color: root.settingsTheme.glassColor("card", root.shellUpdateStatus.installed && !root.shellUpdateBusy ? root.settingsTheme.accent : root.settingsTheme.borderaccent)
+                GlassLabel { anchors.centerIn: parent; text: "Reapply Local"; color: root.settingsTheme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: root.shellUpdateStatus.installed && root.shellUpdateStatus.dev_ready && !root.shellUpdateBusy && !root.shellUpdateCheckBusy
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: { root.shellUpdateTarget = "installed"; root.shellUpdateAction = "reapply-local"; root.shellUpdateConfirm = ""; } }
             }
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10; color: Theme.background
-                Text { anchors.centerIn: parent; text: root.shellUpdateCheckBusy ? "Checking…" : "Check GitHub"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: root.shellUpdateCheckBusy ? "Checking…" : "Check GitHub"; color: root.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: !root.shellUpdateBusy && !root.shellUpdateCheckBusy
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: root.shellUpdateCheck() }
             }
             Rectangle {
                 objectName: "shell-fetch-install"
-                Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
-                color: root.shellUpdateTargetReady && !root.shellUpdateBusy && !root.shellUpdateCheckBusy ? Qt.alpha(Theme.accent, .16) : Theme.borderaccent
-                Text { anchors.centerIn: parent; text: root.shellFetchInstallPending ? "Fetching…" : "Fetch & install"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                Layout.fillWidth: true; Layout.preferredHeight: 38; radius: root.settingsTheme.glassRadius("card", 10)
+                color: root.settingsTheme.glassColor("card", root.shellUpdateTargetReady && !root.shellUpdateBusy && !root.shellUpdateCheckBusy ? Qt.alpha(root.settingsTheme.accent, .16) : root.settingsTheme.borderaccent)
+                GlassLabel { anchors.centerIn: parent; text: root.shellFetchInstallPending ? "Fetching…" : "Fetch & install"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea {
                     anchors.fill: parent
                     enabled: root.shellUpdateTargetReady && !root.shellUpdateBusy && !root.shellUpdateCheckBusy
@@ -850,15 +851,15 @@ ColumnLayout {
             }
         }
         RowLayout { Layout.fillWidth: true; spacing: 8
-            Text { Layout.fillWidth: true; text: "Available GitHub versions"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
-            Rectangle { Layout.preferredWidth: 115; Layout.preferredHeight: 31; radius: 9; color: Theme.background
-                Text { anchors.centerIn: parent; text: root.shellReleasesBusy ? "Fetching…" : "Refresh versions"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+            GlassLabel { Layout.fillWidth: true; text: "Available GitHub versions"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+            Rectangle { Layout.preferredWidth: 115; Layout.preferredHeight: 31; radius: root.settingsTheme.glassRadius("card", 9); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: root.shellReleasesBusy ? "Fetching…" : "Refresh versions"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: !root.shellReleasesBusy && !root.shellUpdateBusy; cursorShape: Qt.PointingHandCursor
                     onClicked: root.shellFetchVersions() }
             }
         }
-        Text { visible: root.shellReleasesError.length > 0; Layout.fillWidth: true; text: root.shellReleasesError
-            wrapMode: Text.WordWrap; color: Theme.warning; font.pixelSize: Fonts.scale(10) }
+        GlassLabel { visible: root.shellReleasesError.length > 0; Layout.fillWidth: true; text: root.shellReleasesError
+            wrapMode: Text.WordWrap; color: root.settingsTheme.warning; font.pixelSize: Fonts.scale(12) }
         ListView {
             id: releaseVersionsList
             visible: root.shellReleaseOptions.length > 0
@@ -869,26 +870,26 @@ ColumnLayout {
             delegate: Rectangle {
                 id: releaseEntry
                 required property var modelData
-                width: ListView.view.width; height: 39; radius: 8
+                width: ListView.view.width; height: 39; radius: root.settingsTheme.glassRadius("card", 8)
                 readonly property bool chosen: root.shellReleaseTag === modelData.tag
-                color: chosen ? Qt.alpha(Theme.accent, .16) : Theme.background
-                border.width: chosen ? 1 : 0; border.color: Theme.accent
+                color: root.settingsTheme.glassColor("card", chosen ? Qt.alpha(root.settingsTheme.accent, .16) : root.settingsTheme.background)
+                border.width: root.settingsTheme.glassBorderWidth("card", chosen ? 1 : 0); border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.accent)
                 RowLayout { anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 10; spacing: 9
-                    Text { Layout.fillWidth: true; elide: Text.ElideRight; text: releaseEntry.modelData.title + " (" + releaseEntry.modelData.tag + ")"
-                        color: releaseEntry.modelData.available === false ? Theme.muted : Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { Layout.fillWidth: true; elide: Text.ElideRight; text: releaseEntry.modelData.title + " (" + releaseEntry.modelData.tag + ")"
+                        color: releaseEntry.modelData.available === false ? root.settingsTheme.muted : root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12) }
                     Rectangle { visible: !!releaseEntry.modelData.danger; Layout.preferredWidth: 96; Layout.preferredHeight: 22
-                        color: Qt.alpha(Theme.warning, .16); radius: 6; border.color: Theme.warning; border.width: 1
-                        Text { anchors.centerIn: parent; text: "BETA / RISK"; color: Theme.warning; font.pixelSize: Fonts.scale(9) }
+                        color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.warning, .16)); radius: root.settingsTheme.glassRadius("card", 6); border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.warning); border.width: root.settingsTheme.glassBorderWidth("card", 1)
+                        GlassLabel { anchors.centerIn: parent; text: "BETA / RISK"; color: root.settingsTheme.warning; font.pixelSize: Fonts.scale(12) }
                     }
-                    Text { text: releaseEntry.modelData.available === false ? "Unavailable" : releaseEntry.chosen ? "Selected" : "Select";
-                        color: releaseEntry.modelData.available === false ? Theme.warning : Theme.accent; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { text: releaseEntry.modelData.available === false ? "Unavailable" : releaseEntry.chosen ? "Selected" : "Select";
+                        color: releaseEntry.modelData.available === false ? root.settingsTheme.warning : root.settingsTheme.accent; font.pixelSize: Fonts.scale(12) }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                     enabled: releaseEntry.modelData.available !== false && !root.shellUpdateBusy && !root.shellUpdateCheckBusy
                     onClicked: root.selectShellRelease(releaseEntry.modelData.tag) }
             }
         }
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10; color: Theme.background
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
             TextInput { id: updateTagInput; anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10
                 enabled: !root.shellUpdateBusy && !root.shellUpdateCheckBusy
                 verticalAlignment: TextInput.AlignVCenter; text: root.shellReleaseTag; onTextEdited: {
@@ -897,36 +898,36 @@ ColumnLayout {
                     root.shellUpdateAction = "";
                     root.shellUpdateConfirm = "";
                 }
-                color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); selectByMouse: true
-                Text { visible: parent.text.length === 0; anchors.verticalCenter: parent.verticalCenter
+                color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); selectByMouse: true
+                GlassLabel { visible: parent.text.length === 0; anchors.verticalCenter: parent.verticalCenter
                     text: "Release tag (e.g. " + ReleaseInfo.tag + "); blank = newest published release"
-                    color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                    color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
             }
         }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: root.shellUpdateStatus.release && root.shellUpdateStatus.release.tag ?
                   ("GitHub Release: " + root.shellUpdateStatus.release.tag + " · Full asset: " + root.shellUpdateStatus.release.asset +
                     " · Verification: " + (root.shellUpdateStatus.release.source_archive ? "official source ZIP (HTTPS; no published checksum)" : (root.shellUpdateStatus.release.digest || "checksum asset required"))) :
                   "Checking official GitHub Releases… Full ZIPs with checksums are preferred; GitHub source ZIP is the fallback."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Text { visible: root.shellVersionDanger && root.shellReleaseMetadataMatches
-            Layout.fillWidth: true; wrapMode: Text.WordWrap; color: Theme.warning; font.pixelSize: Fonts.scale(10)
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { visible: root.shellVersionDanger && root.shellReleaseMetadataMatches
+            Layout.fillWidth: true; wrapMode: Text.WordWrap; color: root.settingsTheme.warning; font.pixelSize: Fonts.scale(12)
             text: !!root.shellUpdateStatus.release && !!root.shellUpdateStatus.release.downgrade
                 ? "DANGER: This is OLDER than the selected installed version (" +
                   (root.shellUpdateTarget === "dev" ? root.shellUpdateStatus.dev_tag : root.shellUpdateStatus.installed_tag) +
                   "). Downgrades may invalidate settings and require rollback."
                 : "DANGER: This is a beta/alpha/RC prerelease and may contain regressions. Make sure a rollback snapshot is available." }
         RowLayout { Layout.fillWidth: true; spacing: 8
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10
-                color: root.shellUpdateTargetReady && root.shellReleaseMetadataMatches && root.shellVersionAvailable ? Theme.accent : Theme.borderaccent
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 37; radius: root.settingsTheme.glassRadius("card", 10)
+                color: root.settingsTheme.glassColor("card", root.shellUpdateTargetReady && root.shellReleaseMetadataMatches && root.shellVersionAvailable ? root.settingsTheme.accent : root.settingsTheme.borderaccent)
                 objectName: "shell-review-install"
-                Text { anchors.centerIn: parent; text: "Install update"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                GlassLabel { anchors.centerIn: parent; text: "Install update"; color: root.settingsTheme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: root.shellUpdateTargetReady && root.shellReleaseMetadataMatches && root.shellVersionAvailable && !root.shellUpdateBusy && !root.shellUpdateCheckBusy
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: { root.shellUpdateAction = "update-shell"; root.shellUpdateConfirm = ""; } }
             }
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 10; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Rollback Shell"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 37; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: "Rollback Shell"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: root.shellUpdateTargetReady && root.shellUpdateTargetBackups > 0 && !root.shellUpdateBusy
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: { root.shellUpdateAction = "rollback"; root.shellUpdateConfirm = ""; } }
@@ -935,52 +936,52 @@ ColumnLayout {
         ColumnLayout { id: updateConfirmColumn; Layout.fillWidth: true; spacing: 7; visible: root.shellUpdateAction.length > 0
             readonly property string phrase: root.shellUpdateAction === "reapply-local" ? "REAPPLY LOCAL" :
                     root.shellUpdateAction === "rollback" ? "ROLLBACK SHELL" : "UPDATE SHELL"
-            Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+            GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
                 text: (root.shellUpdateAction === "reapply-local" ? "Install local source" : root.shellUpdateAction === "rollback" ? "Restore previous shell" : "Install " + root.shellUpdateStatus.release.tag) + " → " +
                     (root.shellUpdateTarget === "dev" ? "~/dev/quickshell" : "~/.local/share/rusticq/shell") + ". Original files and user settings are preserved for rollback. The updated shell reloads automatically after installation."
-                color: Theme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                color: root.settingsTheme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
             RowLayout { visible: root.shellUpdateAction === "update-shell" && root.shellVersionDanger; Layout.fillWidth: true; spacing: 9
-                Rectangle { Layout.preferredWidth: 27; Layout.preferredHeight: 27; radius: 7
-                    color: root.shellUpdateRiskAccepted ? Qt.alpha(Theme.accent,.18) : Theme.background
-                    border.color: root.shellUpdateRiskAccepted ? Theme.accent : Theme.warning; border.width: 1
-                    Text { anchors.centerIn: parent; text: root.shellUpdateRiskAccepted ? "✓" : "!"; color: Theme.warning; font.pixelSize: Fonts.scale(13) }
+                Rectangle { Layout.preferredWidth: 27; Layout.preferredHeight: 27; radius: root.settingsTheme.glassRadius("card", 7)
+                    color: root.settingsTheme.glassColor("card", root.shellUpdateRiskAccepted ? Qt.alpha(root.settingsTheme.accent,.18) : root.settingsTheme.background)
+                    border.color: root.settingsTheme.glassBorder("card", root.shellUpdateRiskAccepted ? root.settingsTheme.accent : root.settingsTheme.warning); border.width: root.settingsTheme.glassBorderWidth("card", 1)
+                    GlassLabel { anchors.centerIn: parent; text: root.shellUpdateRiskAccepted ? "✓" : "!"; color: root.settingsTheme.warning; font.pixelSize: Fonts.scale(13) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                         onClicked: root.shellUpdateRiskAccepted = !root.shellUpdateRiskAccepted }
                 }
-                Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "I understand the risks of installing a pre-release version and may need to roll back.";
-                    color: Theme.warning; font.pixelSize: Fonts.scale(10) }
+                GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "I understand the risks of installing a pre-release version and may need to roll back.";
+                    color: root.settingsTheme.warning; font.pixelSize: Fonts.scale(12) }
             }
-            Rectangle { visible: root.shellUpdateAction === "rollback"; Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10; color: Theme.background
+            Rectangle { visible: root.shellUpdateAction === "rollback"; Layout.fillWidth: true; Layout.preferredHeight: 39; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
                 TextInput { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10; verticalAlignment: TextInput.AlignVCenter
                     text: root.shellUpdateConfirm; onTextEdited: root.shellUpdateConfirm = text; selectByMouse: true
-                    color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
-                    Text { anchors.verticalCenter: parent.verticalCenter; visible: parent.text.length === 0
+                    color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
+                    GlassLabel { anchors.verticalCenter: parent.verticalCenter; visible: parent.text.length === 0
                         text: "Type " + updateConfirmColumn.phrase
-                        color: Theme.muted; font.pixelSize: Fonts.scale(10) } }
+                        color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) } }
             }
             RowLayout { Layout.fillWidth: true; spacing: 8
-                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10; color: Theme.background
-                    Text { anchors.centerIn: parent; text: "Cancel"; color: Theme.foreground; font.pixelSize: Fonts.scale(11) }
+                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                    GlassLabel { anchors.centerIn: parent; text: "Cancel"; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { root.shellUpdateAction = ""; root.shellUpdateConfirm = ""; } }
                 }
-                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 10
+                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 38; radius: root.settingsTheme.glassRadius("card", 10)
                     objectName: "shell-install-selected"
-                    color: root.shellInstallReady ? Theme.accent : Theme.borderaccent
-                    Text { anchors.centerIn: parent; text: root.shellUpdateBusy ? "Installing…" : root.shellUpdateAction === "reapply-local" ? "Install local" : root.shellUpdateAction === "rollback" ? "Confirm rollback" : "Install update"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    color: root.settingsTheme.glassColor("card", root.shellInstallReady ? root.settingsTheme.accent : root.settingsTheme.borderaccent)
+                    GlassLabel { anchors.centerIn: parent; text: root.shellUpdateBusy ? "Installing…" : root.shellUpdateAction === "reapply-local" ? "Install local" : root.shellUpdateAction === "rollback" ? "Confirm rollback" : "Install update"; color: root.settingsTheme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                     MouseArea { anchors.fill: parent; enabled: root.shellInstallReady
                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor; onClicked: root.shellInstallSelected() }
                 }
             }
         }
-        Text { visible: root.shellUpdateMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: root.shellUpdateMessage; color: root.shellUpdateOk ? Theme.success : Theme.warning
-            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Text { visible: ShellReload.message.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: ShellReload.message; color: ShellReload.reloadFailed ? Theme.warning : Theme.success
-            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+        GlassLabel { visible: root.shellUpdateMessage.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap
+            text: root.shellUpdateMessage; color: root.shellUpdateOk ? root.settingsTheme.success : root.settingsTheme.warning
+            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { visible: ShellReload.message.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap
+            text: ShellReload.message; color: ShellReload.reloadFailed ? root.settingsTheme.warning : root.settingsTheme.success
+            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "Choose PERMANENT to install GitHub updates into the installed shell. DEV updates ~/dev/quickshell; then Reapply Local → Install local copies it to PERMANENT. Fetch & install follows the selected target. Rollback acts on that target only."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
     }
 
     SettingsSection {
@@ -990,8 +991,8 @@ ColumnLayout {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: warningCol.implicitHeight + 25
-            color: Qt.alpha(Theme.accent, 0.09)
-            radius: 11
+            color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.accent, 0.09))
+            radius: root.settingsTheme.glassRadius("card", 11)
             ColumnLayout {
                 id: warningCol
                 anchors.left: parent.left; anchors.right: parent.right
@@ -999,26 +1000,26 @@ ColumnLayout {
                 spacing: 7
                 RowLayout {
                     Layout.fillWidth: true; spacing: 8
-                    Icon { icon: "\ue002"; color: Theme.accent; font.pixelSize: Fonts.scale(19) }
-                    Text { text: "Read before replacing Omarchy Shell"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true }
+                    Icon { icon: "\ue002"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(19) }
+                    GlassLabel { text: "Read before replacing Omarchy Shell"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true }
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap
                     text: "This disables the built-in Omarchy Shell after your next login, including Omarchy's bar, overlays and shell-dependent menus/services. RusticQ may not fully replace Omarchy's lock, polkit, or screen sharing components. You retain a backup and an offline revert command."
-                    color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                    color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap
                     text: "Before activation RusticQ snapshots the original Omarchy default Lua tree plus ~/.config/hypr, ~/.config/omarchy, and ~/.config/quickshell (if present). Private checksummed copies stay available for recovery; revert restores only managed files, preserving other edits. /usr/share/omarchy is never edited."
-                    color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                    color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                 }
             }
         }
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: integrationProgressColumn.implicitHeight + 28
-            color: Theme.background
-            radius: 12
+            color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+            radius: root.settingsTheme.glassRadius("card", 12)
             ColumnLayout {
                 id: integrationProgressColumn
                 anchors.left: parent.left; anchors.right: parent.right
@@ -1026,30 +1027,30 @@ ColumnLayout {
                 spacing: 9
                 RowLayout {
                     Layout.fillWidth: true; spacing: 10
-                    Text {
+                    GlassLabel {
                         Layout.fillWidth: true
                         text: root.integrationInfo.phase || "Checking integration status…"
-                        color: root.integrationInfo.state === "failed" || root.integrationInfo.state === "incomplete" ? Theme.warning : Theme.foreground
+                        color: root.integrationInfo.state === "failed" || root.integrationInfo.state === "incomplete" ? root.settingsTheme.warning : root.settingsTheme.foreground
                         font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12)
                         wrapMode: Text.WordWrap
                     }
-                    Text {
+                    GlassLabel {
                         text: String(root.integrationInfo.percent || 0) + "%"
-                        color: root.integrationInfo.state === "failed" ? Theme.warning : Theme.accent
+                        color: root.integrationInfo.state === "failed" ? root.settingsTheme.warning : root.settingsTheme.accent
                         font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(16)
                     }
                 }
                 Rectangle {
                     Layout.fillWidth: true; Layout.preferredHeight: 7; radius: 4
-                    color: Theme.surface; clip: true
+                    color: root.settingsTheme.surface; clip: true
                     Rectangle {
                         width: parent.width * Math.max(0, Math.min(100, root.integrationInfo.percent || 0)) / 100
                         height: parent.height; radius: 4
-                        color: root.integrationInfo.state === "failed" || root.integrationInfo.state === "incomplete" ? Theme.warning : Theme.accent
-                        Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
+                        color: root.integrationInfo.state === "failed" || root.integrationInfo.state === "incomplete" ? root.settingsTheme.warning : root.settingsTheme.accent
+                        Behavior on width { enabled: root.settingsTheme.motionEnabled; NumberAnimation { duration: root.settingsTheme.motionFastDuration; easing.type: Easing.OutCubic } }
                     }
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap
                     text: root.integrationInfo.state === "installed"
                         ? "Installation COMPLETE (100%). RusticQ startup is configured for the next login. This does NOT confirm the current session has switched; log out and back in to activate."
@@ -1058,8 +1059,8 @@ ColumnLayout {
                         : root.integrationInfo.state === "running"
                         ? "Working… Percentage advances only when each installation step finishes."
                         : root.integrationInfo.message || "No permanent integration is running."
-                    color: root.integrationInfo.state === "failed" || root.integrationInfo.state === "incomplete" ? Theme.warning : Theme.muted
-                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                    color: root.integrationInfo.state === "failed" || root.integrationInfo.state === "incomplete" ? root.settingsTheme.warning : root.settingsTheme.muted
+                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                 }
             }
         }
@@ -1067,8 +1068,8 @@ ColumnLayout {
             visible: root.info.permanent === true
             Layout.fillWidth: true
             Layout.preferredHeight: visible ? fileReportColumn.implicitHeight + 26 : 0
-            radius: 12
-            color: Theme.background
+            radius: root.settingsTheme.glassRadius("card", 12)
+            color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
             ColumnLayout {
                 id: fileReportColumn
                 anchors.left: parent.left; anchors.right: parent.right
@@ -1076,10 +1077,10 @@ ColumnLayout {
                 spacing: 7
                 RowLayout {
                     Layout.fillWidth: true; spacing: 8
-                    Icon { icon: "\ue873"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
-                    Text { Layout.fillWidth: true; text: "Integration file changes"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
-                    Rectangle { Layout.preferredWidth: 74; Layout.preferredHeight: 27; radius: 8; color: Theme.surface
-                        Text { anchors.centerIn: parent; text: root.showFileReport ? "Hide paths" : "Show paths"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+                    Icon { icon: "\ue873"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(17) }
+                    GlassLabel { Layout.fillWidth: true; text: "Integration file changes"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                    Rectangle { Layout.preferredWidth: 74; Layout.preferredHeight: 27; radius: root.settingsTheme.glassRadius("card", 8); color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
+                        GlassLabel { anchors.centerIn: parent; text: root.showFileReport ? "Hide paths" : "Show paths"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(12) }
                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.showFileReport = !root.showFileReport }
                     }
                 }
@@ -1089,88 +1090,88 @@ ColumnLayout {
                         required property var modelData
                         Layout.fillWidth: true; spacing: 2
                         RowLayout { Layout.fillWidth: true; spacing: 7
-                            Text { text: modelData.action || "Unknown"; color: modelData.action === "Read only" ? Theme.muted : Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10); Layout.preferredWidth: 93 }
-                            Text { Layout.fillWidth: true; text: modelData.path || ""; wrapMode: Text.WrapAnywhere; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                            GlassLabel { text: modelData.action || "Unknown"; color: modelData.action === "Read only" ? root.settingsTheme.muted : root.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.preferredWidth: 93 }
+                            GlassLabel { Layout.fillWidth: true; text: modelData.path || ""; wrapMode: Text.WrapAnywhere; color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                         }
-                        Text { Layout.fillWidth: true; text: modelData.detail || ""; wrapMode: Text.WordWrap; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
-                        Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
+                        GlassLabel { Layout.fillWidth: true; text: modelData.detail || ""; wrapMode: Text.WordWrap; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
+                        Item { Layout.fillWidth: true; Layout.preferredHeight: root.settingsTheme.sectionGap }
                     }
                 }
-                Text { visible: !root.showFileReport; text: "File locations hidden. Select Show paths to inspect all managed paths."; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                GlassLabel { visible: !root.showFileReport; text: "File locations hidden. Select Show paths to inspect all managed paths."; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
             }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "Backup: " + ((root.info.backup_health && root.info.backup_health.message) || "Checking…")
                 + (root.info.backup_health ? " · Default files: " + (root.info.backup_health.defaults || 0) + " · User entries: " + (root.info.backup_health.user_files || 0) : "")
-            color: Theme.muted; font.pixelSize: Fonts.scale(10)
+            color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12)
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 8
             Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: 33; radius: 9; color: Theme.background
-                Text { anchors.centerIn: parent; text: root.backupBusy ? "Backing up…" : "Backup default & user configs"; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                Layout.fillWidth: true; Layout.preferredHeight: 33; radius: root.settingsTheme.glassRadius("card", 9); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: root.backupBusy ? "Backing up…" : "Backup default & user configs"; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: !root.backupBusy && root.info.permanent !== true; cursorShape: Qt.PointingHandCursor; onClicked: {
                     root.backupBusy = true;
                     backupProc.exec(["python3", root.helper, "backup-omarchy"]);
                 } }
             }
             Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: 33; radius: 9; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Verify backup"; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                Layout.fillWidth: true; Layout.preferredHeight: 33; radius: root.settingsTheme.glassRadius("card", 9); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: "Verify backup"; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: !verifyBackupProc.running; cursorShape: Qt.PointingHandCursor; onClicked: verifyBackupProc.exec(["python3", root.helper, "verify-backup"]) }
             }
         }
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.backupIntegrity; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
-        Text {
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: root.backupIntegrity; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
+        GlassLabel {
             Layout.fillWidth: true
             text: root.info.permanent ? "Installation finished · next-login startup ready" : "Not installed permanently"
-            color: root.info.permanent ? Theme.accent : Theme.muted
+            color: root.info.permanent ? root.settingsTheme.accent : root.settingsTheme.muted
             font.family: Fonts.poppinsSB.name
             font.pixelSize: Fonts.scale(12)
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: root.info.compatibility && root.info.compatibility.omarchy_detected && root.info.compatibility.launcher_intercept_supported ?
                 "Omarchy Quattro detected · " + (root.info.omarchy_backup_ready ? "backup available" : "backup will be created/verified before install") + ". Type ENABLE RUSTICQ and confirm to reinstall even after Restore Omarchy." :
                 "Omarchy Quattro startup has not been verified. No automatic backup or permanent install will run."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
-        Text {
+        GlassLabel {
             visible: !root.info.permanent && !!root.info.reinstall && !!root.info.reinstall.stale_files && root.info.reinstall.stale_files.length > 0
             Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: root.info.reinstall ? root.info.reinstall.message : ""
-            color: Theme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.settingsTheme.warning; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
             text: "Backups (preserved): " + (root.info.backup_dir || "~/.local/state/rusticq/integration/backup")
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
             text: "Recovery from a TTY: python3 ~/.local/share/rusticq/shell/scripts/rustiq-desktop-integration.py revert --confirm 'RESTORE OMARCHY'"
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
         Rectangle {
             Layout.fillWidth: true; Layout.preferredHeight: 43
-            radius: 11; color: Theme.background
+            radius: root.settingsTheme.glassRadius("card", 11); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
             RowLayout {
                 anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
-                Icon { icon: "\ue873"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
+                Icon { icon: "\ue873"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(17) }
                 TextInput {
                     Layout.fillWidth: true; Layout.fillHeight: true
                     verticalAlignment: TextInput.AlignVCenter
                     text: root.typedConfirmation
-                    color: Theme.foreground
-                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                    color: root.settingsTheme.foreground
+                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                     selectByMouse: true
                     onTextEdited: root.typedConfirmation = text
-                    Text {
+                    GlassLabel {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: parent.text.length === 0
                         text: root.info.permanent ? "Type RESTORE OMARCHY" : "Type ENABLE RUSTICQ"
-                        color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                        color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                     }
                 }
             }
@@ -1189,11 +1190,11 @@ ColumnLayout {
                             && root.info.compatibility.omarchy_detected === true
                             && root.info.compatibility.launcher_intercept_supported === true))
                     && root.typedConfirmation === (root.info.permanent === true ? "RESTORE OMARCHY" : "ENABLE RUSTICQ")
-                color: canRun ? Theme.accent : Theme.borderaccent
-                radius: 11
+                color: root.settingsTheme.glassColor("card", canRun ? root.settingsTheme.accent : root.settingsTheme.borderaccent)
+                radius: root.settingsTheme.glassRadius("card", 11)
                 RowLayout { anchors.centerIn: parent; spacing: 7
-                    Icon { icon: root.info.permanent ? "\ue863" : "\ue8b8"; font.pixelSize: Fonts.scale(17); color: Theme.background }
-                    Text { text: root.info.permanent ? "Restore Omarchy shell" : "Install RusticQ for next login"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    Icon { icon: root.info.permanent ? "\ue863" : "\ue8b8"; font.pixelSize: Fonts.scale(17); color: root.settingsTheme.background }
+                    GlassLabel { text: root.info.permanent ? "Restore Omarchy shell" : "Install RusticQ for next login"; color: root.settingsTheme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 }
                 MouseArea {
                     anchors.fill: parent; cursorShape: commitButton.canRun ? Qt.PointingHandCursor : Qt.ArrowCursor
@@ -1203,8 +1204,8 @@ ColumnLayout {
             }
             Rectangle {
                 Layout.preferredWidth: 77; Layout.preferredHeight: 41
-                radius: 11; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Refresh"; color: Theme.foreground; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppins.name }
+                radius: root.settingsTheme.glassRadius("card", 11); color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: "Refresh"; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppins.name }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.refresh() }
             }
         }
@@ -1212,15 +1213,15 @@ ColumnLayout {
     Rectangle {
         visible: root.message.length > 0
         Layout.fillWidth: true; Layout.preferredHeight: Math.max(49, actionMessage.implicitHeight + 24)
-        radius: 11; color: root.lastOk ? Qt.alpha(Theme.accent, .12) : Qt.alpha(Theme.foreground, .08)
-        Text {
+        radius: root.settingsTheme.glassRadius("card", 11); color: root.settingsTheme.glassColor("card", root.lastOk ? Qt.alpha(root.settingsTheme.accent, .12) : Qt.alpha(root.settingsTheme.foreground, .08))
+        GlassLabel {
             id: actionMessage
             width: parent.width - 24
             x: 12; y: 12
             text: root.message
             wrapMode: Text.WordWrap
-            color: Theme.foreground
-            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+            color: root.settingsTheme.foreground
+            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
     }
 }

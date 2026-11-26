@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Basic
 import Quickshell
 import Quickshell.Io
 import "../../config"
@@ -20,7 +20,7 @@ FloatingWindow {
     maximumSize: Qt.size(Math.min(840, screen ? screen.width - 32 : 840), Math.min(620, screen ? screen.height - 64 : 620))
     maximized: false
     fullscreen: false
-    color: Theme.background
+    color: Theme.glassColor("window", Theme.background)
     property bool syncingPage: false
     property string loadedKind: ""
     readonly property var categories: [
@@ -121,15 +121,15 @@ FloatingWindow {
                 ColumnLayout {
                     anchors.fill: parent
                     spacing: 2
-                    Text { text: root.category.label + " settings"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(18) }
-                    Text { text: "Advanced controls"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Theme.helperTextSize }
+                    GlassLabel { text: root.category.label + " settings"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(18) }
+                    GlassLabel { text: "Advanced controls"; color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Theme.helperTextSize }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.SizeAllCursor; onPressed: root.startSystemMove() }
             }
             Rectangle {
                 objectName: "closeDeviceSettings"
                 Layout.preferredWidth: 32; Layout.preferredHeight: 32
-                radius: Theme.rowRadius; color: Theme.surface
+                radius: Theme.glassRadius("card", Theme.rowRadius); color: Theme.glassColor("card", Theme.surface)
                 activeFocusOnTab: true
                 Accessible.role: Accessible.Button
                 Accessible.name: "Close device settings"
@@ -150,8 +150,8 @@ FloatingWindow {
                     required property var modelData
                     objectName: "deviceCategory_" + modelData.key
                     Layout.fillWidth: true; Layout.preferredHeight: 35
-                    radius: Theme.rowRadius
-                    color: Store.deviceSettingsKind === modelData.key ? Qt.alpha(Theme.accent, 0.17) : Theme.surface
+                    radius: Theme.glassRadius("card", Theme.rowRadius)
+                    color: Theme.glassColor("card", Store.deviceSettingsKind === modelData.key ? Qt.alpha(Theme.accent, 0.17) : Theme.surface)
                     activeFocusOnTab: true
                     Accessible.role: Accessible.Button
                     Accessible.name: modelData.label + " settings"
@@ -159,7 +159,7 @@ FloatingWindow {
                     Accessible.onPressAction: select()
                     Keys.onReturnPressed: select()
                     Keys.onSpacePressed: select()
-                    Text { anchors.centerIn: parent; text: categoryButton.modelData.label; color: Store.deviceSettingsKind === categoryButton.modelData.key ? Theme.accent : Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Theme.helperTextSize }
+                    GlassLabel { anchors.centerIn: parent; text: categoryButton.modelData.label; color: Store.deviceSettingsKind === categoryButton.modelData.key ? Theme.accent : Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Theme.helperTextSize }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: categoryButton.select() }
                 }
             }
@@ -175,15 +175,15 @@ FloatingWindow {
                     required property var modelData
                     objectName: "deviceFeature_" + modelData.key
                     width: featureLabel.implicitWidth + 24; height: 31
-                    radius: Theme.rowRadius
-                    color: Store.deviceSettingsSection === modelData.key ? Qt.alpha(Theme.accent, 0.17) : Theme.surface
+                    radius: Theme.glassRadius("card", Theme.rowRadius)
+                    color: Theme.glassColor("card", Store.deviceSettingsSection === modelData.key ? Qt.alpha(Theme.accent, 0.17) : Theme.surface)
                     activeFocusOnTab: true
                     Accessible.role: Accessible.Button
                     Accessible.name: modelData.label
                     Accessible.onPressAction: root.selectFeature(modelData.key)
                     Keys.onReturnPressed: root.selectFeature(modelData.key)
                     Keys.onSpacePressed: root.selectFeature(modelData.key)
-                    Text { id: featureLabel; anchors.centerIn: parent; text: featureButton.modelData.label; color: Store.deviceSettingsSection === featureButton.modelData.key ? Theme.accent : Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Theme.helperTextSize }
+                    GlassLabel { id: featureLabel; anchors.centerIn: parent; text: featureButton.modelData.label; color: Store.deviceSettingsSection === featureButton.modelData.key ? Theme.accent : Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Theme.helperTextSize }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.selectFeature(featureButton.modelData.key) }
                 }
             }
@@ -200,7 +200,8 @@ FloatingWindow {
             onContentHeightChanged: if (root.visible) sectionScrollDelay.restart()
             onHeightChanged: if (root.visible) sectionScrollDelay.restart()
             boundsBehavior: Flickable.StopAtBounds
-            ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+            ScrollBar.vertical: ScrollBar { palette: ControlPalette {}
+ policy: ScrollBar.AsNeeded }
             Loader {
                 id: pageLoader
                 objectName: "deviceSettingsPageLoader"
@@ -218,7 +219,7 @@ FloatingWindow {
             Rectangle {
                 objectName: "deviceSettingsBack"
                 Layout.preferredWidth: 88; Layout.preferredHeight: 32
-                radius: Theme.rowRadius; color: Theme.surface
+                radius: Theme.glassRadius("card", Theme.rowRadius); color: Theme.glassColor("card", Theme.surface)
                 activeFocusOnTab: true
                 Accessible.role: Accessible.Button
                 Accessible.name: "Back"
@@ -229,14 +230,14 @@ FloatingWindow {
                 Accessible.onPressAction: back()
                 Keys.onReturnPressed: back()
                 Keys.onSpacePressed: back()
-                Text { anchors.centerIn: parent; text: "← Back"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Theme.helperTextSize }
+                GlassLabel { anchors.centerIn: parent; text: "← Back"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Theme.helperTextSize }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: parent.back() }
             }
             Item { Layout.fillWidth: true }
             Rectangle {
                 Layout.preferredWidth: 116; Layout.preferredHeight: 32
-                radius: Theme.rowRadius; color: Theme.surface
-                Text { anchors.centerIn: parent; text: "Full settings"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Theme.helperTextSize }
+                radius: Theme.glassRadius("card", Theme.rowRadius); color: Theme.glassColor("card", Theme.surface)
+                GlassLabel { anchors.centerIn: parent; text: "Full settings"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Theme.helperTextSize }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: {
                     const kind = Store.deviceSettingsKind;
                     const screen = root.screen;

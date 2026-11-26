@@ -7,21 +7,25 @@ import "../../components"
 
 Rectangle {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     Layout.fillWidth: true
     property bool standalone: false
+    property bool framelessQuickControl: false
+    QuickControlInputBridge {target:root;active:root.framelessQuickControl && root.visible}
     property bool expanded: false
     Layout.preferredHeight: standalone ? 600 : expanded
         ? Math.min(700, Math.max(440, 320 + NotificationCenter.history.length * 116
             + (NotificationCenter.receivesSystemNotifications ? 0 : 130))) : 68
-    radius: Theme.sectionRadius
-    color: Qt.alpha(Theme.foreground, 0.02)
-    border.color: Theme.borderaccent
+    radius: root.settingsTheme.glassRadius("card", root.settingsTheme.sectionRadius)
+    color: framelessQuickControl || (standalone && root.settingsTheme.glassEnabled) ? "transparent" : root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.foreground, 0.02))
+    border.width: framelessQuickControl ? 0 : root.settingsTheme.glassBorderWidth("card", 1)
+    border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.borderaccent)
     clip: true
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 14
-        spacing: 12
+        anchors.margins: root.framelessQuickControl ? 0 : root.settingsTheme.panelPadding
+        spacing: root.settingsTheme.contentGap
 
         SectionHeader {
             Layout.fillWidth: true
@@ -39,16 +43,16 @@ Rectangle {
         RowLayout {
             visible: root.expanded
             Layout.fillWidth: true
-            Text {
+            GlassLabel {
                 text: NotificationCenter.unread > 0 ? NotificationCenter.unread + " unread" : "All caught up"
                 Layout.fillWidth: true
-                color: Theme.muted
+                color: root.settingsTheme.contentMuted
                 font.family: Fonts.poppins.name
                 font.pixelSize: Fonts.scale(10)
             }
-            Text {
+            GlassLabel {
                 text: NotificationCenter.history.length + " saved"
-                color: Theme.muted
+                color: root.settingsTheme.contentMuted
                 font.family: Fonts.poppins.name
                 font.pixelSize: Fonts.scale(10)
             }
@@ -58,8 +62,8 @@ Rectangle {
             visible: root.expanded && !NotificationCenter.receivesSystemNotifications
             Layout.fillWidth: true
             Layout.preferredHeight: visible ? 130 : 0
-            radius: 11
-            color: Theme.background
+            radius: root.settingsTheme.glassRadius("card", 11)
+            color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 9
@@ -67,33 +71,33 @@ Rectangle {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 7
-                    Icon { icon: "\ue002"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
-                    Text {
+                    Icon { icon: "\ue002"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(16) }
+                    GlassLabel {
                         Layout.fillWidth: true
                         text: NotificationCenter.serverState === "conflict" ? "Another notification service is active"
                             : NotificationCenter.serverState === "free" ? "Waiting for notification ownership"
                             : "Checking notification service"
                         font.family: Fonts.poppinsSB.name
                         font.pixelSize: Fonts.scale(10)
-                        color: Theme.foreground
+                        color: root.settingsTheme.foreground
                         elide: Text.ElideRight
                     }
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     text: "Owner: " + NotificationCenter.serverOwner
                     font.family: Fonts.poppins.name
                     font.pixelSize: Fonts.scale(10)
-                    color: Theme.muted
+                    color: root.settingsTheme.contentMuted
                     elide: Text.ElideRight
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     text: NotificationCenter.serverAdvice
                     maximumLineCount: 2
                     wrapMode: Text.WordWrap
                     elide: Text.ElideRight
-                    color: Theme.muted
+                    color: root.settingsTheme.contentMuted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Fonts.scale(9)
                 }
@@ -103,9 +107,9 @@ Rectangle {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 29
-                        radius: 8
-                        color: Theme.surface
-                        Text { anchors.centerIn: parent; text: "Preview toast"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                        radius: root.settingsTheme.glassRadius("card", 8)
+                        color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
+                        GlassLabel { anchors.centerIn: parent; text: "Preview toast"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
@@ -115,9 +119,9 @@ Rectangle {
                     Rectangle {
                         Layout.preferredWidth: 77
                         Layout.preferredHeight: 29
-                        radius: 8
-                        color: Theme.surface
-                        Text { anchors.centerIn: parent; text: "Recheck"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                        radius: root.settingsTheme.glassRadius("card", 8)
+                        color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
+                        GlassLabel { anchors.centerIn: parent; text: "Recheck"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
@@ -135,16 +139,16 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 34
-                radius: 10
-                color: Theme.background
+                radius: root.settingsTheme.glassRadius("card", 10)
+                color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
                 RowLayout {
                     id: dndStatusRow
                     anchors.fill: parent
                     anchors.leftMargin: 10
                     anchors.rightMargin: 10
                     spacing: 7
-                    Icon { icon: NotificationCenter.doNotDisturb ? "\ue7f6" : "\ue7f4"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
-                    Text { text: NotificationCenter.doNotDisturb ? "Do Not Disturb enabled" : "Notifications active"; Layout.fillWidth: true; color: Theme.foreground; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name }
+                    Icon { icon: NotificationCenter.doNotDisturb ? "\ue7f6" : "\ue7f4"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(16) }
+                    GlassLabel { text: NotificationCenter.doNotDisturb ? "Do Not Disturb enabled" : "Notifications active"; Layout.fillWidth: true; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name }
                 }
             }
             Repeater {
@@ -157,11 +161,11 @@ Rectangle {
                     required property var modelData
                     Layout.preferredWidth: modelData.action === "clear" ? 60 : 74
                     Layout.preferredHeight: 34
-                    radius: 10
-                    color: modelData.accent ? Qt.alpha(Theme.accent, 0.18) : Theme.background
-                    border.width: modelData.accent ? 1 : 0
-                    border.color: Theme.accent
-                    Text { anchors.centerIn: parent; text: actionPill.modelData.label; color: Theme.foreground; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
+                    radius: root.settingsTheme.glassRadius("card", 10)
+                    color: root.settingsTheme.glassColor("card", modelData.accent ? Qt.alpha(root.settingsTheme.accent, 0.18) : root.settingsTheme.background)
+                    border.width: root.settingsTheme.glassBorderWidth("card", modelData.accent ? 1 : 0)
+                    border.color: root.settingsTheme.glassBorder("card", root.settingsTheme.accent)
+                    GlassLabel { anchors.centerIn: parent; text: actionPill.modelData.label; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
@@ -176,13 +180,13 @@ Rectangle {
 
         Rectangle {
             visible: root.expanded
-            Layout.fillWidth: true; Layout.preferredHeight: 31; radius: 9
-            color: NotificationCenter.groupByApp ? Qt.alpha(Theme.accent, .16) : Theme.background
+            Layout.fillWidth: true; Layout.preferredHeight: 31; radius: root.settingsTheme.glassRadius("card", 9)
+            color: root.settingsTheme.glassColor("card", NotificationCenter.groupByApp ? Qt.alpha(root.settingsTheme.accent, .16) : root.settingsTheme.background)
             RowLayout { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10
-                Icon { icon: "\ue8ef"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
-                Text { Layout.fillWidth: true; text: NotificationCenter.groupByApp ? "Grouped by application" : "Individual notifications";
-                    color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
-                Text { text: "Toggle"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+                Icon { icon: "\ue8ef"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(16) }
+                GlassLabel { Layout.fillWidth: true; text: NotificationCenter.groupByApp ? "Grouped by application" : "Individual notifications";
+                    color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(10) }
+                GlassLabel { text: "Toggle"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(10) }
             }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                 onClicked: NotificationCenter.groupByApp = !NotificationCenter.groupByApp }
@@ -191,13 +195,13 @@ Rectangle {
             visible: root.expanded && NotificationCenter.receivesSystemNotifications
             Layout.fillWidth: true
             Layout.preferredHeight: visible ? 32 : 0
-            radius: 10
-            color: Theme.background
+            radius: root.settingsTheme.glassRadius("card", 10)
+            color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
             RowLayout {
                 anchors.centerIn: parent
                 spacing: 7
-                Icon { icon: "\ue7f4"; font.pixelSize: Fonts.scale(16); color: Theme.accent }
-                Text { text: "Send test notification"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                Icon { icon: "\ue7f4"; font.pixelSize: Fonts.scale(16); color: root.settingsTheme.accent }
+                GlassLabel { text: "Send test notification"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
             }
             MouseArea {
                 anchors.fill: parent
@@ -220,26 +224,26 @@ Rectangle {
                 readonly property bool isScreenshot: modelData.kind === "screenshot"
                 width: ListView.view.width
                 height: Math.max(hasPreview ? 110 : 94, contentLayout.implicitHeight + 24)
-                radius: 14
-                color: Theme.background
-                border.width: 0
+                radius: root.settingsTheme.glassRadius("card", 14)
+                color: root.settingsTheme.glassColor("card", root.settingsTheme.background)
+                border.width: root.settingsTheme.glassBorderWidth("card", 0)
 
                 RowLayout {
                     id: contentLayout
                     anchors.fill: parent
-                    anchors.margins: 12
-                    spacing: 12
+                    anchors.margins: root.settingsTheme.cardPadding
+                    spacing: root.settingsTheme.contentGap
 
                     Rectangle {
                         Layout.alignment: Qt.AlignTop
                         Layout.preferredWidth: 40
                         Layout.preferredHeight: 40
-                        radius: 12
-                        color: Qt.alpha(Theme.accent, 0.12)
+                        radius: root.settingsTheme.glassRadius("card", 12)
+                        color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.accent, 0.12))
                         Icon {
                             anchors.centerIn: parent
                             icon: itemRow.modelData.glyph
-                            color: Theme.accent
+                            color: root.settingsTheme.accent
                             font.pixelSize: Fonts.scale(18)
                         }
                     }
@@ -251,12 +255,12 @@ Rectangle {
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 6
-                            Text {
+                            GlassLabel {
                                 text: itemRow.modelData.app
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 font.pixelSize: Fonts.scale(10)
-                                color: Theme.foreground
+                                color: root.settingsTheme.foreground
                                 font.family: Fonts.poppinsSB.name
                                 textFormat: Text.PlainText
                             }
@@ -264,13 +268,13 @@ Rectangle {
                                 visible: NotificationCenter.groupByApp && itemRow.modelData.groupCount > 1
                                 Layout.preferredHeight: visible ? 22 : 0
                                 Layout.preferredWidth: 62
-                                radius: 8
-                                color: Qt.alpha(Theme.accent, .17)
-                                Text {
+                                radius: root.settingsTheme.glassRadius("card", 8)
+                                color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.accent, .17))
+                                GlassLabel {
                                     anchors.centerIn: parent
                                     text: (itemRow.modelData.groupCount || 1) + " · " +
                                         (NotificationCenter.expandedApps[itemRow.modelData.app] ? "Hide" : "Show")
-                                    color: Theme.accent; font.pixelSize: Fonts.scale(9)
+                                    color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(9)
                                 }
                                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                                     onClicked: NotificationCenter.toggleGroup(itemRow.modelData.app) }
@@ -278,43 +282,43 @@ Rectangle {
                             Rectangle {
                                 Layout.preferredHeight: 20
                                 Layout.preferredWidth: typeLabel.implicitWidth + 18
-                                radius: 8
-                                color: Qt.alpha(Theme.accent, 0.10)
-                                Text {
+                                radius: root.settingsTheme.glassRadius("card", 8)
+                                color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.accent, 0.10))
+                                GlassLabel {
                                     id: typeLabel
                                     anchors.centerIn: parent
                                     text: itemRow.modelData.tag
-                                    color: Theme.foreground
+                                    color: root.settingsTheme.foreground
                                     font.pixelSize: Fonts.scale(8)
                                     font.family: Fonts.poppins.name
                                 }
                             }
-                            Text {
+                            GlassLabel {
                                 text: itemRow.modelData.when
                                 font.pixelSize: Fonts.scale(9)
-                                color: Theme.muted
+                                color: root.settingsTheme.contentMuted
                                 font.family: Fonts.poppins.name
                                 textFormat: Text.PlainText
                             }
                         }
 
-                        Text {
+                        GlassLabel {
                             text: itemRow.modelData.title
                             Layout.fillWidth: true
                             font.pixelSize: Fonts.scale(11)
                             font.family: Fonts.poppinsSB.name
-                            color: Theme.foreground
+                            color: root.settingsTheme.foreground
                             maximumLineCount: 2
                             elide: Text.ElideRight
                             wrapMode: Text.WordWrap
                             textFormat: Text.PlainText
                         }
 
-                        Text {
+                        GlassLabel {
                             text: itemRow.modelData.body
                             Layout.fillWidth: true
                             font.pixelSize: Fonts.scale(10)
-                            color: Theme.muted
+                            color: root.settingsTheme.contentMuted
                             maximumLineCount: hasPreview ? 2 : 3
                             wrapMode: Text.WordWrap
                             elide: Text.ElideRight
@@ -333,12 +337,12 @@ Rectangle {
                                     required property int index
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 30
-                                    radius: 9
-                                    color: index === 0 ? Qt.alpha(Theme.accent, 0.16) : Theme.surface
-                                    Text {
+                                    radius: root.settingsTheme.glassRadius("card", 9)
+                                    color: root.settingsTheme.glassColor("card", index === 0 ? Qt.alpha(root.settingsTheme.accent, 0.16) : root.settingsTheme.surface)
+                                    GlassLabel {
                                         anchors.centerIn: parent
                                         text: itemRow.modelData.actions[historyAction.index].text
-                                        color: index === 0 ? Theme.accent : Theme.foreground
+                                        color: index === 0 ? root.settingsTheme.accent : root.settingsTheme.foreground
                                         font.family: Fonts.poppinsSB.name
                                         font.pixelSize: Fonts.scale(10)
                                         elide: Text.ElideRight
@@ -359,11 +363,11 @@ Rectangle {
                         Layout.alignment: Qt.AlignTop
                         Layout.preferredWidth: 64
                         Layout.preferredHeight: 64
-                        radius: 12
+                        radius: root.settingsTheme.glassRadius("card", 12)
                         clip: true
-                        color: Theme.surface
-                        border.width: 1
-                        border.color: Qt.alpha(Theme.accent, 0.18)
+                        color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
+                        border.width: standalone && root.settingsTheme.glassEnabled ? 0 : root.settingsTheme.glassBorderWidth("card", 1)
+                        border.color: root.settingsTheme.glassBorder("card", Qt.alpha(root.settingsTheme.accent, 0.18))
 
                         Image {
                             id: previewImage
@@ -379,7 +383,7 @@ Rectangle {
                             anchors.centerIn: parent
                             visible: !previewImage.visible
                             icon: itemRow.isScreenshot ? "\ue3b0" : "\ue2c7"
-                            color: Theme.accent
+                            color: root.settingsTheme.accent
                             font.pixelSize: Fonts.scale(18)
                         }
                     }
@@ -388,9 +392,9 @@ Rectangle {
                         Layout.alignment: Qt.AlignTop
                         Layout.preferredWidth: 28
                         Layout.preferredHeight: 28
-                        radius: 8
-                        color: dismissMouse.containsMouse ? Qt.alpha(Theme.accent, 0.10) : "transparent"
-                        Icon { anchors.centerIn: parent; icon: "\ue5cd"; color: Theme.muted; font.pixelSize: Fonts.scale(16) }
+                        radius: root.settingsTheme.glassRadius("card", 8)
+                        color: root.settingsTheme.glassColor("card", dismissMouse.containsMouse ? Qt.alpha(root.settingsTheme.accent, 0.10) : "transparent")
+                        Icon { anchors.centerIn: parent; icon: "\ue5cd"; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(16) }
                         MouseArea {
                             id: dismissMouse
                             anchors.fill: parent
@@ -402,13 +406,13 @@ Rectangle {
                 }
             }
 
-            Text {
+            GlassLabel {
                 visible: NotificationCenter.history.length === 0
                 anchors.centerIn: parent
                 text: "No notifications yet"
                 font.family: Fonts.poppins.name
                 font.pixelSize: Fonts.scale(11)
-                color: Theme.muted
+                color: root.settingsTheme.contentMuted
             }
         }
     }

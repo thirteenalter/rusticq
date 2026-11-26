@@ -29,18 +29,46 @@ Item {
     implicitWidth: activeKeys.length ? (vertical ? railItemSize + railPadding * 2 : horizontalRow.implicitWidth + 10) : 0
     implicitHeight: activeKeys.length ? (vertical ? verticalColumn.implicitHeight + railPadding * 2 : Math.max(controlHeight + (separated ? 8 : 0), horizontalRow.implicitHeight + (separated ? 8 : 0))) : 0
     HoverHandler { id: zoneHover }
-    Rectangle {
+    BarSurface {
+        objectName: "barSegmentSurface"
+        Behavior on color { enabled: Theme.motionEnabled && SettingsStore.barSegmentBackgroundEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+        barLayer: "segment"
         visible: root.separated && root.activeKeys.length > 0
         anchors.fill: parent
-        radius: 12
-        color: Theme.surface
-        border.width: 1
-        border.color: Theme.borderaccent
+        baseRadius: 12
+        baseColor: Theme.surface
+        baseBorderWidth: 1
+        baseBorderColor: Theme.borderaccent
         z: -1
     }
     function popup(kind, item, offset) {
         const point = hostWindow.mapFromItem(item, offset === undefined ? item.width / 2 : offset, item.height / 2);
         hostWindow.openMini(kind, point.x, point.y);
+    }
+    property Item pendingHoverItem: null
+    property string pendingHoverKind: ""
+    function hoverPopup(key, item, entered) {
+        if (!entered) {
+            if (pendingHoverItem === item) { hoverDelay.stop(); pendingHoverItem = null; }
+            return;
+        }
+        if (!SettingsStore.barPopupsOnHover || !item) return;
+        const kinds = {wifi:WifiService.ethernetConnected ? "ethernet" : "wifi",bluetooth:"bluetooth",
+            battery:"battery",audio:"audio",weather:"weather",time:"time",date:"date",notifications:"notifications",task:"task"};
+        if (!Object.prototype.hasOwnProperty.call(kinds,key)) return;
+        pendingHoverItem = item;
+        pendingHoverKind = kinds[key];
+        hoverDelay.restart();
+    }
+    Timer {
+        id: hoverDelay
+        interval: 150
+        onTriggered: {
+            if (!SettingsStore.barPopupsOnHover || !root.pendingHoverItem) return;
+            const point = root.hostWindow.mapFromItem(root.pendingHoverItem,root.pendingHoverItem.width/2,root.pendingHoverItem.height/2);
+            root.hostWindow.hoverMini(root.pendingHoverKind,point.x,point.y);
+            root.pendingHoverItem = null;
+        }
     }
     function componentFor(key) {
         switch (key) {
@@ -103,7 +131,8 @@ Item {
             model: root.vertical ? [] : root.activeKeys
             delegate: Loader {
                 id: itemLoader
-                HoverHandler { id: tileHover }
+                objectName: "bar-item-" + modelData
+                HoverHandler { id: tileHover; onHoveredChanged: root.hoverPopup(itemLoader.modelData,itemLoader.item,hovered) }
                 scale: tileHover.hovered ? 1.04 : 1
                 Behavior on scale { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                 required property string modelData
@@ -124,7 +153,9 @@ Item {
         Repeater {
             model: root.vertical ? root.activeKeys : []
             delegate: Loader {
+                id: railItemLoader
                 objectName: "bar-rail-item-" + modelData
+                HoverHandler { onHoveredChanged: root.hoverPopup(railItemLoader.modelData,railItemLoader.item,hovered) }
                 required property string modelData
                 sourceComponent: root.componentFor(modelData)
                 Layout.alignment: Qt.AlignHCenter
@@ -140,11 +171,12 @@ Item {
 
     Component {
         id: rusticqPart
-        Rectangle {
+        BarSurface {
+            objectName: "barModuleSurface"
             implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : root.compact ? 29 : 34)
             implicitHeight: root.controlHeight
-            radius: height / 2
-            color: root.clean ? "transparent" : Theme.borderaccent
+            baseRadius: height / 2
+            baseColor: root.clean ? "transparent" : Theme.borderaccent
             RusticQIcon { anchors.centerIn: parent; iconSize: Theme.barSymbolSize }
             MouseArea {
                 anchors.fill: parent
@@ -168,15 +200,16 @@ Item {
     }
     Component {
         id: launcherPart
-        Rectangle {
+        BarSurface {
+            objectName: "barModuleSurface"
             implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : root.compact ? 29 : 34)
             implicitHeight: root.controlHeight
-            radius: height / 2
-            color: root.clean ? "transparent" : Theme.borderaccent
+            baseRadius: height / 2
+            baseColor: root.clean ? "transparent" : Theme.borderaccent
             Icon { anchors.centerIn: parent; icon: "\ue8b6"; font.pixelSize: Theme.barSymbolSize; color: Theme.accent }
             MouseArea {
                 anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                onClicked: { root.hostWindow.closeMini(); Store.toggleLauncher(root.hostWindow.screen); }
+                onClicked: root.hostWindow.toggleLauncherFrom(parent)
             }
         }
     }
@@ -186,6 +219,7 @@ Item {
             vertical: root.vertical
             verticalControlSize: root.railItemSize
             onMenuRequested: (section, item) => root.hostWindow.openMenu(section, item)
+            onMenuHovered: (section, item) => root.hostWindow.hoverMenu(section, item)
         }
     }
     Component {
@@ -206,14 +240,17 @@ Item {
                 spacing: 3
                 Repeater {
                     model: 6
-                    delegate: Rectangle {
+                    delegate: BarSurface {
+                        objectName: "barWorkspaceSurface"
                         id: cell
                         required property int index
                         readonly property int workspaceId: index + 1
                         readonly property bool focused: Hyprland.focusedWorkspace && Hyprland.focusedWorkspace.id === workspaceId
                         Layout.preferredWidth: root.railItemSize; Layout.preferredHeight: root.railItemSize
-                        radius: 8; color: root.clean ? "transparent" : focused ? Theme.accent : Theme.surface
-                        Text { anchors.centerIn: parent; text: String(cell.workspaceId); color: cell.focused ? (root.clean ? Theme.accent : Theme.background) : Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                        baseRadius: 8
+                        baseColor: root.clean ? "transparent" : Theme.surface
+                        feedbackColor: cell.focused && !root.clean ? Theme.accent : "transparent"
+                        GlassLabel { anchors.centerIn: parent; text: String(cell.workspaceId); color: cell.focused ? (root.clean ? Theme.accent : Theme.background) : Theme.foreground; font.pixelSize: Fonts.scale(10) }
                         MouseArea {
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                             onClicked: Hyprland.dispatch(Hyprland.usingLua ? 'hl.dsp.focus({ workspace = "' + cell.workspaceId + '" })' : 'workspace ' + cell.workspaceId)
@@ -297,11 +334,12 @@ Item {
     }
     Component {
         id: notificationsPart
-        Rectangle {
+        BarSurface {
+            objectName: "barModuleSurface"
             implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : root.compact ? 29 : 32)
             implicitHeight: root.controlHeight
-            radius: height / 2
-            color: root.clean ? "transparent" : Theme.borderaccent
+            baseRadius: height / 2
+            baseColor: root.clean ? "transparent" : Theme.borderaccent
             Icon {
                 anchors.centerIn: parent
                 icon: NotificationCenter.doNotDisturb ? "\ue7f6" : "\ue7f4"
@@ -323,11 +361,12 @@ Item {
     }
     Component {
         id: barTogglePart
-        Rectangle {
+        BarSurface {
+            objectName: "barModuleSurface"
             implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : 30)
             implicitHeight: root.controlHeight
-            radius: height / 2
-            color: root.clean ? "transparent" : Theme.borderaccent
+            baseRadius: height / 2
+            baseColor: root.clean ? "transparent" : Theme.borderaccent
             Icon {
                 anchors.centerIn: parent
                 icon: "\ue5cd"
@@ -343,11 +382,12 @@ Item {
     }
     Component {
         id: taskPart
-        Rectangle {
+        BarSurface {
+            objectName: "barModuleSurface"
             implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : root.compact ? 29 : 34)
             implicitHeight: root.controlHeight
-            radius: height / 2
-            color: root.clean ? "transparent" : Theme.borderaccent
+            baseRadius: height / 2
+            baseColor: root.clean ? "transparent" : Theme.borderaccent
             Icon { anchors.centerIn: parent; icon: "\ue322"; font.pixelSize: Theme.barSymbolSize; color: Theme.accent }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.popup("task", parent) }
         }
@@ -364,12 +404,13 @@ Item {
     }
     Component {
         id: controlPart
-        Rectangle {
+        BarSurface {
+            objectName: "barModuleSurface"
             readonly property bool filledStyle: SettingsStore.quickControlButtonStyle === "filled"
             implicitWidth: Math.max(Theme.barSymbolSize + 12, root.vertical ? root.railItemSize : root.compact ? 32 : 40)
             implicitHeight: root.controlHeight
-            radius: height / 2
-            color: filledStyle ? Theme.borderaccent : "transparent"
+            baseRadius: height / 2
+            baseColor: filledStyle ? Theme.borderaccent : "transparent"
             Icon { anchors.centerIn: parent; icon: "\ue69b"; font.pixelSize: Theme.barSymbolSize; color: filledStyle ? Theme.accent : Theme.foreground }
             MouseArea {
                 anchors.fill: parent; cursorShape: Qt.PointingHandCursor

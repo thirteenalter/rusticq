@@ -14,12 +14,90 @@
 RusticQ is a user-space desktop shell configuration built with **Quickshell/QML**, for **Hyprland on Arch Linux**, including compatible **Omarchy Quattro** installations. It does not replace your window manager. The current **Beta 4** source retains **Quickshell 0.3.1** compatibility as a minimum; real compositor testing is still required.
 
 - **Bar:** Compact, Clean Compact, Separated, Professional and Simple layouts, Top/Bottom/Left/Right placement, per-layout icon visibility, icon order/placement and spacing.
-- **Launcher & workspaces:** app search, launcher on the focused monitor, workspace navigation and assignable shortcuts.
+- **Launcher & workspaces:** Launcher Studio with eleven styles and shared search, active-monitor placement, workspace navigation and assignable shortcuts.
 - **Popups & controls:** connectivity, Bluetooth, battery, audio, clock/calendar, notifications, Quick Control and Quick Modes.
 - **Extras:** optional desktop widgets, dock, media controls, system monitor, screenshots and recording.
 - **Settings:** appearance, live displays, apps, updates, shortcuts, AI providers and reversible Omarchy integration.
 
 Detailed module and feature inventory: **[FEATURES.md](FEATURES.md)**.
+
+Search **RusticQ Settings**, **settings**, or **pengaturan** in the application
+launcher to open RusticQ's settings directly. The entry also supports favorites
+and recent applications; `:settings` remains available for searching settings pages.
+
+Search **RusticQ Hyprland Settings** or **hyprland** for the independent native
+configuration studio. It also opens from the Shell menu, an assignable shortcut,
+`rusticq hypr-settings`, or IPC `dispatch hypr-settings`. The normal RusticQ shell
+must be running. See [implemented controls, safety, tests and current limits](docs/HYPRLAND-SETTINGS.md).
+
+Both settings applications share a compact sidebar, grouped controls, responsive
+previews and window materials. **Follow RusticQ Theme** is the default: Aether,
+Gruvbox and the active RAGE palette follow the shell configuration. Choose an
+independent RAGE Glass or Neutral palette under **Appearance → Settings Window
+Appearance**, with optional per-application overrides. Glass uses the existing
+compositor adapter and falls back to a readable surface when blur cannot be
+verified. See [the settings suite design, preferences and validation](docs/SETTINGS-SUITE.md).
+
+**Launcher Studio:** **Settings → App Launcher → Launcher Studio** selects
+Legacy Compact, Legacy Clean Compact Hover, Spotlight, Raycast, Launchpad,
+Fluent, Minimal, Classic Menu, Overview, Compact Command or **Detached Floating
+Search**. Spotlight opens as a compact floating input; Detached adds a separate
+results box as you type, with independent materials and a transparent gap.
+Desktop backdrop is separate: None, Dim, Blur, Dim and Blur, or Focus. Existing
+preferences remain intact; new setups recommend Spotlight. See the
+[Launcher Studio report, controls and actual screenshots](docs/LAUNCHER-STUDIO.md).
+
+**Surface spacing:** **Settings → Appearance → Surface Spacing** adjusts panel/popup,
+nested card and control padding, plus content and inline gaps, in pixels. **Auto**
+follows UI density; changes preview immediately and save on slider release.
+Bar and launcher keep their independent padding controls. Optional content leaves
+the layout when unused, including its reserved spacing.
+[Alignment, Wi-Fi redesign and spacing validation](docs/SURFACE-SPACING.md).
+
+**Network speed test:** open **Advanced Wi-Fi** in the network popup to show a separate native Speed Test
+card with ping, download/upload results, a live gauge, cancellation and shared
+session results. **Settings → Appearance → Network Panel** selects Classic Gauge,
+Modern Arc or Compact and controls gauge visibility, animation, glow and last-test
+time. Requires an optional supported CLI, installed and initialized by the user.
+[Setup, dependencies and measurement behavior](docs/NETWORK-SPEED-TEST.md).
+
+**Quick Control:** **Settings → Appearance → Quick Control** offers **Classic**,
+**Modular** and **Frameless**. The new modes use connectivity tiles, pill sliders,
+flat Audio/Display/Media controls and independent live metric widgets. Frameless
+leaves the desktop visible between controls. Classic stays the default for
+existing preferences. [Settings, architecture and validation](docs/QUICK-CONTROL-MODULAR.md).
+
+**Popup behavior:** **Settings → Bar → Popup interaction → Open bar popups on
+hover** optionally opens Wi-Fi, Bluetooth, audio, battery, weather, clock,
+calendar, notification and menu panels without clicking. Moving the cursor away
+keeps the panel open; click outside or press Escape to dismiss. Click remains
+the default opening mode. Panels own their keyboard focus independently of the bar.
+
+**Weather:** current observations use validated wttr.in JSON in Celsius, with
+the nearest reported city/country, explicit refresh status and last-known data
+on network failure. Location is estimated from the public network IP, so a VPN
+can affect it. Long conditions/errors scroll instead of clipping the popup.
+
+**RAGE — RUSTIQ ADAPTIVE GLASS ENGINE:** **Settings → Appearance → Glassmorphism**
+enables optional global glass surfaces, live, with **Frosted / Crystal / Tinted**
+presets. **Theme provider → RAGE Exclusive** selects an independent native palette
+(Obsidian, Pearl, Pure Crystal or Graphite Frost), including when glass is off.
+Adaptive retains the saved Gruvbox/Aether source. Standard UI remains the default.
+Background blur uses audited Hyprland Lua session
+rules; unsupported compositors or disabled global blur use a readable tinted
+fallback. Performance mode and low-memory mode suspend blur and edge effects.
+
+**Settings → Bar → Surface Styling** independently controls backgrounds and
+outlines for the outer rail, floating segments and modules. The same controls
+appear under **Appearance → RAGE · Surface Glass Effects · Bar**. Glass works
+in all five layouts and four positions. **Floating Segments** removes the outer
+frame; **Naked Bar** keeps foreground content and interactions. Professional
+retains its original full rail and square outer geometry by default. Turning
+global glass off restores standard materials while retaining your independent
+bar visibility/geometry choices. See the [RAGE guide and validation report](docs/RAGE.md)
+for settings, compositor requirements, limitations and troubleshooting.
+See the [material reconstruction report](docs/RAGE-MATERIAL-RECONSTRUCTION.md)
+for verified blur measurements, native palette isolation and actual before/after captures.
 
 **Bar padding:** **Settings → Bar → Bar padding editor** provides live
 Top/Bottom/Left/Right inner padding from **0–32 px**, saved independently for
@@ -42,6 +120,9 @@ AI, launcher, settings, power menu, QR overlay, notifications, OSD and dock.
 Choose **Float / Fade / Slide / Zoom / Spring** and use **Preview animation**.
 **Settings → Bar → Bar animations** sets a separate style for the bar and its
 popups. Controls, search results, accordion sizes and Quick Modes share the same timing.
+Launcher and dock animate within stable native canvases, wait for their first
+frame, and prepare blur before opening. Normal mode keeps the launcher warm after
+first use; low-memory mode releases it. See the [motion fix and native measurements](docs/LAUNCHER-DOCK-MOTION.md).
 Turning it off settles active surface transitions immediately; opening and
 closing become instant. QR contents still clear as soon as closing is requested.
 
@@ -199,7 +280,7 @@ See [`changelog/BETA1-POWER-OVERLAY-PACKAGE-SEARCH-HOTFIX.md`](changelog/BETA1-P
 
 - Search from Settings → Installed apps uses `yay -Ss <query>` exactly as it does in a terminal, with ANSI escaping handled by the parser. AUR items such as `ventoy-bin` should show in Yay/AUR even if a Flatpak remote times out.
 - Provider searches remain isolated: Flatpak timeouts are displayed as an individual provider warning, without hiding Pacman or Yay results.
-- The power menu remains a full-screen Wayland Overlay layer, with a centered card using the same `Theme.sectionRadius` and `Theme.borderaccent` as the launcher. Click outside the card or press Esc to close; the small X button was removed.
+- The power menu remains a full-screen Wayland Overlay layer, with a centered card using shared Theme material tokens, with launcher geometry configurable independently. Click outside the card or press Esc to close; the small X button was removed.
 - If AUR results are still absent, run `python3 scripts/rustiq-package-manager.py search-source yay ventoy-bin` and compare with `yay -Ss ventoy-bin` to inspect the actual JSON response.
 
 ## Quick start

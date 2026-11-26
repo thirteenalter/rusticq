@@ -29,7 +29,7 @@ Item {
             Layout.maximumWidth: root.iconSlotWidth
             Layout.alignment: Qt.AlignVCenter
         }
-        Text {
+        GlassLabel {
             Layout.alignment: Qt.AlignVCenter
             visible: root.forceDetails || (!root.cleanStyle && hover.hovered)
             text: WifiService.ethernetConnected ? "Ethernet" : !WifiService.enabled ? "Wi-Fi off" : WifiService.connected

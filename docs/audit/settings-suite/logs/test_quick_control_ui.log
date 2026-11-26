@@ -1,0 +1,34 @@
+  INFO: Launching config: "/tmp/rusticq-quick-control-ui-5_le310u/shell.qml"
+  INFO: Shell ID: "4d7e14f56f41c4ee71cb078688d25172" Path ID "4d7e14f56f41c4ee71cb078688d25172"
+  INFO: Saving logs to "/tmp/rusticq-quick-control-ui-5_le310u/quickshell/by-id/r8l904pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-quick-control-ui-5_le310u/quickshell/by-id/r8l904pt/ipc.sock"
+  WARN quickshell.network.networkmanager: Could not connect to DBus. NetworkManager backend will not work.
+ ERROR quickshell.network: Network will not work. Could not find an available backend.
+  WARN quickshell.bluetooth: Could not connect to DBus. Bluetooth integration is not available.
+  WARN quickshell.service.powerprofiles: Could not connect to DBus. PowerProfiles services will not work.
+  WARN quickshell.service.upower: Could not connect to DBus. UPower service will not work.
+  WARN quickshell.service.notifications: Could not connect to DBus. Notification service will not work.
+  INFO: Configuration Loaded
+ DEBUG qml: QUICK CONTROL TEST test_a_classic_modular_frameless_and_scope failed false checkpoint two metric columns
+ DEBUG qml: QUICK CONTROL TEST test_b2_readable_control_materials_over_light_and_dark_backdrops failed false checkpoint 
+ DEBUG qml: QUICK CONTROL TEST test_b_surfaces_input_regions_and_settings failed false checkpoint 
+ DEBUG qml: QUICK CONTROL TEST test_c2_connectivity_toggle_and_full_width_detail_window failed false checkpoint 
+ DEBUG qml: QUICK CONTROL TEST test_c_actual_two_dimensional_reorder_and_stable_delegates failed false checkpoint 
+ DEBUG qml: QUICK CONTROL TEST test_d_volume_amplification_mute_and_missing_devices failed false checkpoint 
+ DEBUG qml: QUICK CONTROL TEST test_e_tabs_media_and_single_brightness_controller failed false checkpoint brightness
+ DEBUG qml: QUICK CONTROL TEST test_f_small_screen_optional_content_and_live_palettes failed false checkpoint 
+ DEBUG qml: QUICK CONTROL TEST test_g_settings_controls_commit_and_restart failed false checkpoint 
+ DEBUG qml: QUICK CONTROL RESULTS 10 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-quick-control-ui-5_le310u/shell.qml"
+  INFO: Shell ID: "4d7e14f56f41c4ee71cb078688d25172" Path ID "4d7e14f56f41c4ee71cb078688d25172"
+  INFO: Saving logs to "/tmp/rusticq-quick-control-ui-5_le310u/quickshell/by-id/3bz904pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-quick-control-ui-5_le310u/quickshell/by-id/3bz904pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: QUICK CONTROL RELOAD PASS
+PASS: production layouts, regions, reordering, audio amplification, tabs, media, brightness, small screens, palettes and settings restart

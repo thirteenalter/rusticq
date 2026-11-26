@@ -9,7 +9,7 @@ Pill {
     property bool backgroundEnabled: true
     property bool showDetails: true
     readonly property bool cleanStyle: compact && !backgroundEnabled
-    color: backgroundEnabled ? Theme.borderaccent : "transparent"
+    baseColor: backgroundEnabled ? Theme.borderaccent : "transparent"
     horizontalPadding: !backgroundEnabled ? 0 : compact ? 5 : 6
     verticalPadding: compact ? 3 : 7
 

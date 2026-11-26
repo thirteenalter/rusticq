@@ -1,0 +1,34 @@
+test_01_hyprland_detect_by_desktop (__main__.CompositorStudioSafety.test_01_hyprland_detect_by_desktop) ... ok
+test_02_hyprland_detect_by_socket (__main__.CompositorStudioSafety.test_02_hyprland_detect_by_socket) ... ok
+test_03_niri_detect_by_desktop (__main__.CompositorStudioSafety.test_03_niri_detect_by_desktop) ... ok
+test_04_niri_detect_by_socket (__main__.CompositorStudioSafety.test_04_niri_detect_by_socket) ... ok
+test_05_ambiguous_socket_detection (__main__.CompositorStudioSafety.test_05_ambiguous_socket_detection) ... ok
+test_06_unknown_session_read_only (__main__.CompositorStudioSafety.test_06_unknown_session_read_only) ... ok
+test_07_hyprland_all_four_enabled (__main__.CompositorStudioSafety.test_07_hyprland_all_four_enabled) ... ok
+test_08_niri_requires_schema_gate (__main__.CompositorStudioSafety.test_08_niri_requires_schema_gate) ... ok
+test_09_autostart_rejects_multiline_in_one_item (__main__.CompositorStudioSafety.test_09_autostart_rejects_multiline_in_one_item) ... ok
+test_10_autostart_rejects_empty_and_too_many (__main__.CompositorStudioSafety.test_10_autostart_rejects_empty_and_too_many) ... ok
+test_11_input_rejects_metacharacters (__main__.CompositorStudioSafety.test_11_input_rejects_metacharacters) ... ok
+test_12_appearance_rejects_out_of_range (__main__.CompositorStudioSafety.test_12_appearance_rejects_out_of_range) ... ok
+test_13_monitor_rejects_bad_output (__main__.CompositorStudioSafety.test_13_monitor_rejects_bad_output) ... ok
+test_14_preview_is_strictly_read_only (__main__.CompositorStudioSafety.test_14_preview_is_strictly_read_only) ... ok
+test_15_autostart_escaped_quotes_and_backslashes (__main__.CompositorStudioSafety.test_15_autostart_escaped_quotes_and_backslashes) ... ok
+test_16_apply_preserves_original_user_lines (__main__.CompositorStudioSafety.test_16_apply_preserves_original_user_lines) ... ok
+test_17_reapply_replaces_only_one_owned_block (__main__.CompositorStudioSafety.test_17_reapply_replaces_only_one_owned_block) ... ok
+test_18_preview_token_refuses_concurrent_edits (__main__.CompositorStudioSafety.test_18_preview_token_refuses_concurrent_edits) ... ok
+test_19_symlinked_config_refused (__main__.CompositorStudioSafety.test_19_symlinked_config_refused) ... ok
+test_20_missing_lua_require_refused (__main__.CompositorStudioSafety.test_20_missing_lua_require_refused) ... ok
+test_21_failed_hyprland_reload_restores_original (__main__.CompositorStudioSafety.test_21_failed_hyprland_reload_restores_original) ... ok
+test_22_rollback_refuses_overwriting_newer_edits (__main__.CompositorStudioSafety.test_22_rollback_refuses_overwriting_newer_edits) ... ok
+test_23_rollback_restores_and_validates_original (__main__.CompositorStudioSafety.test_23_rollback_restores_and_validates_original) ... ok
+test_24_niri_autostart_and_gaps_apply (__main__.CompositorStudioSafety.test_24_niri_autostart_and_gaps_apply) ... ok
+test_25_no_duplicate_existing_managed_marker (__main__.CompositorStudioSafety.test_25_no_duplicate_existing_managed_marker) ... ok
+test_26_no_unverified_niri_when_validator_missing (__main__.CompositorStudioSafety.test_26_no_unverified_niri_when_validator_missing) ... ok
+test_27_unsupported_niri_input_is_readonly (__main__.CompositorStudioSafety.test_27_unsupported_niri_input_is_readonly) ... ok
+test_28_no_dangerous_uncontrolled_rewrite (__main__.CompositorStudioSafety.test_28_no_dangerous_uncontrolled_rewrite) ... ok
+test_29_utf8_command_preserves_original_bytes (__main__.CompositorStudioSafety.test_29_utf8_command_preserves_original_bytes) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 0.505s
+
+OK

@@ -118,7 +118,7 @@ class WifiAndShortcutTests(unittest.TestCase):
         self.assertIn('WifiAdvanced {',bar)
         self.assertIn('Layout.preferredHeight: visible ? implicitHeight : 0',bar)
         self.assertNotIn('Layout.preferredHeight: visible ? 335 : 0',bar)
-        self.assertIn('kind === "wifi"',popup)
+        self.assertIn('contentKind === "wifi"',popup)
         self.assertIn('Theme.sectionPadding',audio)
         self.assertIn('Store.requestShortcutConfirmation',settings)
         self.assertIn('onShortcutBackupApproved',settings)

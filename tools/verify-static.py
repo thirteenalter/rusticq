@@ -108,7 +108,7 @@ for dirname in ('services', 'config'):
 
 # Interaction checks: explicit header hitboxes and local dropdown state.
 header = (root / 'components' / 'SectionHeader.qml').read_text(encoding='utf-8')
-if 'height: 36' not in header or 'onClicked: root.toggleRequested()' not in header:
+if not ('height: 36' in header or ('height: implicitHeight' in header and 'implicitHeight:' in header)) or 'onClicked: root.toggleRequested()' not in header:
     problems.append('SectionHeader missing real clickable height')
 for widget, target in [('BarWifi', 'wifiWidget'), ('BarBluetooth', 'root'), ('BarBattery', 'root')]:
     source = (root / 'modules' / 'bar' / f'{widget}.qml').read_text(encoding='utf-8')

@@ -5,16 +5,17 @@ import "../config"
 // Reusable setting row; one persistent key per visible module or menu section.
 Rectangle {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     required property var modelData
     property bool perBarMode: false
     readonly property bool checked: perBarMode ? SettingsStore.modeIconVisible(modelData.key) : SettingsStore[modelData.key] === true
     Layout.fillWidth: true
-    Layout.preferredHeight: 59
-    radius: 12
-    color: mouse.containsMouse ? Qt.alpha(Theme.accent, .075) : Theme.surface
-    border.width: 1
-    border.color: mouse.containsMouse ? Qt.alpha(Theme.accent, .3) : Qt.alpha(Theme.foreground, .045)
-    Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+    Layout.preferredHeight: root.settingsTheme===Theme?59:root.settingsTheme.rowHeight
+    radius: root.settingsTheme.glassRadius("control", 12)
+    color: root.settingsTheme!==Theme ? (mouse.containsMouse?root.settingsTheme.hover:"transparent") : root.settingsTheme.glassColor("control", mouse.containsMouse ? Qt.alpha(root.settingsTheme.accent, .075) : root.settingsTheme.surface)
+    border.width: root.settingsTheme!==Theme ? 0 : root.settingsTheme.glassBorderWidth("control", 1)
+    border.color: root.settingsTheme.glassBorder("control", mouse.containsMouse ? Qt.alpha(root.settingsTheme.accent, .3) : Qt.alpha(root.settingsTheme.foreground, .045))
+    Behavior on color { enabled: root.settingsTheme.motionEnabled; ColorAnimation { duration: root.settingsTheme.motionFastDuration } }
     activeFocusOnTab: true
     Accessible.role: Accessible.CheckBox
     Accessible.name: modelData.label
@@ -31,25 +32,25 @@ Rectangle {
         anchors.margins: 12
         spacing: 12
         Rectangle {
-            Layout.preferredWidth: 34; Layout.preferredHeight: 34; radius: 10
-            color: Qt.alpha(Theme.accent, root.checked ? .17 : .075)
-            Icon { anchors.centerIn: parent; icon: root.modelData.icon; font.pixelSize: Fonts.scale(19); color: root.checked ? Theme.accent : Theme.muted }
+            Layout.preferredWidth: 34; Layout.preferredHeight: 34; radius: root.settingsTheme.glassRadius("control", 10)
+            color: root.settingsTheme.glassColor("control", Qt.alpha(root.settingsTheme.accent, root.checked ? .17 : .075))
+            Icon { anchors.centerIn: parent; icon: root.modelData.icon; font.pixelSize: Fonts.scale(19); color: root.checked ? root.settingsTheme.accent : root.settingsTheme.muted }
         }
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 2
-            Text { text: root.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true; elide: Text.ElideRight }
-            Text { text: root.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true; elide: Text.ElideRight }
+            GlassLabel { text: root.modelData.label; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true; elide: Text.ElideRight }
+            GlassLabel { text: root.modelData.desc; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true; elide: Text.ElideRight }
         }
         Rectangle {
             Layout.preferredWidth: 38; Layout.preferredHeight: 21; radius: 11
-            color: root.checked ? Theme.accent : Theme.borderaccent
+            color: root.checked ? root.settingsTheme.accent : root.settingsTheme.borderaccent
             Rectangle {
                 width: 15; height: 15; radius: 8
                 anchors.verticalCenter: parent.verticalCenter
                 x: root.checked ? parent.width - width - 3 : 3
-                color: root.checked ? Theme.background : Theme.muted
-                Behavior on x { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
+                color: root.checked ? root.settingsTheme.background : root.settingsTheme.muted
+                Behavior on x { enabled: root.settingsTheme.motionEnabled; NumberAnimation { duration: root.settingsTheme.motionFastDuration; easing.type: Easing.OutCubic } }
             }
         }
     }

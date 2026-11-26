@@ -1,0 +1,1617 @@
+{
+  "capabilities": {
+    "ok": true,
+    "backend": "hyprland",
+    "supported": true,
+    "active": false,
+    "independentStrength": false,
+    "persistentChanges": false,
+    "message": "Hyprland named session rules are supported. Blur strength follows your compositor; RAGE never changes its global blur options.",
+    "version": "0.56.2",
+    "globalBlur": true
+  },
+  "captures": [
+    {
+      "name": "closed",
+      "style": "spotlight",
+      "query": "",
+      "visible": false,
+      "logicalVisible": false,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630.2,
+        "y": 173.41999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 631.8489998579025,
+        "y": 233.56000137329102,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 630.2,
+        "y": 173.41999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": false,
+      "editorFocus": false,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "gruvbox",
+      "foreground": "#ebdbb2",
+      "background": "#282828"
+    },
+    {
+      "name": "spotlight-empty",
+      "style": "spotlight",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 621.7,
+        "y": 256.4000015258789,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "spotlight-populated",
+      "style": "spotlight",
+      "query": "a",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 133,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 620,
+        "y": 266.4000015258789,
+        "width": 680,
+        "height": 448
+      },
+      "surface": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 520
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "detached-empty",
+      "style": "detached",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 24,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "results": {
+        "x": 631.65,
+        "y": 262.4000015258789,
+        "width": 660,
+        "height": 0
+      },
+      "surface": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 630,
+        "y": 194,
+        "width": 660,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "detached-populated",
+      "style": "detached",
+      "query": "a",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 24,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 616,
+      "input": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "results": {
+        "x": 630,
+        "y": 268.4000015258789,
+        "width": 660,
+        "height": 446
+      },
+      "surface": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 520
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 630,
+        "y": 194,
+        "width": 660,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "launchpad-empty",
+      "style": "launchpad",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 1276,
+      "input": {
+        "x": 300,
+        "y": 55,
+        "width": 1320,
+        "height": 56
+      },
+      "results": {
+        "x": 300,
+        "y": 115,
+        "width": 1320,
+        "height": 910
+      },
+      "surface": {
+        "x": 300,
+        "y": 55,
+        "width": 1320,
+        "height": 970
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 300,
+        "y": 55,
+        "width": 1320,
+        "height": 970
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "blur",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "launchpad-populated",
+      "style": "launchpad",
+      "query": "a",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 133,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 1276,
+      "input": {
+        "x": 300,
+        "y": 55,
+        "width": 1320,
+        "height": 56
+      },
+      "results": {
+        "x": 300,
+        "y": 115,
+        "width": 1320,
+        "height": 910
+      },
+      "surface": {
+        "x": 300,
+        "y": 55,
+        "width": 1320,
+        "height": 970
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 300,
+        "y": 55,
+        "width": 1320,
+        "height": 970
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "blur",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "minimal-empty",
+      "style": "minimal",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 700,
+        "y": 330,
+        "width": 520,
+        "height": 44
+      },
+      "results": {
+        "x": 700,
+        "y": 378,
+        "width": 520,
+        "height": 372
+      },
+      "surface": {
+        "x": 700,
+        "y": 330,
+        "width": 520,
+        "height": 420
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 700,
+        "y": 330,
+        "width": 520,
+        "height": 420
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "minimal-populated",
+      "style": "minimal",
+      "query": "a",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 133,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 700,
+        "y": 330,
+        "width": 520,
+        "height": 44
+      },
+      "results": {
+        "x": 700,
+        "y": 378,
+        "width": 520,
+        "height": 372
+      },
+      "surface": {
+        "x": 700,
+        "y": 330,
+        "width": 520,
+        "height": 420
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 700,
+        "y": 330,
+        "width": 520,
+        "height": 420
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "classic-empty",
+      "style": "classic",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 20,
+        "y": 60,
+        "width": 740,
+        "height": 48
+      },
+      "results": {
+        "x": 20,
+        "y": 112,
+        "width": 740,
+        "height": 468
+      },
+      "surface": {
+        "x": 20,
+        "y": 60,
+        "width": 740,
+        "height": 520
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 20,
+        "y": 60,
+        "width": 740,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "classic-populated",
+      "style": "classic",
+      "query": "a",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 133,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 20,
+        "y": 60,
+        "width": 740,
+        "height": 48
+      },
+      "results": {
+        "x": 20,
+        "y": 112,
+        "width": 740,
+        "height": 468
+      },
+      "surface": {
+        "x": 20,
+        "y": 60,
+        "width": 740,
+        "height": 520
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 20,
+        "y": 60,
+        "width": 740,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "detached-one",
+      "style": "detached",
+      "query": "Aether",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 1,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 616,
+      "input": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "results": {
+        "x": 630,
+        "y": 268.4000015258789,
+        "width": 660,
+        "height": 174
+      },
+      "surface": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 248
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 630,
+        "y": 194,
+        "width": 660,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "detached-calculator",
+      "style": "detached",
+      "query": "=sqrt(144)+8",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 0,
+      "apps": 151,
+      "calculator": "20",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "results": {
+        "x": 630,
+        "y": 268.4000015258789,
+        "width": 660,
+        "height": 124
+      },
+      "surface": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 198
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 630,
+        "y": 194,
+        "width": 660,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "detached-none",
+      "style": "detached",
+      "query": "no-such-application-zzzzz",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 0,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "results": {
+        "x": 630,
+        "y": 268.4000015258789,
+        "width": 660,
+        "height": 136
+      },
+      "surface": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 210
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 630,
+        "y": 194,
+        "width": 660,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "detached-cleared",
+      "style": "detached",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 24,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "results": {
+        "x": 631.65,
+        "y": 262.4000015258789,
+        "width": 660,
+        "height": 0
+      },
+      "surface": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 630,
+        "y": 194,
+        "width": 660,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "detached-independent-materials",
+      "style": "detached",
+      "query": "a",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 24,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 616,
+      "input": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "results": {
+        "x": 630,
+        "y": 268.4000015258789,
+        "width": 660,
+        "height": 446
+      },
+      "surface": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 520
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 630,
+        "y": 194,
+        "width": 660,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "detached-list",
+      "style": "detached",
+      "query": "a",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 24,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "results": {
+        "x": 630,
+        "y": 268.4000015258789,
+        "width": 660,
+        "height": 446
+      },
+      "surface": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 520
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 630,
+        "y": 194,
+        "width": 660,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "detached-naked",
+      "style": "detached",
+      "query": "a",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 24,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 64
+      },
+      "results": {
+        "x": 630,
+        "y": 268.4000015258789,
+        "width": 660,
+        "height": 446
+      },
+      "surface": {
+        "x": 630,
+        "y": 194.40000000596046,
+        "width": 660,
+        "height": 520
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 630,
+        "y": 194,
+        "width": 660,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "backdrop-none",
+      "style": "spotlight",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 621.7,
+        "y": 256.4000015258789,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "backdrop-dim",
+      "style": "spotlight",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 621.7,
+        "y": 256.4000015258789,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "dim",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "backdrop-blur",
+      "style": "spotlight",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 621.7,
+        "y": 256.4000015258789,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "blur",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "backdrop-dim-blur",
+      "style": "spotlight",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 621.7,
+        "y": 256.4000015258789,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "dim-blur",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "backdrop-focus",
+      "style": "spotlight",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 621.7,
+        "y": 256.4000015258789,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "focus",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "spotlight-blur-control",
+      "style": "spotlight",
+      "query": "",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 621.7,
+        "y": 256.4000015258789,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "dock-collapsed",
+      "style": "spotlight",
+      "query": "",
+      "visible": false,
+      "logicalVisible": false,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630.2,
+        "y": 173.41999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 631.8489998579025,
+        "y": 233.56000137329102,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 630.2,
+        "y": 173.41999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": true,
+        "x": 919,
+        "y": 1054,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": false,
+      "editorFocus": false,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "dock-expanded",
+      "style": "spotlight",
+      "query": "",
+      "visible": false,
+      "logicalVisible": false,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630.2,
+        "y": 173.41999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 631.8489998579025,
+        "y": 233.56000137329102,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 630.2,
+        "y": 173.41999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": true,
+        "x": 780,
+        "y": 978,
+        "width": 360,
+        "height": 94
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": false,
+      "editorFocus": false,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "dock-closed-again",
+      "style": "spotlight",
+      "query": "",
+      "visible": false,
+      "logicalVisible": false,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630.2,
+        "y": 173.41999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 631.8489998579025,
+        "y": 233.56000137329102,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 630.2,
+        "y": 173.41999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": true,
+        "x": 919,
+        "y": 1054,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": false,
+      "editorFocus": false,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    },
+    {
+      "name": "application-closed",
+      "style": "spotlight",
+      "query": "",
+      "visible": false,
+      "logicalVisible": false,
+      "count": 151,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630.2,
+        "y": 173.41999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 631.8489998579025,
+        "y": 233.56000137329102,
+        "width": 680,
+        "height": 0
+      },
+      "surface": {
+        "x": 630.2,
+        "y": 173.41999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": false,
+      "editorFocus": false,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c",
+      "crop": [
+        23,
+        57,
+        1897,
+        1062
+      ]
+    },
+    {
+      "name": "spotlight-application",
+      "style": "spotlight",
+      "query": "a",
+      "visible": true,
+      "logicalVisible": true,
+      "count": 133,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 620,
+        "y": 266.4000015258789,
+        "width": 680,
+        "height": 448
+      },
+      "surface": {
+        "x": 620,
+        "y": 194.40000000596046,
+        "width": 680,
+        "height": 520
+      },
+      "resultsVisible": true,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": true,
+      "editorFocus": true,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c",
+      "crop": [
+        23,
+        57,
+        1897,
+        1062
+      ]
+    },
+    {
+      "name": "dismissed",
+      "style": "spotlight",
+      "query": "a",
+      "visible": false,
+      "logicalVisible": false,
+      "count": 133,
+      "apps": 151,
+      "calculator": "",
+      "selectedIndex": 0,
+      "gridWidth": 0,
+      "input": {
+        "x": 630.2,
+        "y": 180.19999961853028,
+        "width": 680,
+        "height": 68
+      },
+      "results": {
+        "x": 630.1999998092651,
+        "y": 250.04000091552734,
+        "width": 680,
+        "height": 448
+      },
+      "surface": {
+        "x": 630.2,
+        "y": 180.19999961853028,
+        "width": 680,
+        "height": 520
+      },
+      "resultsVisible": false,
+      "dock": {
+        "visible": false,
+        "x": 919,
+        "y": 1076,
+        "width": 82,
+        "height": 18
+      },
+      "window": {
+        "x": 620,
+        "y": 194,
+        "width": 680,
+        "height": 520
+      },
+      "nativeFocus": false,
+      "editorFocus": false,
+      "controller": "LauncherController_QMLTYPE_63(0x7f809a09a760)",
+      "editor": "QQuickTextInput(0x7f80935fad00, \"launcherSearchInput\")",
+      "screen": "eDP-1",
+      "backdrop": "none",
+      "palette": "rage",
+      "foreground": "#f5f5f7",
+      "background": "#19191c"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import "../../components"
 // Transient, noninteractive, nonexclusive Wayland popup on the focused screen.
 // One visible OSD per shell, even on multi-monitor layouts.
 PanelWindow {
+    WlrLayershell.namespace: "rusticq-osd"
     id: root
     property bool requested: false
     function syncRequested() {
@@ -47,27 +48,29 @@ PanelWindow {
         if (kind === "touchpad") return muted ? "\ue8f5" : "\ue8f4";
         return "\ue000";
     }
-    Rectangle {
+    GlassSurface {
+        Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+        surfaceRole: "popup"
         id: osdSurface
         anchors.fill: parent
         transform: Translate { x: motion.offsetX; y: motion.offsetY }
-        radius: 18
-        color: Theme.background
-        border.width: 1
-        border.color: Theme.borderaccent
+        radius: Theme.glassRadius("popup", 18)
+        color: Theme.glassColor("popup", Theme.background)
+        border.width: Theme.glassBorderWidth("popup", 1)
+        border.color: Theme.glassBorder("popup", Theme.borderaccent)
         RowLayout {
             anchors.fill: parent
-            anchors.margins: 15
+            anchors.margins: Theme.panelPadding
             spacing: 13
             Rectangle {
                 Layout.preferredWidth: 46; Layout.preferredHeight: 46
-                radius: 14
-                color: Qt.alpha(root.kind === "error" ? Theme.error : Theme.accent, 0.13)
+                radius: Theme.glassRadius("card", 14)
+                color: Theme.glassColor("card", Qt.alpha(root.kind === "error" ? Theme.error : Theme.accent, 0.13))
                 Icon { anchors.centerIn: parent; icon: root.glyph; color: root.kind === "error" ? Theme.error : Theme.accent; font.pixelSize: Fonts.scale(24) }
             }
             ColumnLayout {
                 Layout.fillWidth: true; spacing: 6
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true; text: Store.osdLabel
                     font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12)
                     color: Theme.foreground; elide: Text.ElideRight; textFormat: Text.PlainText
@@ -85,7 +88,7 @@ PanelWindow {
                             Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
                         }
                     }
-                    Text { text: Store.osdMuted ? "MUTE" : Store.osdPercent + "%"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { text: Store.osdMuted ? "MUTE" : Store.osdPercent + "%"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(10) }
                 }
                 // Three hardware brightness phases (+ Off) rather than a percent
                 // bar. Devices with only one or two physical steps show only
@@ -102,14 +105,14 @@ PanelWindow {
                             color: index < Store.osdStage ? Theme.accent : Theme.surface
                         }
                     }
-                    Text {
+                    GlassLabel {
                         text: Store.osdStage === 0 ? "OFF" : Store.osdStage + "/" + Store.osdStages
                         color: Store.osdStage === 0 ? Theme.muted : Theme.accent
                         font.family: Fonts.poppinsSB.name
                         font.pixelSize: Fonts.scale(10)
                     }
                 }
-                Text {
+                GlassLabel {
                     visible: root.kind === "microphone" || root.kind === "touchpad" || root.kind === "error"
                     text: root.kind === "error" ? "Unavailable"
                         : root.kind === "microphone" ? (Store.osdMuted ? "MUTED" : "ACTIVE")

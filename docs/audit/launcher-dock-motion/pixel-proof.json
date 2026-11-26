@@ -1,0 +1,250 @@
+{
+  "outside": {
+    "spotlight-empty": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "spotlight-populated": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-empty": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-populated": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "minimal-empty": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "minimal-populated": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "classic-empty": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "classic-populated": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-one": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-calculator": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-none": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-cleared": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-independent-materials": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-list": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-naked": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "backdrop-none": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "spotlight-blur-control": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    }
+  },
+  "outsideVisualSurfaces": {
+    "spotlight-empty": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "spotlight-populated": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-empty": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-populated": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "minimal-empty": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "minimal-populated": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "classic-empty": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "classic-populated": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-one": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-calculator": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-none": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-cleared": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-independent-materials": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-list": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "detached-naked": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "backdrop-none": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "spotlight-blur-control": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    }
+  },
+  "dock": {
+    "dock-collapsed": {
+      "surface": {
+        "visible": true,
+        "x": 919,
+        "y": 1054,
+        "width": 82,
+        "height": 18
+      },
+      "outsideChangedBounds": null
+    },
+    "dock-expanded": {
+      "surface": {
+        "visible": true,
+        "x": 780,
+        "y": 978,
+        "width": 360,
+        "height": 94
+      },
+      "outsideChangedBounds": null
+    },
+    "dock-closed-again": {
+      "surface": {
+        "visible": true,
+        "x": 919,
+        "y": 1054,
+        "width": 82,
+        "height": 18
+      },
+      "outsideChangedBounds": null
+    }
+  },
+  "detachedGap": {
+    "detached-populated": {
+      "region": [
+        654,
+        259,
+        1266,
+        267
+      ],
+      "changedBounds": null
+    },
+    "detached-one": {
+      "region": [
+        654,
+        259,
+        1266,
+        267
+      ],
+      "changedBounds": null
+    },
+    "detached-calculator": {
+      "region": [
+        654,
+        259,
+        1266,
+        267
+      ],
+      "changedBounds": null
+    },
+    "detached-none": {
+      "region": [
+        654,
+        259,
+        1266,
+        267
+      ],
+      "changedBounds": null
+    },
+    "detached-independent-materials": {
+      "region": [
+        654,
+        259,
+        1266,
+        267
+      ],
+      "changedBounds": null
+    },
+    "detached-list": {
+      "region": [
+        654,
+        259,
+        1266,
+        267
+      ],
+      "changedBounds": null
+    },
+    "detached-naked": {
+      "region": [
+        654,
+        259,
+        1266,
+        267
+      ],
+      "changedBounds": null
+    }
+  },
+  "nativeBlur": {
+    "spotlight-empty": 6.122091120798362,
+    "spotlight-blur-control": 18.56147689951847,
+    "region": [
+      1160,
+      212,
+      1220,
+      242
+    ],
+    "verified": true
+  }
+}

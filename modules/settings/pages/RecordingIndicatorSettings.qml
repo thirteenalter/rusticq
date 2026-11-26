@@ -5,6 +5,8 @@ import "../../../components"
 import ".."
 
 SettingsSection {
+    id: settingsPageRoot
+    readonly property var settingsTheme: SettingsMaterial.forItem(settingsPageRoot)
     heading: "Recording indicator"
     description: "A red recording light on every display. Its position is independent of the bar."
     symbol: "\ue04b"
@@ -14,8 +16,8 @@ SettingsSection {
         Rectangle {
             Layout.preferredWidth: 64
             Layout.preferredHeight: 48
-            radius: Theme.rowRadius
-            color: Theme.background
+            radius: settingsPageRoot.settingsTheme.glassRadius("card", settingsPageRoot.settingsTheme.rowRadius)
+            color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.background)
             RecordingDot {
                 objectName: "recordingIndicatorPreview"
                 anchors.centerIn: parent
@@ -27,8 +29,8 @@ SettingsSection {
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 3
-            Text { text: "Indicator preview"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
-            Text { text: "Preview only · no recording is started"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap; Layout.fillWidth: true }
+            GlassLabel { text: "Indicator preview"; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+            GlassLabel { text: "Preview only · no recording is started"; color: settingsPageRoot.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); wrapMode: Text.WordWrap; Layout.fillWidth: true }
         }
     }
     Repeater {
@@ -38,7 +40,7 @@ SettingsSection {
         ]
         delegate: SettingsToggle { objectName: modelData.key + "-toggle"; perBarMode: false }
     }
-    Text { text: "Corner"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+    GlassLabel { text: "Corner"; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
     GridLayout {
         Layout.fillWidth: true
         columns: 2
@@ -55,7 +57,7 @@ SettingsSection {
                 Layout.fillWidth: true
                 label: modelData.label
                 selected: SettingsStore.recordingIndicatorCorner === modelData.key
-                color: selected || activeFocus ? Qt.alpha(Theme.accent, 0.16) : Theme.background
+                color: selected || activeFocus ? Qt.alpha(settingsPageRoot.settingsTheme.accent, 0.16) : settingsPageRoot.settingsTheme.background
                 onClicked: SettingsStore.setRecordingIndicatorCorner(modelData.key)
             }
         }
@@ -72,8 +74,8 @@ SettingsSection {
             spacing: 5
             RowLayout {
                 Layout.fillWidth: true
-                Text { text: modelData.label; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); Layout.fillWidth: true }
-                Text { text: SettingsStore[modelData.key] + " px"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+                GlassLabel { text: modelData.label; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true }
+                GlassLabel { text: SettingsStore[modelData.key] + " px"; color: settingsPageRoot.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
             }
             SettingRangeSlider {
                 objectName: modelData.key + "-slider"

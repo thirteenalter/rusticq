@@ -1,0 +1,111 @@
+{
+  "date": "2026-11-24",
+  "suites": [
+    {
+      "command": "python3 -B tools/verify-static.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/check-bar-modes.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_glassmorphism.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_glassmorphism_ui.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_bar_surfaces_ui.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_bar_padding_ui.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_motion_ui.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_settings_refactor.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_portable_user_settings.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_compositor_studio_safety.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_compositor_studio_ui.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_native_lock_qml_structure.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_native_lock_design_alignment.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_builtin_polkit_agent.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_rusticq_native_lockscreen.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_wifi_audio_ui.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_quick_modes_ui.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_cloud_ai.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_dock_launcher_layout_fix.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_system_monitor_fix.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_wifi_qr_fullscreen_layout.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -B tools/test_notification_toast_redesign.py",
+      "exitCode": 0
+    }
+  ],
+  "native": {
+    "command": "python3 -B tools/test_glassmorphism_native.py --run",
+    "exitCode": 0,
+    "quickshell": "0.3.2 (Omarchy)",
+    "hyprland": "0.56.2",
+    "renderer": "software",
+    "globalBlurEnabledBefore": false,
+    "globalBlurOptionsUnchanged": true,
+    "ownedRulesDisabledAfter": true,
+    "configErrorsAfter": false,
+    "warnings": [
+      "Existing desktop notification server owns org.freedesktop.Notifications in the temporary test instance."
+    ],
+    "captures": [
+      "/tmp/rusticq-rage-native-light.png",
+      "/tmp/rusticq-rage-native-dark.png"
+    ]
+  }
+}

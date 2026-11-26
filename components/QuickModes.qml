@@ -76,10 +76,11 @@ FocusScope {
         repeat: true
         onTriggered: QuickModesService.refresh()
     }
-    Rectangle {
+    BarSurface {
+        objectName: "barQuickModesSurface"
         anchors.fill: parent
-        radius: height / 2
-        color: root.backgroundEnabled ? Theme.borderaccent : "transparent"
+        baseRadius: height / 2
+        baseColor: root.backgroundEnabled ? Theme.borderaccent : "transparent"
     }
     GridLayout {
         id: modeButtons
@@ -112,7 +113,7 @@ FocusScope {
                 Layout.preferredHeight: root.controlHeight
                 activeFocusOnTab: true
                 radius: height / 2
-                color: root.backgroundEnabled && (on || buttonMouse.containsMouse || activeFocus)
+                color: (on || buttonMouse.containsMouse || activeFocus)
                     ? Qt.alpha(Theme.accent, 0.18) : "transparent"
                 Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
                 Accessible.role: Accessible.CheckBox
@@ -126,8 +127,8 @@ FocusScope {
                     anchors.centerIn: parent
                     width: Math.max(20, Theme.barSymbolSize + 4)
                     height: width
-                    radius: 10
-                    color: modeButton.on ? Qt.alpha(Theme.accent, 0.16) : "transparent"
+                    radius: Theme.glassRadius("card", 10)
+                    color: Theme.glassColor("card", modeButton.on ? Qt.alpha(Theme.accent, 0.16) : "transparent")
                     Icon {
                         anchors.centerIn: parent
                         icon: modeButton.modelData.icon
@@ -189,10 +190,10 @@ FocusScope {
         Rectangle {
             id: tooltipSurface
             anchors.fill: parent
-            radius: 10
-            color: Theme.background
-            border.color: Theme.borderaccent
-            Text {
+            radius: Theme.glassRadius("card", 10)
+            color: Theme.glassColor("card", Theme.background)
+            border.color: Theme.glassBorder("card", Theme.borderaccent)
+            GlassLabel {
                 id: tooltipText
                 x: 10; y: 10
                 width: 240

@@ -10,6 +10,7 @@ import "../../components"
 // Beta 1: one focused-monitor floating layer. Keyboard first; destructive
 // actions require a second explicit confirmation in this same window.
 PanelWindow {
+    WlrLayershell.namespace: "rusticq-power"
     id: root
     screen: Store.powerScreen
     readonly property bool presented: motion.presented
@@ -97,26 +98,28 @@ PanelWindow {
         Rectangle {
             anchors.fill: parent
             opacity: motion.progress
-            color: Qt.alpha("#07090b", 0.60)
-            MouseArea { anchors.fill: parent; onClicked: root.close() }
+            color: Theme.glassScrim(Theme.modalScrim)
+            OutsideClickArea { anchors.fill: parent; surface: menuCard; onOutsideClicked: root.close() }
         }
-        Rectangle {
+        GlassSurface {
+            Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+            surfaceRole: "modal"
             id: menuCard
             // Identical frame treatment to MiniLauncher/search: no bright outline.
             width: Math.min(420, Math.max(300, parent.width - 48))
             height: menuContent.implicitHeight + 34
             anchors.centerIn: parent
-            radius: Theme.sectionRadius
-            color: Theme.background
-            border.color: Theme.borderaccent
-            border.width: 1
+            radius: Theme.surfaceRadius("dialogs","modal", Theme.sectionRadius)
+            color: Theme.surfaceColor("dialogs","modal", Theme.background)
+            border.color: Theme.surfaceBorder("dialogs","modal", Theme.borderaccent)
+            border.width: Theme.surfaceBorderWidth("dialogs","modal", 1)
             transform: Translate { x: motion.offsetX; y: motion.offsetY }
             ColumnLayout {
                 id: menuContent
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.margins: 17
+                anchors.margins: Theme.panelPadding
                 spacing: 8
                 // Fixed positions: header and option labels share exactly the same x.
                 Item {
@@ -128,8 +131,8 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 36
                         height: 36
-                        color: Qt.alpha(Theme.accent, .16)
-                        radius: 11
+                        color: Theme.glassColor("card", Qt.alpha(Theme.accent, .16))
+                        radius: Theme.glassRadius("card", 11)
                         Icon { anchors.centerIn: parent; icon: "\ue8ac"; color: Theme.accent; font.pixelSize: Fonts.scale(21) }
                     }
                     Column {
@@ -137,7 +140,7 @@ PanelWindow {
                         width: Math.max(80, headingRow.width - root.textColumnX - root.shortcutColumnWidth - root.shortcutRightInset)
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 2
-                        Text {
+                        GlassLabel {
                             width: parent.width
                             text: "System"
                             color: Theme.foreground
@@ -145,10 +148,10 @@ PanelWindow {
                             font.pixelSize: Fonts.scale(16)
                             elide: Text.ElideRight
                         }
-                        Text {
+                        GlassLabel {
                             width: parent.width
                             text: "Choose a session action"
-                            color: Theme.muted
+                            color: Theme.contentMuted
                             font.pixelSize: Fonts.scale(10)
                             elide: Text.ElideRight
                         }
@@ -165,10 +168,10 @@ PanelWindow {
                         readonly property bool awaiting: root.confirmation === modelData.id
                         Layout.fillWidth: true
                         Layout.preferredHeight: 49
-                        radius: 11
-                        color: chosen ? Qt.alpha(Theme.accent, .16) : (pointer.containsMouse ? Theme.surface : "transparent")
-                        border.color: awaiting ? Theme.warning : chosen ? Qt.alpha(Theme.accent, .65) : "transparent"
-                        border.width: awaiting || chosen ? 1 : 0
+                        radius: Theme.glassRadius("card", 11)
+                        color: Theme.glassColor("card", chosen ? Qt.alpha(Theme.accent, .16) : (pointer.containsMouse ? Theme.surface : "transparent"))
+                        border.color: Theme.glassBorder("card", awaiting ? Theme.warning : chosen ? Qt.alpha(Theme.accent, .65) : "transparent")
+                        border.width: Theme.glassBorderWidth("card", awaiting || chosen ? 1 : 0)
                         // No RowLayout here: label length must never change x positions.
                         Icon {
                             x: root.iconColumnX
@@ -184,7 +187,7 @@ PanelWindow {
                             width: Math.max(80, item.width - root.textColumnX - root.shortcutColumnWidth - root.shortcutRightInset)
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 2
-                            Text {
+                            GlassLabel {
                                 width: parent.width
                                 text: item.modelData.title
                                 color: Theme.foreground
@@ -192,7 +195,7 @@ PanelWindow {
                                 font.pixelSize: Fonts.scale(12)
                                 elide: Text.ElideRight
                             }
-                            Text {
+                            GlassLabel {
                                 width: parent.width
                                 text: item.awaiting ? "Press Enter / click again to confirm" : item.modelData.hint
                                 color: item.awaiting ? Theme.warning : Theme.muted
@@ -200,7 +203,7 @@ PanelWindow {
                                 elide: Text.ElideRight
                             }
                         }
-                        Text {
+                        GlassLabel {
                             anchors.right: parent.right
                             anchors.rightMargin: root.shortcutRightInset
                             anchors.verticalCenter: parent.verticalCenter
@@ -218,7 +221,7 @@ PanelWindow {
                     }
                 }
                 Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap
                     text: root.errorMessage.length ? root.errorMessage : "↑ ↓ move · 1–6 quick select · Enter confirm · Esc close"
                     color: root.errorMessage.length ? Theme.error : Theme.muted

@@ -15,24 +15,24 @@ Rectangle {
     property bool percentage: false
     readonly property real maxMeasured: Math.max(1, Math.max.apply(null, history))
     readonly property var normalized: percentage ? history : history.map(v => Math.max(0, Math.min(1, v / maxMeasured)))
-    color: Theme.surface
-    radius: 13
-    border.width: 0
+    color: Theme.glassColor("card", Theme.surface)
+    radius: Theme.glassRadius("card", 13)
+    border.width: Theme.glassBorderWidth("card", 0)
     implicitHeight: 183
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 14
+        anchors.margins: Theme.cardPadding
         spacing: 9
         RowLayout {
             Layout.fillWidth: true
             spacing: 9
             Rectangle {
                 Layout.preferredWidth: 30; Layout.preferredHeight: 30
-                radius: 9; color: Qt.alpha(Theme.accent, 0.15)
+                radius: Theme.glassRadius("card", 9); color: Theme.glassColor("card", Qt.alpha(Theme.accent, 0.15))
                 Icon { anchors.centerIn: parent; icon: card.glyph; font.pixelSize: Fonts.scale(17); color: Theme.accent }
             }
-            Text {
+            GlassLabel {
                 Layout.fillWidth: true
                 text: card.heading
                 color: Theme.foreground
@@ -40,7 +40,7 @@ Rectangle {
                 font.pixelSize: Fonts.scale(12)
                 elide: Text.ElideRight
             }
-            Text {
+            GlassLabel {
                 text: card.valueLabel
                 color: Theme.accent
                 font.family: Fonts.poppinsSB.name
@@ -52,12 +52,12 @@ Rectangle {
             Layout.preferredHeight: 93
             samples: card.normalized
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             text: card.detail
             font.family: Fonts.poppins.name
             font.pixelSize: Fonts.scale(10)
-            color: Theme.muted
+            color: Theme.contentMuted
             elide: Text.ElideRight
         }
     }

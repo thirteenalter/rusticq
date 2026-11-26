@@ -3,10 +3,13 @@ import QtQuick.Layouts
 import "../../../config"
 import "../../../components"
 import ".."
+import "../../../components/settings" as Suite
 
 ColumnLayout {
     width: parent ? parent.width : 680
     spacing: 14
+    SettingsDesktopPreview { Layout.fillWidth:true;kind:"dock" }
+    Suite.SettingsSegmentedControl {design:SettingsMaterial.forItem(parent);Layout.preferredWidth:360;model:["Bar","Dock","Behavior"];currentIndex:1;onSelected:index=>{if(index!==1)Store.settingsTab="bar";}}
     SettingsSection {
         heading: "Dock behavior"
         description: "The dock appears along the lower edge and can collapse to a hover handle."

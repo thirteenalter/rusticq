@@ -8,6 +8,9 @@ import ".."
 
 ColumnLayout {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
+    property var appearance: null
+    readonly property var controlTheme: appearance || root.settingsTheme
     width: parent ? parent.width : 680
     spacing: 13
     property var entries: []
@@ -36,6 +39,10 @@ ColumnLayout {
     property string filterText: ""
     property string combo: "SUPER + SHIFT + R"
     property string pendingVerb: ""
+    property string confirmationOwner: "shortcut-page-" + Date.now() + "-" + Math.random()
+    property var confirmationScreen: null
+    property string confirmationWindowTitle: "RusticQ · Settings"
+    Component.onDestruction: if (Store.shortcutConfirmVisible && Store.shortcutConfirmOwner === confirmationOwner) Store.cancelShortcutConfirmation()
     property string pendingSelectedAction: ""
     property string commandVerb: ""
     property var pendingCommand: []
@@ -66,7 +73,7 @@ ColumnLayout {
             if (!frozen.length) { successful = false; feedback = "Select a valid binding first."; return; }
             pendingCommand = frozen;
             Store.requestShortcutConfirmation(description, target,
-                verb === "shortcut" && recoveryCombo);
+                verb === "shortcut" && recoveryCombo, confirmationOwner, confirmationScreen, confirmationWindowTitle);
             return;
         }
         executeCommand(verb, selectedAction);
@@ -96,7 +103,8 @@ ColumnLayout {
     }
     Connections {
         target: Store
-        function onShortcutBackupApproved() {
+        function onShortcutBackupApproved(owner) {
+            if (owner !== root.confirmationOwner) return;
             if (!root.pendingVerb || root.busy) return;
             const verb = root.pendingVerb;
             const target = root.pendingSelectedAction;
@@ -105,6 +113,10 @@ ColumnLayout {
             root.pendingSelectedAction = "";
             root.pendingCommand = [];
             root.executeCommand(verb, target, cmd);
+        }
+        function onShortcutBackupCancelled(owner) {
+            if (owner !== root.confirmationOwner) return;
+            root.pendingVerb = ""; root.pendingSelectedAction = ""; root.pendingCommand = [];
         }
     }
     Process {
@@ -152,6 +164,7 @@ ColumnLayout {
         }
     }
     SettingsSection {
+        appearance: root.appearance
         heading: "Top bar button shortcuts"
         description: "Every interactive top-bar button is mapped to its real action. Select the button, choose an action, then assign a key below. This works across Left / Center / Right bar layouts."
         symbol: "\ue312"
@@ -166,16 +179,16 @@ ColumnLayout {
                     required property var modelData
                     Layout.fillWidth: true
                     Layout.preferredHeight: 38
-                    radius: 9
-                    color: root.selectedBarKey === modelData.key ? Qt.alpha(Theme.accent, 0.18) : Theme.background
-                    border.color: Theme.accent
-                    border.width: root.selectedBarKey === modelData.key ? 1 : 0
-                    Text {
+                    radius: root.controlTheme.glassRadius("card", 9)
+                    color: root.controlTheme.glassColor("card", root.selectedBarKey === modelData.key ? Qt.alpha(root.controlTheme.accent, 0.18) : root.controlTheme.background)
+                    border.color: root.controlTheme.glassBorder("card", root.controlTheme.accent)
+                    border.width: root.controlTheme.glassBorderWidth("card", root.selectedBarKey === modelData.key ? 1 : 0)
+                    GlassLabel {
                         anchors.centerIn: parent
                         text: barGroup.modelData.name
-                        color: root.selectedBarKey === barGroup.modelData.key ? Theme.accent : Theme.foreground
+                        color: root.selectedBarKey === barGroup.modelData.key ? root.controlTheme.accent : root.controlTheme.foreground
                         font.family: Fonts.poppinsSB.name
-                        font.pixelSize: Fonts.scale(10)
+                        font.pixelSize: Fonts.scale(12)
                     }
                     MouseArea {
                         anchors.fill: parent; cursorShape: Qt.PointingHandCursor
@@ -187,10 +200,10 @@ ColumnLayout {
                 }
             }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             text: "Choose the exact action for " + (root.barGroups.find(g => g.key === root.selectedBarKey) || {name:""}).name + ":"
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+            color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
         GridLayout {
             Layout.fillWidth: true
@@ -200,16 +213,16 @@ ColumnLayout {
                 delegate: Rectangle {
                     id: barAction
                     required property var modelData
-                    Layout.fillWidth: true; Layout.preferredHeight: 44; radius: 9
-                    color: root.action === modelData.key ? Qt.alpha(Theme.accent, 0.18) : Theme.background
-                    border.width: root.action === modelData.key ? 1 : 0
-                    border.color: Theme.accent
-                    Text {
+                    Layout.fillWidth: true; Layout.preferredHeight: 44; radius: root.controlTheme.glassRadius("card", 9)
+                    color: root.controlTheme.glassColor("card", root.action === modelData.key ? Qt.alpha(root.controlTheme.accent, 0.18) : root.controlTheme.background)
+                    border.width: root.controlTheme.glassBorderWidth("card", root.action === modelData.key ? 1 : 0)
+                    border.color: root.controlTheme.glassBorder("card", root.controlTheme.accent)
+                    GlassLabel {
                         anchors.centerIn: parent; width: parent.width - 10
                         horizontalAlignment: Text.AlignHCenter; elide: Text.ElideRight
                         text: barAction.modelData.name + (root.managed[barAction.modelData.key] ? " · " + root.managed[barAction.modelData.key] : "")
-                        color: root.action === barAction.modelData.key ? Theme.accent : Theme.foreground
-                        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                        color: root.action === barAction.modelData.key ? root.controlTheme.accent : root.controlTheme.foreground
+                        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                     }
                     MouseArea {
                         anchors.fill: parent; cursorShape: Qt.PointingHandCursor
@@ -218,33 +231,34 @@ ColumnLayout {
                 }
             }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "Download / upload speed are read-only status indicators, not clickable buttons. For system activity use System Monitor."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
     }
     SettingsSection {
+        appearance: root.appearance
         heading: "Keyboard shortcuts"
         description: "Assign any action from the top bar, menus, Settings, Quick Modes, workspaces or dock. Original Omarchy lines remain intact."
         symbol: "\ue312"
-        Text { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Choose a RusticQ action and a key, then apply. Existing shortcuts on that key are temporarily masked; original source lines remain untouched."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+        GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: "Choose a RusticQ action and a key, then apply. Existing shortcuts on that key are temporarily masked; original source lines remain untouched."; color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
         Rectangle {
-            Layout.fillWidth: true; Layout.preferredHeight: 43; radius: 10; color: Theme.background
-            TextInput { anchors.fill: parent; anchors.margins: 11; verticalAlignment: TextInput.AlignVCenter; text: root.combo; color: Theme.foreground; selectByMouse: true; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); onTextEdited: root.combo = text }
+            Layout.fillWidth: true; Layout.preferredHeight: 43; radius: root.controlTheme.glassRadius("card", 10); color: root.controlTheme.glassColor("card", root.controlTheme.background)
+            TextInput { anchors.fill: parent; anchors.margins: 11; verticalAlignment: TextInput.AlignVCenter; text: root.combo; color: root.controlTheme.foreground; selectByMouse: true; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); onTextEdited: root.combo = text }
         }
-        Text { visible: root.recoveryCombo; Layout.fillWidth: true; wrapMode: Text.WordWrap
+        GlassLabel { visible: root.recoveryCombo; Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "Recovery shortcut: the confirmation dialog will require explicit acknowledgment before backup + apply."
-            color: Theme.warning; font.pixelSize: Fonts.scale(10) }
-        Text { text: "Action · " + (root.selectedAction ? root.selectedAction.name + " / " + root.selectedAction.category : root.action); color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+            color: root.controlTheme.warning; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { text: "Action · " + (root.selectedAction ? root.selectedAction.name + " / " + root.selectedAction.category : root.action); color: root.controlTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
         Rectangle {
-            Layout.fillWidth: true; Layout.preferredHeight: 41; radius: 9; color: Theme.background
+            Layout.fillWidth: true; Layout.preferredHeight: 41; radius: root.controlTheme.glassRadius("card", 9); color: root.controlTheme.glassColor("card", root.controlTheme.background)
             TextInput {
                 anchors.fill: parent; anchors.margins: 10
-                verticalAlignment: TextInput.AlignVCenter; color: Theme.foreground
-                font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+                verticalAlignment: TextInput.AlignVCenter; color: root.controlTheme.foreground
+                font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
                 onTextEdited: root.actionFilter = text
-                Text { anchors.verticalCenter: parent.verticalCenter; visible: parent.text.length === 0; text: "Find Settings pages, bar icons, menus, quick modes, workspaces..."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                GlassLabel { anchors.verticalCenter: parent.verticalCenter; visible: parent.text.length === 0; text: "Find Settings pages, bar icons, menus, quick modes, workspaces..."; color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
             }
         }
         GridLayout {
@@ -252,122 +266,124 @@ ColumnLayout {
             Repeater { model: root.matchingActions.slice(0, 80); delegate: Rectangle {
                 id: actionItem
                 required property var modelData
-                Layout.fillWidth: true; Layout.preferredHeight: 46; radius: 9
-                color: root.action === modelData.key ? Qt.alpha(Theme.accent, .16) : Theme.background
-                border.width: root.action === modelData.key ? 1 : 0; border.color: Theme.accent
+                Layout.fillWidth: true; Layout.preferredHeight: 46; radius: root.controlTheme.glassRadius("card", 9)
+                color: root.controlTheme.glassColor("card", root.action === modelData.key ? Qt.alpha(root.controlTheme.accent, .16) : root.controlTheme.background)
+                border.width: root.controlTheme.glassBorderWidth("card", root.action === modelData.key ? 1 : 0); border.color: root.controlTheme.glassBorder("card", root.controlTheme.accent)
                 ColumnLayout {
                     anchors.centerIn: parent; spacing: 1
-                    Text { text: actionItem.modelData.name; Layout.alignment: Qt.AlignHCenter; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
-                    Text { text: actionItem.modelData.category; Layout.alignment: Qt.AlignHCenter; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                    GlassLabel { text: actionItem.modelData.name; Layout.alignment: Qt.AlignHCenter; color: root.controlTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                    GlassLabel { text: actionItem.modelData.category; Layout.alignment: Qt.AlignHCenter; color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.action = actionItem.modelData.key }
             } }
         }
-        Text { Layout.fillWidth: true; visible: root.matchingActions.length > 80; text: "Showing 80 of " + root.matchingActions.length + " actions. Search to find the rest."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+        GlassLabel { Layout.fillWidth: true; visible: root.matchingActions.length > 80; text: "Showing 80 of " + root.matchingActions.length + " actions. Search to find the rest."; color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
         RowLayout { Layout.fillWidth: true; spacing: 8
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 9; color: Theme.accent
-                Text { anchors.centerIn: parent; text: "Apply override"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 9; color: root.controlTheme.accent
+                GlassLabel { anchors.centerIn: parent; text: "Apply override"; color: root.controlTheme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor; onClicked: root.change("shortcut") }
             }
-            Rectangle { Layout.preferredWidth: 151; Layout.preferredHeight: 39; radius: 9; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Restore selected"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+            Rectangle { Layout.preferredWidth: 151; Layout.preferredHeight: 39; radius: root.controlTheme.glassRadius("card", 9); color: root.controlTheme.glassColor("card", root.controlTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: "Restore selected"; color: root.controlTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor; onClicked: root.change("shortcut-revert", root.action) }
             }
         }
-        Text { Layout.fillWidth: true; visible: root.feedback.length > 0; text: root.feedback; wrapMode: Text.WordWrap; color: root.successful ? Theme.accent : Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+        GlassLabel { Layout.fillWidth: true; visible: root.feedback.length > 0; text: root.feedback; wrapMode: Text.WordWrap; color: root.successful ? root.controlTheme.accent : root.controlTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: backupInformation.implicitHeight + 24
-            color: Theme.background; radius: 11
-            border.width: 1
-            border.color: root.shortcutArchives.defaults_present && root.shortcutArchives.count > 0 ? Theme.borderaccent : Theme.warning
+            color: root.controlTheme.glassColor("card", root.controlTheme.background); radius: root.controlTheme.glassRadius("card", 11)
+            border.width: root.controlTheme.glassBorderWidth("card", 1)
+            border.color: root.controlTheme.glassBorder("card", root.shortcutArchives.defaults_present && root.shortcutArchives.count > 0 ? root.controlTheme.borderaccent : root.controlTheme.warning)
             ColumnLayout {
                 id: backupInformation
                 anchors.left: parent.left; anchors.right: parent.right
                 anchors.top: parent.top; anchors.margins: 12
                 spacing: 9
                 RowLayout { Layout.fillWidth: true; spacing: 8
-                    Icon { icon: "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
-                    Text { Layout.fillWidth: true; text: "Automatic Omarchy & dotfiles backup"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    Icon { icon: "\ue8b8"; color: root.controlTheme.accent; font.pixelSize: Fonts.scale(17) }
+                    GlassLabel { Layout.fillWidth: true; text: "Automatic Omarchy & dotfiles backup"; color: root.controlTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 }
-                Text { Layout.fillWidth: true; wrapMode: Text.WordWrap
+                GlassLabel { Layout.fillWidth: true; wrapMode: Text.WordWrap
                     text: root.shortcutArchives.count === 0 ?
                         "NO BACKUP YET — create the first verified backup now or choose Apply override and confirm. No change is allowed without a valid snapshot." :
                         root.shortcutArchives.count + " user snapshots · Full default Omarchy: " + (root.shortcutArchives.defaults_present ? "present" : "NOT SAVED") + ". Every Apply / Restore takes a new dotfiles snapshot."
-                    color: root.shortcutArchives.count === 0 ? Theme.warning : Theme.muted
-                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                    color: root.shortcutArchives.count === 0 ? root.controlTheme.warning : root.controlTheme.muted
+                    font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                 RowLayout { Layout.fillWidth: true; spacing: 8
-                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9; color: Theme.accent
-                        Text { anchors.centerIn: parent; text: root.busy && root.commandVerb === "create-shortcut-backup" ? "Creating…" : "Create backup now"; color: Theme.background; font.pixelSize: Fonts.scale(10) }
+                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9; color: root.controlTheme.accent
+                        GlassLabel { anchors.centerIn: parent; text: root.busy && root.commandVerb === "create-shortcut-backup" ? "Creating…" : "Create backup now"; color: root.controlTheme.background; font.pixelSize: Fonts.scale(12) }
                         MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor
                             onClicked: root.change("create-shortcut-backup") }
                     }
-                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9; color: Theme.surface
-                        Text { anchors.centerIn: parent; text: root.busy && root.commandVerb === "verify-shortcut-backups" ? "Verifying…" : "Verify backup"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 34; radius: root.controlTheme.glassRadius("card", 9); color: root.controlTheme.glassColor("card", root.controlTheme.surface)
+                        GlassLabel { anchors.centerIn: parent; text: root.busy && root.commandVerb === "verify-shortcut-backups" ? "Verifying…" : "Verify backup"; color: root.controlTheme.accent; font.pixelSize: Fonts.scale(12) }
                         MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor
                             onClicked: root.change("verify-shortcut-backups") }
                     }
                 }
-                Text { Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
+                GlassLabel { Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
                     text: "Backup directory: " + (root.shortcutArchives.directory || "~/.local/state/rusticq/integration/backup/shortcut-history")
-                    color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
-                Text { Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
+                    color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+                GlassLabel { Layout.fillWidth: true; wrapMode: Text.WrapAnywhere
                     visible: !!root.lastBackupDir || !!root.shortcutArchives.latest
                     text: "Latest snapshot: " + (root.lastBackupDir || root.shortcutArchives.latest)
-                    color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                    color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
             }
         }
     }
     SettingsSection {
+        appearance: root.appearance
         heading: "Edit an existing shortcut"
         description: "Select an Omarchy/user shortcut below, then choose its replacement key. Only static, one-line o.bind definitions can be changed automatically."
         symbol: "\ue3c9"
-        Text {
+        GlassLabel {
             Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: root.selectedRemapId ? "Managed remap selected. Restore it individually to reveal the original key." :
                 root.selectedSource ? (root.selectedSource.label + "  ·  " + root.selectedSource.key + "  ·  " + root.selectedSource.origin + ":" + root.selectedSource.line) :
                 "Click a row in Detected bindings to select the source line."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+            color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
         Rectangle {
-            Layout.fillWidth: true; Layout.preferredHeight: 43; radius: 10; color: Theme.background
+            Layout.fillWidth: true; Layout.preferredHeight: 43; radius: root.controlTheme.glassRadius("card", 10); color: root.controlTheme.glassColor("card", root.controlTheme.background)
             TextInput {
                 anchors.fill: parent; anchors.margins: 11
                 text: root.editKey; selectByMouse: true
                 verticalAlignment: TextInput.AlignVCenter
-                color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12)
+                color: root.controlTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12)
                 onTextEdited: root.editKey = text
-                Text { visible: parent.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: "New combination (e.g. SUPER + SHIFT + G)"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+                GlassLabel { visible: parent.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: "New combination (e.g. SUPER + SHIFT + G)"; color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
             }
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 8
             Rectangle {
-                id: remapApply; Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 9
+                id: remapApply; Layout.fillWidth: true; Layout.preferredHeight: 39; radius: root.controlTheme.glassRadius("card", 9)
                 readonly property bool available: !root.busy && root.selectedSource !== null && !!root.selectedSource.source_hash && !root.selectedRemapId
-                color: available ? Theme.accent : Theme.borderaccent
-                Text { anchors.centerIn: parent; text: "Apply new key"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                color: root.controlTheme.glassColor("card", available ? root.controlTheme.accent : root.controlTheme.borderaccent)
+                GlassLabel { anchors.centerIn: parent; text: "Apply new key"; color: root.controlTheme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: remapApply.available; cursorShape: Qt.PointingHandCursor; onClicked: root.change("remap") }
             }
             Rectangle {
-                id: remapRestore; Layout.preferredWidth: 152; Layout.preferredHeight: 39; radius: 9; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Revert selected"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                id: remapRestore; Layout.preferredWidth: 152; Layout.preferredHeight: 39; radius: root.controlTheme.glassRadius("card", 9); color: root.controlTheme.glassColor("card", root.controlTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: "Revert selected"; color: root.controlTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; enabled: !root.busy && root.selectedRemapId.length > 0; cursorShape: Qt.PointingHandCursor; onClicked: root.change("remap-revert") }
             }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true; wrapMode: Text.WordWrap
             text: "Source file and line are fingerprinted and backed up. Revert removes only this override, not other changes. Complex/dynamic Lua bindings stay read-only."
-            color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
     }
     SettingsSection {
+        appearance: root.appearance
         heading: "Detected bindings (" + root.visibleEntries.length + ")"
         description: "Select a key to override. Entries show source and line; original Lua lines are saved for audit and remain untouched."
         symbol: "\ue8b6"
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 9; color: Theme.background
-            TextInput { anchors.fill: parent; anchors.margins: 10; verticalAlignment: TextInput.AlignVCenter; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11); onTextEdited: root.filterText = text
-                Text { anchors.verticalCenter: parent.verticalCenter; visible: parent.text.length === 0; text: "Search key, action, or source..."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 39; radius: root.controlTheme.glassRadius("card", 9); color: root.controlTheme.glassColor("card", root.controlTheme.background)
+            TextInput { anchors.fill: parent; anchors.margins: 10; verticalAlignment: TextInput.AlignVCenter; color: root.controlTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); onTextEdited: root.filterText = text
+                GlassLabel { anchors.verticalCenter: parent.verticalCenter; visible: parent.text.length === 0; text: "Search key, action, or source..."; color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
             }
         }
         Repeater {
@@ -375,12 +391,12 @@ ColumnLayout {
             delegate: Rectangle {
                 id: bindingItem
                 required property var modelData
-                Layout.fillWidth: true; Layout.preferredHeight: 48; radius: 9; color: Theme.background
+                Layout.fillWidth: true; Layout.preferredHeight: 48; radius: root.controlTheme.glassRadius("card", 9); color: root.controlTheme.glassColor("card", root.controlTheme.background)
                 RowLayout { anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 11; spacing: 9
-                    Text { text: bindingItem.modelData.key; Layout.preferredWidth: 155; elide: Text.ElideRight; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { text: bindingItem.modelData.key; Layout.preferredWidth: 155; elide: Text.ElideRight; color: root.controlTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                     ColumnLayout { Layout.fillWidth: true; spacing: 1
-                        Text { text: bindingItem.modelData.label; Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
-                        Text { text: bindingItem.modelData.origin + (bindingItem.modelData.line ? " · line " + bindingItem.modelData.line : "") + (bindingItem.modelData.original_key ? " · original " + bindingItem.modelData.original_key : ""); color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                        GlassLabel { text: bindingItem.modelData.label; Layout.fillWidth: true; elide: Text.ElideRight; color: root.controlTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+                        GlassLabel { text: bindingItem.modelData.origin + (bindingItem.modelData.line ? " · line " + bindingItem.modelData.line : "") + (bindingItem.modelData.original_key ? " · original " + bindingItem.modelData.original_key : ""); color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                     }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: {
@@ -392,8 +408,8 @@ ColumnLayout {
                 } }
             }
         }
-        Text { Layout.fillWidth: true; text: "Reverting a single override reveals that original Lua binding again. Omarchy default files are never overwritten."; wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Text { Layout.fillWidth: true; visible: root.visibleEntries.length > 100; text: "Showing first 100 entries. Narrow the search to find other shortcuts."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Text { Layout.fillWidth: true; visible: root.visibleEntries.length === 0; text: "No matching bindings found."; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+        GlassLabel { Layout.fillWidth: true; text: "Reverting a single override reveals that original Lua binding again. Omarchy default files are never overwritten."; wrapMode: Text.WordWrap; color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { Layout.fillWidth: true; visible: root.visibleEntries.length > 100; text: "Showing first 100 entries. Narrow the search to find other shortcuts."; color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { Layout.fillWidth: true; visible: root.visibleEntries.length === 0; text: "No matching bindings found."; color: root.controlTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
     }
 }

@@ -1,0 +1,31 @@
+{
+  "baseline": "Quickshell 0.3.1",
+  "runtime": "Quickshell 0.3.2, Qt Quick offscreen software rendering",
+  "fixtureData": true,
+  "checks": {
+    "qmlSourceFiles": 188,
+    "staticIssues": 0,
+    "quickControlContracts": 5,
+    "quickControlQml": 10,
+    "quickControlRestart": "passed",
+    "wifiAudioQml": 19,
+    "portableSettings": 6,
+    "audioPeak": 3,
+    "liveDisplayConfirmation": 12,
+    "barModes": "passed",
+    "settingsRefactor": "passed",
+    "notificationToastRegression": "passed",
+    "systemMonitorRegression": "passed",
+    "diffCheck": "passed"
+  },
+  "nativeWayland": "Blocked by sandbox: failed to create wl_display (Operation not permitted)",
+  "hardwareAndMonitorHotplug": "Not verified",
+  "inputGaps": "Pixel alpha 0 and no control hit rectangle in connectivity tile gap",
+  "deployment": "Source changes only; installed shell not modified",
+  "readableControlMaterials": {
+    "restingOpacity": 0.94,
+    "hoverOpacity": 0.98,
+    "contrastCheck": "at least 4.5:1 on black and white backdrops; Graphite Frost and Pearl; glass on/off",
+    "hoverNeverFadesSurface": true
+  }
+}

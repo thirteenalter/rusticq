@@ -4,6 +4,15 @@ import Quickshell
 
 Singleton {
     id: root
+    signal barPopupOpened(var owner)
+    // Session capability state; persistent preferences belong to SettingsStore.
+    property string glassBackend: "unknown"
+    property bool glassBlurSupported: false
+    property bool settingsBlurActive: false
+    property bool hyprSettingsBlurActive: false
+    property bool glassBlurActive: false
+    property bool glassBlurStrengthEditable: false
+    property string glassCompositorStatus: "Backdrop blur has not been checked; using the readable tinted fallback."
     // Raised by the IPC dispatcher; each per-monitor bar consumes only its own actions.
     signal shortcutBarRequested(string kind, string screenName)
     // One transient OSD shared by all monitors. No new notification daemon.
@@ -40,6 +49,10 @@ Singleton {
     }
     property bool sidebarVisible: false
     property bool advancedVisible: false
+    property string quickAdvancedTab: "audio"
+    property var quickControlInputItems: []
+    function addQuickControlInput(item) { if (quickControlInputItems.indexOf(item)<0) quickControlInputItems=quickControlInputItems.concat([item]); }
+    function removeQuickControlInput(item) { quickControlInputItems=quickControlInputItems.filter(candidate=>candidate!==item); }
     property bool quickReorderMode: false
     property var sidebarScreen: null
     property bool aiVisible: false
@@ -47,6 +60,19 @@ Singleton {
     property var aiScreen: null
     property var settingsScreen: null
     property bool settingsVisible: false
+    property bool hyprSettingsVisible: false
+    property var hyprSettingsScreen: null
+    property string hyprSettingsPage: "overview"
+    property int hyprSettingsActivation: 0
+    function openHyprSettings(page, screen) {
+        hyprSettingsPage = page || "overview";
+        hyprSettingsScreen = screen || hyprSettingsScreen || settingsScreen
+            || (Quickshell.screens.length ? Quickshell.screens[0] : null);
+        launcherVisible = false;
+        sidebarVisible = false;
+        hyprSettingsVisible = true;
+        hyprSettingsActivation++;
+    }
     property bool deviceSettingsVisible: false
     property bool deviceSettingsPending: false
     property bool deviceSettingsFullscreen: false
@@ -90,7 +116,10 @@ Singleton {
         }
     }
     property bool launcherVisible: false
+    property bool launcherBlurActive: false
+    property bool launcherBackdropBlurActive: false
     property var launcherScreen: null
+    property var launcherAnchor: null
     property bool powerMenuVisible: false
     property var powerScreen: null
     function togglePowerMenu(screen) {
@@ -283,24 +312,31 @@ Singleton {
         packageOperationConfirmed(action, name, provider);
     }
     // Explicit confirmation of shortcut backup before changing an existing binding.
-    signal shortcutBackupApproved()
+    signal shortcutBackupApproved(string owner)
+    signal shortcutBackupCancelled(string owner)
     property bool shortcutConfirmVisible: false
     property string shortcutConfirmTitle: ""
     property string shortcutConfirmTarget: ""
     property bool shortcutConfirmRecovery: false
     property var shortcutConfirmScreen: null
-    function requestShortcutConfirmation(title, target, recovery) {
+    property string shortcutConfirmOwner: ""
+    property string shortcutConfirmWindowTitle: "RusticQ · Settings"
+    function requestShortcutConfirmation(title, target, recovery, owner, screen, windowTitle) {
+        if (shortcutConfirmVisible && shortcutConfirmOwner !== (owner || "")) shortcutBackupCancelled(shortcutConfirmOwner);
         shortcutConfirmTitle = title;
         shortcutConfirmTarget = target;
         shortcutConfirmRecovery = !!recovery;
         shortcutConfirmScreen = settingsScreen;
+        if (screen) shortcutConfirmScreen = screen;
+        shortcutConfirmOwner = owner || "";
+        shortcutConfirmWindowTitle = windowTitle === "RusticQ Hyprland Settings" ? windowTitle : "RusticQ · Settings";
         shortcutConfirmVisible = true;
     }
-    function cancelShortcutConfirmation() { shortcutConfirmVisible = false; }
+    function cancelShortcutConfirmation() { shortcutConfirmVisible = false; shortcutBackupCancelled(shortcutConfirmOwner); }
     function approveShortcutConfirmation() {
         if (!shortcutConfirmVisible) return;
         shortcutConfirmVisible = false;
-        shortcutBackupApproved();
+        shortcutBackupApproved(shortcutConfirmOwner);
     }
     property bool confirmationVisible: false
     property string confirmationAction: ""
@@ -346,9 +382,10 @@ Singleton {
         aiScreen = screen;
         aiVisible = true;
     }
-    function toggleLauncher(screen) {
+    function toggleLauncher(screen, anchor) {
         if (launcherVisible && launcherScreen === screen) { launcherVisible = false; return; }
         launcherScreen = screen;
+        launcherAnchor = anchor && [anchor.x,anchor.y,anchor.width,anchor.height].every(Number.isFinite) ? anchor : null;
         sidebarVisible = false;
         aiVisible = false;
         launcherVisible = true;

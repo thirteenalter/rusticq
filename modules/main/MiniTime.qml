@@ -56,15 +56,16 @@ Item {
         ScrollIndicator.vertical: ScrollIndicator {}
         ColumnLayout {
             id: content
+            objectName: "surfaceContent"
             x: Theme.sectionPadding
             y: Theme.sectionPadding
             width: Math.max(0, viewport.width - Theme.sectionPadding * 2)
-            spacing: 14
+            spacing: Theme.contentGap
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8
                 Icon { icon: root.alarmView ? "\ue855" : root.advancedTimer ? "\ue425" : "\ue8b5"; font.pixelSize: Fonts.scale(22); color: Theme.accent }
-                Text {
+                GlassLabel {
                     text: root.alarmView ? "Alarm" : root.advancedTimer ? "Timer" : "Time"
                     font.family: Fonts.poppinsSB.name
                     font.pixelSize: Fonts.scale(16)
@@ -83,7 +84,7 @@ Item {
                 visible: Store.clockAlertKind !== ""
                 Layout.fillWidth: true
                 spacing: 8
-                Text {
+                GlassLabel {
                     text: Store.clockAlertKind === "alarm" ? "Alarm · " + Store.clockAlarmTime : "Time’s up!"
                     color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(14)
                 }
@@ -100,7 +101,7 @@ Item {
                     }
                 }
             }
-            Text {
+            GlassLabel {
                 objectName: "clock-live-time"
                 visible: !root.advancedTimer && !root.alarmView
                 text: Qt.formatDateTime(liveClock.date, "HH:mm:ss")
@@ -109,12 +110,12 @@ Item {
                 color: Theme.foreground
                 Layout.alignment: Qt.AlignHCenter
             }
-            Text {
+            GlassLabel {
                 visible: !root.advancedTimer && !root.alarmView
                 text: Qt.formatDateTime(liveClock.date, "dddd, dd MMMM yyyy")
                 font.family: Fonts.poppins.name
                 font.pixelSize: Fonts.scale(12)
-                color: Theme.muted
+                color: Theme.contentMuted
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -144,7 +145,7 @@ Item {
                 visible: root.advancedTimer && !root.alarmView
                 Layout.fillWidth: true
                 spacing: 12
-                Text {
+                GlassLabel {
                     text: Store.clockTimerState === "running" ? "Running"
                         : Store.clockTimerState === "paused" ? "Paused"
                         : Store.clockTimerState === "finished" ? "Time’s up!" : "Set a duration"
@@ -169,16 +170,16 @@ Item {
                             readonly property bool valid: durationInput.acceptableInput
                             Layout.fillWidth: true
                             implicitHeight: 78
-                            radius: Theme.rowRadius
-                            color: Theme.surface
-                            border.width: durationInput.activeFocus ? 1 : 0
-                            border.color: Theme.accent
-                            Text {
+                            radius: Theme.glassRadius("card", Theme.rowRadius)
+                            color: Theme.glassColor("card", Theme.surface)
+                            border.width: Theme.glassBorderWidth("card", durationInput.activeFocus ? 1 : 0)
+                            border.color: Theme.glassBorder("card", Theme.accent)
+                            GlassLabel {
                                 anchors.top: parent.top
                                 anchors.topMargin: 8
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: modelData.label
-                                color: Theme.muted
+                                color: Theme.contentMuted
                                 font.family: Fonts.poppins.name
                                 font.pixelSize: Fonts.scale(10)
                             }
@@ -210,7 +211,7 @@ Item {
                         }
                     }
                 }
-                Text {
+                GlassLabel {
                     objectName: "clock-timer-remaining"
                     visible: !root.editingDuration || Store.clockTimerState === "finished"
                     Layout.fillWidth: true
@@ -239,7 +240,7 @@ Item {
                         }
                     }
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     text: root.editingDuration && root.draftSeconds < 1 ? "Choose at least 1 second."
                         : Store.clockTimerState === "finished" ? "Ready for another timer."
@@ -276,7 +277,7 @@ Item {
                     }
                 }
             }
-            Text {
+            GlassLabel {
                 visible: Store.clockSoundError.length > 0
                 Layout.fillWidth: true
                 text: Store.clockSoundError

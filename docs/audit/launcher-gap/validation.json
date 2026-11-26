@@ -1,0 +1,15 @@
+{
+  "cause": "Inactive detail Loader still participated in RowLayout spacing (12px).",
+  "fix": "Hide inactive detail Loader so remaining results fill the available width.",
+  "ui": "12 passed, 0 failed; all eleven styles, preview on/off, no results and calculator.",
+  "static": "166 QML, 0 issues",
+  "native": "15 captures and real typing/Escape passed; spotlight inspected.",
+  "guideline": "AGENTS.md now requires unused optional content to release its layout space.",
+  "deployment": {
+    "status": "applied",
+    "file": "/home/ryznxx/.local/share/rusticq/shell/components/LauncherView.qml",
+    "backup": "/home/ryznxx/.local/state/rusticq/backups/launcher-gap-20261125-110616",
+    "preferencesByteIdentical": true,
+    "runtimeErrors": []
+  }
+}

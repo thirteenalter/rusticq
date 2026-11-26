@@ -4,6 +4,7 @@ import "../config"
 // Reusable integer slider, no hidden hard-coded maximum or clipped handle.
 Item {
     id: slider
+    readonly property var settingsTheme: SettingsMaterial.forItem(slider)
     property int minimum: 0
     property int maximum: 100
     property int value: 0
@@ -23,12 +24,12 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         height: 8
         radius: 4
-        color: Theme.background
+        color: slider.settingsTheme.background
         Rectangle {
             height: parent.height
             width: 9 + (parent.width - 18) * slider.ratio
             radius: 4
-            color: Theme.accent
+            color: slider.settingsTheme.accent
         }
     }
     Rectangle {
@@ -37,9 +38,9 @@ Item {
         radius: 9
         anchors.verticalCenter: parent.verticalCenter
         x: (parent.width - width) * slider.ratio
-        color: Theme.foreground
+        color: slider.settingsTheme.controlKnob
         border.width: 2
-        border.color: Theme.accent
+        border.color: slider.settingsTheme.accent
     }
     MouseArea {
         anchors.fill: parent

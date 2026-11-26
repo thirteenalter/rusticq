@@ -8,6 +8,7 @@ Item {
     property bool vertical: false
     property int verticalControlSize: 40
     signal menuRequested(string section, var sourceItem)
+    signal menuHovered(string section, var sourceItem)
     implicitWidth: vertical ? verticalControlSize : menuRow.implicitWidth
     implicitHeight: vertical ? verticalControlSize : 28
 
@@ -25,17 +26,18 @@ Item {
                 {label: "Shell", key: "shell", enabled: SettingsStore.modeIconVisible("showMenuShell")},
                 {label: "Tools", key: "tools", enabled: SettingsStore.modeIconVisible("showMenuTools")}
             ].filter(item => item.enabled)
-            delegate: Rectangle {
+            delegate: BarSurface {
                 id: menuButton
                 required property var modelData
                 readonly property bool hovered: mouse.containsMouse
                 Layout.preferredWidth: Math.max(44, label.implicitWidth + 18)
                 Layout.preferredHeight: 28
-                radius: 8
-                color: hovered ? Theme.surface : "transparent"
-                border.width: hovered ? 1 : 0
-                border.color: Qt.alpha(Theme.accent, 0.28)
-                Text {
+                baseRadius: 8
+                baseColor: "transparent"
+                feedbackColor: hovered ? Theme.surface : "transparent"
+                feedbackBorderWidth: hovered ? 1 : 0
+                feedbackBorderColor: Qt.alpha(Theme.accent, 0.28)
+                GlassLabel {
                     id: label
                     anchors.centerIn: parent
                     text: menuButton.modelData.label
@@ -48,26 +50,29 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
+                    onEntered: if (SettingsStore.barPopupsOnHover) root.menuHovered(menuButton.modelData.key,menuButton)
                     onClicked: root.menuRequested(menuButton.modelData.key, menuButton)
                 }
             }
         }
     }
 
-    Rectangle {
+    BarSurface {
         id: verticalTrigger
         anchors.fill: parent
         visible: root.vertical
-        radius: 10
-        color: verticalMouse.containsMouse ? Theme.surface : "transparent"
-        border.width: verticalMouse.containsMouse ? 1 : 0
-        border.color: Qt.alpha(Theme.accent, 0.28)
+        baseRadius: 10
+        baseColor: "transparent"
+        feedbackColor: verticalMouse.containsMouse ? Theme.surface : "transparent"
+        feedbackBorderWidth: verticalMouse.containsMouse ? 1 : 0
+        feedbackBorderColor: Qt.alpha(Theme.accent, 0.28)
         Icon { anchors.centerIn: parent; icon: "\ue5d2"; font.pixelSize: Theme.barSymbolSize; color: Theme.accent }
         MouseArea {
             id: verticalMouse
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
+            onEntered: if (SettingsStore.barPopupsOnHover) root.menuHovered(SettingsStore.modeIconVisible("showMenuView") ? "view" : SettingsStore.modeIconVisible("showMenuEdit") ? "edit" : SettingsStore.modeIconVisible("showMenuShare") ? "share" : SettingsStore.modeIconVisible("showMenuFile") ? "file" : SettingsStore.modeIconVisible("showMenuShell") ? "shell" : "tools",verticalTrigger)
             onClicked: root.menuRequested(SettingsStore.modeIconVisible("showMenuView") ? "view" : SettingsStore.modeIconVisible("showMenuEdit") ? "edit" : SettingsStore.modeIconVisible("showMenuShare") ? "share" : SettingsStore.modeIconVisible("showMenuFile") ? "file" : SettingsStore.modeIconVisible("showMenuShell") ? "shell" : "tools", verticalTrigger)
         }
     }

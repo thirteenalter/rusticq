@@ -43,6 +43,7 @@ FocusScope {
         {title: "Downloads", desc: "Browse downloads", icon: "\ue2c4", action: "file-downloads"},
         {title: "RusticQ config", desc: "Open current shell directory", icon: "\ue8b8", action: "file-config"}
     ] : currentSection === "shell" ? [
+        {title: "Hyprland Settings", desc: "Standalone compositor configuration studio", icon: "\ue8b8", action: "shell-hypr-settings"},
         {title: "Open terminal", desc: "Use an installed terminal emulator", icon: "\ueb8e", action: "shell-terminal"},
         {title: "System monitor", desc: "Live CPU, GPU, RAM, disk and network", icon: "\uef43", action: "shell-monitor"},
         {title: "Power menu", desc: "Keyboard accessible system actions", icon: "\ue8ac", action: "shell-power"}
@@ -119,7 +120,8 @@ FocusScope {
         } else if (currentSection === "edit") {
             Store.showSettings(action, root.focusedScreen());
         } else if (currentSection === "file" || currentSection === "shell" || currentSection === "tools") {
-            if (action === "shell-monitor") Store.systemMonitorVisible = true;
+            if (action === "shell-hypr-settings") Store.openHyprSettings("overview", root.focusedScreen());
+            else if (action === "shell-monitor") Store.systemMonitorVisible = true;
             else if (action === "shell-power") Store.togglePowerMenu(root.focusedScreen());
             else if (action === "tools-settings") Store.showSettings("home", root.focusedScreen());
             else if (action === "tools-region") Quickshell.execDetached(["sh", Quickshell.shellPath("scripts/rustiq-capture.sh"), "region"]);
@@ -133,17 +135,17 @@ FocusScope {
     }
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 12
+        anchors.margins: Theme.panelPadding
         spacing: 9
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
-            Text { text: "RusticQ / " + root.currentSection.charAt(0).toUpperCase() + root.currentSection.slice(1); font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13); color: Theme.foreground; Layout.fillWidth: true }
+            GlassLabel { text: "RusticQ / " + root.currentSection.charAt(0).toUpperCase() + root.currentSection.slice(1); font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13); color: Theme.foreground; Layout.fillWidth: true }
             Rectangle {
                 Layout.preferredWidth: 26
                 Layout.preferredHeight: 26
-                radius: 8
-                color: Qt.alpha(Theme.accent, 0.10)
+                radius: Theme.glassRadius("card", 8)
+                color: Theme.glassColor("card", Qt.alpha(Theme.accent, 0.10))
                 Icon { anchors.centerIn: parent; icon: "\ue5d2"; color: Theme.accent; font.pixelSize: Fonts.scale(16) }
             }
         }
@@ -157,11 +159,11 @@ FocusScope {
                     required property var modelData
                     Layout.fillWidth: true
                     Layout.preferredHeight: 31
-                    radius: 9
-                    color: root.currentSection === modelData.key ? Qt.alpha(Theme.accent, .21) : Theme.surface
-                    border.width: root.currentSection === modelData.key ? 1 : 0
-                    border.color: Theme.accent
-                    Text {
+                    radius: Theme.glassRadius("card", 9)
+                    color: Theme.glassColor("card", root.currentSection === modelData.key ? Qt.alpha(Theme.accent, .21) : Theme.surface)
+                    border.width: Theme.glassBorderWidth("card", root.currentSection === modelData.key ? 1 : 0)
+                    border.color: Theme.glassBorder("card", Theme.accent)
+                    GlassLabel {
                         anchors.centerIn: parent
                         text: tab.modelData.title
                         font.family: Fonts.poppins.name
@@ -196,10 +198,10 @@ FocusScope {
                         readonly property bool selected: root.selectedIndex === index
                         Layout.fillWidth: true
                         Layout.preferredHeight: 54
-                        color: selected || choiceMouse.containsMouse ? Qt.alpha(Theme.accent, .16) : Theme.surface
-                        radius: 11
-                        border.width: selected || choiceMouse.containsMouse ? 1 : 0
-                        border.color: Qt.alpha(Theme.accent, 0.32)
+                        color: Theme.glassColor("card", selected || choiceMouse.containsMouse ? Qt.alpha(Theme.accent, .16) : Theme.surface)
+                        radius: Theme.glassRadius("card", 11)
+                        border.width: Theme.glassBorderWidth("card", selected || choiceMouse.containsMouse ? 1 : 0)
+                        border.color: Theme.glassBorder("card", Qt.alpha(Theme.accent, 0.32))
                         RowLayout {
                             anchors.fill: parent
                             anchors.leftMargin: 12
@@ -208,21 +210,21 @@ FocusScope {
                             Rectangle {
                                 Layout.preferredWidth: 34
                                 Layout.preferredHeight: 34
-                                radius: 10
-                                color: Qt.alpha(Theme.accent, 0.12)
+                                radius: Theme.glassRadius("card", 10)
+                                color: Theme.glassColor("card", Qt.alpha(Theme.accent, 0.12))
                                 Icon { anchors.centerIn: parent; icon: choice.modelData.icon; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
                             }
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 1
-                                Text { Layout.fillWidth: true; text: choice.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); elide: Text.ElideRight }
-                                Text { Layout.fillWidth: true; text: choice.modelData.desc; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9); elide: Text.ElideRight }
+                                GlassLabel { Layout.fillWidth: true; text: choice.modelData.title; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); elide: Text.ElideRight }
+                                GlassLabel { Layout.fillWidth: true; text: choice.modelData.desc; color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9); elide: Text.ElideRight }
                             }
                             Rectangle {
                                 Layout.preferredWidth: 24
                                 Layout.preferredHeight: 24
-                                radius: 7
-                                color: root.currentSection === "view" && SettingsStore.barMode === choice.modelData.action ? Qt.alpha(Theme.accent, 0.14) : "transparent"
+                                radius: Theme.glassRadius("card", 7)
+                                color: Theme.glassColor("card", root.currentSection === "view" && SettingsStore.barMode === choice.modelData.action ? Qt.alpha(Theme.accent, 0.14) : "transparent")
                                 Icon {
                                     anchors.centerIn: parent
                                     visible: root.currentSection === "view" && SettingsStore.barMode === choice.modelData.action
@@ -244,7 +246,7 @@ FocusScope {
                 }
             }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             text: "← → category  ·  ↑ ↓ action  ·  Enter open  ·  Esc close"
             font.pixelSize: Fonts.scale(9)
@@ -252,13 +254,13 @@ FocusScope {
             color: Theme.accent
             horizontalAlignment: Text.AlignHCenter
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             text: root.currentSection === "share" ? (ScreenRecorder.active ? "Recording in progress · stop to finalize MP4" : "Captures saved locally · grim / slurp / wf-recorder") : "RusticQ shortcuts · not an application global menu"
             wrapMode: Text.WordWrap
             font.pixelSize: Fonts.scale(9)
             font.family: Fonts.poppins.name
-            color: Theme.muted
+            color: Theme.contentMuted
         }
     }
 }

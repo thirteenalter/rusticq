@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "backend": "hyprland",
+  "supported": true,
+  "active": false,
+  "independentStrength": false,
+  "persistentChanges": false,
+  "message": "Hyprland named session rules are supported. Blur strength follows your compositor; RAGE never changes its global blur options.",
+  "version": "0.56.2",
+  "globalBlur": true
+}

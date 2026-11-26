@@ -1,0 +1,26 @@
+  INFO: Launching config: "/tmp/rq-bar-surfaces-hno6fk8e/shell.qml"
+  INFO: Shell ID: "98c6bdc3830b4aa2a9173442fc09f12f" Path ID "98c6bdc3830b4aa2a9173442fc09f12f"
+  INFO: Saving logs to "/tmp/rq-bar-surfaces-hno6fk8e/quickshell/by-id/ljma04pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rq-bar-surfaces-hno6fk8e/quickshell/by-id/ljma04pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: BAR SURFACE TEST test_all_layouts_edges_and_materials_naked_keeps_foreground failed=false
+ DEBUG qml: BAR SURFACE TEST test_all_visibility_combinations_independent_and_geometric failed=false
+ DEBUG qml: BAR SURFACE TEST test_default_separated_has_no_rectangular_frame failed=false
+ DEBUG qml: BAR SURFACE TEST test_floating_segments_custom_radius_and_other_panels failed=false
+ DEBUG qml: BAR SURFACE TEST test_presets_do_not_change_palette_geometry_or_global_rage failed=false
+ DEBUG qml: BAR SURFACE TEST test_professional_original_structure_and_geometry failed=false
+ DEBUG qml: BAR SURFACE TEST test_synchronized_editors_enabled_without_rage_and_slider_commit failed=false
+ DEBUG qml: BAR SURFACE RESULTS 8 passed, 0 failed
+  INFO: Launching config: "/tmp/rq-bar-surfaces-hno6fk8e/shell.qml"
+  INFO: Shell ID: "98c6bdc3830b4aa2a9173442fc09f12f" Path ID "98c6bdc3830b4aa2a9173442fc09f12f"
+  INFO: Saving logs to "/tmp/rq-bar-surfaces-hno6fk8e/quickshell/by-id/ujqa04pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rq-bar-surfaces-hno6fk8e/quickshell/by-id/ujqa04pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: BAR SURFACE RELOAD PASS
+PASS: 64 visibility combinations; 5 layouts × 4 edges; two monitors; independent materials/geometry; live controls and reload

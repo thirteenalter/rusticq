@@ -11,6 +11,6 @@ FloatingWindow {
     title: "RusticQ · Task View"
     implicitWidth: 500
     implicitHeight: 630
-    color: Theme.background
-    SystemDashboard { anchors.fill: parent; anchors.margins: 4; transform: Translate { x: motion.offsetX; y: motion.offsetY } }
+    color: Theme.glassColor("window", Theme.background)
+    SystemDashboard { anchors.fill: parent; anchors.margins: 0; transform: Translate { x: motion.offsetX; y: motion.offsetY } }
 }

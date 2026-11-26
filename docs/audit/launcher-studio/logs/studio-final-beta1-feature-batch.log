@@ -1,0 +1,15 @@
+test_cli_config_uses_locked_guard (test_beta1_feature_batch.CLIAndServiceTests.test_cli_config_uses_locked_guard) ... ok
+test_installer_preserves_gui_invocation (test_beta1_feature_batch.CLIAndServiceTests.test_installer_preserves_gui_invocation) ... ok
+test_ipc_rejects_arbitrary_actions_before_spawn (test_beta1_feature_batch.CLIAndServiceTests.test_ipc_rejects_arbitrary_actions_before_spawn) ... ok
+test_settings_integration_is_read_only_on_open (test_beta1_feature_batch.CLIAndServiceTests.test_settings_integration_is_read_only_on_open) ... ok
+test_watchdog_install_is_explicit_and_does_not_start_service (test_beta1_feature_batch.CLIAndServiceTests.test_watchdog_install_is_explicit_and_does_not_start_service) ... ok
+test_watchdog_preserves_custom_existing_unit (test_beta1_feature_batch.CLIAndServiceTests.test_watchdog_preserves_custom_existing_unit) ... ok
+test_expression_cannot_execute_python (test_beta1_feature_batch.CalculatorTests.test_expression_cannot_execute_python) ... ok
+test_launcher_integrates_without_app_command_eval (test_beta1_feature_batch.CalculatorTests.test_launcher_integrates_without_app_command_eval) ... ok
+test_operators_and_scientific (test_beta1_feature_batch.CalculatorTests.test_operators_and_scientific) ... ok
+test_result_out_of_bounds (test_beta1_feature_batch.CalculatorTests.test_result_out_of_bounds) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.290s
+
+OK

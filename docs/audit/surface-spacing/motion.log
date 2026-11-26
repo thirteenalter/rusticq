@@ -1,0 +1,26 @@
+  INFO: Launching config: "/tmp/rusticq-motion-ui-n5ne2bx8/shell.qml"
+  INFO: Shell ID: "678217eb6b0491283f6e277015628605" Path ID "678217eb6b0491283f6e277015628605"
+  INFO: Saving logs to "/tmp/rusticq-motion-ui-n5ne2bx8/quickshell/by-id/5i19k6k1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+  INFO: Configuration Loaded
+ DEBUG qml: MOTION TEST test_directions_and_replay failed=false stage=
+ DEBUG qml: MOTION TEST test_entry_exit_and_no_input_during_close failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_entry_waits_for_the_first_native_frame failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_icon_size_exact_pixels_limits_and_editor failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_loader_survives_close_and_quick_reopen failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_motion_styles_are_distinct_and_validated failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_off_settles_active_transitions_immediately failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_reopening_reverses_from_current_frame failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_z_appearance_toggle_keyboard_and_save failed=false stage=exit settled
+ DEBUG qml: MOTION RESULTS 10 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-motion-ui-n5ne2bx8/shell.qml"
+  INFO: Shell ID: "678217eb6b0491283f6e277015628605" Path ID "678217eb6b0491283f6e277015628605"
+  INFO: Saving logs to "/tmp/rusticq-motion-ui-n5ne2bx8/quickshell/by-id/dj19o6k1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+  INFO: Configuration Loaded
+ DEBUG qml: MOTION RELOAD PASS
+PASS: surface entry/exit, interrupted motion, instant mode, loader retention, directions and setting save/reload

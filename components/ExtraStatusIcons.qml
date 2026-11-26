@@ -17,7 +17,7 @@ Pill {
     readonly property bool hasAny: showMic || showDown || showUp
 
     visible: hasAny
-    color: backgroundEnabled ? Theme.borderaccent : "transparent"
+    baseColor: backgroundEnabled ? Theme.borderaccent : "transparent"
     horizontalPadding: !backgroundEnabled ? 0 : compact ? 5 : 7
     verticalPadding: compact ? 3 : 6
 
@@ -36,7 +36,7 @@ Pill {
                     font.pixelSize: Theme.barSymbolSize
                     color: QuickModesService.active("mic") ? Theme.warning : Theme.foreground
                 }
-                Text {
+                GlassLabel {
                     visible: root.showDetails
                     text: QuickModesService.active("mic") ? "Mic off" : "Mic on"
                     color: Theme.foreground
@@ -60,7 +60,7 @@ Pill {
                 id: downRow
                 spacing: 5
                 Icon { icon: "\ue5db"; font.pixelSize: Theme.barSymbolSize; color: Theme.accent }
-                Text {
+                GlassLabel {
                     visible: root.showDetails
                     text: SystemMetrics.speed(SystemMetrics.rxPerSec)
                     color: Theme.foreground
@@ -78,7 +78,7 @@ Pill {
                 id: upRow
                 spacing: 5
                 Icon { icon: "\ue5d8"; font.pixelSize: Theme.barSymbolSize; color: Theme.accent }
-                Text {
+                GlassLabel {
                     visible: root.showDetails
                     text: SystemMetrics.speed(SystemMetrics.txPerSec)
                     color: Theme.foreground

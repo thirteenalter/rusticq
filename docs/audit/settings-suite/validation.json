@@ -1,0 +1,173 @@
+{
+  "environment": {
+    "quickshell": "0.3.2 (Omarchy)",
+    "backend": "Qt offscreen/software",
+    "desktop_blur_verified": false,
+    "minimum_supported": "Quickshell 0.3.1 / Qt 6"
+  },
+  "checks": [
+    {
+      "tool": "verify-static.py",
+      "status": "passed",
+      "seconds": 2.0,
+      "log": "logs/verify-static.log"
+    },
+    {
+      "tool": "check-bar-modes.py",
+      "status": "passed",
+      "seconds": 0.04,
+      "log": "logs/check-bar-modes.log"
+    },
+    {
+      "tool": "test_settings_suite_ui.py",
+      "status": "passed",
+      "seconds": 6.02,
+      "log": "logs/test_settings_suite_ui.log",
+      "final_targeted_rerun": true,
+      "sidebar_hover_rerun": true
+    },
+    {
+      "tool": "test_hypr_settings_ui.py",
+      "status": "passed",
+      "seconds": 4.63,
+      "log": "logs/test_hypr_settings_ui.log",
+      "final_targeted_rerun": true,
+      "sidebar_hover_rerun": true
+    },
+    {
+      "tool": "test_hypr_settings.py",
+      "status": "passed",
+      "seconds": 0.3,
+      "log": "logs/test_hypr_settings.log"
+    },
+    {
+      "tool": "test_hypr_settings_integration.py",
+      "status": "passed",
+      "seconds": 0.27,
+      "log": "logs/test_hypr_settings_integration.log"
+    },
+    {
+      "tool": "test_glassmorphism.py",
+      "status": "passed",
+      "seconds": 0.18,
+      "log": "logs/test_glassmorphism.log",
+      "final_targeted_rerun": true
+    },
+    {
+      "tool": "test_glassmorphism_ui.py",
+      "status": "passed",
+      "seconds": 2.38,
+      "log": "logs/test_glassmorphism_ui.log"
+    },
+    {
+      "tool": "test_rage_native_palette.py",
+      "status": "passed",
+      "seconds": 1.04,
+      "log": "logs/test_rage_native_palette.log"
+    },
+    {
+      "tool": "test_wifi_audio_ui.py",
+      "status": "passed",
+      "seconds": 4.72,
+      "log": "logs/test_wifi_audio_ui.log"
+    },
+    {
+      "tool": "test_settings_refactor.py",
+      "status": "passed",
+      "seconds": 0.05,
+      "log": "logs/test_settings_refactor.log"
+    },
+    {
+      "tool": "test_portable_user_settings.py",
+      "status": "passed",
+      "seconds": 0.52,
+      "log": "logs/test_portable_user_settings.log"
+    },
+    {
+      "tool": "test_quick_control_ui.py",
+      "status": "passed",
+      "seconds": 14.52,
+      "log": "logs/test_quick_control_ui.log"
+    },
+    {
+      "tool": "test_launcher_studio_ui.py",
+      "status": "passed",
+      "seconds": 8.5,
+      "log": "logs/test_launcher_studio_ui.log"
+    },
+    {
+      "tool": "test_surface_spacing_ui.py",
+      "status": "passed",
+      "seconds": 5.12,
+      "log": "logs/test_surface_spacing_ui.log"
+    },
+    {
+      "tool": "test_compositor_studio_safety.py",
+      "status": "passed",
+      "seconds": 0.38,
+      "log": "logs/test_compositor_studio_safety.log"
+    },
+    {
+      "tool": "test_shortcut_backup_confirmation.py",
+      "status": "passed",
+      "seconds": 0.08,
+      "log": "logs/test_shortcut_backup_confirmation.log"
+    },
+    {
+      "tool": "test_shortcut_full_backup.py",
+      "status": "passed",
+      "seconds": 2.98,
+      "log": "logs/test_shortcut_full_backup.log"
+    },
+    {
+      "tool": "test_shortcut_lua_compat.py",
+      "status": "passed",
+      "seconds": 0.17,
+      "log": "logs/test_shortcut_lua_compat.log"
+    },
+    {
+      "tool": "test_beta1_live_displays_confirmation.py",
+      "status": "passed",
+      "seconds": 0.17,
+      "log": "logs/test_beta1_live_displays_confirmation.log"
+    },
+    {
+      "tool": "test_speedtest_ui.py",
+      "status": "passed",
+      "seconds": 5.55,
+      "log": "logs/test_speedtest_ui.log"
+    },
+    {
+      "tool": "test_bar_surfaces_ui.py",
+      "status": "passed",
+      "seconds": 4.12,
+      "log": "logs/test_bar_surfaces_ui.log"
+    },
+    {
+      "tool": "test_bar_padding_ui.py",
+      "status": "passed",
+      "seconds": 7.79,
+      "log": "logs/test_bar_padding_ui.log"
+    },
+    {
+      "tool": "test_audio_peak.py",
+      "status": "passed",
+      "seconds": 0.16,
+      "log": "logs/test_audio_peak.log"
+    }
+  ],
+  "targeted_results": {
+    "settings_qml": "14 passed, 0 failed; fresh-engine reload passed",
+    "hyprland_qml": "19 passed, 0 failed",
+    "material_backend": "28 passed, including generated Lua execution against local stubs"
+  },
+  "sidebar_hover_checks": [
+    "content geometry inside row",
+    "four row edges",
+    "content/search boundaries",
+    "scroll without pointer movement",
+    "window deactivation",
+    "expanded/collapsed sidebar",
+    "selection independent of hover"
+  ]
+}

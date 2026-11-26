@@ -1,0 +1,28 @@
+  INFO: Launching config: "/tmp/rusticq-motion-ui-altc8gqb/shell.qml"
+  INFO: Shell ID: "dafde256cb413c9da711fa5037a2a813" Path ID "dafde256cb413c9da711fa5037a2a813"
+  INFO: Saving logs to "/tmp/rusticq-motion-ui-altc8gqb/quickshell/by-id/36hg1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-motion-ui-altc8gqb/quickshell/by-id/36hg1pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: MOTION TEST test_directions_and_replay failed=false stage=
+ DEBUG qml: MOTION TEST test_entry_exit_and_no_input_during_close failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_entry_waits_for_the_first_native_frame failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_icon_size_exact_pixels_limits_and_editor failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_loader_survives_close_and_quick_reopen failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_motion_styles_are_distinct_and_validated failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_off_settles_active_transitions_immediately failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_reopening_reverses_from_current_frame failed=false stage=exit settled
+ DEBUG qml: MOTION TEST test_z_appearance_toggle_keyboard_and_save failed=false stage=exit settled
+ DEBUG qml: MOTION RESULTS 10 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-motion-ui-altc8gqb/shell.qml"
+  INFO: Shell ID: "dafde256cb413c9da711fa5037a2a813" Path ID "dafde256cb413c9da711fa5037a2a813"
+  INFO: Saving logs to "/tmp/rusticq-motion-ui-altc8gqb/quickshell/by-id/99hg1pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-motion-ui-altc8gqb/quickshell/by-id/99hg1pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: MOTION RELOAD PASS
+PASS: surface entry/exit, interrupted motion, instant mode, loader retention, directions and setting save/reload

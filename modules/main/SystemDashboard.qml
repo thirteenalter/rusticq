@@ -8,7 +8,7 @@ import "../../components"
 
 Rectangle {
     id: root
-    radius: 15; color: Theme.background
+    radius: Theme.glassRadius("card", 15); color: Theme.glassColor("card", Theme.background)
     property var processData: ({processes: [], total: 0, load: [0,0,0], uptime: 0, cores: 1})
     property string error: ""
     property bool showTrends: false
@@ -29,12 +29,13 @@ Rectangle {
         onTriggered: if (!proc.running) proc.running = true
     }
     ColumnLayout {
-        anchors.fill: parent; anchors.margins: 15; spacing: 10
+        objectName: "surfaceContent"
+        anchors.fill: parent; anchors.margins: Theme.panelPadding; spacing: 10
         RowLayout {
             Layout.fillWidth: true
             Icon { icon: "\uf500"; font.pixelSize: Fonts.scale(21); color: Theme.accent }
-            Text { text: "System · Task View"; Layout.fillWidth: true; font.pixelSize: Fonts.scale(15); font.family: Fonts.poppinsSB.name; color: Theme.foreground }
-            Text { text: "LIVE"; font.pixelSize: Fonts.scale(10); color: Theme.muted }
+            GlassLabel { text: "System · Task View"; Layout.fillWidth: true; font.pixelSize: Fonts.scale(15); font.family: Fonts.poppinsSB.name; color: Theme.foreground }
+            GlassLabel { text: "LIVE"; font.pixelSize: Fonts.scale(10); color: Theme.contentMuted }
         }
         RowLayout {
             Layout.fillWidth: true
@@ -47,13 +48,13 @@ Rectangle {
                     readonly property bool active: (modelData.key === "trends") === root.showTrends
                     Layout.fillWidth: true
                     Layout.preferredHeight: 31
-                    radius: 9
-                    color: active ? Qt.alpha(Theme.accent, 0.18) : Theme.surface
-                    border.width: active ? 1 : 0
-                    border.color: Theme.accent
+                    radius: Theme.glassRadius("card", 9)
+                    color: Theme.glassColor("card", active ? Qt.alpha(Theme.accent, 0.18) : Theme.surface)
+                    border.width: Theme.glassBorderWidth("card", active ? 1 : 0)
+                    border.color: Theme.glassBorder("card", Theme.accent)
                     RowLayout { anchors.centerIn: parent; spacing: 5
                         Icon { icon: viewTab.modelData.icon; font.pixelSize: Fonts.scale(15); color: active ? Theme.accent : Theme.foreground }
-                        Text { text: viewTab.modelData.title; font.pixelSize: Fonts.scale(11); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
+                        GlassLabel { text: viewTab.modelData.title; font.pixelSize: Fonts.scale(11); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.showTrends = viewTab.modelData.key === "trends" }
                 }
@@ -71,8 +72,8 @@ Rectangle {
                 Layout.fillWidth: true; spacing: 4
                 RowLayout {
                     Layout.fillWidth: true
-                    Text { text: metric.modelData.label; Layout.fillWidth: true; font.pixelSize: Fonts.scale(11); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
-                    Text { text: metric.modelData.value; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
+                    GlassLabel { text: metric.modelData.label; Layout.fillWidth: true; font.pixelSize: Fonts.scale(11); color: Theme.foreground; font.family: Fonts.poppinsSB.name }
+                    GlassLabel { text: metric.modelData.value; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
                 }
                 Rectangle {
                     Layout.fillWidth: true; Layout.preferredHeight: 5; radius: 3; color: Theme.surface
@@ -93,25 +94,25 @@ Rectangle {
                 delegate: Rectangle {
                     id: trendCard; required property var modelData
                     Layout.fillWidth: true; Layout.fillHeight: true
-                    color: Theme.surface; radius: 12
-                    ColumnLayout { anchors.fill: parent; anchors.margins: 12; spacing: 9
+                    color: Theme.glassColor("card", Theme.surface); radius: Theme.glassRadius("card", 12)
+                    ColumnLayout { anchors.fill: parent; anchors.margins: Theme.cardPadding; spacing: 9
                         RowLayout { Layout.fillWidth: true
-                            Text { text: trendCard.modelData.label; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
-                            Text { text: trendCard.modelData.value; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                            GlassLabel { text: trendCard.modelData.label; Layout.fillWidth: true; color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+                            GlassLabel { text: trendCard.modelData.value; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                         }
                         MetricWave { Layout.fillWidth: true; Layout.fillHeight: true; samples: trendCard.modelData.series }
                     }
                 }
             }
-            Text { text: "Live samples every 2 seconds · no historical files saved"; color: Theme.muted; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true }
+            GlassLabel { text: "Live samples every 2 seconds · no historical files saved"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true }
         }
-        Text { text: "Load " + root.processData.load.join(" / ") + "  ·  " + root.processData.cores + " CPUs  ·  " + root.processData.total + " processes"; Layout.fillWidth: true; font.pixelSize: Fonts.scale(10); color: Theme.muted }
+        GlassLabel { text: "Load " + root.processData.load.join(" / ") + "  ·  " + root.processData.cores + " CPUs  ·  " + root.processData.total + " processes"; Layout.fillWidth: true; font.pixelSize: Fonts.scale(10); color: Theme.contentMuted }
         RowLayout {
             visible: !root.showTrends
             Layout.fillWidth: true
-            Text { text: "TOP CPU PROCESSES"; Layout.fillWidth: true; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name; color: Theme.muted }
-            Text { text: "CPU"; font.pixelSize: Fonts.scale(10); color: Theme.muted }
-            Text { text: "RAM"; font.pixelSize: Fonts.scale(10); color: Theme.muted }
+            GlassLabel { text: "TOP CPU PROCESSES"; Layout.fillWidth: true; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name; color: Theme.contentMuted }
+            GlassLabel { text: "CPU"; font.pixelSize: Fonts.scale(10); color: Theme.contentMuted }
+            GlassLabel { text: "RAM"; font.pixelSize: Fonts.scale(10); color: Theme.contentMuted }
         }
         ListView {
             visible: !root.showTrends
@@ -122,16 +123,16 @@ Rectangle {
                 id: pRow
                 required property var modelData
                 required property int index
-                width: ListView.view.width; height: 30; radius: 6
-                color: index % 2 ? Qt.alpha(Theme.foreground, .035) : Theme.surface
+                width: ListView.view.width; height: 30; radius: Theme.glassRadius("card", 6)
+                color: Theme.glassColor("card", index % 2 ? Qt.alpha(Theme.foreground, .035) : Theme.surface)
                 RowLayout {
                     anchors.fill: parent; anchors.leftMargin: 8; anchors.rightMargin: 8
-                    Text { text: pRow.modelData.name + "  #" + pRow.modelData.pid; Layout.fillWidth: true; elide: Text.ElideRight; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
-                    Text { text: pRow.modelData.cpu.toFixed(1) + "%"; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight; font.pixelSize: Fonts.scale(10); color: Theme.foreground }
-                    Text { text: pRow.modelData.memMiB.toFixed(0) + " MiB"; Layout.preferredWidth: 67; horizontalAlignment: Text.AlignRight; font.pixelSize: Fonts.scale(10); color: Theme.muted }
+                    GlassLabel { text: pRow.modelData.name + "  #" + pRow.modelData.pid; Layout.fillWidth: true; elide: Text.ElideRight; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
+                    GlassLabel { text: pRow.modelData.cpu.toFixed(1) + "%"; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight; font.pixelSize: Fonts.scale(10); color: Theme.foreground }
+                    GlassLabel { text: pRow.modelData.memMiB.toFixed(0) + " MiB"; Layout.preferredWidth: 67; horizontalAlignment: Text.AlignRight; font.pixelSize: Fonts.scale(10); color: Theme.contentMuted }
                 }
             }
         }
-        Text { text: root.error || "Read-only process view · updates every 3 s"; font.pixelSize: Fonts.scale(10); color: Theme.muted }
+        GlassLabel { text: root.error || "Read-only process view · updates every 3 s"; font.pixelSize: Fonts.scale(10); color: Theme.contentMuted }
     }
 }

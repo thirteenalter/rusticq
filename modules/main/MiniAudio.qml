@@ -8,10 +8,11 @@ import "../../components"
 // Compact single audio card; height is measured from content, not the popup.
 Rectangle {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     implicitWidth: 350
-    implicitHeight: fullSettings ? content.implicitHeight + 2 * Theme.sectionPadding
-                                : Math.min(620, content.implicitHeight + 2 * Theme.sectionPadding)
-    radius: Theme.sectionRadius
+    implicitHeight: fullSettings ? content.implicitHeight + 2 * root.settingsTheme.sectionPadding
+                                : Math.min(620, content.implicitHeight + 2 * root.settingsTheme.sectionPadding)
+    radius: root.settingsTheme.sectionRadius
     color: "transparent"
     border.width: 0
     property bool advancedOpen: false
@@ -37,22 +38,23 @@ Rectangle {
         anchors.fill: parent
         clip: true
         contentWidth: width
-        contentHeight: content.implicitHeight + 2 * Theme.sectionPadding
+        contentHeight: content.implicitHeight + 2 * root.settingsTheme.sectionPadding
         boundsBehavior: Flickable.StopAtBounds
         ColumnLayout {
         id: content
-        x: Theme.sectionPadding; y: Theme.sectionPadding; width: parent.width - 2 * Theme.sectionPadding
-        spacing: 12
+        objectName: "surfaceContent"
+        x: root.settingsTheme.sectionPadding; y: root.settingsTheme.sectionPadding; width: parent.width - 2 * root.settingsTheme.sectionPadding
+        spacing: root.settingsTheme.contentGap
         RowLayout {
             Layout.fillWidth: true; spacing: 9
-            Rectangle { Layout.preferredWidth: 32; Layout.preferredHeight: 32; radius: 10; color: Qt.alpha(Theme.accent, .13)
-                Icon { anchors.centerIn: parent; icon: root.available && root.sink.audio.muted ? "\ue04f" : "\ue050"; font.pixelSize: 18; color: Theme.accent }
+            Rectangle { Layout.preferredWidth: 32; Layout.preferredHeight: 32; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", Qt.alpha(root.settingsTheme.accent, .13))
+                Icon { anchors.centerIn: parent; icon: root.available && root.sink.audio.muted ? "\ue04f" : "\ue050"; font.pixelSize: 18; color: root.settingsTheme.accent }
             }
             ColumnLayout { Layout.fillWidth: true; spacing: 1
-                Text { text: "Audio"; color: Theme.foreground; font.pixelSize: Fonts.scale(13); font.family: Fonts.poppinsSB.name }
-                Text { text: root.available ? (root.sink.description || "Default audio output") : "Output unavailable"; Layout.fillWidth: true; elide: Text.ElideRight; color: Theme.muted; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name }
+                GlassLabel { text: "Audio"; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(13); font.family: Fonts.poppinsSB.name }
+                GlassLabel { text: root.available ? (root.sink.description || "Default audio output") : "Output unavailable"; Layout.fillWidth: true; elide: Text.ElideRight; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name }
             }
-            Text { text: root.available ? Math.round(root.sink.audio.volume * 100) + "%" : "--"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            GlassLabel { text: root.available ? Math.round(root.sink.audio.volume * 100) + "%" : "--"; color: root.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
             DeviceSettingsButton {
                 objectName: "audioFullscreenButton"
                 visible: !root.fullSettings
@@ -71,47 +73,47 @@ Rectangle {
             onUserChanged: next => { if (root.available) root.sink.audio.volume = next; }
         }
         RowLayout { Layout.fillWidth: true; spacing: 8
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 36; radius: 10; color: Theme.surface
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 36; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
                 RowLayout { anchors.centerIn: parent; spacing: 7
-                    Icon { icon: root.available && root.sink.audio.muted ? "\ue050" : "\ue04f"; font.pixelSize: 16; color: Theme.accent }
-                    Text { text: root.available && root.sink.audio.muted ? "Unmute" : "Mute output"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+                    Icon { icon: root.available && root.sink.audio.muted ? "\ue050" : "\ue04f"; font.pixelSize: 16; color: root.settingsTheme.accent }
+                    GlassLabel { text: root.available && root.sink.audio.muted ? "Unmute" : "Mute output"; color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
                 }
                 MouseArea { anchors.fill: parent; enabled: root.available; cursorShape: Qt.PointingHandCursor; onClicked: root.sink.audio.muted = !root.sink.audio.muted }
             }
-            Rectangle { objectName: "audioAdvancedButton"; visible: !root.fullSettings; Layout.preferredWidth: 118; Layout.preferredHeight: 36; radius: 10; color: root.advancedOpen ? Qt.alpha(Theme.accent,.16) : Theme.surface
+            Rectangle { objectName: "audioAdvancedButton"; visible: !root.fullSettings; Layout.preferredWidth: 118; Layout.preferredHeight: 36; radius: root.settingsTheme.glassRadius("card", 10); color: root.settingsTheme.glassColor("card", root.advancedOpen ? Qt.alpha(root.settingsTheme.accent,.16) : root.settingsTheme.surface)
                 RowLayout { anchors.centerIn: parent; spacing: 6
-                    Icon { icon: root.advancedOpen ? "\ue5ce" : "\ue5cf"; color: Theme.accent; font.pixelSize: 17 }
-                    Text { text: "Advanced"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    Icon { icon: root.advancedOpen ? "\ue5ce" : "\ue5cf"; color: root.settingsTheme.accent; font.pixelSize: 17 }
+                    GlassLabel { text: "Advanced"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.advancedOpen = !root.advancedOpen }
             }
         }
         ColumnLayout { visible: root.detailsOpen; Layout.fillWidth: true; spacing: 10
-            Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
+            Item { Layout.fillWidth: true; Layout.preferredHeight: root.settingsTheme.sectionGap }
             ApplicationAudioMixer { id: applicationMixer; Layout.fillWidth: true }
-            Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
+            Item { Layout.fillWidth: true; Layout.preferredHeight: root.settingsTheme.sectionGap }
             RowLayout { Layout.fillWidth: true;spacing:8
                 id: outputControls
-                Text { text: "Output level · live";color:Theme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11);Layout.fillWidth:true }
-                Text { text: Math.round(Math.min(1,Math.max(0,outputPeak.peak||0))*100)+"%";color:Theme.accent;font.pixelSize:Fonts.scale(10) }
+                GlassLabel { text: "Output level · live";color:root.settingsTheme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(11);Layout.fillWidth:true }
+                GlassLabel { text: Math.round(Math.min(1,Math.max(0,outputPeak.peak||0))*100)+"%";color:root.settingsTheme.accent;font.pixelSize:Fonts.scale(10) }
             }
-            Rectangle { Layout.fillWidth: true;Layout.preferredHeight:10;radius:5;color:Theme.surface
-                Rectangle { height:parent.height;width:parent.width*Math.min(1,Math.max(0,outputPeak.peak||0));radius:5;color:Theme.accent
-                    Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
+            Rectangle { Layout.fillWidth: true;Layout.preferredHeight:10;radius:root.settingsTheme.glassRadius("card", 5);color:root.settingsTheme.glassColor("card", root.settingsTheme.surface)
+                Rectangle { height:parent.height;width:parent.width*Math.min(1,Math.max(0,outputPeak.peak||0));radius:5;color:root.settingsTheme.accent
+                    Behavior on width { enabled: root.settingsTheme.motionEnabled; NumberAnimation { duration: root.settingsTheme.motionFastDuration; easing.type: Easing.OutCubic } }
                 }
             }
-            Rectangle { Layout.fillWidth:true;Layout.preferredHeight:34;radius:9;color:Theme.surface
+            Rectangle { Layout.fillWidth:true;Layout.preferredHeight:34;radius:root.settingsTheme.glassRadius("card", 9);color:root.settingsTheme.glassColor("card", root.settingsTheme.surface)
                 RowLayout { anchors.centerIn:parent;spacing:8
-                    Icon { icon:"\ue050";font.pixelSize:Fonts.scale(17);color:Theme.accent }
-                    Text { text:"Play speaker test";color:Theme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(10) }
+                    Icon { icon:"\ue050";font.pixelSize:Fonts.scale(17);color:root.settingsTheme.accent }
+                    GlassLabel { text:"Play speaker test";color:root.settingsTheme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(10) }
                 }
                 MouseArea { anchors.fill:parent;cursorShape:Qt.PointingHandCursor;onClicked:Quickshell.execDetached(["sh",Quickshell.shellPath("scripts/rustiq-audio-test.sh")]) }
             }
-            Text { text:"A quiet test tone plays through the current output.";color:Theme.muted;font.pixelSize:Fonts.scale(9);wrapMode:Text.WordWrap;Layout.fillWidth:true }
+            GlassLabel { text:"A quiet test tone plays through the current output.";color:root.settingsTheme.muted;font.pixelSize:Fonts.scale(9);wrapMode:Text.WordWrap;Layout.fillWidth:true }
             RowLayout { Layout.fillWidth: true
                 id: microphoneControls
-                Text { text: "Microphone"; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
-                Text { text: root.source && root.source.audio ? Math.round(root.source.audio.volume * 100) + "%" : "N/A"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                GlassLabel { text: "Microphone"; Layout.fillWidth: true; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                GlassLabel { text: root.source && root.source.audio ? Math.round(root.source.audio.volume * 100) + "%" : "N/A"; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
             }
             ControlSlider { Layout.fillWidth: true; Layout.preferredHeight: 26
                 value: root.source && root.source.audio ? Math.min(1, root.source.audio.volume) : 0
@@ -119,36 +121,36 @@ Rectangle {
                 onUserChanged: next => { if (root.source && root.source.audio) root.source.audio.volume = next; }
             }
             RowLayout { Layout.fillWidth:true; spacing:8
-                Text { text:"Microphone input · live";color:Theme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(10);Layout.fillWidth:true }
-                Text { text:Math.round(Math.min(1,Math.max(0,microphonePeak.peak||0))*100)+"%";color:Theme.accent;font.pixelSize:Fonts.scale(10) }
+                GlassLabel { text:"Microphone input · live";color:root.settingsTheme.foreground;font.family:Fonts.poppinsSB.name;font.pixelSize:Fonts.scale(10);Layout.fillWidth:true }
+                GlassLabel { text:Math.round(Math.min(1,Math.max(0,microphonePeak.peak||0))*100)+"%";color:root.settingsTheme.accent;font.pixelSize:Fonts.scale(10) }
             }
-            Rectangle { Layout.fillWidth:true;Layout.preferredHeight:10;radius:5;color:Theme.surface
-                Rectangle { height:parent.height;width:parent.width*Math.min(1,Math.max(0,microphonePeak.peak||0));radius:5;color:Theme.accent
-                    Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
+            Rectangle { Layout.fillWidth:true;Layout.preferredHeight:10;radius:root.settingsTheme.glassRadius("card", 5);color:root.settingsTheme.glassColor("card", root.settingsTheme.surface)
+                Rectangle { height:parent.height;width:parent.width*Math.min(1,Math.max(0,microphonePeak.peak||0));radius:5;color:root.settingsTheme.accent
+                    Behavior on width { enabled: root.settingsTheme.motionEnabled; NumberAnimation { duration: root.settingsTheme.motionFastDuration; easing.type: Easing.OutCubic } }
                 }
             }
-            Text { text:"Speak into the selected microphone. Levels update live and are not recorded.";color:Theme.muted;font.pixelSize:Fonts.scale(9);wrapMode:Text.WordWrap;Layout.fillWidth:true }
-            Text { text: "Output device"; color: Theme.muted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+            GlassLabel { text:"Speak into the selected microphone. Levels update live and are not recorded.";color:root.settingsTheme.muted;font.pixelSize:Fonts.scale(9);wrapMode:Text.WordWrap;Layout.fillWidth:true }
+            GlassLabel { text: "Output device"; color: root.settingsTheme.contentMuted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
             Repeater { model: root.outputDevices
-                delegate: Rectangle { id: output; required property var modelData; Layout.fillWidth: true; Layout.preferredHeight: 30; radius: 8
-                    color: Pipewire.defaultAudioSink === modelData ? Qt.alpha(Theme.accent,.16) : Theme.surface
+                delegate: Rectangle { id: output; required property var modelData; Layout.fillWidth: true; Layout.preferredHeight: 30; radius: root.settingsTheme.glassRadius("card", 8)
+                    color: root.settingsTheme.glassColor("card", Pipewire.defaultAudioSink === modelData ? Qt.alpha(root.settingsTheme.accent,.16) : root.settingsTheme.surface)
                     RowLayout { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10
-                        Text { Layout.fillWidth: true; text: output.modelData.description || output.modelData.name || "Audio output"; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-                        Icon { visible: Pipewire.defaultAudioSink === output.modelData; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: 16 }
+                        GlassLabel { Layout.fillWidth: true; text: output.modelData.description || output.modelData.name || "Audio output"; elide: Text.ElideRight; color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        Icon { visible: Pipewire.defaultAudioSink === output.modelData; icon: "\ue5ca"; color: root.settingsTheme.accent; font.pixelSize: 16 }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Pipewire.preferredDefaultAudioSink = output.modelData }
                 }
             }
-            Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
-            Text { text: "Input device · microphone"; color: Theme.muted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
-            Text { visible: root.inputDevices.length === 0; text: "No microphone available"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+            Item { Layout.fillWidth: true; Layout.preferredHeight: root.settingsTheme.sectionGap }
+            GlassLabel { text: "Input device · microphone"; color: root.settingsTheme.contentMuted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+            GlassLabel { visible: root.inputDevices.length === 0; text: "No microphone available"; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
             Repeater { model: root.inputDevices
-                delegate: Rectangle { id: input; required property var modelData; Layout.fillWidth: true; Layout.preferredHeight: 30; radius: 8
-                    color: Pipewire.defaultAudioSource === modelData ? Qt.alpha(Theme.accent,.16) : Theme.surface
+                delegate: Rectangle { id: input; required property var modelData; Layout.fillWidth: true; Layout.preferredHeight: 30; radius: root.settingsTheme.glassRadius("card", 8)
+                    color: root.settingsTheme.glassColor("card", Pipewire.defaultAudioSource === modelData ? Qt.alpha(root.settingsTheme.accent,.16) : root.settingsTheme.surface)
                     RowLayout { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10; spacing: 7
-                        Icon { icon: "\ue029"; color: Theme.accent; font.pixelSize: 16 }
-                        Text { Layout.fillWidth: true; text: input.modelData.description || input.modelData.name; elide: Text.ElideRight; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-                        Icon { visible: Pipewire.defaultAudioSource === input.modelData; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: 16 }
+                        Icon { icon: "\ue029"; color: root.settingsTheme.accent; font.pixelSize: 16 }
+                        GlassLabel { Layout.fillWidth: true; text: input.modelData.description || input.modelData.name; elide: Text.ElideRight; color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        Icon { visible: Pipewire.defaultAudioSource === input.modelData; icon: "\ue5ca"; color: root.settingsTheme.accent; font.pixelSize: 16 }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Pipewire.preferredDefaultAudioSource = input.modelData }
                 }

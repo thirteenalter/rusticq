@@ -8,7 +8,9 @@ import "../config"
 // Shared by Advanced Audio in the popup and Quick Control.
 ColumnLayout {
     id: root
-    spacing: Theme.sectionGap
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
+    property bool framelessQuickControl: false
+    spacing: framelessQuickControl ? QuickControlStyle.gap : root.settingsTheme.sectionGap
     // In Quickshell 0.3.1 AudioOutStream includes the Sink flag. Capture
     // streams (including our peak monitors) have the Source flag instead.
     readonly property var streamCandidates: Pipewire.nodes.values.filter(
@@ -24,28 +26,29 @@ ColumnLayout {
 
     RowLayout {
         Layout.fillWidth: true
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
-            text: "Application audio mixer"
-            color: Theme.foreground
+            text: root.framelessQuickControl ? "Application mixer" : "Application audio mixer"
+            color: root.settingsTheme.foreground
             font.family: Fonts.poppinsSB.name
             font.pixelSize: Fonts.scale(11)
         }
-        Text {
+        GlassLabel {
             text: root.playbackStreams.length + " streams"
-            color: Theme.muted
+            color: root.settingsTheme.contentMuted
             font.family: Fonts.poppins.name
-            font.pixelSize: Theme.helperTextSize
+            font.pixelSize: root.settingsTheme.helperTextSize
         }
     }
-    Text {
+    GlassLabel {
+        visible: !root.framelessQuickControl || root.playbackStreams.length === 0
         Layout.fillWidth: true
         text: root.playbackStreams.length ? "Audio bus · apps using speaker output"
               : "No applications are using audio output. Play audio in an app to see it here."
         wrapMode: Text.WordWrap
-        color: Theme.muted
+        color: root.settingsTheme.contentMuted
         font.family: Fonts.poppins.name
-        font.pixelSize: Theme.helperTextSize
+        font.pixelSize: root.settingsTheme.helperTextSize
     }
     Repeater {
         id: streams
@@ -72,9 +75,9 @@ ColumnLayout {
             readonly property real level: audioNode.audio && !audioNode.audio.muted
                 ? Math.max(0, Math.min(1, nativeChannelsKnown ? appPeak.peak || 0 : fallbackPeak.peak)) : 0
             Layout.fillWidth: true
-            implicitHeight: streamContent.implicitHeight + 16
-            radius: Theme.rowRadius
-            color: Theme.surface
+            implicitHeight: streamContent.implicitHeight + (root.framelessQuickControl ? 0 : 16)
+            radius: root.settingsTheme.glassRadius("card", root.settingsTheme.rowRadius)
+            color: root.framelessQuickControl ? "transparent" : root.settingsTheme.glassColor("card", root.settingsTheme.surface)
 
             PwNodePeakMonitor {
                 id: appPeak
@@ -106,32 +109,33 @@ ColumnLayout {
             ColumnLayout {
                 id: streamContent
                 anchors.fill: parent
-                anchors.margins: 8
+                anchors.margins: root.framelessQuickControl ? 0 : 8
                 spacing: 4
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 6
-                    Icon { icon: "\ue050"; color: Theme.accent; font.pixelSize: Fonts.scale(17) }
-                    Text {
+                    Icon { icon: "\ue050"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(17) }
+                    GlassLabel {
                         Layout.fillWidth: true
                         text: appStream.appName
-                        color: Theme.foreground
+                        color: root.settingsTheme.foreground
                         font.family: Fonts.poppinsSB.name
-                        font.pixelSize: Theme.helperTextSize
+                        font.pixelSize: root.settingsTheme.helperTextSize
                         elide: Text.ElideRight
                     }
-                    Text {
+                    GlassLabel {
                         text: appStream.audioNode.audio ? Math.round(appStream.audioNode.audio.volume * 100) + "%" : "--"
-                        color: Theme.muted
+                        color: root.settingsTheme.contentMuted
                         font.family: Fonts.poppins.name
-                        font.pixelSize: Theme.helperTextSize
+                        font.pixelSize: root.settingsTheme.helperTextSize
                     }
                     Rectangle {
+                        visible: !root.framelessQuickControl
                         Layout.preferredWidth: 32
                         Layout.preferredHeight: 27
-                        radius: 7
-                        color: appStream.audioNode.audio && appStream.audioNode.audio.muted
-                               ? Qt.alpha(Theme.accent, 0.20) : Theme.background
+                        radius: root.settingsTheme.glassRadius("card", 7)
+                        color: root.settingsTheme.glassColor("card", appStream.audioNode.audio && appStream.audioNode.audio.muted
+                               ? Qt.alpha(root.settingsTheme.accent, 0.20) : root.settingsTheme.background)
                         enabled: !!appStream.audioNode.audio
                         activeFocusOnTab: true
                         Accessible.role: Accessible.Button
@@ -146,22 +150,39 @@ ColumnLayout {
                         Icon {
                             anchors.centerIn: parent
                             icon: appStream.audioNode.audio && appStream.audioNode.audio.muted ? "\ue04f" : "\ue050"
-                            color: Theme.accent
+                            color: root.settingsTheme.accent
                             font.pixelSize: Fonts.scale(15)
                         }
                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: parent.toggleMute() }
                     }
                 }
-                Text {
+                GlassLabel {
                     visible: appStream.mediaName.length > 0 && appStream.mediaName !== appStream.appName
                     Layout.fillWidth: true
                     text: appStream.mediaName
                     elide: Text.ElideRight
-                    color: Theme.muted
+                    color: root.settingsTheme.contentMuted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Fonts.scale(9)
                 }
+                Loader {
+                    Layout.fillWidth: true
+                    active: root.framelessQuickControl
+                    visible: active
+                    sourceComponent: QuickControlSlider {
+                        objectName: "modularStreamSlider"
+                        label: ""
+                        symbol: "\ue050"
+                        value: appStream.audioNode.audio ? appStream.audioNode.audio.volume : 0
+                        maximumValue: Math.max(1.5,value)
+                        adjustable: !!appStream.audioNode.audio
+                        muted: !!(appStream.audioNode.audio && appStream.audioNode.audio.muted)
+                        onUserChanged: next => {if(appStream.audioNode.audio)appStream.audioNode.audio.volume=next;}
+                        onIconClicked: if(appStream.audioNode.audio)appStream.audioNode.audio.muted=!appStream.audioNode.audio.muted
+                    }
+                }
                 ControlSlider {
+                    visible: !root.framelessQuickControl
                     Layout.fillWidth: true
                     Layout.preferredHeight: 24
                     value: appStream.audioNode.audio ? Math.min(1, appStream.audioNode.audio.volume) : 0
@@ -170,21 +191,21 @@ ColumnLayout {
                 }
                 RowLayout {
                     Layout.fillWidth: true
-                    Text { text: !appStream.nativeChannelsKnown && fallbackPeak.failed ? "Level unavailable" : "Level · live"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9); Layout.fillWidth: true }
-                    Text { text: Math.round(appStream.level * 100) + "%"; color: Theme.accent; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
+                    GlassLabel { text: !appStream.nativeChannelsKnown && fallbackPeak.failed ? "Level unavailable" : "Level · live"; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9); Layout.fillWidth: true }
+                    GlassLabel { text: Math.round(appStream.level * 100) + "%"; color: root.settingsTheme.accent; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(9) }
                 }
                 Rectangle {
                     objectName: "applicationAudioMeter"
                     Layout.fillWidth: true
                     Layout.preferredHeight: 5
                     radius: 3
-                    color: Theme.background
+                    color: root.settingsTheme.background
                     Rectangle {
                         width: parent.width * appStream.level
                         height: parent.height
                         radius: parent.radius
-                        color: Theme.accent
-                        Behavior on width { enabled: Theme.motionEnabled; NumberAnimation { duration: Theme.motionFastDuration; easing.type: Easing.OutCubic } }
+                        color: root.settingsTheme.accent
+                        Behavior on width { enabled: root.framelessQuickControl ? QuickControlStyle.motion : root.settingsTheme.motionEnabled; NumberAnimation { duration: root.settingsTheme.motionFastDuration; easing.type: Easing.OutCubic } }
                     }
                 }
             }

@@ -170,8 +170,12 @@ fi
 mv -- "$STAGE" "$DEST"
 STAGE=''
 # Wrapper quoting is done with printf %q; the target is not executable shell input.
-printf '#!/usr/bin/env bash\n# RusticQ managed launcher\nif [[ "${1:-}" == "doctor" || "${1:-}" == "status" || "${1:-}" == "config" || "${1:-}" == "ipc" || "${1:-}" == "watchdog" ]]; then\n  exec python3 %q "$@"\nfi\nexec qs -p %q "$@"\n' "$DEST/scripts/rusticq-cli.py" "$DEST" > "$LAUNCHER"
+printf '#!/usr/bin/env bash\n# RusticQ managed launcher\nif [[ "${1:-}" == "doctor" || "${1:-}" == "status" || "${1:-}" == "config" || "${1:-}" == "ipc" || "${1:-}" == "watchdog" || "${1:-}" == "hypr-settings" ]]; then\n  exec python3 %q "$@"\nfi\nexec qs -p %q "$@"\n' "$DEST/scripts/rusticq-cli.py" "$DEST" > "$LAUNCHER"
 chmod 755 "$LAUNCHER"
+mkdir -p "$DATA_HOME/applications" "$DATA_HOME/icons/hicolor/scalable/apps"
+cp -- "$DEST/desktop/org.rusticq.HyprlandSettings.desktop" "$DATA_HOME/applications/"
+cp -- "$DEST/assets/rusticq-app-icon.svg" "$DATA_HOME/icons/hicolor/scalable/apps/rusticq.svg"
+cp -- "$DEST/assets/rusticq-hypr-settings.svg" "$DATA_HOME/icons/hicolor/scalable/apps/rusticq-hypr-settings.svg"
 trap - EXIT
 printf '\nRusticQ installed. Test with:\n  %s\n' "$LAUNCHER"
 printf 'Or: qs -p %q\n' "$DEST"

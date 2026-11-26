@@ -1,0 +1,15 @@
+  INFO: Launching config: "/tmp/rq-smooth-motion-vu47p9lv/shell.qml"
+  INFO: Shell ID: "0f8210c0bd76e2ff3f027d0a8bff4b9d" Path ID "0f8210c0bd76e2ff3f027d0a8bff4b9d"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/pc37syf1pt/log.qslog"
+  INFO: Configuration Loaded
+  WARN scene: QML FileView at @config/Theme.qml[35:5]: Read of /tmp/rq-smooth-motion-vu47p9lv/home/.config/aether/theme/colors.toml failed: File does not exist.
+ DEBUG qml: SMOOTH SAMPLE {"phase":"dock-expand","frames":19,"firstSubmitMs":10,"p95SubmitGapMs":51,"maxSubmitGapMs":51,"nativeResizes":10,"nativeMoves":12}
+ DEBUG qml: SMOOTH SAMPLE {"phase":"dock-collapse","frames":19,"firstSubmitMs":21,"p95SubmitGapMs":50,"maxSubmitGapMs":50,"nativeResizes":12,"nativeMoves":11}
+  WARN scene: QML Image at @components/LauncherAppIcon.qml[10:5]: Cannot open: file:///home/ryznxx/.local/share/applications/icons/ChatGPT.png
+ DEBUG qml: SMOOTH SAMPLE {"phase":"launcher-results-enter","frames":19,"firstSubmitMs":24,"p95SubmitGapMs":87,"maxSubmitGapMs":87,"nativeResizes":6,"nativeMoves":0}
+ DEBUG qml: SMOOTH SAMPLE {"phase":"launcher-results-exit","frames":15,"firstSubmitMs":48,"p95SubmitGapMs":23,"maxSubmitGapMs":23,"nativeResizes":1,"nativeMoves":0}
+ DEBUG qml: SMOOTH SAMPLE {"phase":"launcher-resize-spotlight","frames":20,"firstSubmitMs":22,"p95SubmitGapMs":21,"maxSubmitGapMs":21,"nativeResizes":7,"nativeMoves":0}
+ DEBUG qml: SMOOTH SAMPLE {"phase":"launcher-resize-minimal","frames":3,"firstSubmitMs":12,"p95SubmitGapMs":91,"maxSubmitGapMs":91,"nativeResizes":0,"nativeMoves":0}
+ DEBUG qml: SMOOTH SAMPLE {"phase":"launcher-resize-classic","frames":3,"firstSubmitMs":11,"p95SubmitGapMs":16,"maxSubmitGapMs":16,"nativeResizes":0,"nativeMoves":0}
+ DEBUG qml: SMOOTH PROFILE [{"phase":"dock-expand","frames":19,"firstSubmitMs":10,"p95SubmitGapMs":51,"maxSubmitGapMs":51,"nativeResizes":10,"nativeMoves":12},{"phase":"dock-collapse","frames":19,"firstSubmitMs":21,"p95SubmitGapMs":50,"maxSubmitGapMs":50,"nativeResizes":12,"nativeMoves":11},{"phase":"launcher-results-enter","frames":19,"firstSubmitMs":24,"p95SubmitGapMs":87,"maxSubmitGapMs":87,"nativeResizes":6,"nativeMoves":0},{"phase":"launcher-results-exit","frames":15,"firstSubmitMs":48,"p95SubmitGapMs":23,"maxSubmitGapMs":23,"nativeResizes":1,"nativeMoves":0},{"phase":"launcher-resize-spotlight","frames":20,"firstSubmitMs":22,"p95SubmitGapMs":21,"maxSubmitGapMs":21,"nativeResizes":7,"nativeMoves":0},{"phase":"launcher-resize-minimal","frames":3,"firstSubmitMs":12,"p95SubmitGapMs":91,"maxSubmitGapMs":91,"nativeResizes":0,"nativeMoves":0},{"phase":"launcher-resize-classic","frames":3,"firstSubmitMs":11,"p95SubmitGapMs":16,"maxSubmitGapMs":16,"nativeResizes":0,"nativeMoves":0}]
+ DEBUG qml: SMOOTH RESULTS 3 passed, 0 failed

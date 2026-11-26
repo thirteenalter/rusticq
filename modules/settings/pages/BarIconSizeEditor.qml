@@ -5,20 +5,22 @@ import "../../../components"
 import ".."
 
 SettingsSection {
+    id: settingsPageRoot
+    readonly property var settingsTheme: SettingsMaterial.forItem(settingsPageRoot)
     heading: "Bar icon size"
     description: "Set an exact size in pixels. Icon slots and vertical rails grow with the icons."
     symbol: "\ue3c2"
     RowLayout {
         Layout.fillWidth: true
         spacing: 8
-        Text { Layout.fillWidth: true; text: "Icon size · 12–32 px"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { Layout.fillWidth: true; text: "Icon size · 12–32 px"; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
         Rectangle {
             Layout.preferredWidth: 64
             Layout.preferredHeight: 34
-            radius: Theme.rowRadius
-            color: Theme.background
-            border.width: 1
-            border.color: sizeInput.activeFocus ? Theme.accent : Theme.borderaccent
+            radius: settingsPageRoot.settingsTheme.glassRadius("card", settingsPageRoot.settingsTheme.rowRadius)
+            color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.background)
+            border.width: settingsPageRoot.settingsTheme.glassBorderWidth("card", 1)
+            border.color: settingsPageRoot.settingsTheme.glassBorder("card", sizeInput.activeFocus ? settingsPageRoot.settingsTheme.accent : settingsPageRoot.settingsTheme.borderaccent)
             TextInput {
                 id: sizeInput
                 objectName: "barIconSizeInput"
@@ -27,7 +29,7 @@ SettingsSection {
                 text: String(SettingsStore.barIconSize)
                 horizontalAlignment: TextInput.AlignHCenter
                 verticalAlignment: TextInput.AlignVCenter
-                color: Theme.foreground
+                color: settingsPageRoot.settingsTheme.foreground
                 font.family: Fonts.poppins.name
                 font.pixelSize: Fonts.scale(12)
                 selectByMouse: true
@@ -60,9 +62,9 @@ SettingsSection {
         spacing: 16
         Repeater {
             model: ["\ue63e", "\ue1a7", "\ue8b5", "\ue050", "\ue7f4"]
-            delegate: Icon { required property string modelData; icon: modelData; color: Theme.accent; font.pixelSize: Theme.barSymbolSize }
+            delegate: Icon { required property string modelData; icon: modelData; color: settingsPageRoot.settingsTheme.accent; font.pixelSize: settingsPageRoot.settingsTheme.barSymbolSize }
         }
         Item { Layout.fillWidth: true }
-        Text { text: SettingsStore.barIconSize + " px"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+        GlassLabel { text: SettingsStore.barIconSize + " px"; color: settingsPageRoot.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
     }
 }

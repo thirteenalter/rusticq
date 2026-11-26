@@ -13,13 +13,21 @@ CONTROLLER = ROOT / 'lockscreen.qml'
 class NativeVisualContract(unittest.TestCase):
     def test_same_card_tokens_as_launcher(self):
         surface = SURFACE.read_text()
-        launcher = MINILAUNCHER.read_text()
+        launcher = (ROOT / 'components/LauncherMaterial.qml').read_text()
         power = POWER.read_text()
-        for token in ('radius: Theme.sectionRadius', 'border.color: Theme.borderaccent',
-                      'border.width: 1', 'color: Theme.background'):
-            self.assertIn(token, surface)
-            self.assertIn(token, launcher)
-            self.assertIn(token, power)
+        for source, role in ((surface, 'authentication'), (power, 'modal')):
+            self.assertIn('GlassSurface {', source)
+            for prop, helper, fallback in (('radius', 'glassRadius', 'Theme.sectionRadius'),
+                                           ('border.color', 'glassBorder', 'Theme.borderaccent'),
+                                           ('border.width', 'glassBorderWidth', '1'),
+                                           ('color', 'glassColor', 'Theme.background')):
+                self.assertIn(f'{prop}: Theme.{helper}("{role}", {fallback})', source)
+        self.assertIn('GlassSurface {', launcher)
+        self.assertIn('surfaceRole: "popup"', launcher)
+        self.assertIn('SettingsStore.launcherCornerRadius', launcher)
+        self.assertIn('Theme.background', launcher)
+        self.assertIn('Theme.glassBorderColor', launcher)
+        self.assertIn('color: Theme.background', surface)  # Opaque session-lock backing.
         for token in ('Theme.accent', 'Theme.foreground', 'Theme.muted',
                       'Theme.surface', 'Theme.rowRadius', 'Fonts.poppinsSB.name',
                       'Fonts.poppins.name', 'Fonts.scale('):

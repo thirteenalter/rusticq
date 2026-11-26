@@ -5,6 +5,8 @@ import "../../../components"
 import ".."
 
 ColumnLayout {
+    id: settingsPageRoot
+    readonly property var settingsTheme: SettingsMaterial.forItem(settingsPageRoot)
     width: parent ? parent.width : 680
     spacing: 14
     SettingsSection {
@@ -15,10 +17,10 @@ ColumnLayout {
             model: [{label:"Show system OSD",desc:"Auto-hide after 1.65 seconds; observes PipeWire and hardware backlight changes",key:"osdEnabled",icon:"\ue050"}]
             delegate: SettingsToggle { perBarMode: false }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             text: "Touchpad · controls only detected touchpads, never USB mice"
-            color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap
+            color: settingsPageRoot.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12); wrapMode: Text.WordWrap
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 8
@@ -29,8 +31,8 @@ ColumnLayout {
                 delegate: Rectangle {
                     required property var modelData
                     Layout.fillWidth: true; Layout.preferredHeight: 35
-                    radius: 10; color: Theme.background
-                    Text { anchors.centerIn: parent; text: modelData.title; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+                    radius: settingsPageRoot.settingsTheme.glassRadius("card", 10); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.background)
+                    GlassLabel { anchors.centerIn: parent; text: modelData.title; color: settingsPageRoot.settingsTheme.accent; font.pixelSize: Fonts.scale(12) }
                     MouseArea {
                         anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                         onClicked: Store.osdControlRequested(modelData.action)
@@ -39,9 +41,9 @@ ColumnLayout {
             }
         }
         Rectangle {
-            Layout.fillWidth: true; Layout.preferredHeight: 35; radius: 10
-            color: Theme.background
-            Text { anchors.centerIn: parent; text: "Preview OSD"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+            Layout.fillWidth: true; Layout.preferredHeight: 35; radius: settingsPageRoot.settingsTheme.glassRadius("card", 10)
+            color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.background)
+            GlassLabel { anchors.centerIn: parent; text: "Preview OSD"; color: settingsPageRoot.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                 onClicked: Store.osdControlRequested("preview") }
         }
@@ -60,7 +62,7 @@ ColumnLayout {
         heading: "Desktop profiles"
         description: "Apply a workspace-oriented UI preset without changing Omarchy's lock, idle, power or compositor service. Restore returns to your previous settings."
         symbol: "\ue8f4"
-        Text { text: "Current: " + SettingsStore.desktopProfile.toUpperCase(); color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+        GlassLabel { text: "Current: " + SettingsStore.desktopProfile.toUpperCase(); color: settingsPageRoot.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
         Flow { Layout.fillWidth: true; spacing: 8
             Repeater {
                 model: ["coding", "gaming", "battery", "presentation", "restore"]
@@ -68,11 +70,11 @@ ColumnLayout {
                     id: profileButton
                     required property string modelData
                     readonly property bool selected: SettingsStore.desktopProfile === modelData
-                    width: profileName.implicitWidth + 27; height: 35; radius: 9
-                    color: selected ? Qt.alpha(Theme.accent,.17) : Theme.background
-                    border.width: selected ? 1 : 0; border.color: Theme.accent
-                    Text { id: profileName; anchors.centerIn: parent; text: profileButton.modelData === "restore" ? "Restore previous" : profileButton.modelData[0].toUpperCase() + profileButton.modelData.slice(1);
-                        color: Theme.foreground; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name }
+                    width: profileName.implicitWidth + 27; height: 35; radius: settingsPageRoot.settingsTheme.glassRadius("card", 9)
+                    color: settingsPageRoot.settingsTheme.glassColor("card", selected ? Qt.alpha(settingsPageRoot.settingsTheme.accent,.17) : settingsPageRoot.settingsTheme.background)
+                    border.width: settingsPageRoot.settingsTheme.glassBorderWidth("card", selected ? 1 : 0); border.color: settingsPageRoot.settingsTheme.glassBorder("card", settingsPageRoot.settingsTheme.accent)
+                    GlassLabel { id: profileName; anchors.centerIn: parent; text: profileButton.modelData === "restore" ? "Restore previous" : profileButton.modelData[0].toUpperCase() + profileButton.modelData.slice(1);
+                        color: settingsPageRoot.settingsTheme.foreground; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppinsSB.name }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             if (profileButton.modelData === "restore") SettingsStore.restoreDesktopProfile();
@@ -99,8 +101,8 @@ ColumnLayout {
                 delegate: Rectangle {
                     id: presetButton
                     required property var modelData
-                    Layout.fillWidth: true; Layout.preferredHeight: 37; radius: 9; color: Theme.background
-                    Text { anchors.centerIn: parent; text: presetButton.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                    Layout.fillWidth: true; Layout.preferredHeight: 37; radius: settingsPageRoot.settingsTheme.glassRadius("card", 9); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.background)
+                    GlassLabel { anchors.centerIn: parent; text: presetButton.modelData.label; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: {
                         if (presetButton.modelData.action === "minimal") SettingsStore.useMinimalModePreset();
                         else SettingsStore.resetModeVisibility();
@@ -108,7 +110,7 @@ ColumnLayout {
                 }
             }
         }
-        Text { text: "Copy this mode's icon setup from:"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+        GlassLabel { text: "Copy this mode's icon setup from:"; color: settingsPageRoot.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12) }
         Flow {
             Layout.fillWidth: true; spacing: 7
             Repeater {
@@ -116,8 +118,8 @@ ColumnLayout {
                 delegate: Rectangle {
                     id: profileSource
                     required property string modelData
-                    width: sourceLabel.implicitWidth + 24; height: 31; radius: 8; color: Theme.background
-                    Text { id: sourceLabel; anchors.centerIn: parent; text: profileSource.modelData === "clean-compact" ? "Clean Compact" : profileSource.modelData[0].toUpperCase() + profileSource.modelData.slice(1); color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                    width: sourceLabel.implicitWidth + 24; height: 31; radius: settingsPageRoot.settingsTheme.glassRadius("card", 8); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.background)
+                    GlassLabel { id: sourceLabel; anchors.centerIn: parent; text: profileSource.modelData === "clean-compact" ? "Clean Compact" : profileSource.modelData[0].toUpperCase() + profileSource.modelData.slice(1); color: settingsPageRoot.settingsTheme.foreground; font.pixelSize: Fonts.scale(12) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.copyVisibilityFromMode(profileSource.modelData) }
                 }
             }

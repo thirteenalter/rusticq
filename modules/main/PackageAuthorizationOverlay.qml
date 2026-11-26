@@ -52,7 +52,7 @@ PanelWindow {
         }
         Rectangle {
             anchors.fill: parent
-            color: Qt.alpha("#07090b", 0.67)
+            color: Qt.alpha(Theme.shadow, 0.67)
             MouseArea { anchors.fill: parent; onClicked: root.cancel() }
         }
         Rectangle {
@@ -60,16 +60,16 @@ PanelWindow {
             width: Math.min(450, Math.max(310, parent.width - 48))
             height: authContent.implicitHeight + 38
             anchors.centerIn: parent
-            radius: Theme.sectionRadius
-            color: Theme.background
-            border.color: Theme.borderaccent
-            border.width: 1
+            radius: Theme.glassRadius("card", Theme.sectionRadius)
+            color: Theme.glassColor("card", Theme.background)
+            border.color: Theme.glassBorder("card", Theme.borderaccent)
+            border.width: Theme.glassBorderWidth("card", 1)
             ColumnLayout {
                 id: authContent
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.margins: 19
+                anchors.margins: Theme.dialogPadding
                 spacing: 13
                 RowLayout {
                     Layout.fillWidth: true
@@ -77,28 +77,28 @@ PanelWindow {
                     Rectangle {
                         Layout.preferredWidth: 40
                         Layout.preferredHeight: 40
-                        radius: 11
-                        color: Qt.alpha(Theme.accent, .14)
+                        radius: Theme.glassRadius("card", 11)
+                        color: Theme.glassColor("card", Qt.alpha(Theme.accent, .14))
                         Icon { anchors.centerIn: parent; icon: "\ue899"; color: Theme.accent; font.pixelSize: Fonts.scale(22) }
                     }
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 2
-                        Text { text: "System Authorization"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(16) }
-                        Text { text: "Approve a package operation using Polkit / PAM"; color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                        GlassLabel { text: "System Authorization"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(16) }
+                        GlassLabel { text: "Approve a package operation using Polkit / PAM"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap; Layout.fillWidth: true }
                     }
                 }
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 62
-                    radius: 10
-                    color: Theme.surface
+                    radius: Theme.glassRadius("card", 10)
+                    color: Theme.glassColor("card", Theme.surface)
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 10
                         spacing: 4
-                        Text { text: (Store.packageAuthAction === "remove" ? "Remove" : "Install") + " · " + Store.packageAuthProvider.toUpperCase(); color: Theme.muted; font.pixelSize: Fonts.scale(10) }
-                        Text { text: Store.packageAuthPackage; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13); Layout.fillWidth: true; elide: Text.ElideMiddle }
+                        GlassLabel { text: (Store.packageAuthAction === "remove" ? "Remove" : "Install") + " · " + Store.packageAuthProvider.toUpperCase(); color: Theme.contentMuted; font.pixelSize: Fonts.scale(10) }
+                        GlassLabel { text: Store.packageAuthPackage; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13); Layout.fillWidth: true; elide: Text.ElideMiddle }
                     }
                 }
                 RowLayout {
@@ -107,37 +107,37 @@ PanelWindow {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 65
-                        color: Theme.surface
-                        radius: 9
+                        color: Theme.glassColor("card", Theme.surface)
+                        radius: Theme.glassRadius("card", 9)
                         ColumnLayout {
                             anchors.centerIn: parent
                             spacing: 3
                             Icon { icon: "\ue8a9"; color: Theme.accent; font.pixelSize: Fonts.scale(22); Layout.alignment: Qt.AlignHCenter }
-                            Text { text: Store.packageAuthFingerprintConfigured ? "Fingerprint (PAM)" : "Fingerprint (if configured)"; color: Theme.foreground; font.pixelSize: Fonts.scale(10); Layout.alignment: Qt.AlignHCenter }
+                            GlassLabel { text: Store.packageAuthFingerprintConfigured ? "Fingerprint (PAM)" : "Fingerprint (if configured)"; color: Theme.foreground; font.pixelSize: Fonts.scale(10); Layout.alignment: Qt.AlignHCenter }
                         }
                     }
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 65
-                        color: Theme.surface
-                        radius: 9
+                        color: Theme.glassColor("card", Theme.surface)
+                        radius: Theme.glassRadius("card", 9)
                         ColumnLayout {
                             anchors.centerIn: parent
                             spacing: 3
                             Icon { icon: "\ue899"; color: Theme.accent; font.pixelSize: Fonts.scale(22); Layout.alignment: Qt.AlignHCenter }
-                            Text { text: "Password"; color: Theme.foreground; font.pixelSize: Fonts.scale(10); Layout.alignment: Qt.AlignHCenter }
+                            GlassLabel { text: "Password"; color: Theme.foreground; font.pixelSize: Fonts.scale(10); Layout.alignment: Qt.AlignHCenter }
                         }
                     }
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    color: Theme.muted
+                    color: Theme.contentMuted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Fonts.scale(11)
                     text: "The system will request your password or fingerprint in its own secure authentication dialog, according to PAM settings. RusticQ never reads or stores your credentials."
                 }
-                Text {
+                GlassLabel {
                     visible: !Store.packageAuthAgentDetected
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
@@ -149,7 +149,7 @@ PanelWindow {
                     color: Theme.warning
                     font.pixelSize: Fonts.scale(10)
                 }
-                Text {
+                GlassLabel {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     color: Theme.accent
@@ -162,9 +162,9 @@ PanelWindow {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 42
-                        radius: 9
-                        color: Theme.surface
-                        Text { anchors.centerIn: parent; text: "Cancel"; color: Theme.foreground; font.pixelSize: Fonts.scale(11) }
+                        radius: Theme.glassRadius("card", 9)
+                        color: Theme.glassColor("card", Theme.surface)
+                        GlassLabel { anchors.centerIn: parent; text: "Cancel"; color: Theme.foreground; font.pixelSize: Fonts.scale(11) }
                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.cancel() }
                     }
                     Rectangle {
@@ -172,7 +172,7 @@ PanelWindow {
                         Layout.preferredHeight: 42
                         radius: 9
                         color: Theme.accent
-                        Text { anchors.centerIn: parent; text: "Open system authentication"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                        GlassLabel { anchors.centerIn: parent; text: "Open system authentication"; color: Theme.background; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.approve() }
                     }
                 }

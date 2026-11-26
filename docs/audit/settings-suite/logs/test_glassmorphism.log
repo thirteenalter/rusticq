@@ -1,0 +1,33 @@
+test_bar_request_type_is_strict (__main__.GlassBackendTests.test_bar_request_type_is_strict) ... ok
+test_both_typed_bool_and_legacy_int_options (__main__.GlassBackendTests.test_both_typed_bool_and_legacy_int_options) ... ok
+test_disabled_global_blur_is_never_enabled (__main__.GlassBackendTests.test_disabled_global_blur_is_never_enabled) ... ok
+test_eval_failure_reports_fallback (__main__.GlassBackendTests.test_eval_failure_reports_fallback) ... ok
+test_exact_surface_and_window_matching (__main__.GlassBackendTests.test_exact_surface_and_window_matching) ... ok
+test_invalid_json_values_and_injection_are_rejected_before_ipc (__main__.GlassBackendTests.test_invalid_json_values_and_injection_are_rejected_before_ipc) ... ok
+test_ipc_failure_and_existing_config_errors_do_not_apply (__main__.GlassBackendTests.test_ipc_failure_and_existing_config_errors_do_not_apply) ... ok
+test_launcher_backdrop_is_independent_and_exactly_scoped (__main__.GlassBackendTests.test_launcher_backdrop_is_independent_and_exactly_scoped) ... ok
+test_launcher_motion_has_one_owner_even_when_glass_is_disabled (__main__.GlassBackendTests.test_launcher_motion_has_one_owner_even_when_glass_is_disabled) ... ok
+test_launcher_none_has_no_fullscreen_carrier (__main__.GlassBackendTests.test_launcher_none_has_no_fullscreen_carrier) ... ok
+test_launcher_none_naked_and_performance_preserve_unrelated_blur (__main__.GlassBackendTests.test_launcher_none_naked_and_performance_preserve_unrelated_blur) ... ok
+test_legacy_and_future_versions_do_not_generate_unsafe_rules (__main__.GlassBackendTests.test_legacy_and_future_versions_do_not_generate_unsafe_rules) ... ok
+test_naked_or_solid_bar_keeps_popup_and_other_panel_blur (__main__.GlassBackendTests.test_naked_or_solid_bar_keeps_popup_and_other_panel_blur) ... ok
+test_reload_cleanup_is_guarded_by_generation_owner (__main__.GlassBackendTests.test_reload_cleanup_is_guarded_by_generation_owner) ... ok
+test_settings_and_surface_payloads_are_validated (__main__.GlassBackendTests.test_settings_and_surface_payloads_are_validated) ... ok
+test_settings_blur_is_independent_of_global_material_toggle (__main__.GlassBackendTests.test_settings_blur_is_independent_of_global_material_toggle) ... ok
+test_settings_blur_needs_global_compositor_blur_and_presentation_rules (__main__.GlassBackendTests.test_settings_blur_needs_global_compositor_blur_and_presentation_rules) ... ok
+test_settings_rules_are_valid_lua_with_utf8_window_titles (__main__.GlassBackendTests.test_settings_rules_are_valid_lua_with_utf8_window_titles) ... ok
+test_supported_named_session_rules_and_no_global_mutations (__main__.GlassBackendTests.test_supported_named_session_rules_and_no_global_mutations) ... ok
+test_surface_rule_override_uses_only_fixed_namespaces (__main__.GlassBackendTests.test_surface_rule_override_uses_only_fixed_namespaces) ... ok
+test_toggle_blur_performance_and_low_memory_disable_only_owned_rules (__main__.GlassBackendTests.test_toggle_blur_performance_and_low_memory_disable_only_owned_rules) ... ok
+test_unknown_niri_and_ambiguous_use_readable_fallback (__main__.GlassBackendTests.test_unknown_niri_and_ambiguous_use_readable_fallback) ... ok
+test_active_components_do_not_bypass_the_palette_resolver (__main__.GlassSourceTests.test_active_components_do_not_bypass_the_palette_resolver) ... ok
+test_base_palette_and_aether_are_preserved (__main__.GlassSourceTests.test_base_palette_and_aether_are_preserved) ... ok
+test_lock_background_and_auth_controller_remain_secure (__main__.GlassSourceTests.test_lock_background_and_auth_controller_remain_secure) ... ok
+test_namespace_surface_types (__main__.GlassSourceTests.test_namespace_surface_types) ... ok
+test_no_framebuffer_capture_or_shader_dependency (__main__.GlassSourceTests.test_no_framebuffer_capture_or_shader_dependency) ... ok
+test_schema_defaults_are_disabled_and_documented (__main__.GlassSourceTests.test_schema_defaults_are_disabled_and_documented) ... ok
+
+----------------------------------------------------------------------
+Ran 28 tests in 0.024s
+
+OK

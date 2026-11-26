@@ -20,7 +20,7 @@ Item {
             font.pixelSize: Theme.barSymbolSize
             color: root.kind === "mic" && root.muted ? Theme.muted : Theme.accent
         }
-        Text {
+        GlassLabel {
             visible: root.showDetails && !root.vertical
             text: root.kind === "mic" ? (QuickModesService.available("mic") ? (root.muted ? "Off" : "On") : "N/A") :
                   SystemMetrics.speed(root.kind === "down" ? SystemMetrics.rxPerSec : SystemMetrics.txPerSec)

@@ -38,6 +38,20 @@ mengembangkan fitur.
   serta properti dan fungsi `camelCase`.
 - Gunakan token `config/Theme.qml` dan font dari `config/Fonts.qml` untuk menjaga
   konsistensi warna, ukuran, jarak, dan tipografi.
+- Gunakan token padding/gap Theme untuk isi panel, kartu, dan kontrol. Tetapkan
+  satu pemilik inset: Loader/window tidak menambahkan padding lagi bila konten
+  sudah memilikinya. Tinggi implisit harus memakai token inset yang sama.
+  Pertahankan padding khusus bar/launcher dan geometri dekorasi secara terpisah.
+- Komponen isi opsional yang tidak dipakai harus keluar dari perhitungan layout,
+  termasuk kolom, spacing, margin, dan ukuran cadangannya. Konten yang tersisa
+  harus mengisi ruang yang tersedia; jangan meninggalkan gap atau panel kosong.
+  Pada `Loader` di dalam `RowLayout`/`ColumnLayout`, gunakan `visible: active`
+  jika komponen hanya ditampilkan ketika aktif. `active: false`, `opacity: 0`,
+  atau lebar nol saja tidak menjamin spacing ikut hilang. Pertahankan komponen
+  sampai animasi keluarnya selesai, lalu lepaskan ruangnya. Periksa geometri
+  aktual saat komponen diaktifkan, dinonaktifkan, atau tidak memiliki data.
+  Aturan ini berlaku pada isi opsional; mematikan dekorasi background/outline
+  tetap mempertahankan geometri dan interaksi konten yang masih digunakan.
 - Tempatkan state UI bersama di `config/Store.qml`, pengaturan persisten di
   `config/SettingsStore.qml`, dan state komponen lokal di komponen itu sendiri.
 - Perbarui `config/qmldir` atau `services/qmldir` ketika menambah atau mengganti

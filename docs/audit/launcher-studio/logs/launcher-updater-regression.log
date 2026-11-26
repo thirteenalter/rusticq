@@ -1,0 +1,3 @@
+PASS test_progress
+PASS test_stream
+PASS test_launcher

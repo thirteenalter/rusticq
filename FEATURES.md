@@ -1,6 +1,58 @@
-# RusticQ Beta 1 — Feature inventory
+# RusticQ — Feature inventory
 
 This is a **functional map of the current source**, not a promise that every module works on every machine. Entries below link to the relevant implementation directories.
+
+## Launcher Studio
+
+- Refined legacy header/search alignment; Launchpad and Overview search surfaces
+  with a clear placeholder; Overview shortcuts collapse when empty.
+- Shared content inset ownership across panels and popups. **Appearance → Surface
+  Spacing** offers persisted pixel controls, live preview, per-control Auto and
+  reset. Bar/launcher custom padding remains independent.
+- Wi-Fi uses a connection subtitle, accessible power toggle, search, quiet network
+  rows with connection indicators and advanced navigation in its footer.
+
+- Eleven real presentations, including both legacy layouts and Detached Floating
+  Search, use one native application model and shared safe search/providers.
+- Spotlight/Compact Command start search-only; Launchpad/Overview offer real icon
+  grids; Raycast provides command actions; Fluent pins/recents; Classic categories;
+  Minimal is lightweight. Detached has two independent surfaces and a clear gap.
+- Live style gallery uses actual frontends. Shared and layout-specific geometry,
+  position, RAGE material, visibility, backdrop and existing motion controls persist.
+- None creates no fullscreen window; optional native blur/dimming is separately
+  scoped. Real keyboard, provider, migration, geometry and palette regression tests,
+  native screenshots and pixel comparisons are included.
+- [Implementation, screenshots and limitations](docs/LAUNCHER-STUDIO.md) ·
+  [validated settings schema](docs/LAUNCHER-STUDIO-SCHEMA.md).
+
+## RAGE — RUSTIQ ADAPTIVE GLASS ENGINE
+
+- Optional global glass in Appearance; disabled by default, live bindings and
+  persistent settings, with Frosted, Crystal and Tinted presets. Standard opaque
+  palette tokens and the existing Aether watcher remain intact.
+- Exclusive selects one independent native provider for all semantic colors,
+  including solid surfaces; Obsidian, Pearl, Pure Crystal and Graphite Frost.
+  Adaptive preserves the saved Gruvbox/Aether preferences. Material, provider,
+  geometry and decorative visibility are independent.
+- One translucent outer material, 3–6.5% nested overlays, restrained edge lighting
+  and shared text contrast protection. Hyprland typed boolean blur detection is
+  verified; native pixel comparisons distinguish real blur from transparency.
+- Shared window, primary, secondary, card, control, hover, pressed, selected,
+  popup, tooltip, border, highlight, shadow, modal and authentication tokens.
+- Covers bar, dock, launcher, Quick Control, Settings/device pages, notifications,
+  popups, desktop widgets, utilities, AI and secure authentication views.
+- Bar Surface Styling: independent outer/segment/module backgrounds and outlines,
+  six quick presets, live preview, per-bar glass opt-out, opacity multiplier,
+  independent radii and optional capsules. All five modes and four edges; no
+  geometry or input-region changes when decoration is hidden. Professional keeps
+  the original full-rail structure. Separated has no implicit enclosing frame.
+- Audited Hyprland Lua named session rules, alpha-aware bar blur and independent
+  popup blur. No global blur changes, config writes, reloads or new dependencies.
+  Niri, legacy/unknown Hyprland and unavailable IPC use tinted fallback.
+- Performance/low-memory modes release reflection/shading resources and disable
+  RAGE blur without changing saved preferences. Crystal has no optical refraction.
+- See [architecture, schema and validation](docs/RAGE.md),
+  [surface audit](docs/audit/RAGE-SURFACES.md) and [changelog](changelog/RAGE.md).
 
 ## Shell and bar
 
@@ -10,6 +62,8 @@ This is a **functional map of the current source**, not a promise that every mod
 | Position and sizing | Top/Bottom/Left/Right bar, margins, monitor layout, icon spacing and alignment. | `modules/main/Bar.qml`, `modules/main/VerticalBarContent.qml`, bar settings pages |
 | Primary controls | RusticQ menu, launcher, AI, editable menu bar, workspace buttons, Quick Modes, Quick Control. | `modules/main/ContextMenu.qml`, `components/QuickModes.qml`, `components/Workspaces.qml` |
 | Status items | Weather, clock, calendar, network (Wi-Fi/Ethernet), Bluetooth, battery, audio, microphone and task access. | `components/`, `modules/bar/`, `modules/main/IndicatorPopup.qml` |
+| Popup interaction | Click to open, or optional persistent hover opening under Bar settings. Pointer exit keeps the panel open; outside clicks dismiss it. The popup owns keyboard input independently of the bar. | `components/BarZone.qml`, `modules/main/IndicatorPopup.qml` |
+| Weather data | Validated Celsius observations and nearest reported city, last-known data on network failure, refresh status and a scrolling details popup. IP-based location can be affected by a VPN. | `services/WeatherService.qml`, `modules/main/MiniWeather.qml` |
 | Focused monitor | Launcher, Settings, and certain overlays follow Hyprland's focused monitor (see runtime limitations). | `shell.qml`, `config/Store.qml` |
 
 ## Windows and desktop

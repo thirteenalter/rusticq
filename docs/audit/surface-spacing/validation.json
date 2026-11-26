@@ -1,0 +1,53 @@
+{
+  "qml": {
+    "launcher": {
+      "passed": 14,
+      "failed": 0
+    },
+    "wifi": {
+      "passed": 19,
+      "failed": 0
+    },
+    "spacing": {
+      "passed": 3,
+      "failed": 0
+    },
+    "weather": {
+      "passed": 7,
+      "failed": 0
+    },
+    "rage-ui": {
+      "passed": 10,
+      "failed": 0
+    },
+    "palette": {
+      "passed": 7,
+      "failed": 0
+    },
+    "bar": {
+      "passed": 8,
+      "failed": 0
+    },
+    "motion": {
+      "passed": 10,
+      "failed": 0
+    },
+    "quick": {
+      "passed": 6,
+      "failed": 0
+    },
+    "native-search": {
+      "passed": 3,
+      "failed": 0
+    },
+    "native-motion": {
+      "passed": 6,
+      "failed": 0
+    }
+  },
+  "static": "Source structure 167 QML / 0 issues; bar modes; settings; launcher and glass contracts; compositor safety/UI; portable settings; system monitor; notifications; lock structure/design; Wi-Fi QR; launcher providers/layout/updater checks passed.",
+  "runtime": "Quickshell 0.3.2, Hyprland 0.56.2, eDP-1 1920x1080 scale 1; fixture networking; no physical connection changes",
+  "beforeSource": "shell-before-update-20261125-113259-399700",
+  "geometryCombinations": 198,
+  "reload": "PASS: production launcher survives same-engine settings/atomic-source/remote reload; intentional malformed-QML recovery tested"
+}

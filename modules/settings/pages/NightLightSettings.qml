@@ -7,6 +7,7 @@ import ".."
 
 SettingsSection {
     id: root
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
     heading: "Night Light"
     description: "Choose how yellow the screen becomes. Lower temperatures are warmer."
     symbol: "\ue51c"
@@ -17,8 +18,8 @@ SettingsSection {
     }
     RowLayout {
         Layout.fillWidth: true
-        Text { text: "Warmth"; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
-        Text { objectName: "night-light-temperature-label"; text: root.draftTemperature + " K"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { text: "Warmth"; Layout.fillWidth: true; color: root.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { objectName: "night-light-temperature-label"; text: root.draftTemperature + " K"; color: root.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
     }
     SettingRangeSlider {
         objectName: "night-light-temperature"
@@ -34,8 +35,8 @@ SettingsSection {
     }
     RowLayout {
         Layout.fillWidth: true
-        Text { text: "More yellow"; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
-        Text { text: "Less yellow"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+        GlassLabel { text: "More yellow"; Layout.fillWidth: true; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
+        GlassLabel { text: "Less yellow"; color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
     }
     RowLayout {
         Layout.fillWidth: true
@@ -60,17 +61,17 @@ SettingsSection {
         enabled: QuickModesService.available("night") && !QuickModesService.busy
         onClicked: QuickModesService.toggle("night")
     }
-    Text {
+    GlassLabel {
         Layout.fillWidth: true
         text: QuickModesService.error || QuickModesService.detail("night").split("\n")[0]
-        color: QuickModesService.error ? Theme.error : Theme.muted
-        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11)
+        color: QuickModesService.error ? root.settingsTheme.error : root.settingsTheme.muted
+        font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         wrapMode: Text.WordWrap
     }
-    Text {
+    GlassLabel {
         Layout.fillWidth: true
         text: "Changes apply while Night Light is on. When off, your choice is saved for the next use."
-        color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+        color: root.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         wrapMode: Text.WordWrap
     }
     Component.onCompleted: QuickModesService.refresh()

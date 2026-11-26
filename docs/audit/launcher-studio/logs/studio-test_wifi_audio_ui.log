@@ -1,0 +1,30 @@
+  INFO: Launching config: "/tmp/rusticq-wifi-audio-ui-q6ktadl9/shell.qml"
+  INFO: Shell ID: "5a7e065da5b621e4753a756051e2ffc3" Path ID "5a7e065da5b621e4753a756051e2ffc3"
+  INFO: Saving logs to "/tmp/rusticq-wifi-audio-ui-q6ktadl9/quickshell/by-id/3lbz0pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-wifi-audio-ui-q6ktadl9/quickshell/by-id/3lbz0pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: WIFI AUDIO TEST test_advanced_is_separate_and_back_restores_networks failed=false
+ DEBUG qml: WIFI AUDIO TEST test_audio_advanced_stays_in_normal_panel failed=false
+  WARN: This plugin does not support setting window masks
+  WARN quickshell.service.powerprofiles: Could not connect to DBus. PowerProfiles services will not work.
+  WARN quickshell.service.upower: Could not connect to DBus. UPower service will not work.
+ DEBUG qml: WIFI AUDIO TEST test_audio_compact_window_and_jumps_to_sections failed=false
+ DEBUG qml: WIFI AUDIO TEST test_audio_playback_filter_names_volume_and_mute failed=false
+ DEBUG qml: WIFI AUDIO TEST test_bluetooth_name_search_live_results_clear_and_pair failed=false
+ DEBUG qml: WIFI AUDIO TEST test_cancel_pending_device_window_and_reject_unknown_kind failed=false
+ DEBUG qml: WIFI AUDIO TEST test_hidden_mixer_releases_stream_delegates failed=false
+ DEBUG qml: WIFI AUDIO TEST test_hidden_validation_submit_and_clear_on_back failed=false
+ DEBUG qml: WIFI AUDIO TEST test_name_search_focus_reopen_advanced_and_no_focus_theft failed=false
+ DEBUG qml: WIFI AUDIO TEST test_open_network_and_unavailable_adapter failed=false
+ DEBUG qml: WIFI AUDIO TEST test_portal_browser_error_retry_and_navigation failed=false
+ DEBUG qml: WIFI AUDIO TEST test_portal_reopen_and_adapter_removal failed=false
+ DEBUG qml: WIFI AUDIO TEST test_search_focus_on_expanded_quick_cards failed=false
+  WARN: This plugin does not support setting window masks
+ DEBUG qml: WIFI AUDIO TEST test_settings_groups_routes_and_search failed=false
+ DEBUG qml: WIFI AUDIO TEST test_unknown_channels_use_compatible_meter failed=false
+ DEBUG qml: WIFI AUDIO TEST test_wifi_compact_window_and_feature_buttons failed=false
+ DEBUG qml: WIFI AUDIO TEST test_wifi_name_search_live_results_clear_and_connect failed=false
+ DEBUG qml: WIFI AUDIO RESULTS 18 passed, 0 failed

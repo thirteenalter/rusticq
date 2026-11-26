@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/ryznxx/dev/quickshell/tools/test_rc5_runtime_repair.py", line 4, in <module>
+    from fontTools.ttLib import TTFont
+ModuleNotFoundError: No module named 'fontTools'

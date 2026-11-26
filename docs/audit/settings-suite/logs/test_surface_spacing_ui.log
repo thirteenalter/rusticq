@@ -1,0 +1,27 @@
+  INFO: Launching config: "/tmp/rusticq-spacing-ui-jq9gvi3y/shell.qml"
+  INFO: Shell ID: "dae2e3b5441d8d8d907e1fa1d11f04c3" Path ID "dae2e3b5441d8d8d907e1fa1d11f04c3"
+  INFO: Saving logs to "/tmp/rusticq-spacing-ui-jq9gvi3y/quickshell/by-id/tc8a04pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-spacing-ui-jq9gvi3y/quickshell/by-id/tc8a04pt/ipc.sock"
+  INFO: Configuration Loaded
+  WARN scene: QML FileView at @config/Theme.qml[35:5]: Read of /tmp/rusticq-spacing-ui-jq9gvi3y/home/.config/aether/theme/colors.toml failed: File does not exist.
+ ERROR quickshell.service.pipewire.loop: Failed to connect pipewire context. Errno: 1
+  WARN quickshell.network.networkmanager: Could not connect to DBus. NetworkManager backend will not work.
+ ERROR quickshell.network: Network will not work. Could not find an available backend.
+  WARN quickshell.service.powerprofiles: Could not connect to DBus. PowerProfiles services will not work.
+  WARN quickshell.service.upower: Could not connect to DBus. UPower service will not work.
+  WARN quickshell.bluetooth: Could not connect to DBus. Bluetooth integration is not available.
+ DEBUG qml: SPACING RESULTS 3 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-spacing-ui-jq9gvi3y/shell.qml"
+  INFO: Shell ID: "dae2e3b5441d8d8d907e1fa1d11f04c3" Path ID "dae2e3b5441d8d8d907e1fa1d11f04c3"
+  INFO: Saving logs to "/tmp/rusticq-spacing-ui-jq9gvi3y/quickshell/by-id/bfda04pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-spacing-ui-jq9gvi3y/quickshell/by-id/bfda04pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: SPACING RELOAD PASS
+  WARN scene: QML FileView at @config/Theme.qml[35:5]: Read of /tmp/rusticq-spacing-ui-jq9gvi3y/home/.config/aether/theme/colors.toml failed: File does not exist.
+PASS: 11 production content layouts × 2 densities × 3 palette/material modes × 3 padding choices; manual controls, validation, commit-only save and restart

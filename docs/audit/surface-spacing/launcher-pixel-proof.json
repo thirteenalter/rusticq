@@ -1,0 +1,56 @@
+{
+  "outside": {
+    "backdrop-none": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "spotlight-blur-control": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    }
+  },
+  "outsideVisualSurfaces": {
+    "backdrop-none": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    },
+    "spotlight-blur-control": {
+      "changedBounds": null,
+      "samplingTolerance": 1
+    }
+  },
+  "dock": {
+    "dock-collapsed": {
+      "surface": {
+        "visible": true,
+        "x": 919,
+        "y": 1054,
+        "width": 82,
+        "height": 18
+      },
+      "outsideChangedBounds": null
+    },
+    "dock-expanded": {
+      "surface": {
+        "visible": true,
+        "x": 780,
+        "y": 978,
+        "width": 360,
+        "height": 94
+      },
+      "outsideChangedBounds": null
+    },
+    "dock-closed-again": {
+      "surface": {
+        "visible": true,
+        "x": 919,
+        "y": 1054,
+        "width": 82,
+        "height": 18
+      },
+      "outsideChangedBounds": null
+    }
+  },
+  "detachedGap": {},
+  "nativeBlur": {}
+}

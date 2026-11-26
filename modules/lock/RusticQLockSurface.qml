@@ -71,10 +71,10 @@ WlSessionLockSurface {
             height: 40
             Rectangle {
                 id: brandSymbol
-                width: 38; height: 38; radius: Theme.rowRadius
+                width: 38; height: 38; radius: Theme.glassRadius("card", Theme.rowRadius)
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                color: Qt.alpha(Theme.accent, .14)
+                color: Theme.glassColor("card", Qt.alpha(Theme.accent, .14))
                 Icon {
                     anchors.centerIn: parent
                     icon: "\ue899"
@@ -87,15 +87,15 @@ WlSessionLockSurface {
                 anchors.leftMargin: 11
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 1
-                Text {
+                GlassLabel {
                     text: "RusticQ"
                     color: Theme.foreground
                     font.family: Fonts.poppinsSB.name
                     font.pixelSize: Fonts.scale(14)
                 }
-                Text {
+                GlassLabel {
                     text: "Secure session"
-                    color: Theme.muted
+                    color: Theme.contentMuted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Fonts.scale(10)
                 }
@@ -104,11 +104,11 @@ WlSessionLockSurface {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 width: statusText.implicitWidth + 22
-                height: 29; radius: 9
-                color: Theme.surface
-                border.width: 1
-                border.color: Theme.borderaccent
-                Text {
+                height: 29; radius: Theme.glassRadius("card", 9)
+                color: Theme.glassColor("card", Theme.surface)
+                border.width: Theme.glassBorderWidth("card", 1)
+                border.color: Theme.glassBorder("card", Theme.borderaccent)
+                GlassLabel {
                     id: statusText
                     anchors.centerIn: parent
                     text: "LOCKED"
@@ -131,7 +131,7 @@ WlSessionLockSurface {
                 id: clockArea
                 width: parent.width
                 height: surface.compact ? 97 : 132
-                Text {
+                GlassLabel {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.top: parent.top
                     text: Qt.formatTime(surface.now, "hh:mm")
@@ -140,24 +140,26 @@ WlSessionLockSurface {
                     font.pixelSize: Fonts.scale(surface.compact ? 52 : 72)
                     font.weight: Font.DemiBold
                 }
-                Text {
+                GlassLabel {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: parent.bottom
                     text: Qt.formatDate(surface.now, "dddd, d MMMM yyyy")
-                    color: Theme.muted
+                    color: Theme.contentMuted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Fonts.scale(surface.compact ? 11 : 13)
                 }
             }
 
-            Rectangle {
+            GlassSurface {
+                Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+                surfaceRole: "authentication"
                 id: loginCard
                 width: parent.width
                 height: cardContent.implicitHeight + 2 * surface.insideMargin
-                color: Theme.background
-                radius: Theme.sectionRadius
-                border.width: 1
-                border.color: Theme.borderaccent
+                color: Theme.glassColor("authentication", Theme.background)
+                radius: Theme.glassRadius("authentication", Theme.sectionRadius)
+                border.width: Theme.glassBorderWidth("authentication", 1)
+                border.color: Theme.glassBorder("authentication", Theme.borderaccent)
 
                 Column {
                     id: cardContent
@@ -172,10 +174,10 @@ WlSessionLockSurface {
                         height: 44
                         Rectangle {
                             id: avatarBox
-                            width: 42; height: 42; radius: Theme.rowRadius
+                            width: 42; height: 42; radius: Theme.glassRadius("card", Theme.rowRadius)
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            color: Qt.alpha(Theme.accent, .14)
+                            color: Theme.glassColor("card", Qt.alpha(Theme.accent, .14))
                             Icon {
                                 anchors.centerIn: parent
                                 icon: "\ue853"
@@ -189,7 +191,7 @@ WlSessionLockSurface {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 2
-                            Text {
+                            GlassLabel {
                                 width: parent.width
                                 text: "Welcome back"
                                 color: Theme.foreground
@@ -197,10 +199,10 @@ WlSessionLockSurface {
                                 font.pixelSize: Fonts.scale(15)
                                 elide: Text.ElideRight
                             }
-                            Text {
+                            GlassLabel {
                                 width: parent.width
                                 text: Quickshell.env("USER") || "Linux account"
-                                color: Theme.muted
+                                color: Theme.contentMuted
                                 font.family: Fonts.poppins.name
                                 font.pixelSize: Fonts.scale(10)
                                 elide: Text.ElideRight
@@ -213,9 +215,9 @@ WlSessionLockSurface {
                     Column {
                         width: parent.width
                         spacing: 7
-                        Text {
+                        GlassLabel {
                             text: surface.controller.awaitingResponse ? "AUTHENTICATION CHALLENGE" : "ACCOUNT PASSWORD"
-                            color: Theme.muted
+                            color: Theme.contentMuted
                             font.family: Fonts.poppinsSB.name
                             font.pixelSize: Fonts.scale(10)
                             font.letterSpacing: .75
@@ -223,10 +225,10 @@ WlSessionLockSurface {
                         Rectangle {
                             width: parent.width
                             height: surface.fieldHeight
-                            radius: Theme.rowRadius
-                            color: Theme.surface
-                            border.width: passwordInput.activeFocus ? 2 : 1
-                            border.color: passwordInput.activeFocus ? Theme.accent : Theme.borderaccent
+                            radius: Theme.glassRadius("card", Theme.rowRadius)
+                            color: Theme.glassColor("card", Theme.surface)
+                            border.width: Theme.glassBorderWidth("card", passwordInput.activeFocus ? 2 : 1)
+                            border.color: Theme.glassBorder("card", passwordInput.activeFocus ? Theme.accent : Theme.borderaccent)
                             Icon {
                                 id: passwordIcon
                                 anchors.left: parent.left
@@ -263,12 +265,12 @@ WlSessionLockSurface {
                                     surface.controller.submit(response);
                                 }
                                 Component.onCompleted: Qt.callLater(function() { passwordInput.forceActiveFocus(); })
-                                Text {
+                                GlassLabel {
                                     anchors.left: parent.left
                                     anchors.verticalCenter: parent.verticalCenter
                                     visible: passwordInput.text.length === 0
                                     text: surface.controller.awaitingResponse ? "Enter response…" : "Enter your Linux password…"
-                                    color: Theme.muted
+                                    color: Theme.contentMuted
                                     opacity: .75
                                     font.family: Fonts.poppins.name
                                     font.pixelSize: Fonts.scale(11)
@@ -283,7 +285,7 @@ WlSessionLockSurface {
                         radius: Theme.rowRadius
                         color: Theme.accent
                         opacity: passwordInput.enabled ? 1 : .55
-                        Text {
+                        GlassLabel {
                             anchors.centerIn: parent
                             text: surface.controller.authenticating ? "Authenticating…" : "Unlock session  →"
                             color: Theme.background
@@ -300,7 +302,7 @@ WlSessionLockSurface {
                     Item {
                         width: parent.width
                         height: Math.max(34, feedbackLabel.implicitHeight + 8)
-                        Text {
+                        GlassLabel {
                             id: feedbackLabel
                             width: parent.width
                             anchors.verticalCenter: parent.verticalCenter
@@ -323,10 +325,10 @@ WlSessionLockSurface {
             anchors.bottomMargin: surface.compact ? 15 : 32
             width: Math.min(550, parent.width - 36)
             height: 20
-            Text {
+            GlassLabel {
                 anchors.centerIn: parent
                 text: "Wayland session lock  ·  Linux PAM"
-                color: Theme.muted
+                color: Theme.contentMuted
                 font.family: Fonts.poppins.name
                 font.pixelSize: Fonts.scale(10)
             }

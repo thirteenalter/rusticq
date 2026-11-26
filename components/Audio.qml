@@ -26,7 +26,7 @@ Item {
             Layout.preferredWidth: root.iconSlotWidth
             Layout.alignment: Qt.AlignVCenter
         }
-        Text {
+        GlassLabel {
             visible: root.showValue
             Layout.preferredWidth: visible ? implicitWidth : 0
             text: root.available ? root.percentage + "%" : "–"

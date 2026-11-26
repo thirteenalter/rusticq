@@ -8,6 +8,9 @@ Item {
     visible: false
     property Item target: null
     property bool shown: false
+    property bool animate: Theme.motionEnabled
+    property bool startReady: true
+    property real travelDistance: Theme.motionDistance
     property string edge: "center"
     property string style: SettingsStore.animationStyle
     property real closedScale: 0.98
@@ -20,10 +23,10 @@ Item {
     readonly property real hiddenScale: style === "zoom" ? Math.min(0.90, closedScale) : style === "spring" ? Math.min(0.95, closedScale) : closedScale
     readonly property real surfaceScale: scales ? hiddenScale + (1 - hiddenScale) * progress : 1
     readonly property real surfaceOpacity: style === "slide" ? (presented ? 1 : 0) : Math.max(0, Math.min(1, progress))
-    readonly property real offsetX: slides ? (1 - progress) * Theme.motionDistance
+    readonly property real offsetX: slides ? (1 - progress) * travelDistance
         * (edge === "left" ? -1 : edge === "right" ? 1 : 0)
         : 0
-    readonly property real offsetY: slides ? (1 - progress) * Theme.motionDistance
+    readonly property real offsetY: slides ? (1 - progress) * travelDistance
         * (edge === "top" ? -1 : edge === "bottom" || edge === "center" ? 1 : 0)
         : 0
 
@@ -31,7 +34,11 @@ Item {
         if (!ready) return;
         animation.stop();
         const next = shown ? 1 : 0;
-        if (!Theme.motionEnabled || progress === next) {
+        if (animate && shown && !startReady) {
+            progress = 0;
+            return;
+        }
+        if (!animate || progress === next) {
             progress = next;
             return;
         }
@@ -44,16 +51,14 @@ Item {
     function replay() {
         if (!shown || !ready) return;
         animation.stop();
-        progress = Theme.motionEnabled ? 0 : 1;
+        progress = animate ? 0 : 1;
         update();
     }
     onShownChanged: update()
     onStyleChanged: replay()
+    onAnimateChanged: update()
+    onStartReadyChanged: update()
     Component.onCompleted: { ready = true; update(); }
-    Connections {
-        target: Theme
-        function onMotionEnabledChanged() { root.update(); }
-    }
     NumberAnimation {
         id: animation
         target: root

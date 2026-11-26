@@ -9,7 +9,8 @@ import "../../components"
 // WifiShareOverlay; Wi-Fi secrets never enter this component.
 ColumnLayout {
     id: root
-    spacing: Theme.sectionGap
+    readonly property var settingsTheme: SettingsMaterial.forItem(root)
+    spacing: root.settingsTheme.sectionGap
     property var snapshot: ({})
     property bool busy: false
     property var targetScreen: null
@@ -80,31 +81,31 @@ ColumnLayout {
             if (code !== 0 && !root.message) { root.failed = true; root.message = "Network request failed"; }
         }
     }
-    Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
+    Item { Layout.fillWidth: true; Layout.preferredHeight: root.settingsTheme.sectionGap }
     RowLayout {
         Layout.fillWidth: true; spacing: 8
-        Icon { icon: "\ue8b8"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
-        Text { Layout.fillWidth: true; text: "Advanced Wi-Fi"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+        Icon { icon: "\ue8b8"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(18) }
+        GlassLabel { Layout.fillWidth: true; text: "Advanced Wi-Fi"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
         Rectangle {
-            Layout.preferredWidth: 64; Layout.preferredHeight: 27; radius: 8; color: Theme.surface
-            Text { anchors.centerIn: parent; text: "Refresh"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+            Layout.preferredWidth: 64; Layout.preferredHeight: 27; radius: root.settingsTheme.glassRadius("card", 8); color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
+            GlassLabel { anchors.centerIn: parent; text: "Refresh"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(10) }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.refresh() }
         }
     }
     Rectangle {
-        Layout.fillWidth: true; Layout.preferredHeight: 62; radius: Theme.rowRadius; color: Theme.surface
+        Layout.fillWidth: true; Layout.preferredHeight: 62; radius: root.settingsTheme.glassRadius("card", root.settingsTheme.rowRadius); color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
         RowLayout { anchors.fill: parent; anchors.margins: 12; spacing: 12
             ColumnLayout { Layout.fillWidth: true; spacing: 3
-                Text { text: "↓ Download"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
-                Text { text: root.prettyRate(root.downRate); color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                GlassLabel { text: "↓ Download"; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(10) }
+                GlassLabel { text: root.prettyRate(root.downRate); color: root.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
             }
             ColumnLayout { Layout.fillWidth: true; spacing: 3
-                Text { text: "↑ Upload"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
-                Text { text: root.prettyRate(root.upRate); color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                GlassLabel { text: "↑ Upload"; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(10) }
+                GlassLabel { text: root.prettyRate(root.upRate); color: root.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
             }
         }
     }
-    Text { Layout.fillWidth: true; text: "Local interface traffic · not an internet speed test"; color: Theme.muted; font.pixelSize: Fonts.scale(9); wrapMode: Text.WordWrap }
+    GlassLabel { Layout.fillWidth: true; text: "Local interface traffic · not an internet speed test"; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(9); wrapMode: Text.WordWrap }
     GridLayout {
         Layout.fillWidth: true; columns: 2; columnSpacing: 10; rowSpacing: 5
         Repeater { model: [
@@ -118,18 +119,18 @@ ColumnLayout {
             delegate: ColumnLayout {
                 required property var modelData
                 Layout.fillWidth: true; spacing: 1
-                Text { text: modelData.label; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
-                Text { Layout.fillWidth: true; text: modelData.value; elide: Text.ElideRight; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+                GlassLabel { text: modelData.label; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(9) }
+                GlassLabel { Layout.fillWidth: true; text: modelData.value; elide: Text.ElideRight; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(10) }
             }
         }
     }
-    Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
+    Item { Layout.fillWidth: true; Layout.preferredHeight: root.settingsTheme.sectionGap }
     RowLayout {
         id: sharingHeading
         Layout.fillWidth: true; spacing: 7
-        Text { Layout.fillWidth: true; text: "Wi-Fi sharing"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
-        Rectangle { Layout.preferredWidth: 105; Layout.preferredHeight: 31; radius: 9; color: Theme.surface
-            Text { anchors.centerIn: parent; text: "Show QR"; color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+        GlassLabel { Layout.fillWidth: true; text: "Wi-Fi sharing"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+        Rectangle { Layout.preferredWidth: 105; Layout.preferredHeight: 31; radius: root.settingsTheme.glassRadius("card", 9); color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
+            GlassLabel { anchors.centerIn: parent; text: "Show QR"; color: root.settingsTheme.accent; font.pixelSize: Fonts.scale(10) }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     const screen = root.targetScreen;
@@ -138,28 +139,28 @@ ColumnLayout {
                 } }
         }
     }
-    Text { Layout.fillWidth: true; text: "Opens a full-screen QR overlay on this monitor. Automatically hidden and erased after 45 seconds.";
-        wrapMode: Text.WordWrap; color: Theme.muted; font.pixelSize: Fonts.scale(9) }
-    Item { Layout.fillWidth: true; Layout.preferredHeight: Theme.sectionGap }
-    Text { id: dnsHeading; Layout.fillWidth: true; text: "DNS settings"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+    GlassLabel { Layout.fillWidth: true; text: "Opens a full-screen QR overlay on this monitor. Automatically hidden and erased after 45 seconds.";
+        wrapMode: Text.WordWrap; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(9) }
+    Item { Layout.fillWidth: true; Layout.preferredHeight: root.settingsTheme.sectionGap }
+    GlassLabel { id: dnsHeading; Layout.fillWidth: true; text: "DNS settings"; color: root.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
     Rectangle {
-        Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 9; color: Theme.surface
+        Layout.fillWidth: true; Layout.preferredHeight: 34; radius: root.settingsTheme.glassRadius("card", 9); color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
         TextInput { id: dnsField; anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10
-            verticalAlignment: TextInput.AlignVCenter; color: Theme.foreground; font.pixelSize: Fonts.scale(11)
+            verticalAlignment: TextInput.AlignVCenter; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(11)
             text: root.dnsInput; onTextEdited: root.dnsInput = text
-            Text { anchors.verticalCenter: parent.verticalCenter; visible: !parent.text.length
-                text: "1.1.1.1, 1.0.0.1"; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+            GlassLabel { anchors.verticalCenter: parent.verticalCenter; visible: !parent.text.length
+                text: "1.1.1.1, 1.0.0.1"; color: root.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(10) }
         }
     }
     RowLayout { Layout.fillWidth: true; spacing: 8
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 32; radius: 9; color: Theme.surface
-            Text { anchors.centerIn: parent; text: "Automatic DNS"; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 32; radius: root.settingsTheme.glassRadius("card", 9); color: root.settingsTheme.glassColor("card", root.settingsTheme.surface)
+            GlassLabel { anchors.centerIn: parent; text: "Automatic DNS"; color: root.settingsTheme.foreground; font.pixelSize: Fonts.scale(10) }
             MouseArea { anchors.fill: parent; enabled: !root.busy; cursorShape: Qt.PointingHandCursor; onClicked: root.perform("dns-auto") }
         }
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 32; radius: 9; color: Theme.accent
-            Text { anchors.centerIn: parent; text: "Apply custom DNS"; color: Theme.background; font.pixelSize: Fonts.scale(10) }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 32; radius: 9; color: root.settingsTheme.accent
+            GlassLabel { anchors.centerIn: parent; text: "Apply custom DNS"; color: root.settingsTheme.background; font.pixelSize: Fonts.scale(10) }
             MouseArea { anchors.fill: parent; enabled: !root.busy && root.dnsInput.length > 0; cursorShape: Qt.PointingHandCursor; onClicked: root.perform("dns-manual", root.dnsInput) }
         }
     }
-    Text { visible: root.message.length > 0; Layout.fillWidth: true; text: root.message; wrapMode: Text.WordWrap; color: root.failed ? Theme.error : Theme.muted; font.pixelSize: Fonts.scale(10) }
+    GlassLabel { visible: root.message.length > 0; Layout.fillWidth: true; text: root.message; wrapMode: Text.WordWrap; color: root.failed ? root.settingsTheme.error : root.settingsTheme.muted; font.pixelSize: Fonts.scale(10) }
 }

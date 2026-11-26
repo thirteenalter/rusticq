@@ -7,6 +7,7 @@ import "../../components"
 // Tiny recoverability affordance on every monitor while the bar is hidden.
 // Not exclusive and does not alter workspace geometry or switch monitors.
 PanelWindow {
+    WlrLayershell.namespace: "rusticq-recovery"
     id: handle
     visible: !SettingsStore.barVisible && SettingsStore.showBarRecoveryHandle
     implicitWidth: 46
@@ -21,12 +22,14 @@ PanelWindow {
         right: SettingsStore.barPosition !== "left"
     }
     margins { top: 5; bottom: 5; left: 5; right: 5 }
-    Rectangle {
+    GlassSurface {
+        Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+        surfaceRole: "primary"
         anchors.fill: parent
-        radius: 12
-        color: Theme.background
-        border.width: 1
-        border.color: Theme.borderaccent
+        radius: Theme.glassRadius("primary", 12)
+        color: Theme.glassColor("primary", Theme.background)
+        border.width: Theme.glassBorderWidth("primary", 1)
+        border.color: Theme.glassBorder("primary", Theme.borderaccent)
         Icon {
             anchors.centerIn: parent
             icon: "\ue5cf"

@@ -76,6 +76,7 @@ def main(argv=None):
     subs.add_parser('status')
     subs.add_parser('version', help='Show local RusticQ source release version')
     subs.add_parser('doctor')
+    subs.add_parser('hypr-settings', help='Open standalone RusticQ Hyprland Settings')
     c = subs.add_parser('config')
     c.add_argument('action', choices=['status', 'list', 'backup', 'restore'])
     c.add_argument('kind', nargs='?', choices=['settings', 'usage'], default='settings')
@@ -105,6 +106,8 @@ def main(argv=None):
             result = import_from('rusticq-doctor.py', 'rusticq_doctor_cli').doctor()
         elif args.command == 'config':
             result = config_action(args.action, args.kind, args.snapshot_id, args.confirm)
+        elif args.command == 'hypr-settings':
+            result = ipc_action('hypr-settings')
         elif args.command == 'ipc':
             result = ipc_action(args.action)
         elif args.command == 'notes':

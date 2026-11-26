@@ -1,0 +1,7 @@
+  INFO: Launching config: "/tmp/rusticq-wifi-audio-ui-6gsunbiv/shell.qml"
+  INFO: Shell ID: "4701cf43f1649febed5218bcdbdcb407" Path ID "4701cf43f1649febed5218bcdbdcb407"
+  INFO: Saving logs to "/run/user/1000/quickshell/by-id/bhe1luz0pt/log.qslog"
+  INFO: Configuration Loaded
+ DEBUG qml: NATIVE PHASE escape failed false
+ DEBUG qml: NATIVE PHASE escape failed false
+ DEBUG qml: NATIVE SEARCH RESULTS 3 passed, 0 failed

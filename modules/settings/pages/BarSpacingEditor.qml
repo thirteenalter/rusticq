@@ -7,6 +7,7 @@ import "../../../components"
 // not by absolute x/y offsets, so hit targets and popup anchors stay correct.
 ColumnLayout {
     id: editor
+    readonly property var settingsTheme: SettingsMaterial.forItem(editor)
     Layout.fillWidth: true
     spacing: 12
     property string side: "right"
@@ -62,15 +63,15 @@ ColumnLayout {
                 readonly property bool selected: editor.side === modelData.key
                 Layout.fillWidth: true
                 Layout.preferredHeight: 46
-                radius: 11
-                color: selected ? Qt.alpha(Theme.accent, 0.16) : Theme.background
-                border.width: selected ? 1 : 0
-                border.color: Theme.accent
+                radius: editor.settingsTheme.glassRadius("card", 11)
+                color: editor.settingsTheme.glassColor("card", selected ? Qt.alpha(editor.settingsTheme.accent, 0.16) : editor.settingsTheme.background)
+                border.width: editor.settingsTheme.glassBorderWidth("card", selected ? 1 : 0)
+                border.color: editor.settingsTheme.glassBorder("card", editor.settingsTheme.accent)
                 RowLayout {
                     anchors.centerIn: parent
                     spacing: 8
-                    Icon { icon: sideButton.modelData.glyph; font.pixelSize: Fonts.scale(18); color: sideButton.selected ? Theme.accent : Theme.muted }
-                    Text { text: sideButton.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.foreground }
+                    Icon { icon: sideButton.modelData.glyph; font.pixelSize: Fonts.scale(18); color: sideButton.selected ? editor.settingsTheme.accent : editor.settingsTheme.muted }
+                    GlassLabel { text: sideButton.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: editor.settingsTheme.foreground }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: editor.side = sideButton.modelData.key }
             }
@@ -80,16 +81,16 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: baseControls.implicitHeight + 24
-        radius: 11
-        color: Theme.background
+        radius: editor.settingsTheme.glassRadius("card", 11)
+        color: editor.settingsTheme.glassColor("card", editor.settingsTheme.background)
         ColumnLayout {
             id: baseControls
             x: 12; y: 12; width: parent.width - 24
             spacing: 8
             RowLayout {
                 Layout.fillWidth: true
-                Text { text: "Base group gap"; Layout.fillWidth: true; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.foreground }
-                Text { text: SettingsStore.spacingGroup(editor.side, editor.defaultGap) + " px"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.accent }
+                GlassLabel { text: "Base group gap"; Layout.fillWidth: true; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: editor.settingsTheme.foreground }
+                GlassLabel { text: SettingsStore.spacingGroup(editor.side, editor.defaultGap) + " px"; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: editor.settingsTheme.accent }
             }
             MarginSlider {
                 Layout.fillWidth: true
@@ -99,24 +100,24 @@ ColumnLayout {
                 onPreview: value => SettingsStore.setGroupSpacing(editor.side, value, false)
                 onCommit: value => SettingsStore.setGroupSpacing(editor.side, value, true)
             }
-            Text {
+            GlassLabel {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: "Base gap for the " + editor.side + " group. Each icon adds its own Before / After spacing on top."
-                font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted
+                font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); color: editor.settingsTheme.contentMuted
             }
         }
     }
 
-    Text { text: "Icons assigned to " + editor.side; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.foreground }
-    Text {
+    GlassLabel { text: "Icons assigned to " + editor.side; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: editor.settingsTheme.foreground }
+    GlassLabel {
         visible: editor.choices.length === 0
         Layout.fillWidth: true
         text: "This zone is empty. Move an icon here in Bar icon alignment above."
         wrapMode: Text.WordWrap
-        color: Theme.muted
+        color: editor.settingsTheme.contentMuted
         font.family: Fonts.poppins.name
-        font.pixelSize: Fonts.scale(11)
+        font.pixelSize: Fonts.scale(12)
     }
     GridLayout {
         Layout.fillWidth: true
@@ -131,15 +132,15 @@ ColumnLayout {
                 readonly property bool selected: editor.selectedIcon === modelData.key
                 Layout.fillWidth: true
                 Layout.preferredHeight: 63
-                radius: 10
-                color: selected ? Qt.alpha(Theme.accent, 0.16) : Theme.background
-                border.width: selected ? 1 : 0
-                border.color: Theme.accent
+                radius: editor.settingsTheme.glassRadius("card", 10)
+                color: editor.settingsTheme.glassColor("card", selected ? Qt.alpha(editor.settingsTheme.accent, 0.16) : editor.settingsTheme.background)
+                border.width: editor.settingsTheme.glassBorderWidth("card", selected ? 1 : 0)
+                border.color: editor.settingsTheme.glassBorder("card", editor.settingsTheme.accent)
                 ColumnLayout {
                     anchors.centerIn: parent
                     spacing: 4
-                    Icon { Layout.alignment: Qt.AlignHCenter; icon: iconChoice.modelData.glyph; font.pixelSize: Fonts.scale(19); color: iconChoice.selected ? Theme.accent : Theme.foreground }
-                    Text { Layout.alignment: Qt.AlignHCenter; text: iconChoice.modelData.name; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.foreground }
+                    Icon { Layout.alignment: Qt.AlignHCenter; icon: iconChoice.modelData.glyph; font.pixelSize: Fonts.scale(19); color: iconChoice.selected ? editor.settingsTheme.accent : editor.settingsTheme.foreground }
+                    GlassLabel { Layout.alignment: Qt.AlignHCenter; text: iconChoice.modelData.name; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); color: editor.settingsTheme.foreground }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: editor.selectedIcon = iconChoice.modelData.key }
             }
@@ -150,20 +151,20 @@ ColumnLayout {
         visible: editor.activeChoice !== null
         Layout.fillWidth: true
         implicitHeight: adjustContents.implicitHeight + 24
-        radius: 11
-        color: Theme.background
+        radius: editor.settingsTheme.glassRadius("card", 11)
+        color: editor.settingsTheme.glassColor("card", editor.settingsTheme.background)
         ColumnLayout {
             id: adjustContents
             x: 12; y: 12; width: parent.width - 24
             spacing: 10
             RowLayout {
                 Layout.fillWidth: true
-                Icon { icon: editor.activeChoice ? editor.activeChoice.glyph : "\ue429"; font.pixelSize: Fonts.scale(20); color: Theme.accent }
-                Text { text: (editor.activeChoice ? editor.activeChoice.name : "Icon") + " spacing"; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppinsSB.name; color: Theme.foreground; Layout.fillWidth: true }
+                Icon { icon: editor.activeChoice ? editor.activeChoice.glyph : "\ue429"; font.pixelSize: Fonts.scale(20); color: editor.settingsTheme.accent }
+                GlassLabel { text: (editor.activeChoice ? editor.activeChoice.name : "Icon") + " spacing"; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppinsSB.name; color: editor.settingsTheme.foreground; Layout.fillWidth: true }
                 Rectangle {
-                    Layout.preferredWidth: 86; Layout.preferredHeight: 29; radius: 8
-                    color: Theme.surface
-                    Text { anchors.centerIn: parent; text: "Reset icon"; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppins.name; color: Theme.foreground }
+                    Layout.preferredWidth: 86; Layout.preferredHeight: 29; radius: editor.settingsTheme.glassRadius("card", 8)
+                    color: editor.settingsTheme.glassColor("card", editor.settingsTheme.surface)
+                    GlassLabel { anchors.centerIn: parent; text: "Reset icon"; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppins.name; color: editor.settingsTheme.foreground }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetIconSpacing(editor.side, editor.selectedIcon) }
                 }
             }
@@ -176,8 +177,8 @@ ColumnLayout {
                     spacing: 6
                     RowLayout {
                         Layout.fillWidth: true
-                        Text { text: adjustRow.modelData.label; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppins.name; color: Theme.foreground; Layout.fillWidth: true }
-                        Text { text: SettingsStore.spacingIcon(editor.side, editor.selectedIcon, adjustRow.modelData.key) + " px"; font.pixelSize: Fonts.scale(11); font.family: Fonts.poppinsSB.name; color: Theme.accent }
+                        GlassLabel { text: adjustRow.modelData.label; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppins.name; color: editor.settingsTheme.foreground; Layout.fillWidth: true }
+                        GlassLabel { text: SettingsStore.spacingIcon(editor.side, editor.selectedIcon, adjustRow.modelData.key) + " px"; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppinsSB.name; color: editor.settingsTheme.accent }
                     }
                     MarginSlider {
                         Layout.fillWidth: true
@@ -195,16 +196,16 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         spacing: 10
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: editor.isVerticalBar ? "On vertical bars, Left / Center / Right become Top / Middle / Bottom; Before / After become upper/lower spacing." : "Spacing applies immediately, with separate saved values for each bar layout mode."
-            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); color: Theme.muted
+            font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); color: editor.settingsTheme.contentMuted
         }
         Rectangle {
             Layout.preferredWidth: 112; Layout.preferredHeight: 32
-            radius: 9; color: Theme.background
-            Text { anchors.centerIn: parent; text: "Reset zone"; font.pixelSize: Fonts.scale(10); font.family: Fonts.poppinsSB.name; color: Theme.foreground }
+            radius: editor.settingsTheme.glassRadius("card", 9); color: editor.settingsTheme.glassColor("card", editor.settingsTheme.background)
+            GlassLabel { anchors.centerIn: parent; text: "Reset zone"; font.pixelSize: Fonts.scale(12); font.family: Fonts.poppinsSB.name; color: editor.settingsTheme.foreground }
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetSideSpacing(editor.side) }
         }
     }

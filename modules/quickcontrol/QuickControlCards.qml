@@ -11,7 +11,8 @@ Item {
     id: root
     Layout.fillWidth: true
     Layout.fillHeight: true
-    readonly property int preferredContentHeight: Math.ceil(sectionColumn.implicitHeight)
+    readonly property int preferredContentHeight: Store.advancedVisible ? advancedControls.preferredContentHeight
+        : QuickControlStyle.modular ? (modularLoader.item ? modularLoader.item.preferredContentHeight : 0) : Math.ceil(sectionColumn.implicitHeight)
     clip: true
     function dragTarget(y) {
         for (let i = 0; i < orderedCards.count; ++i) {
@@ -24,7 +25,7 @@ Item {
     Flickable {
         id: quickScroll
         anchors.fill: parent
-        visible: !Store.advancedVisible
+        visible: !Store.advancedVisible && !QuickControlStyle.modular
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         contentWidth: width
@@ -40,10 +41,10 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: visible ? 40 : 0
                 spacing: 8
-                Text {
+                GlassLabel {
                     text: "Drag the handles to reorder sections"
                     Layout.fillWidth: true
-                    color: Theme.muted
+                    color: Theme.contentMuted
                     font.family: Fonts.poppins.name
                     font.pixelSize: Fonts.scale(10)
                     wrapMode: Text.WordWrap
@@ -51,9 +52,9 @@ Item {
                 Rectangle {
                     Layout.preferredWidth: 58
                     Layout.preferredHeight: 28
-                    radius: 9
-                    color: Theme.surface
-                    Text { anchors.centerIn: parent; text: "Reset"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                    radius: Theme.glassRadius("card", 9)
+                    color: Theme.glassColor("card", Theme.surface)
+                    GlassLabel { anchors.centerIn: parent; text: "Reset"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetQuickOrder() }
                 }
             }
@@ -68,11 +69,12 @@ Item {
                     readonly property bool isVisibleCard: modelData !== "notifications" || SettingsStore.showNotifications
                     readonly property real openedHeight: {
                         const widget = cardLoader.item;
-                        if (modelData === "wifi") return widget && widget.expanded ? 350 : 68;
-                        if (modelData === "bluetooth") return widget && widget.expanded ? 300 : 68;
-                        if (modelData === "battery") return widget && widget.expanded ? 330 : 68;
-                        if (modelData === "notifications") return widget && widget.expanded ? Math.min(575, Math.max(445, 305 + NotificationCenter.history.length * 112 + (NotificationCenter.receivesSystemNotifications ? 0 : 122))) : 68;
-                        return 222;
+                        const closedHeight = Theme.sectionHeaderHeight + Theme.panelPadding * 2;
+                        if (modelData === "wifi") return widget && widget.expanded ? 350 : closedHeight;
+                        if (modelData === "bluetooth") return widget && widget.expanded ? 300 : closedHeight;
+                        if (modelData === "battery") return widget && widget.expanded ? 330 : closedHeight;
+                        if (modelData === "notifications") return widget && widget.expanded ? Math.min(575, Math.max(445, 305 + NotificationCenter.history.length * 112 + (NotificationCenter.receivesSystemNotifications ? 0 : 122))) : closedHeight;
+                        return widget ? widget.compactHeight : 226;
                     }
                     readonly property bool highlighted: Store.quickReorderMode && root.dragSelection === index
                     Layout.fillWidth: true
@@ -112,9 +114,9 @@ Item {
                         y: Math.max(8, (orderedCard.height - 44) / 2)
                         width: 21
                         height: 44
-                        radius: 9
-                        color: grabArea.pressed ? Qt.alpha(Theme.accent, .26) : Theme.surface
-                        border.width: 0
+                        radius: Theme.glassRadius("card", 9)
+                        color: Theme.glassColor("card", grabArea.pressed ? Qt.alpha(Theme.accent, .26) : Theme.surface)
+                        border.width: Theme.glassBorderWidth("card", 0)
                         Icon { anchors.centerIn: parent; icon: "\ue8d5"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
                         MouseArea {
                             id: grabArea
@@ -151,7 +153,15 @@ Item {
     Component { id: notificationsSection; BarNotifications {} }
 
     BarAdvanced {
+        id: advancedControls
         anchors.fill: parent
         visible: Store.advancedVisible
+    }
+    Loader {
+        id:modularLoader
+        anchors.fill:parent
+        active:QuickControlStyle.modular
+        visible:active && !Store.advancedVisible
+        sourceComponent:ModularQuickControl {}
     }
 }

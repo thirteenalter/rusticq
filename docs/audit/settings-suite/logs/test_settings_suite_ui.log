@@ -1,0 +1,48 @@
+  INFO: Launching config: "/tmp/rusticq-settings-suite-q5jau4hk/shell.qml"
+  INFO: Shell ID: "166b6c3754a9ff362627680f68f73a74" Path ID "166b6c3754a9ff362627680f68f73a74"
+  INFO: Saving logs to "/tmp/rusticq-settings-suite-q5jau4hk/quickshell/by-id/3oz04pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-settings-suite-q5jau4hk/quickshell/by-id/3oz04pt/ipc.sock"
+  INFO: Configuration Loaded
+  WARN scene: QML FileView at @config/Theme.qml[35:5]: Read of /tmp/rusticq-settings-suite-q5jau4hk/home/.config/aether/theme/colors.toml failed: File does not exist.
+  WARN: This plugin does not support setting window masks
+ DEBUG qml: SUITE TEST test_a_default_follows_rusticq_theme failed=false
+  WARN quickshell.network.networkmanager: Could not connect to DBus. NetworkManager backend will not work.
+ ERROR quickshell.network: Network will not work. Could not find an available backend.
+  WARN quickshell.bluetooth: Could not connect to DBus. Bluetooth integration is not available.
+ ERROR quickshell.service.pipewire.loop: Failed to connect pipewire context. Errno: 1
+  WARN quickshell.service.powerprofiles: Could not connect to DBus. PowerProfiles services will not work.
+  WARN quickshell.service.upower: Could not connect to DBus. UPower service will not work.
+  WARN quickshell.service.notifications: Could not connect to DBus. Notification service will not work.
+  INFO: qs:@/qs/components/LauncherResults.qml:72:23: QML Component: Cannot create delegate
+  INFO: qs:@/qs/components/LauncherResults.qml: Object or context destroyed during incubation
+ DEBUG qml: SUITE TEST test_all_rusticq_pages_load_with_the_same_material failed=false
+ DEBUG qml: SUITE TEST test_fallback_and_transparency_keep_text_opaque failed=false
+ DEBUG qml: SUITE TEST test_focused_appearance_pages_do_not_leave_empty_sections failed=false
+ DEBUG qml: SUITE TEST test_material_inheritance_and_rage_palette_isolation failed=false
+ DEBUG qml: SUITE TEST test_navigation_search_and_history failed=false
+ DEBUG qml: SUITE TEST test_number_controls_units_keyboard_clamping_and_alignment failed=false
+ DEBUG qml: SUITE TEST test_override_validation_and_saved_state failed=false
+  WARN: This plugin does not support setting window masks
+  WARN: This plugin does not support setting window masks
+  WARN: This plugin does not support setting window masks
+ DEBUG qml: SUITE TEST test_resizing_scrolling_and_stale_search_highlights failed=false
+ DEBUG qml: SUITE TEST test_sidebar_content_stays_inside_its_hit_area failed=false
+  WARN: This plugin does not support setting window masks
+  WARN: This plugin does not support setting window masks
+ DEBUG qml: SUITE TEST test_sidebar_hover_clears_outside_rows_and_after_scrolling failed=false
+ DEBUG qml: SUITE TEST test_sidebar_hover_clears_when_window_loses_focus failed=false
+ DEBUG qml: SUITE TEST test_z_capture_suite failed=false
+ DEBUG qml: SUITE RESULTS 14 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-settings-suite-q5jau4hk/shell.qml"
+  INFO: Shell ID: "166b6c3754a9ff362627680f68f73a74" Path ID "166b6c3754a9ff362627680f68f73a74"
+  INFO: Saving logs to "/tmp/rusticq-settings-suite-q5jau4hk/quickshell/by-id/r3wz04pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-settings-suite-q5jau4hk/quickshell/by-id/r3wz04pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: SETTINGS SUITE RELOAD PASS
+Unified settings suite: every page, material isolation, navigation, fallback and persistence passed.

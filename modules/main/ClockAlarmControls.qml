@@ -25,13 +25,13 @@ ColumnLayout {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 78
-            radius: Theme.rowRadius
-            color: Theme.surface
-            border.width: hourInput.activeFocus ? 1 : 0
-            border.color: Theme.accent
-            Text {
+            radius: Theme.glassRadius("card", Theme.rowRadius)
+            color: Theme.glassColor("card", Theme.surface)
+            border.width: Theme.glassBorderWidth("card", hourInput.activeFocus ? 1 : 0)
+            border.color: Theme.glassBorder("card", Theme.accent)
+            GlassLabel {
                 anchors.top: parent.top; anchors.topMargin: 8; anchors.horizontalCenter: parent.horizontalCenter
-                text: "Hours · 24h"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                text: "Hours · 24h"; color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
             }
             TextInput {
                 id: hourInput
@@ -48,17 +48,17 @@ ColumnLayout {
                 onActiveFocusChanged: if (activeFocus) selectAll()
             }
         }
-        Text { text: ":"; color: Theme.muted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(26) }
+        GlassLabel { text: ":"; color: Theme.contentMuted; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(26) }
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 78
-            radius: Theme.rowRadius
-            color: Theme.surface
-            border.width: minuteInput.activeFocus ? 1 : 0
-            border.color: Theme.accent
-            Text {
+            radius: Theme.glassRadius("card", Theme.rowRadius)
+            color: Theme.glassColor("card", Theme.surface)
+            border.width: Theme.glassBorderWidth("card", minuteInput.activeFocus ? 1 : 0)
+            border.color: Theme.glassBorder("card", Theme.accent)
+            GlassLabel {
                 anchors.top: parent.top; anchors.topMargin: 8; anchors.horizontalCenter: parent.horizontalCenter
-                text: "Minutes"; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+                text: "Minutes"; color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
             }
             TextInput {
                 id: minuteInput
@@ -82,7 +82,7 @@ ColumnLayout {
         ActionButton { objectName: "clock-alarm-once"; Layout.fillWidth: true; label: "Once"; selected: !root.daily; onClicked: root.daily = false }
         ActionButton { objectName: "clock-alarm-daily"; Layout.fillWidth: true; label: "Every day"; selected: root.daily; onClicked: root.daily = true }
     }
-    Text {
+    GlassLabel {
         objectName: "clock-alarm-status"
         Layout.fillWidth: true
         text: Store.clockAlarmSnoozeUntil > 0
@@ -121,10 +121,10 @@ ColumnLayout {
             onClicked: Store.cancelClockAlarm()
         }
     }
-    Text {
+    GlassLabel {
         Layout.fillWidth: true
         text: "Uses local time. RusticQ must be running; alarms do not wake a sleeping computer."
-        color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+        color: Theme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
         wrapMode: Text.WordWrap
     }
 }

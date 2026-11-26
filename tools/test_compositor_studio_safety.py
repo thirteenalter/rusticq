@@ -44,7 +44,7 @@ class CompositorStudioSafety(unittest.TestCase):
         self.cfg = patch.object(m, 'CONFIG', self.config); self.cfg.start(); self.addCleanup(self.cfg.stop)
         self.st = patch.object(m, 'STATE', self.state); self.st.start(); self.addCleanup(self.st.stop)
         self.h = patch.object(m, 'HOME', self.home); self.h.start(); self.addCleanup(self.h.stop)
-        self.patch_socket = patch.dict(os.environ, {'HYPRLAND_INSTANCE_SIGNATURE': '', 'NIRI_SOCKET': ''}, clear=False)
+        self.patch_socket = patch.dict(os.environ, {'HYPRLAND_INSTANCE_SIGNATURE': '', 'NIRI_SOCKET': '', 'XDG_SESSION_DESKTOP': ''}, clear=False)
         self.patch_socket.start(); self.addCleanup(self.patch_socket.stop)
 
     def source(self, name='autostart.lua'):

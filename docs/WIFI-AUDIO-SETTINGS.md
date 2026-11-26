@@ -32,6 +32,14 @@ updates and shortcuts. These pages reuse the existing desktop services.
 The Wi-Fi network list and Bluetooth device list have a search field beside
 **Scan** in the popup, Quick Control and Settings. Type any part of a network
 or device name; matching ignores case and leading/trailing spaces in the query.
+The search field receives keyboard focus when its network/device list opens,
+including reopening a popup or returning from Advanced Wi-Fi. Click anywhere
+on the search field to focus it; clearing a query keeps focus in the input.
+The popup uses an anchored layer window with its own Wayland keyboard access;
+the bar never captures keyboard input. Closing it immediately releases keyboard
+and outside-click ownership. There is no second Qt popup grab to race against
+the compositor grab. Settings → Bar → Popup interaction can enable opening on
+hover; pointer exit leaves the panel open until an outside click or Escape.
 Bluetooth devices without a name can be found by their displayed address.
 Results follow new scan discoveries and name changes while searching.
 
@@ -101,6 +109,8 @@ Monitoring stops when the mixer is hidden. Audio samples are not saved.
 - `python3 tools/check-bar-modes.py`
 - `python3 -B tools/test_wifi_hidden.py`
 - `python3 -B tools/test_wifi_audio_ui.py`
+- `python3 -B tools/test_wifi_audio_ui.py --native-smoke` (Wayland, wtype)
+- `python3 -B tools/test_weather_popup_ui.py`
 
 The UI suite uses isolated settings and fake devices. Separate offscreen testing
 against the live PipeWire session detected Spotify/Brave, observed changing Spotify

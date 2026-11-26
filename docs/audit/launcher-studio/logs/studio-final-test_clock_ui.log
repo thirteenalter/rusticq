@@ -1,0 +1,34 @@
+  INFO: Launching config: "/tmp/rusticq-clock-ui-f5h7_gth/shell.qml"
+  INFO: Shell ID: "9266321da6d5074401784cd0c5a69d6f" Path ID "9266321da6d5074401784cd0c5a69d6f"
+  INFO: Saving logs to "/tmp/rusticq-clock-ui-f5h7_gth/quickshell/by-id/3cjz0pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-clock-ui-f5h7_gth/quickshell/by-id/3cjz0pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: CLOCK TEST test_independent_calendar_and_monitors failed=false
+ DEBUG qml: CLOCK TEST test_locale_literals_and_validation failed=false
+ DEBUG qml: CLOCK TEST test_seconds_refresh_and_literals failed=false
+ DEBUG qml: CLOCK TEST test_styles_and_click_targets failed=false
+ DEBUG qml: CLOCK TEST test_vertical_formats_fit_rail failed=false
+ DEBUG qml: CLOCK TEST test_z_custom_edit_and_save failed=false
+ DEBUG qml: CLOCK RESULTS 7 passed, 0 failed
+  INFO: Launching config: "/tmp/rusticq-clock-ui-f5h7_gth/shell.qml"
+  INFO: Shell ID: "9266321da6d5074401784cd0c5a69d6f" Path ID "9266321da6d5074401784cd0c5a69d6f"
+  INFO: Saving logs to "/tmp/rusticq-clock-ui-f5h7_gth/quickshell/by-id/8ejz0pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-clock-ui-f5h7_gth/quickshell/by-id/8ejz0pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: CLOCK RELOAD PASS
+  INFO: Launching config: "/tmp/rusticq-clock-ui-f5h7_gth/shell.qml"
+  INFO: Shell ID: "9266321da6d5074401784cd0c5a69d6f" Path ID "9266321da6d5074401784cd0c5a69d6f"
+  INFO: Saving logs to "/tmp/rusticq-clock-ui-f5h7_gth/quickshell/by-id/dfjz0pt/log.qslog"
+  WARN: --- WARNING ---
+  WARN: WAYLAND_DISPLAY is present but QT_QPA_PLATFORM is "offscreen"
+  WARN: If you are actually running wayland, set QT_QPA_PLATFORM to "wayland" or most functionality will be broken.
+ ERROR quickshell.ipc: Failed to start IPC server on path "/tmp/rusticq-clock-ui-f5h7_gth/quickshell/by-id/dfjz0pt/ipc.sock"
+  INFO: Configuration Loaded
+ DEBUG qml: CLOCK RELOAD PASS
+PASS: clock styles, clicks, locale, seconds, vertical rail, independent instances, settings edit/save/reload and safe defaults

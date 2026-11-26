@@ -1,0 +1,358 @@
+{
+  "recordedAt": "2026-11-25T04:42:32.579327+07:00",
+  "environment": {
+    "compositor": "Hyprland 0.56.2 / Omarchy",
+    "quickshell": "0.3.2, revision 2b4501a282689792b62e94f3fb30d8f512324fe6",
+    "apiBaseline": "0.3.1 (not installed for native testing)",
+    "nativeOutputs": "One 1920x1080 scale-1 eDP-1",
+    "installedShellReplaced": false
+  },
+  "tests": [
+    {
+      "command": "python3 -m unittest discover -s tools -p 'test_beta1_feature_batch.py' -v",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "10 tests passed",
+      "log": "logs/studio-final-beta1-feature-batch.log"
+    },
+    {
+      "command": "python3 -m unittest discover -s tools -p 'test_phase1_doctor_guard.py' -v",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "7 tests passed",
+      "log": "logs/studio-final-doctor-guard.log"
+    },
+    {
+      "command": "python3 -B tools/test_beta1.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "11 tests passed",
+      "log": "logs/studio-final-beta1.log"
+    },
+    {
+      "command": "python3 -B tools/test_beta3_features.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "13 tests passed, isolated notes provider",
+      "log": "logs/studio-final-test_beta3_features.log"
+    },
+    {
+      "command": "python3 -m unittest discover -s tools -p 'test_*versioning.py' -v",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "15 tests passed",
+      "log": "logs/studio-final-versioning.log"
+    },
+    {
+      "command": "python3 -B tools/build-release.py --out /tmp/rusticq-studio-build --label launcher-studio-validation",
+      "mode": "source build",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Full archive built, no version bump or personal settings",
+      "log": "logs/studio-final-build.log"
+    },
+    {
+      "command": "python3 -B tools/verify-static.py",
+      "mode": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "166 QML files, 0 issues",
+      "log": "logs/studio-final-verify-static.log"
+    },
+    {
+      "command": "python3 -B tools/check-bar-modes.py",
+      "mode": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Five bar modes and geometry contracts",
+      "log": "logs/studio-check-bar-modes.log"
+    },
+    {
+      "command": "python3 -B tools/test_launcher_studio.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "6 tests passed",
+      "log": "logs/studio-final-test_launcher_studio.log"
+    },
+    {
+      "command": "python3 -B tools/test_launcher_studio_ui.py",
+      "mode": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "11 QtTest results passed; saved restart, five migration/type fixtures and malformed JSON passed",
+      "log": "logs/studio-final-launcher-ui4.log"
+    },
+    {
+      "command": "python3 -m unittest discover -s tools -p 'test_beta2*.py' -v",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "12 provider/fuzzy/release tests passed",
+      "log": "logs/studio-final-beta2.log"
+    },
+    {
+      "command": "python3 -B tools/test_dock_launcher_layout_fix.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "3 tests passed",
+      "log": "logs/studio-test_dock_launcher_layout_fix.log"
+    },
+    {
+      "command": "python3 -B tools/test_updater_launcher_fix.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "3 tests passed, including PTY fixtures; no package operations",
+      "log": "logs/launcher-updater-regression.log"
+    },
+    {
+      "command": "python3 -B tools/test_settings_refactor.py",
+      "mode": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Page sizing, extracted launcher and ownership checks passed",
+      "log": "logs/studio-final-test_settings_refactor.log"
+    },
+    {
+      "command": "python3 -B tools/test_portable_user_settings.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "6 tests passed",
+      "log": "logs/studio-test_portable_user_settings.log"
+    },
+    {
+      "command": "python3 -B tools/test_compositor_studio_safety.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "29 tests passed",
+      "log": "logs/studio-test_compositor_studio_safety.log"
+    },
+    {
+      "command": "python3 -B tools/test_compositor_studio_ui.py",
+      "mode": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "5 tests passed",
+      "log": "logs/studio-test_compositor_studio_ui.log"
+    },
+    {
+      "command": "python3 -B tools/test_native_lock_qml_structure.py",
+      "mode": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Lock imports/types and 166-file bracket scan passed",
+      "log": "logs/studio-test_native_lock_qml_structure.log"
+    },
+    {
+      "command": "python3 -B tools/test_native_lock_design_alignment.py",
+      "mode": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "3 tests passed; secure backing/controller retained",
+      "log": "logs/studio-final-test_native_lock_design_alignment.log"
+    },
+    {
+      "command": "python3 -B tools/test_glassmorphism.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "23 backend/schema/security tests passed",
+      "log": "logs/studio-final-test_glassmorphism.log"
+    },
+    {
+      "command": "python3 -B tools/test_glassmorphism_ui.py",
+      "mode": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "9 UI scenarios plus initialization, persistence and bad JSON passed",
+      "log": "logs/studio-test_glassmorphism_ui.log"
+    },
+    {
+      "command": "python3 -B tools/test_rage_native_palette.py",
+      "mode": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "38 semantic tokens; four native palettes; three styles; glass on/off; extreme watched Aether/Gruvbox changes; saved reload passed",
+      "log": "logs/studio-test_rage_native_palette.log"
+    },
+    {
+      "command": "python3 -B tools/test_bar_surfaces_ui.py",
+      "mode": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "64 visibility combinations, five layouts/four edges, two simulated screens, geometry and persistence passed",
+      "log": "logs/studio-test_bar_surfaces_ui.log"
+    },
+    {
+      "command": "python3 -B tools/test_wifi_audio_ui.py",
+      "mode": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "18 tests passed",
+      "log": "logs/studio-test_wifi_audio_ui.log"
+    },
+    {
+      "command": "python3 -B tools/test_weather_popup_ui.py",
+      "mode": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "7 tests passed",
+      "log": "logs/studio-test_weather_popup_ui.log"
+    },
+    {
+      "command": "python3 -B tools/test_clock_ui.py",
+      "mode": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Clock interactions, styles, saved reload and defaults passed",
+      "log": "logs/studio-final-test_clock_ui.log"
+    },
+    {
+      "command": "python3 -B tools/test_motion_ui.py",
+      "mode": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Entry/exit, interrupted motion, instant mode, loader retention, directions and saved reload passed",
+      "log": "logs/launcher-motion-regression.log"
+    },
+    {
+      "command": "python3 -B tools/test_bar_padding_ui.py",
+      "mode": "QML offscreen",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Five modes/four edges; screen sizes, scroll, popup anchors and saved reload passed",
+      "log": "logs/studio-final-test_bar_padding_ui.log"
+    },
+    {
+      "command": "python3 -B tools/test_notification_toast_redesign.py",
+      "mode": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Toast layout, icons, screenshot thumbnail and safe native action contracts passed",
+      "log": "logs/studio-final-test_notification_toast_redesign.log"
+    },
+    {
+      "command": "python3 -B tools/test_system_monitor_fix.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "System monitor fixtures, audio and popup contracts passed",
+      "log": "logs/studio-final-test_system_monitor_fix.log"
+    },
+    {
+      "command": "python3 -B tools/test_menu_bar_keyboard.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Menu keyboard/selection tests passed",
+      "log": "logs/studio-final-test_menu_bar_keyboard.log"
+    },
+    {
+      "command": "python3 -B tools/test_wifi_qr_fullscreen_layout.py",
+      "mode": "static",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "QR layout and credential isolation checks passed",
+      "log": "logs/studio-final-test_wifi_qr_fullscreen_layout.log"
+    },
+    {
+      "command": "python3 -B tools/test_cloud_ai.py",
+      "mode": "offline",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "OpenAI/Claude/Gemini/error model mocks passed; no network request",
+      "log": "logs/studio-final-test_cloud_ai.log"
+    },
+    {
+      "command": "python3 -B tools/test_motion_ui.py --native-smoke",
+      "mode": "Wayland native",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "6 results passed; real lifecycle/focus, toast and OSD checks",
+      "log": "logs/rage-native-motion.log"
+    },
+    {
+      "command": "python3 -B tools/test_wifi_audio_ui.py --native-smoke",
+      "mode": "Wayland native",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "3 results passed; real wtype keyboard input",
+      "log": "logs/rage-native-search.log"
+    },
+    {
+      "command": "bash -n scripts/install.sh scripts/bootstrap.sh",
+      "mode": "syntax",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "Installer/bootstrap shell syntax passed"
+    },
+    {
+      "command": "python3 -B tools/test_bar_visibility_ui.py",
+      "mode": "Wayland native",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "BAR RESULTS 2 passed, 0 failed; recovery, reveal, grace, popup hold, four edges and saved reload",
+      "note": "Observed native tool stdout; initial sandbox-denied Wayland attempt was rerun with authorized session access."
+    },
+    {
+      "command": "python3 -B tools/capture_launcher_studio.py --run --input --output /tmp/rusticq-launcher-studio-verified2",
+      "mode": "Wayland native",
+      "status": "PASS",
+      "exitCode": 0,
+      "result": "39 captures, all 11 styles empty/populated; shared editor/controller identity; real typing/Escape; no changed global blur settings; scoped cleanup; pixel comparison passed",
+      "log": "runtime.log"
+    }
+  ],
+  "limitations": [
+    "Physical multi-monitor/hotplug/fractional scaling and pointer dismissal remain manual checks; geometry is simulated across several sizes/edges.",
+    "Unsupported compositor blur/outside-click behavior is not runtime-verified.",
+    "No hardware operations, authentication, real app execution or GPU benchmark.",
+    "Native captures precede the final nonvisual Escape bubbling hook; its additional focused-action test passes in the final QML suite.",
+    "Expected isolated IPC/FileView-unavailable and broken-JSON warnings occur in offscreen fixtures."
+  ],
+  "pixelProof": "pixel-proof.json",
+  "sourceManifest": "source-files.json",
+  "supplementalHistoricalProbes": [
+    {
+      "command": "python3 -B tools/test_rc3.py",
+      "status": "HISTORICAL_CONTRACT_MISMATCH",
+      "exitCode": 1,
+      "reason": "Obsolete literal 690 sizing; HEAD already uses 780 + monitor clamp; exploratory launcher lookup adjusted then restored.",
+      "log": "logs/studio-final-test_rc3.log",
+      "sourceFileLeftUnchanged": true
+    },
+    {
+      "command": "python3 -B tools/test_rc5_visual_patch.py",
+      "status": "HISTORICAL_CONTRACT_MISMATCH",
+      "exitCode": 1,
+      "reason": "Obsolete explicit advancedOpen hook; HEAD already uses implicitHeight; exploratory launcher lookup adjusted then restored.",
+      "log": "logs/studio-final-test_rc5_visual_patch.log",
+      "sourceFileLeftUnchanged": true
+    },
+    {
+      "command": "python3 -B tools/test_alpha4.py",
+      "status": "HISTORICAL_CONTRACT_MISMATCH",
+      "exitCode": 1,
+      "reason": "Old native dock model assertion; HEAD already uses running-app helper.",
+      "log": "logs/studio-final-test_alpha4.log",
+      "sourceFileLeftUnchanged": true
+    },
+    {
+      "command": "python3 -B tools/test_rc5_runtime_repair.py",
+      "status": "BLOCKED",
+      "exitCode": 1,
+      "reason": "Optional Python fontTools missing; script did not execute.",
+      "log": "logs/studio-final-test_rc5_runtime_repair.log",
+      "sourceFileLeftUnchanged": true
+    }
+  ]
+}

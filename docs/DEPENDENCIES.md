@@ -46,6 +46,12 @@ The full ZIP excludes bundled `assets/google.ttf` and `assets/Poppins-*.ttf`. QM
 
 ## Diagnose
 
+The optional native **Speed Test** card uses **Ookla Speedtest CLI** (`speedtest`)
+or the compatible **sivel speedtest-cli** (`speedtest-cli`). Install and initialize
+your chosen backend yourself; RusticQ never installs it or accepts third-party
+terms. Ookla provides incremental measurements; the fallback provides final JSON
+results. See [network speed test setup and behavior](NETWORK-SPEED-TEST.md).
+
 ```bash
 python3 scripts/rusticq-dependencies.py status
 python3 scripts/rusticq-dependencies.py missing-core

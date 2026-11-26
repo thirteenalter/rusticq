@@ -11,6 +11,10 @@ Item {
     onLineColorChanged: chart.requestPaint()
     onWidthChanged: chart.requestPaint()
     onHeightChanged: chart.requestPaint()
+    Connections {
+        target: Theme
+        function onBorderaccentChanged() { chart.requestPaint(); }
+    }
     Canvas {
         id: chart
         anchors.fill: parent

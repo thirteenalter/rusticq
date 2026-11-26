@@ -3,11 +3,29 @@ import QtQuick.Layouts
 import "../../../config"
 import "../../../components"
 import ".."
+import "../../../components/settings" as Suite
 
 ColumnLayout {
+    id: settingsPageRoot
+    readonly property var settingsTheme: SettingsMaterial.forItem(settingsPageRoot)
     width: parent ? parent.width : 680
     spacing: 14
+    SettingsDesktopPreview { Layout.fillWidth:true;kind:"bar" }
 
+    Suite.SettingsSegmentedControl {
+        design:settingsPageRoot.settingsTheme;Layout.preferredWidth:360;model:["Bar","Dock","Behavior"]
+        onSelected:index=>{if(index===1)Store.settingsTab="dock";else {currentIndex=index;advanced.expanded=index===2;if(index===2)SettingsMaterial.reveal(advanced);}}
+    }
+    Suite.SettingsGroup {
+        design:settingsPageRoot.settingsTheme;title:"Appearance";description:"Customize the look and feel of the top bar.";contentSpacing:0
+        Suite.SettingsRow {design:settingsPageRoot.settingsTheme;label:"Show bar";Suite.SettingsToggle {design:settingsPageRoot.settingsTheme;checked:SettingsStore.barVisible;onToggled:SettingsStore.setBarVisibilityMode(checked?"show":"hide")}}
+        Suite.SettingsRow {design:settingsPageRoot.settingsTheme;label:"Position";Suite.SettingsDropdown {design:settingsPageRoot.settingsTheme;model:["Top","Bottom","Left","Right"];currentIndex:["top","bottom","left","right"].indexOf(SettingsStore.barPosition);onActivated:{SettingsStore.barPosition=["top","bottom","left","right"][currentIndex];SettingsStore.save();}}}
+        Suite.SettingsRow {design:settingsPageRoot.settingsTheme;label:"Icon size";Suite.SettingsSlider {design:settingsPageRoot.settingsTheme;Layout.preferredWidth:300;from:12;to:32;value:SettingsStore.barIconSize;suffix:" px";onEdited:value=>{SettingsStore.barIconSize=value;SettingsStore.save();}}}
+        Suite.SettingsRow {design:settingsPageRoot.settingsTheme;label:"Corner radius";Suite.SettingsSlider {design:settingsPageRoot.settingsTheme;Layout.preferredWidth:300;from:0;to:32;value:SettingsStore.barCornerRadius<0?Theme.sectionRadius:SettingsStore.barCornerRadius;suffix:" px";onEdited:value=>SettingsStore.setBarSurfaceValue("barCornerRadius",value)}}
+        Suite.SettingsRow {design:settingsPageRoot.settingsTheme;label:"Bar opacity";Suite.SettingsSlider {design:settingsPageRoot.settingsTheme;Layout.preferredWidth:300;from:10;to:100;value:SettingsStore.barOpacity*100;suffix:" %";onEdited:value=>SettingsStore.setBarSurfaceValue("barOpacity",value/100)}}
+    }
+    Suite.SettingsDisclosure {
+        id:advanced;objectName:"barAdvancedDisclosure";design:settingsPageRoot.settingsTheme;title:"Layout, content & advanced behavior"
     SettingsSection {
         heading: "Bar visibility"
         description: "Auto-hide reveals the bar at the screen edge. Hide completely removes both the bar and its restore button."
@@ -20,17 +38,17 @@ ColumnLayout {
                 delegate: Rectangle {
                     id: visibilityChoice
                     required property var modelData
-                    Layout.fillWidth: true; Layout.preferredHeight: 39; radius: 10
-                    color: SettingsStore.barVisibilityMode === modelData.value ? Qt.alpha(Theme.accent,.16) : Theme.background
-                    border.width: SettingsStore.barVisibilityMode === modelData.value ? 1 : 0
-                    border.color: Theme.accent
-                    Text { anchors.centerIn: parent; text: modelData.label; color: Theme.foreground; font.pixelSize: Fonts.scale(11) }
+                    Layout.fillWidth: true; Layout.preferredHeight: 39; radius: settingsPageRoot.settingsTheme.glassRadius("card", 10)
+                    color: settingsPageRoot.settingsTheme.glassColor("card", SettingsStore.barVisibilityMode === modelData.value ? Qt.alpha(settingsPageRoot.settingsTheme.accent,.16) : settingsPageRoot.settingsTheme.background)
+                    border.width: settingsPageRoot.settingsTheme.glassBorderWidth("card", SettingsStore.barVisibilityMode === modelData.value ? 1 : 0)
+                    border.color: settingsPageRoot.settingsTheme.glassBorder("card", settingsPageRoot.settingsTheme.accent)
+                    GlassLabel { anchors.centerIn: parent; text: modelData.label; color: settingsPageRoot.settingsTheme.foreground; font.pixelSize: Fonts.scale(12) }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.setBarVisibilityMode(visibilityChoice.modelData.value) }
                 }
             }
         }
-        Text { Layout.fillWidth: true; text: "Auto-hide closes after the pointer leaves; open bar popups keep it visible. To restore Hide completely, use Show bar here or the bar-show / bar-toggle shortcut from Settings → Shortcuts.";
-               color: Theme.muted; font.pixelSize: Fonts.scale(10); wrapMode: Text.WordWrap }
+        GlassLabel { Layout.fillWidth: true; text: "Auto-hide closes after the pointer leaves; open bar popups keep it visible. To restore Hide completely, use Show bar here or the bar-show / bar-toggle shortcut from Settings → Shortcuts.";
+               color: settingsPageRoot.settingsTheme.contentMuted; font.pixelSize: Fonts.scale(12); wrapMode: Text.WordWrap }
     }
     SettingsSection {
         heading: "Bar animations"
@@ -39,6 +57,17 @@ ColumnLayout {
         MotionStylePicker { settingKey: "barAnimationStyle" }
     }
     BarIconSizeEditor {}
+    BarSurfaceSettings {}
+    SettingsSection {
+        heading: "Popup interaction"
+        description: "Open a bar popup with a click or a short hover. It stays open until an outside click or Escape."
+        symbol: "\ue8b8"
+        SettingsToggle {
+            objectName: "barPopupsOnHoverToggle"
+            modelData: ({key:"barPopupsOnHover",label:"Open bar popups on hover",
+                desc:"Wi-Fi, Bluetooth, audio, battery, weather, clock, calendar, notifications and menus",icon:"\ue8b8"})
+        }
+    }
     SettingsSection {
         heading: "Bar position"
         description: "Choose an edge. Left and Right use a vertical rail."
@@ -60,14 +89,14 @@ ColumnLayout {
                     readonly property bool selected: SettingsStore.barPosition === modelData.key
                     Layout.fillWidth: true
                     Layout.preferredHeight: 68
-                    radius: 11
-                    color: selected ? Qt.alpha(Theme.accent, 0.15) : Theme.background
-                    border.width: selected ? 1 : 0
-                    border.color: Theme.accent
+                    radius: settingsPageRoot.settingsTheme.glassRadius("card", 11)
+                    color: settingsPageRoot.settingsTheme.glassColor("card", selected ? Qt.alpha(settingsPageRoot.settingsTheme.accent, 0.15) : settingsPageRoot.settingsTheme.background)
+                    border.width: settingsPageRoot.settingsTheme.glassBorderWidth("card", selected ? 1 : 0)
+                    border.color: settingsPageRoot.settingsTheme.glassBorder("card", settingsPageRoot.settingsTheme.accent)
                     ColumnLayout {
                         anchors.centerIn: parent; spacing: 5
-                        Icon { Layout.alignment: Qt.AlignHCenter; icon: positionCard.modelData.icon; font.pixelSize: Fonts.scale(21); color: positionCard.selected ? Theme.accent : Theme.foreground }
-                        Text { Layout.alignment: Qt.AlignHCenter; text: positionCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
+                        Icon { Layout.alignment: Qt.AlignHCenter; icon: positionCard.modelData.icon; font.pixelSize: Fonts.scale(21); color: positionCard.selected ? settingsPageRoot.settingsTheme.accent : settingsPageRoot.settingsTheme.foreground }
+                        GlassLabel { Layout.alignment: Qt.AlignHCenter; text: positionCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: settingsPageRoot.settingsTheme.foreground }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.barPosition = positionCard.modelData.key; SettingsStore.save(); } }
                 }
@@ -96,28 +125,28 @@ ColumnLayout {
                     required property var modelData
                     readonly property bool selected: SettingsStore.barMode === modelData.key
                     Layout.fillWidth: true; Layout.preferredHeight: 92
-                    radius: 11
-                    color: selected ? Qt.alpha(Theme.accent, 0.13) : Theme.background
-                    border.width: selected ? 1 : 0
-                    border.color: Theme.accent
+                    radius: settingsPageRoot.settingsTheme.glassRadius("card", 11)
+                    color: settingsPageRoot.settingsTheme.glassColor("card", selected ? Qt.alpha(settingsPageRoot.settingsTheme.accent, 0.13) : settingsPageRoot.settingsTheme.background)
+                    border.width: settingsPageRoot.settingsTheme.glassBorderWidth("card", selected ? 1 : 0)
+                    border.color: settingsPageRoot.settingsTheme.glassBorder("card", settingsPageRoot.settingsTheme.accent)
                     ColumnLayout {
                         anchors.fill: parent; anchors.margins: 12; spacing: 6
                         RowLayout {
                             Layout.fillWidth: true; spacing: 8
-                            Icon { icon: modeCard.modelData.icon; font.pixelSize: Fonts.scale(18); color: Theme.accent }
-                            Text { text: modeCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: Theme.foreground; Layout.fillWidth: true }
-                            Icon { visible: modeCard.selected; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
+                            Icon { icon: modeCard.modelData.icon; font.pixelSize: Fonts.scale(18); color: settingsPageRoot.settingsTheme.accent }
+                            GlassLabel { text: modeCard.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: settingsPageRoot.settingsTheme.foreground; Layout.fillWidth: true }
+                            Icon { visible: modeCard.selected; icon: "\ue5ca"; color: settingsPageRoot.settingsTheme.accent; font.pixelSize: Fonts.scale(18) }
                         }
-                        Text { text: modeCard.modelData.info; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                        GlassLabel { text: modeCard.modelData.info; color: settingsPageRoot.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                         Rectangle {
-                            Layout.fillWidth: true; Layout.preferredHeight: 12; radius: 6; color: Theme.surface
+                            Layout.fillWidth: true; Layout.preferredHeight: 12; radius: settingsPageRoot.settingsTheme.glassRadius("card", 6); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.surface)
                             RowLayout {
                                 anchors.fill: parent; anchors.margins: 3
-                                Rectangle { Layout.preferredWidth: 33; Layout.fillHeight: true; radius: 3; color: Qt.alpha(Theme.accent, 0.47) }
+                                Rectangle { Layout.preferredWidth: 33; Layout.fillHeight: true; radius: settingsPageRoot.settingsTheme.glassRadius("card", 3); color: settingsPageRoot.settingsTheme.glassColor("card", Qt.alpha(settingsPageRoot.settingsTheme.accent, 0.47)) }
                                 Item { Layout.fillWidth: true }
-                                Rectangle { Layout.preferredWidth: 15; Layout.fillHeight: true; radius: 3; color: Theme.muted }
+                                Rectangle { Layout.preferredWidth: 15; Layout.fillHeight: true; radius: settingsPageRoot.settingsTheme.glassRadius("card", 3); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.muted) }
                                 Item { Layout.fillWidth: true }
-                                Rectangle { Layout.preferredWidth: 40; Layout.fillHeight: true; radius: 3; color: Qt.alpha(Theme.accent, 0.47) }
+                                Rectangle { Layout.preferredWidth: 40; Layout.fillHeight: true; radius: settingsPageRoot.settingsTheme.glassRadius("card", 3); color: settingsPageRoot.settingsTheme.glassColor("card", Qt.alpha(settingsPageRoot.settingsTheme.accent, 0.47)) }
                             }
                         }
                     }
@@ -153,13 +182,13 @@ ColumnLayout {
                     id: detailOption
                     required property var modelData
                     readonly property bool chosen: SettingsStore.cleanRightMode === modelData.key
-                    Layout.fillWidth: true; Layout.preferredHeight: 44; radius: 10
-                    color: chosen ? Qt.alpha(Theme.accent, .16) : Theme.background
-                    border.width: chosen ? 1 : 0; border.color: Theme.accent
+                    Layout.fillWidth: true; Layout.preferredHeight: 44; radius: settingsPageRoot.settingsTheme.glassRadius("card", 10)
+                    color: settingsPageRoot.settingsTheme.glassColor("card", chosen ? Qt.alpha(settingsPageRoot.settingsTheme.accent, .16) : settingsPageRoot.settingsTheme.background)
+                    border.width: settingsPageRoot.settingsTheme.glassBorderWidth("card", chosen ? 1 : 0); border.color: settingsPageRoot.settingsTheme.glassBorder("card", settingsPageRoot.settingsTheme.accent)
                     RowLayout {
                         anchors.centerIn: parent; spacing: 6
-                        Icon { icon: detailOption.chosen ? "\ue5ca" : "\ue8f4"; font.pixelSize: Fonts.scale(16); color: Theme.accent }
-                        Text { text: detailOption.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); color: Theme.foreground }
+                        Icon { icon: detailOption.chosen ? "\ue5ca" : "\ue8f4"; font.pixelSize: Fonts.scale(16); color: settingsPageRoot.settingsTheme.accent }
+                        GlassLabel { text: detailOption.modelData.label; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); color: settingsPageRoot.settingsTheme.foreground }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.cleanRightMode = detailOption.modelData.key; SettingsStore.save(); } }
                 }
@@ -186,10 +215,10 @@ ColumnLayout {
                     readonly property bool chosen: SettingsStore.quickControlButtonStyle === modelData.key
                     Layout.fillWidth: true
                     Layout.preferredHeight: 62
-                    radius: 11
-                    color: chosen ? Qt.alpha(Theme.accent, 0.14) : Theme.background
-                    border.width: chosen ? 1 : 0
-                    border.color: Theme.accent
+                    radius: settingsPageRoot.settingsTheme.glassRadius("card", 11)
+                    color: settingsPageRoot.settingsTheme.glassColor("card", chosen ? Qt.alpha(settingsPageRoot.settingsTheme.accent, 0.14) : settingsPageRoot.settingsTheme.background)
+                    border.width: settingsPageRoot.settingsTheme.glassBorderWidth("card", chosen ? 1 : 0)
+                    border.color: settingsPageRoot.settingsTheme.glassBorder("card", settingsPageRoot.settingsTheme.accent)
                     RowLayout {
                         anchors.fill: parent
                         anchors.margins: 12
@@ -197,17 +226,17 @@ ColumnLayout {
                         Rectangle {
                             Layout.preferredWidth: 28
                             Layout.preferredHeight: 28
-                            radius: 14
-                            color: qcMode.modelData.key === "filled" ? Theme.borderaccent : "transparent"
-                            border.width: qcMode.modelData.key === "plain" ? 1 : 0
-                            border.color: qcMode.modelData.key === "plain" ? Theme.borderaccent : "transparent"
-                            Icon { anchors.centerIn: parent; icon: "\ue69b"; font.pixelSize: Fonts.scale(16); color: qcMode.modelData.key === "filled" ? Theme.accent : Theme.foreground }
+                            radius: settingsPageRoot.settingsTheme.glassRadius("card", 14)
+                            color: settingsPageRoot.settingsTheme.glassColor("card", qcMode.modelData.key === "filled" ? settingsPageRoot.settingsTheme.borderaccent : "transparent")
+                            border.width: settingsPageRoot.settingsTheme.glassBorderWidth("card", qcMode.modelData.key === "plain" ? 1 : 0)
+                            border.color: settingsPageRoot.settingsTheme.glassBorder("card", qcMode.modelData.key === "plain" ? settingsPageRoot.settingsTheme.borderaccent : "transparent")
+                            Icon { anchors.centerIn: parent; icon: "\ue69b"; font.pixelSize: Fonts.scale(16); color: qcMode.modelData.key === "filled" ? settingsPageRoot.settingsTheme.accent : settingsPageRoot.settingsTheme.foreground }
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 2
-                            Text { text: qcMode.modelData.label; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); Layout.fillWidth: true }
-                            Text { text: qcMode.modelData.description; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10); Layout.fillWidth: true; wrapMode: Text.WordWrap }
+                            GlassLabel { text: qcMode.modelData.label; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true }
+                            GlassLabel { text: qcMode.modelData.description; color: settingsPageRoot.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true; wrapMode: Text.WordWrap }
                         }
                     }
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.quickControlButtonStyle = qcMode.modelData.key; SettingsStore.save(); } }
@@ -226,11 +255,11 @@ ColumnLayout {
         RowLayout {
             Layout.fillWidth: true
             spacing: 9
-            Text { text:"Center offset"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11); Layout.fillWidth: true }
-            Text { text: SettingsStore.centerOffsetX + " px"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+            GlassLabel { text:"Center offset"; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12); Layout.fillWidth: true }
+            GlassLabel { text: SettingsStore.centerOffsetX + " px"; color: settingsPageRoot.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
             Rectangle {
-                Layout.preferredWidth: 68; Layout.preferredHeight: 27; radius: 8; color: Theme.background
-                Text { anchors.centerIn: parent; text:"Reset"; color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10) }
+                Layout.preferredWidth: 68; Layout.preferredHeight: 27; radius: settingsPageRoot.settingsTheme.glassRadius("card", 8); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text:"Reset"; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { SettingsStore.centerOffsetX = 0; SettingsStore.save(); } }
             }
         }
@@ -241,10 +270,10 @@ ColumnLayout {
             onPreview: next => SettingsStore.centerOffsetX = next
             onCommit: next => { SettingsStore.centerOffsetX = next; SettingsStore.save(); }
         }
-        Text {
+        GlassLabel {
             Layout.fillWidth: true
             text: "Left and Right bar positions continue using Top / Middle / Bottom; this control affects horizontal bars only."
-            wrapMode: Text.WordWrap; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
+            wrapMode: Text.WordWrap; color: settingsPageRoot.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12)
         }
     }
 
@@ -262,10 +291,10 @@ ColumnLayout {
         symbol: "\ue8b8"
         RowLayout {
             Layout.fillWidth: true
-            Text { text: "Editing: " + SettingsStore.barMode; Layout.fillWidth: true; color: Theme.muted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(11) }
+            GlassLabel { text: "Editing: " + SettingsStore.barMode; Layout.fillWidth: true; color: settingsPageRoot.settingsTheme.contentMuted; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(12) }
             Rectangle {
-                Layout.preferredWidth: 108; Layout.preferredHeight: 32; radius: 9; color: Theme.background
-                Text { anchors.centerIn: parent; text: "Reset mode"; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(10) }
+                Layout.preferredWidth: 108; Layout.preferredHeight: 32; radius: settingsPageRoot.settingsTheme.glassRadius("card", 9); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.background)
+                GlassLabel { anchors.centerIn: parent; text: "Reset mode"; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: SettingsStore.resetBarMargins() }
             }
         }
@@ -281,13 +310,13 @@ ColumnLayout {
                         (modelData.edge === "left" || modelData.edge === "right") ? 6 :
                         (SettingsStore.barMode === "compact" || SettingsStore.barMode === "clean-compact") ? 4 : 6
                     readonly property int amount: SettingsStore.marginFor(modelData.edge, fallback)
-                    Layout.fillWidth: true; Layout.preferredHeight: 88; radius: 10; color: Theme.background
+                    Layout.fillWidth: true; Layout.preferredHeight: 88; radius: settingsPageRoot.settingsTheme.glassRadius("card", 10); color: settingsPageRoot.settingsTheme.glassColor("card", settingsPageRoot.settingsTheme.background)
                     ColumnLayout {
                         anchors.fill: parent; anchors.margins: 12; spacing: 6
                         RowLayout {
                             Layout.fillWidth: true
-                            Text { text: marginCard.modelData.name; Layout.fillWidth: true; color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
-                            Text { text: marginCard.amount + " px"; color: Theme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(11) }
+                            GlassLabel { text: marginCard.modelData.name; Layout.fillWidth: true; color: settingsPageRoot.settingsTheme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
+                            GlassLabel { text: marginCard.amount + " px"; color: settingsPageRoot.settingsTheme.accent; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(12) }
                         }
                         MarginSlider {
                             Layout.fillWidth: true; Layout.preferredHeight: 24
@@ -299,5 +328,6 @@ ColumnLayout {
                 }
             }
         }
+    }
     }
 }

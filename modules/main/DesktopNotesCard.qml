@@ -7,7 +7,9 @@ import "../../components"
 
 // Two views of the SAME private notes.json backend used by Settings → Notes.
 // Not a second notes service or persistence layer. No background polling.
-Rectangle {
+GlassSurface {
+    Behavior on color { enabled: Theme.motionEnabled; ColorAnimation { duration: Theme.motionFastDuration } }
+    surfaceRole: "primary"
     id: root
     property string boardKind: "notes" // notes or kanban
     property var entries: []
@@ -15,11 +17,11 @@ Rectangle {
     property string errorText: ""
     readonly property bool board: boardKind === "kanban"
     readonly property string helper: Quickshell.shellPath("scripts/rusticq-notes.py")
-    implicitHeight: Math.max(132, body.implicitHeight + 28)
-    radius: 17
-    color: Theme.background
-    border.color: Theme.borderaccent
-    border.width: 1
+    implicitHeight: Math.max(132, body.implicitHeight + Theme.panelPadding * 2)
+    radius: Theme.glassRadius("primary", 17)
+    color: Theme.glassColor("primary", Theme.background)
+    border.color: Theme.glassBorder("primary", Theme.borderaccent)
+    border.width: Theme.glassBorderWidth("primary", 1)
 
     function refresh() {
         if (!readProcess.running) readProcess.exec(["python3", helper, "list"]);
@@ -64,22 +66,23 @@ Rectangle {
     Component.onCompleted: refresh()
     ColumnLayout {
         id: body
+        objectName: "surfaceContent"
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 13
+        anchors.margins: Theme.panelPadding
         spacing: 9
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
             Icon { icon: root.board ? "\ue8f9" : "\ue873"; color: Theme.accent; font.pixelSize: Fonts.scale(18) }
-            Text { Layout.fillWidth: true; text: root.board ? "Kanban" : "Sticky Notes"
+            GlassLabel { Layout.fillWidth: true; text: root.board ? "Kanban" : "Sticky Notes"
                 color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(13) }
-            Text { text: String(root.entries.length); color: Theme.accent; font.pixelSize: Fonts.scale(10) }
+            GlassLabel { text: String(root.entries.length); color: Theme.accent; font.pixelSize: Fonts.scale(10) }
             Rectangle {
                 Layout.preferredWidth: 27; Layout.preferredHeight: 26
-                radius: 7; color: Theme.surface
-                Icon { anchors.centerIn: parent; icon: "\ue5d5"; color: Theme.muted; font.pixelSize: Fonts.scale(15) }
+                radius: Theme.glassRadius("card", 7); color: Theme.glassColor("card", Theme.surface)
+                Icon { anchors.centerIn: parent; icon: "\ue5d5"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(15) }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.refresh() }
             }
             // Reserve the rightmost region for the widget drag grip.
@@ -88,7 +91,7 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true; spacing: 6
             Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: 34; radius: 8; color: Theme.surface
+                Layout.fillWidth: true; Layout.preferredHeight: 34; radius: Theme.glassRadius("card", 8); color: Theme.glassColor("card", Theme.surface)
                 TextInput {
                     id: inputField
                     anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 8
@@ -98,8 +101,8 @@ Rectangle {
                     maximumLength: 260
                     color: Theme.foreground; font.family: Fonts.poppins.name; font.pixelSize: Fonts.scale(10)
                     Keys.onReturnPressed: root.update("add", root.draft.trim())
-                    Text { visible: !parent.text.length; anchors.verticalCenter: parent.verticalCenter
-                        text: root.board ? "Add task..." : "Write a note..."; color: Theme.muted; font.pixelSize: Fonts.scale(10) }
+                    GlassLabel { visible: !parent.text.length; anchors.verticalCenter: parent.verticalCenter
+                        text: root.board ? "Add task..." : "Write a note..."; color: Theme.contentMuted; font.pixelSize: Fonts.scale(10) }
                 }
             }
             Rectangle {
@@ -122,12 +125,12 @@ Rectangle {
                 required property var modelData
                 width: ListView.view.width
                 height: Math.max(39, label.implicitHeight + 16)
-                radius: 9; color: Theme.surface
+                radius: Theme.glassRadius("card", 9); color: Theme.glassColor("card", Theme.surface)
                 RowLayout {
                     anchors.fill: parent; anchors.margins: 8; spacing: 7
                     Rectangle { Layout.preferredWidth: 5; Layout.fillHeight: true; radius: 2
                         color: sticky.modelData.stage === "done" ? Theme.muted : Theme.accent }
-                    Text { id: label; Layout.fillWidth: true; text: sticky.modelData.title
+                    GlassLabel { id: label; Layout.fillWidth: true; text: sticky.modelData.title
                         maximumLineCount: 3; wrapMode: Text.Wrap; color: Theme.foreground; font.pixelSize: Fonts.scale(10) }
                     Rectangle { Layout.preferredWidth: 24; Layout.preferredHeight: 24; color: "transparent"
                         Icon { anchors.centerIn: parent; icon: "\ue5ca"; color: Theme.accent; font.pixelSize: Fonts.scale(15) }
@@ -135,7 +138,7 @@ Rectangle {
                             onClicked: root.update("toggle", sticky.modelData.id) }
                     }
                     Rectangle { Layout.preferredWidth: 22; Layout.preferredHeight: 24; color: "transparent"
-                        Icon { anchors.centerIn: parent; icon: "\ue5cd"; color: Theme.muted; font.pixelSize: Fonts.scale(15) }
+                        Icon { anchors.centerIn: parent; icon: "\ue5cd"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(15) }
                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                             onClicked: root.update("delete", sticky.modelData.id) }
                     }
@@ -159,15 +162,15 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignTop
                     Layout.preferredHeight: Math.max(86, laneBody.implicitHeight + 14)
-                    radius: 9; color: Theme.surface
+                    radius: Theme.glassRadius("card", 9); color: Theme.glassColor("card", Theme.surface)
                     ColumnLayout {
                         id: laneBody
                         anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
                         anchors.margins: 6; spacing: 6
                         RowLayout { Layout.fillWidth: true
-                            Text { Layout.fillWidth: true; text: lane.modelData.name
+                            GlassLabel { Layout.fillWidth: true; text: lane.modelData.name
                                 color: Theme.foreground; font.family: Fonts.poppinsSB.name; font.pixelSize: Fonts.scale(9) }
-                            Text { text: String(root.entries.filter(n => n.stage === lane.modelData.id).length)
+                            GlassLabel { text: String(root.entries.filter(n => n.stage === lane.modelData.id).length)
                                 color: Theme.accent; font.pixelSize: Fonts.scale(9) }
                         }
                         Repeater {
@@ -177,22 +180,22 @@ Rectangle {
                                 required property var modelData
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: Math.max(51, taskLayout.implicitHeight + 12)
-                                radius: 7; color: Theme.background
+                                radius: Theme.glassRadius("card", 7); color: Theme.glassColor("card", Theme.background)
                                 ColumnLayout {
                                     id: taskLayout
                                     anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
                                     anchors.margins: 5; spacing: 4
-                                    Text { Layout.fillWidth: true; text: taskTile.modelData.title
+                                    GlassLabel { Layout.fillWidth: true; text: taskTile.modelData.title
                                         wrapMode: Text.Wrap; maximumLineCount: 3
                                         color: Theme.foreground; font.pixelSize: Fonts.scale(9) }
                                     RowLayout { Layout.fillWidth: true; spacing: 4
-                                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 18; radius: 5; color: Qt.alpha(Theme.accent,.16)
-                                            Text { anchors.centerIn: parent; text: "Next →"; color: Theme.accent; font.pixelSize: Fonts.scale(8) }
+                                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 18; radius: Theme.glassRadius("card", 5); color: Theme.glassColor("card", Qt.alpha(Theme.accent,.16))
+                                            GlassLabel { anchors.centerIn: parent; text: "Next →"; color: Theme.accent; font.pixelSize: Fonts.scale(8) }
                                             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                                                 onClicked: root.update("toggle", taskTile.modelData.id) }
                                         }
                                         Rectangle { Layout.preferredWidth: 19; Layout.preferredHeight: 18; color: "transparent"
-                                            Icon { anchors.centerIn: parent; icon: "\ue5cd"; color: Theme.muted; font.pixelSize: Fonts.scale(12) }
+                                            Icon { anchors.centerIn: parent; icon: "\ue5cd"; color: Theme.contentMuted; font.pixelSize: Fonts.scale(12) }
                                             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                                                 onClicked: root.update("delete", taskTile.modelData.id) }
                                         }
@@ -204,7 +207,7 @@ Rectangle {
                 }
             }
         }
-        Text { visible: !!root.errorText; Layout.fillWidth: true; text: root.errorText
+        GlassLabel { visible: !!root.errorText; Layout.fillWidth: true; text: root.errorText
             color: Theme.error; wrapMode: Text.WordWrap; font.pixelSize: Fonts.scale(9) }
     }
 }
